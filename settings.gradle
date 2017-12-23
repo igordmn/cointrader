@@ -1,0 +1,3 @@
+rootProject.name = 'cointrader'
+rootProject.buildFileName = 'build.gradle.kts'
+

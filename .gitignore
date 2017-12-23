@@ -1,0 +1,10 @@
+/.gradle/
+/.android-sdk/
+/.sign/
+/.idea/
+build/
+/local.properties
+/workspace.properties
+*.iml
+*.log
+/captures/
