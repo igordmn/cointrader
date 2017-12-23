@@ -15,7 +15,7 @@ public class ReLUMatrixKernel extends Kernel {
         res[k] = max(A[k], 0.0);
     }
 
-    public double[] apply(final double[] A, final int a, final int b) {
+    public synchronized double[] apply(final double[] A, final int a, final int b) {
         this.A = A;
         this.res = new double[a * b];
         execute(res.length);

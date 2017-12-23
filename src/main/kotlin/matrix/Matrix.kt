@@ -4,8 +4,8 @@ import matrix.gpu.MultiplyMatrixKernel
 import matrix.gpu.ReLUMatrixKernel
 import java.util.*
 
-private val multiplyKernel = ThreadLocal.withInitial(::MultiplyMatrixKernel)
-private val reluKernel = ThreadLocal.withInitial(::ReLUMatrixKernel)
+private val multiplyKernel = MultiplyMatrixKernel()
+private val reluKernel = ReLUMatrixKernel()
 
 data class Matrix(val rows: Int, val cols: Int, val data: DoubleArray) {
     infix operator fun times(other: Matrix): Matrix {
@@ -13,7 +13,7 @@ data class Matrix(val rows: Int, val cols: Int, val data: DoubleArray) {
         return Matrix(
                 rows,
                 other.cols,
-                multiplyKernel.get().apply(data, other.data, rows, cols, other.cols)
+                multiplyKernel.apply(data, other.data, rows, cols, other.cols)
         )
     }
 
@@ -42,7 +42,7 @@ fun reLU(matrix: Matrix): Matrix {
     return Matrix(
             matrix.rows,
             matrix.cols,
-            reluKernel.get().apply(matrix.data, matrix.rows, matrix.cols)
+            reluKernel.apply(matrix.data, matrix.rows, matrix.cols)
     )
 }
 

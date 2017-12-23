@@ -17,16 +17,10 @@ private val testCount = 20
 private val fee = 0.0025
 
 fun main(args: Array<String>) {
-    val stocks = (0..1000000)
-            .map { random.nextDouble() }
-            .toDoubleArray()
-            .let {
-                normalizePrices(pricesToUpDown(it))
-            }
-
-    val config = Network.Neurons(previousForPredict, 512, 512, 1)
-    val weights = randomWeights(config)
-    val net = Network(config, weights)
+    val stocks = randomStocks()
+    val neurons = netNeurons()
+    val weights = randomWeights(neurons)
+    val net = Network(neurons, weights)
 
     repeat(10) {
         println(measureTimeMillis {
@@ -35,16 +29,24 @@ fun main(args: Array<String>) {
     }
 }
 
+fun randomStocks() = (0..1000000)
+        .map { random.nextDouble() }
+        .let {
+            normalizePrices(pricesToUpDown(it))
+        }
 
-fun randomSeries(stocks: DoubleArray): TradeSeries {
+fun netNeurons() = Network.Neurons(previousForPredict, 512, 512, 1)
+
+
+fun randomSeries(stocks: List<Double>): TradeSeries {
     require(stocks.size >= previousForPredict + tradesInSeries - 1)
     val start = random.nextInt(stocks.size - tradesInSeries - previousForPredict + 1)
     val trades = ArrayList<TradeSeries.Trade>()
     for (tradeI in 0 until tradesInSeries) {
-        val previousPrices = DoubleArray(previousForPredict)
+        val previousPrices = ArrayList<Double>(previousForPredict)
 
         for (previousI in 0 until previousForPredict) {
-            previousPrices[previousI] = stocks[start + tradeI + previousI]
+            previousPrices.add(stocks[start + tradeI + previousI])
         }
 
         trades.add(TradeSeries.Trade(normalizePrices(previousPrices)))
@@ -52,21 +54,20 @@ fun randomSeries(stocks: DoubleArray): TradeSeries {
     return TradeSeries(trades)
 }
 
-private fun pricesToUpDown(prices: DoubleArray): DoubleArray =
+fun pricesToUpDown(prices: List<Double>): List<Double> =
         prices.asSequence()
                 .zipWithNext { current, next -> log(next / current) }
                 .toList()
-                .toDoubleArray()
 
-private fun normalizePrices(prices: DoubleArray): DoubleArray {
+fun normalizePrices(prices: List<Double>): List<Double> {
     val max = prices.max()!!
     val min = prices.min()!!
     val absMax = max(abs(max), abs(min))
     fun normalize(value: Double) = value / absMax
-    return prices.map(::normalize).toDoubleArray()
+    return prices.map(::normalize)
 }
 
-fun testNet(net: Network, stocks: DoubleArray): Double {
+fun testNet(net: Network, stocks: List<Double>): Double {
     val results = (0 until testCount).map {
         val series = randomSeries(stocks)
         val actions = predictActions(net, series)
@@ -140,5 +141,5 @@ fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
 enum class TradeAction { BUY, HOLD, SELL }
 
 class TradeSeries(val trades: List<Trade>) {
-    class Trade(val previousPrices: DoubleArray)
+    class Trade(val previousPrices: List<Double>)
 }

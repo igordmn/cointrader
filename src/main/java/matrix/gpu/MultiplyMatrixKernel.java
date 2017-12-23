@@ -23,7 +23,7 @@ public class MultiplyMatrixKernel extends Kernel {
         }
     }
 
-    public double[] apply(final double[] A, final double[] B, final int a, final int b, final int c) {
+    public synchronized double[] apply(final double[] A, final double[] B, final int a, final int b, final int c) {
         this.A = A;
         this.B = B;
         this.a = a;
