@@ -49,7 +49,7 @@ fun randomSeries(stocks: List<Double>): TradeSeries {
             previousPrices.add(stocks[start + tradeI + previousI])
         }
 
-        trades.add(TradeSeries.Trade(normalizePrices(previousPrices)))
+        trades.add(TradeSeries.Trade(previousPrices))
     }
     return TradeSeries(trades)
 }
@@ -111,6 +111,7 @@ fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
     require(actions.size == series.trades.size)
 
     val initialDollars = 1.0
+    var actualPrice = 1.0
     var dollars = initialDollars
     var coins = 0.0
 
@@ -122,17 +123,21 @@ fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
     }
 
     fun sell(price: Double) {
-        dollars += dollars * price * (1 - fee)
+        dollars += coins * price * (1 - fee)
         coins = 0.0
     }
 
     actions.forEachIndexed { i, action ->
-        val price = prices[i]
+        actualPrice *= Math.exp(prices[i])
         when (action) {
-            TradeAction.BUY -> buy(price)
-            TradeAction.SELL -> sell(price)
+            TradeAction.BUY -> buy(actualPrice)
+            TradeAction.SELL -> sell(actualPrice)
             TradeAction.HOLD -> Unit
         }
+    }
+
+    if (dollars == 0.0) {
+        dollars += coins * actualPrice * (1 - fee)
     }
 
     return dollars / initialDollars
