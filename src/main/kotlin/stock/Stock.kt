@@ -12,44 +12,43 @@ import kotlin.sequences.zipWithNext
 
 private val random = Random(System.nanoTime())
 private val previousForPredict = 60
-private val tradesInSeries = 80
+private val tradesInSeries = 100
 private val testCount = 20
 private val fee = 0.0025
+private val hiddenLayerSize = 500
 
 fun main(args: Array<String>) {
-    val stocks = randomStocks()
+    val prices = randomStocks()
+    val normalizedPrices = prices.let { normalizePrices(pricesToUpDown(it)) }
     val neurons = netNeurons()
     val weights = randomWeights(neurons)
     val net = Network(neurons, weights)
 
     repeat(10) {
         println(measureTimeMillis {
-            val res = testNet(net, stocks)
+            val res = testNet(net, normalizedPrices, prices)
         })
     }
 }
 
-fun randomStocks() = (0..1000000)
-        .map { random.nextDouble() }
-        .let {
-            normalizePrices(pricesToUpDown(it))
-        }
+fun randomStocks() = (0..1000000).map { random.nextDouble() * 1000 }
 
-fun netNeurons() = Network.Neurons(previousForPredict, 512, 512, 1)
+fun netNeurons() = Network.Neurons(previousForPredict, hiddenLayerSize, hiddenLayerSize, 3)
 
 
-fun randomSeries(stocks: List<Double>): TradeSeries {
-    require(stocks.size >= previousForPredict + tradesInSeries - 1)
-    val start = random.nextInt(stocks.size - tradesInSeries - previousForPredict + 1)
+fun randomSeries(normalizedPrices: List<Double>, prices: List<Double>): TradeSeries {
+    require(normalizedPrices.size >= previousForPredict + tradesInSeries - 1)
+    val start = random.nextInt(normalizedPrices.size - tradesInSeries - previousForPredict + 1)
     val trades = ArrayList<TradeSeries.Trade>()
     for (tradeI in 0 until tradesInSeries) {
         val previousPrices = ArrayList<Double>(previousForPredict)
 
         for (previousI in 0 until previousForPredict) {
-            previousPrices.add(stocks[start + tradeI + previousI])
+            previousPrices.add(normalizedPrices[start + tradeI + previousI])
         }
+        val lastActualPrice = prices[start + tradeI + previousForPredict]
 
-        trades.add(TradeSeries.Trade(previousPrices))
+        trades.add(TradeSeries.Trade(previousPrices, lastActualPrice))
     }
     return TradeSeries(trades)
 }
@@ -67,9 +66,9 @@ fun normalizePrices(prices: List<Double>): List<Double> {
     return prices.map(::normalize)
 }
 
-fun testNet(net: Network, stocks: List<Double>): Double {
+fun testNet(net: Network, normalizedPrices: List<Double>, prices: List<Double>): Double {
     val results = (0 until testCount).map {
-        val series = randomSeries(stocks)
+        val series = randomSeries(normalizedPrices, prices)
         val actions = predictActions(net, series)
         tradeResult(series, actions)
     }
@@ -95,27 +94,28 @@ fun netInput(series: TradeSeries): Matrix {
 }
 
 fun toActions(netOutput: Matrix): List<TradeAction> {
-    require(netOutput.cols == 1)
-    val buyThreshold = 0.75
-    val sellThreshold = -0.75
-    return netOutput.data.map {
+    require(netOutput.cols == 3)
+    val res = ArrayList<TradeAction>()
+    for (r in 0 until netOutput.rows) {
+        val buyVal = netOutput.data[r * netOutput.cols + 0]
+        val sellVal = netOutput.data[r * netOutput.cols + 1]
+        val holdVal = netOutput.data[r * netOutput.cols + 2]
         when {
-            it >= buyThreshold -> TradeAction.BUY
-            it <= sellThreshold -> TradeAction.SELL
-            else -> TradeAction.HOLD
+            buyVal >= sellVal && buyVal >= holdVal -> res.add(TradeAction.BUY)
+            sellVal >= buyVal && sellVal >= holdVal -> res.add(TradeAction.SELL)
+            holdVal >= sellVal && holdVal >= buyVal -> res.add(TradeAction.HOLD)
+            else -> error("HHHHH")
         }
     }
+    return res
 }
 
 fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
     require(actions.size == series.trades.size)
 
     val initialDollars = 1.0
-    var actualPrice = 1.0
     var dollars = initialDollars
     var coins = 0.0
-
-    val prices = series.trades.map { it.previousPrices.last() }
 
     fun buy(price: Double) {
         coins += dollars / price * (1 - fee)
@@ -128,16 +128,16 @@ fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
     }
 
     actions.forEachIndexed { i, action ->
-        actualPrice *= Math.exp(prices[i])
+        val price = series.trades[i].lastActualPrice
         when (action) {
-            TradeAction.BUY -> buy(actualPrice)
-            TradeAction.SELL -> sell(actualPrice)
+            TradeAction.BUY -> buy(price)
+            TradeAction.SELL -> sell(price)
             TradeAction.HOLD -> Unit
         }
     }
 
     if (dollars == 0.0) {
-        dollars += coins * actualPrice * (1 - fee)
+        dollars += coins * series.trades.last().lastActualPrice
     }
 
     return dollars / initialDollars
@@ -146,5 +146,5 @@ fun tradeResult(series: TradeSeries, actions: List<TradeAction>): Double {
 enum class TradeAction { BUY, HOLD, SELL }
 
 class TradeSeries(val trades: List<Trade>) {
-    class Trade(val previousPrices: List<Double>)
+    class Trade(val previousPrices: List<Double>, val lastActualPrice: Double)
 }

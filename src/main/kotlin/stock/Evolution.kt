@@ -1,23 +1,16 @@
 package stock
 
-import io.jenetics.Chromosome
-import io.jenetics.DoubleChromosome
-import io.jenetics.DoubleGene
-import io.jenetics.Genotype
+import io.jenetics.*
 import io.jenetics.engine.Codec
 import io.jenetics.engine.Engine
-import io.jenetics.engine.EvolutionResult
-import io.jenetics.util.DoubleRange
-import io.jenetics.util.IntRange
-import io.jenetics.util.LongRange
 import matrix.Matrix
-import matrix.randomMatrix
 import net.Network
 import read.readCoinbaseByMin
 
 
 fun main(args: Array<String>) {
-    val stocks = normalizePrices(pricesToUpDown(readCoinbaseByMin()))
+    val prices = readCoinbaseByMin()
+    val normalizedPrices = normalizePrices(pricesToUpDown(prices))
     val neurons = netNeurons()
 
     fun initial(): Genotype<DoubleGene> = Genotype.of(
@@ -40,15 +33,19 @@ fun main(args: Array<String>) {
         )
     }
 
-    fun fitness(net: Network) = testNet(net, stocks)
+    fun fitness(net: Network) = testNet(net, normalizedPrices, prices)
 
     val codec = Codec.of(::initial, ::convert)
 
     val engine = Engine
             .builder(::fitness, codec)
+            .alterers(
+                    Mutator(0.3),
+                    UniformCrossover()
+            )
             .build()
 
-    val gt = engine.stream().forEach {
+    engine.stream().forEach {
         println(it.bestFitness)
     }
 }
