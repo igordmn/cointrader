@@ -7,10 +7,12 @@ import matrix.Matrix
 import net.Network
 import read.readCoinbaseByMin
 
-
+private val trainCoeff = 0.95
 fun main(args: Array<String>) {
-    val prices = readCoinbaseByMin()
-    val normalizedPrices = normalizePrices(pricesToUpDown(prices))
+    val allPrices = readCoinbaseByMin()
+    val (trainPrices, testPrices) = split(allPrices, trainCoeff)
+    val normalizedTrainPrices = normalizePrices(pricesToUpDown(trainPrices))
+    val normalizedTestPrices = normalizePrices(pricesToUpDown(testPrices))
     val neurons = netNeurons()
 
     fun initial(): Genotype<DoubleGene> = Genotype.of(
@@ -33,19 +35,41 @@ fun main(args: Array<String>) {
         )
     }
 
-    fun fitness(net: Network) = testNet(net, normalizedPrices, prices)
+    fun fitness(net: Network) = testNet(net, normalizedTrainPrices, trainPrices)
 
     val codec = Codec.of(::initial, ::convert)
 
     val engine = Engine
             .builder(::fitness, codec)
             .alterers(
-                    Mutator(0.3),
-                    UniformCrossover()
+                    UniformCrossover(),
+                    Mutator(0.55)
             )
             .build()
 
+    var i = 1
+
     engine.stream().forEach {
-        println(it.bestFitness)
+
+        if (i % 20 == 0) {
+            val genotype = it.bestPhenotype.genotype
+            val net = convert(genotype)
+            val testResult = testOnAllNet(net, normalizedTestPrices, testPrices)
+
+            val trainBestRes = it.bestFitness
+            println("$trainBestRes \t\t $testResult")
+        } else {
+            val trainBestRes = it.bestFitness
+            println("$trainBestRes")
+        }
+
+        i++
     }
+}
+
+private fun split(list: List<Double>, coeff: Double): Pair<List<Double>, List<Double>> {
+    val split = Math.round(list.size * coeff).toInt()
+    val list1 = list.subList(0, split)
+    val list2 = list.subList(split, list.size)
+    return Pair(list1, list2)
 }

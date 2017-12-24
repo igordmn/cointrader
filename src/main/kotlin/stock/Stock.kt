@@ -11,11 +11,11 @@ import kotlin.system.measureTimeMillis
 import kotlin.sequences.zipWithNext
 
 private val random = Random(System.nanoTime())
-private val previousForPredict = 60
+private val previousForPredict = 50
 private val tradesInSeries = 100
-private val testCount = 20
+private val testCount = 100
 private val fee = 0.0025
-private val hiddenLayerSize = 500
+private val hiddenLayerSize = 200
 
 fun main(args: Array<String>) {
     val prices = randomStocks()
@@ -39,6 +39,15 @@ fun netNeurons() = Network.Neurons(previousForPredict, hiddenLayerSize, hiddenLa
 fun randomSeries(normalizedPrices: List<Double>, prices: List<Double>): TradeSeries {
     require(normalizedPrices.size >= previousForPredict + tradesInSeries - 1)
     val start = random.nextInt(normalizedPrices.size - tradesInSeries - previousForPredict + 1)
+    return tradeSeries(start, tradesInSeries, normalizedPrices, prices)
+}
+
+fun allSeries(normalizedPrices: List<Double>, prices: List<Double>): TradeSeries {
+    require(normalizedPrices.size >= previousForPredict + tradesInSeries - 1)
+    return tradeSeries(0, normalizedPrices.size - previousForPredict + 1, normalizedPrices, prices)
+}
+
+private fun tradeSeries(start: Int, tradesInSeries: Int, normalizedPrices: List<Double>, prices: List<Double>): TradeSeries {
     val trades = ArrayList<TradeSeries.Trade>()
     for (tradeI in 0 until tradesInSeries) {
         val previousPrices = ArrayList<Double>(previousForPredict)
@@ -72,7 +81,15 @@ fun testNet(net: Network, normalizedPrices: List<Double>, prices: List<Double>):
         val actions = predictActions(net, series)
         tradeResult(series, actions)
     }
-    return results.average()
+    var mul = 1.0
+    results.forEach { mul *= it }
+    return mul
+}
+
+fun testOnAllNet(net: Network, normalizedPrices: List<Double>, prices: List<Double>): Double {
+    val series = allSeries(normalizedPrices, prices)
+    val actions = predictActions(net, series)
+    return tradeResult(series, actions)
 }
 
 fun predictActions(net: Network, series: TradeSeries): List<TradeAction> {
@@ -82,15 +99,15 @@ fun predictActions(net: Network, series: TradeSeries): List<TradeAction> {
 }
 
 fun netInput(series: TradeSeries): Matrix {
-    val data = DoubleArray(previousForPredict * tradesInSeries)
+    val data = DoubleArray(previousForPredict * series.trades.size)
     var k = 0
-    for (r in 0 until tradesInSeries) {
+    for (r in 0 until series.trades.size) {
         for (c in 0 until previousForPredict) {
             data[k] = series.trades[r].previousPrices[c]
             k++
         }
     }
-    return Matrix(tradesInSeries, previousForPredict, data)
+    return Matrix(series.trades.size, previousForPredict, data)
 }
 
 fun toActions(netOutput: Matrix): List<TradeAction> {
