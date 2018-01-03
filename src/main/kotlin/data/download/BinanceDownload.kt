@@ -13,8 +13,7 @@ import kotlin.math.roundToLong
 private val exchange = "binance"
 
 private val COINS = listOf(
-//        "USDT", "ETH", "XRP", "IOTA", "XVG",
-        "BCH", "TRX", "LTC",
+        "USDT", "ETH", "XRP", "IOTA", "XVG", "BCH", "TRX", "LTC",
         "NEO", "ADA", "EOS", "QTUM", "ETC", "DASH", "HSR", "VEN",
         "BNB", "POWR", "POE", "MANA", "MCO", "QSP", "STRAT", "WTC",
         "OMG", "SNT", "BTS", "XMR", "LSK", "ZEC", "SALT", "REQ",
@@ -35,7 +34,7 @@ fun main(args: Array<String>) {
     fun pair(coin: String): String {
         val isReversed = coin in REVERSED_COINS
         val final_name = ALT_NAMES[coin] ?: coin
-        return if (isReversed) "${final_name}_BTC" else "BTC_$final_name"
+        return if (isReversed) "BTC$final_name" else "${final_name}BTC"
     }
 
     fun chartDataItems(pair: String, startDate: Long, endDate: Long, periodType: CandlestickInterval): List<Candlestick> {
