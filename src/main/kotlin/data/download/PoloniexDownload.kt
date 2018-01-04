@@ -10,9 +10,9 @@ private val exchange = "poloniex"
 private val COINS = listOf(
         "XRP", "USDT", "ETH", "BCH", "LTC", "XLM", "XMR", "NXT",
         "XEM", "DASH", "DGB", "ETC", "DOGE", "EMC2", "SC", "LSK",
-        "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "OMG", "VTC",
-        "BCN", "BURST", "GNT", "MAID", "STEEM", "SYS", "ZRX", "CVC",
-        "POT", "NAV", "DCR", "LBC", "STORJ", "FLDC", "GAME", "GNO"
+        "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "VTC",
+        "BCN", "BURST", "MAID", "STEEM", "SYS", "POT", "NAV",
+        "DCR", "LBC", "FLDC", "GAME"
 )
 
 private const val REVERSED_COINS = "USDT"

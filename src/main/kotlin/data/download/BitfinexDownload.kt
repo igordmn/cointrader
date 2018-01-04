@@ -106,7 +106,7 @@ fun main(args: Array<String>) {
             val from = Date(chunk.first().date)
             val to = Date(chunk.last().date)
             println("$pair    $from    $to")
-            it = chunk.last().date
+            it = chunk.last().date - PERIOD_S * 1000
         }
         return all
     }
@@ -121,7 +121,7 @@ fun main(args: Array<String>) {
             deleteHistories(exchange, coin)
             var lastDate = -1L
             for (item in items) {
-                val date = (item.date / 1000.0 / PERIOD_S).roundToLong() * PERIOD_S
+                val date = (item.date / 1000.0 / PERIOD_S).roundToLong() * PERIOD_S - PERIOD_S
                 if (date == lastDate)
                     continue
 
