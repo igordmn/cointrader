@@ -29,6 +29,7 @@ private val ALT_NAMES = mapOf(
 private const val START_DATE = 1420243200L * 1000  // 03.01.2015
 private const val END_DATE = 1514937600L * 1000    // 03.01.2018
 private val PERIOD_TYPE =  CandlestickInterval.ONE_MINUTE
+private val PERIOD_S =  60
 
 fun main(args: Array<String>) {
     fun pair(coin: String): String {
@@ -72,7 +73,7 @@ fun main(args: Array<String>) {
             deleteHistories(exchange, coin)
             var lastDate = -1L
             for (item in items) {
-                val date = (item.openTime / 1000 / 60.0).roundToLong() * 60
+                val date = (item.openTime / 1000.0 / PERIOD_S).roundToLong() * PERIOD_S
 
                 if (date == lastDate)
                     continue
