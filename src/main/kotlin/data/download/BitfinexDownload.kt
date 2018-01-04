@@ -23,7 +23,7 @@ private val ALT_NAMES = mapOf(
         "IOTA" to "IOT"
 )
 
-private const val START_DATE = 1420243200L * 1000  // 03.01.2016
+private const val START_DATE = 1420243200L * 1000  // 03.01.2015
 private const val END_DATE = 1514937600L * 1000    // 03.01.2018
 private const val PERIOD_S = 60
 private const val PERIOD_NAME = "1m"
