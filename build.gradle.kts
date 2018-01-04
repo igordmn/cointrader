@@ -52,6 +52,9 @@ dependencies {
     compile("com.squareup.retrofit2:converter-jackson:2.3.0")
     compile("commons-codec:commons-codec:1.10")
     compile("org.apache.commons:commons-lang3:3.6")
+    compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
+    compile("org.slf4j:slf4j-api:1.7.25")
+    compile("org.slf4j:slf4j-api:1.7.25")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
