@@ -13,10 +13,15 @@ class NNAgent(
     private val numpy = PyModule.importModule("numpy")
     private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, coinNumber, windowSize, restore_dir)
 
-    fun gg(obj: DoubleMatrix4D): DoubleMatrix4D {
-        val nmarray = numpy.callMethod("array", obj.data)
-                .callMethod("reshape", intArrayOf(obj.n1, obj.n2, obj.n3, obj.n4))
-        val result = agent.callMethod("gg", nmarray).callMethod("flatten")
-        return DoubleMatrix4D(PythonUtils.getDoubleArrayValue(result), obj.n1, obj.n2, obj.n3, obj.n4)
+    fun bestPortfolio(history: DoubleMatrix4D): DoubleMatrix2D {
+        require(history.n2 == indicatorNumber)
+        require(history.n3 == coinNumber)
+        require(history.n4 == windowSize)
+
+        val nparray = numpy.callMethod("array", history.data)
+                .callMethod("reshape", intArrayOf(history.n1, history.n2, history.n3, history.n4))
+        val result = agent.callMethod("best_portfolio", nparray).callMethod("flatten").callMethod("tolist")
+        val data = PythonUtils.getDoubleArrayValue(result)
+        return DoubleMatrix2D(data, history.n1, coinNumber + 1)
     }
 }
