@@ -174,7 +174,7 @@ private fun main() {
 
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
-                val (_, currentBids) = loadAsksBids(currentIndex)
+                val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 portfolio[0] = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 portfolio[currentIndex] = 0.0
             }
@@ -183,13 +183,13 @@ private fun main() {
             println("CAPITAL $capital")
 
             if (buyIndex != 0) {
-                val (buyAsks, _) = loadAsksBids(buyIndex)
+                val (buyAsks, _) = loadAsksBids(buyIndex - 1)
                 portfolio[buyIndex] = totalAmount(portfolio[0], buyAsks) * (1 - fee)
                 portfolio[0] = 0.0
             }
         } else {
             if (currentIndex != 0) {
-                val (_, currentBids) = loadAsksBids(currentIndex)
+                val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 val capital = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 println("CAPITAL $capital")
             } else {
