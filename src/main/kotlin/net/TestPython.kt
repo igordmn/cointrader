@@ -2,22 +2,29 @@ package net
 
 import org.jpy.PyLib
 import org.jpy.PyModule
-
-
+import java.util.*
+import kotlin.system.measureTimeMillis
 
 
 fun main(args: Array<String>) {
-    System.setProperty("jpy.jpyLib", "D:/Development/Projects/cointrader/lib/native/jpy.cp35-win_amd64.pyd")
-    System.setProperty("jpy.pythonLib", "E:/Distr/Portable/Dev/Anaconda3/envs/py35/python35.dll")
-    System.setProperty("jpy.pythonPrefix", "E:/Distr/Portable/Dev/Anaconda3/envs/py35")
-    System.setProperty("jpy.pythonExecutable", "E:/Distr/Portable/Dev/Anaconda3/envs/py35/python.exe")
+    System.setProperty("jpy.jpyLib", "D:/Development/Projects/cointrader/lib/native/jpy.cp36-win_amd64.pyd")
+    System.setProperty("jpy.pythonLib", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict/python36.dll")
+    System.setProperty("jpy.pythonPrefix", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict")
+    System.setProperty("jpy.pythonExecutable", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict/python.exe")
+
     PyLib.startPython()
 
-    val h= PyLib.isPythonRunning()
+    try {
+        PyModule.extendSysPath("D:\\Development\\Projects\\coin_predict", true)
+        val agent2 = NNAgent(0.02, 3, 25, 160, "D:/Development/Projects/coin_predict/train_package/netfile")
 
-    PyLib.stopPython()
+        val matrix = DoubleMatrix4D(DoubleArray(400 * 3 * 25 * 200), 400, 3, 25, 200)
+        matrix.fill { i1, i2, i3, i4 -> 5.2 }
 
-    PyModule.extendSysPath("D:/1/PGPortfolio", true)
-    val sys = PyModule.importModule("train.py")
-    val argv = sys.getAttribute("argv", Array<String>::class.java)
+        val ag = agent2.gg(matrix)
+
+
+    } finally {
+        PyLib.stopPython()
+    }
 }
