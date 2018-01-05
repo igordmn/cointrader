@@ -179,12 +179,21 @@ private fun main() {
                 portfolio[currentIndex] = 0.0
             }
 
-            println("CAPITAL ${portfolio[0]}")
+            val capital = portfolio[0] * (1 - fee)
+            println("CAPITAL $capital")
 
             if (buyIndex != 0) {
                 val (buyAsks, _) = loadAsksBids(buyIndex)
                 portfolio[buyIndex] = totalAmount(portfolio[0], buyAsks) * (1 - fee)
                 portfolio[0] = 0.0
+            }
+        } else {
+            if (currentIndex != 0) {
+                val (_, currentBids) = loadAsksBids(currentIndex)
+                val capital = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
+                println("CAPITAL $capital")
+            } else {
+                println("CAPITAL ${portfolio[0]}")
             }
         }
     }
