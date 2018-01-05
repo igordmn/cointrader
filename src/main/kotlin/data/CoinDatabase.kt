@@ -2,6 +2,7 @@ package data
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManager
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.sql.Connection
 
@@ -68,4 +69,32 @@ fun insertHistory(history: History) {
         it[Histories.low] = history.low
         it[Histories.volume] = history.volume
     }
+}
+
+fun loadHistory(exchange: String, coin: String, limit: Int, end: Long, period: Long): List<History> {
+    val start = end - period * limit
+    require(start % period == 0L)
+    require(end % period == 0L)
+
+    val result = transaction {
+        Histories.select {
+            (Histories.exchange eq exchange) and(Histories.coin eq coin) and
+                    (Histories.date greaterEq start) and
+                    (Histories.date less end) and
+                    ((Histories.date.div(period).times(period)) eq Histories.date)
+        }.map { History(
+                it[Histories.exchange],
+                it[Histories.coin],
+                it[Histories.date],
+                it[Histories.open],
+                it[Histories.close],
+                it[Histories.high],
+                it[Histories.low],
+                it[Histories.volume]
+        ) }.toList()
+    }
+    require(result.size == limit)
+    require(result.first().date == start)
+    require(result.last().date == end - period)
+    return result
 }

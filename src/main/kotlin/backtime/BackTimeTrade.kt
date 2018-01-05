@@ -5,12 +5,15 @@ import com.binance.api.client.BinanceApiRestClient
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
 import com.binance.api.client.domain.market.OrderBookEntry
+import data.connectCoinDatabase
+import data.loadHistory
 import io.reactivex.schedulers.Schedulers
 import net.DoubleMatrix4D
 import net.NNAgent
 import net.PythonUtils
 import java.util.concurrent.Executors
 
+private val exchange = "binance"
 private val COINS = listOf(
         "USDT", "ETH", "XRP", "IOTA", "XVG", "BCH", "TRX", "LTC",
         "NEO", "ADA", "EOS", "QTUM", "ETC", "DASH", "HSR", "VEN",
@@ -31,7 +34,10 @@ private val period = CandlestickInterval.FIVE_MINUTES
 private val periodMs = 5L * 60 * 1000
 private val fee = 0.001
 
+private class Candlestick2(val close: String, val high: String, val low: String)
+
 private typealias CoinToCandles = List<List<Candlestick>>
+private typealias CoinToCandles2 = List<List<Candlestick2>>
 
 private val scheduler = Schedulers.from(Executors.newSingleThreadExecutor())
 
@@ -40,6 +46,8 @@ fun main(args: Array<String>) {
         try {
             PythonUtils.startPython()
             main()
+        } catch (e:Exception) {
+            e.printStackTrace()
         } finally {
             PythonUtils.stopPython()
         }
@@ -51,6 +59,8 @@ fun main(args: Array<String>) {
 }
 
 private fun main() {
+    connectCoinDatabase()
+
     val factory = BinanceApiClientFactory.newInstance()
     val client = factory.newRestClient()
     val coins = COINS.take(coinNumber)
@@ -77,7 +87,19 @@ private fun main() {
         return coinToCandles
     }
 
-    fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick): Double {
+    fun loadAllCandlesDB(endTime: Long): CoinToCandles2 {
+        return coins.map {
+            loadHistory(exchange, it, windowSize, endTime / 1000, periodMs / 1000).map {
+                Candlestick2(
+                        close = it.close.toString(),
+                        high = it.high.toString(),
+                        low = it.low.toString()
+                )
+            }
+        }
+    }
+
+    fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick2): Double {
         return when (index) {
             0 -> if (isReversed) 1 / candle.close.toDouble() else candle.close.toDouble()
             1 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
@@ -86,7 +108,7 @@ private fun main() {
         }
     }
 
-    fun candlesToMatrix(coinToCandles: CoinToCandles): DoubleMatrix4D {
+    fun candlesToMatrix(coinToCandles: CoinToCandles2): DoubleMatrix4D {
         return DoubleMatrix4D(1, 3, coinNumber, windowSize) { _, i2, i3, i4 ->
             val coin = coins[i3]
             val isReversed = coin in REVERSED_COINS
@@ -102,13 +124,13 @@ private fun main() {
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
 
-    fun coinPrice(index: Int, coinToCandles: CoinToCandles): Double {
+    fun coinPrice(index: Int, coinToCandles: CoinToCandles2): Double {
         val coin = coins[index]
         val isReversed = coin in REVERSED_COINS
         return if (isReversed) 1 / coinToCandles[index].last().close.toDouble() else coinToCandles[index].last().close.toDouble()
     }
 
-    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles) {
+    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles2) {
         val currentIndex = portfolio.indexOf(portfolio.max()!!)
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
@@ -137,7 +159,7 @@ private fun main() {
     }
 
     fun rebalancePortfolio(endTime: Long) {
-        val coinToCandles = loadAllCandles(endTime)
+        val coinToCandles = loadAllCandlesDB(endTime)
         val history = candlesToMatrix(coinToCandles)
         val bestPortfolio = agent.bestPortfolio(history).data
         val buyIndex = bestPortfolio.indexOf(bestPortfolio.max()!!)
@@ -145,7 +167,8 @@ private fun main() {
         rebalancePortfolioTo(buyIndex, coinToCandles)
     }
 
-    val endTime = (client.serverTime / periodMs) * periodMs - 1
+//    val endTime = (client.serverTime / periodMs) * periodMs - 1
+    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
     var time = endTime - 24 * 60 * 60 * 1000
 
     while (time < endTime) {
