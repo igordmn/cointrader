@@ -46,6 +46,10 @@ fun main(args: Array<String>) {
             PythonUtils.stopPython()
         }
     }
+
+    while (true) {
+        Thread.sleep(10000)
+    }
 }
 
 private fun main() {
@@ -198,10 +202,6 @@ private fun main() {
                     println(e.message)
                 }
             }
-
-    while (true) {
-        Thread.sleep(10000)
-    }
 }
 
 private fun sleepForNextPeriod(client: BinanceApiRestClient) {
