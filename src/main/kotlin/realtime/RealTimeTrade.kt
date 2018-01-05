@@ -158,7 +158,6 @@ private fun main() {
     }
 
 
-    val currentTime = client.serverTime
 
     val agent = NNAgent(fee, 3, coinNumber, windowSize, "D:/Development/Projects/coin_predict/train_package/netfile")
 
@@ -194,7 +193,7 @@ private fun main() {
     }
 
     fun rebalancePortfolio() {
-        val endTime = (currentTime / periodMs) * periodMs - 1
+        val endTime = (client.serverTime / periodMs) * periodMs - 1
         val coinToCandles = loadAllCandles(endTime)
         val history = candlesToMatrix(coinToCandles)
         val bestPortfolio = agent.bestPortfolio(history).data
