@@ -165,13 +165,8 @@ private fun main() {
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
 
-    fun rebalancePortfolio() {
-        val endTime = (currentTime / periodMs) * periodMs - 1
-        val history = candlesToMatrix(loadAllCandles(endTime))
-        val bestPortfolio = agent.bestPortfolio(history).data
+    fun rebalancePortfolioTo(buyIndex: Int) {
         val currentIndex = portfolio.indexOf(portfolio.max()!!)
-        val buyIndex = bestPortfolio.indexOf(bestPortfolio.max()!!)
-
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
                 val (_, currentBids) = loadAsksBids(currentIndex - 1)
@@ -180,7 +175,7 @@ private fun main() {
             }
 
             val capital = portfolio[0] * (1 - fee)
-            println("CAPITAL $capital")
+            println("CAPITAL SWITCH $capital")
 
             if (buyIndex != 0) {
                 val (buyAsks, _) = loadAsksBids(buyIndex - 1)
@@ -196,6 +191,18 @@ private fun main() {
                 println("CAPITAL ${portfolio[0]}")
             }
         }
+    }
+
+    fun rebalancePortfolio() {
+        val endTime = (currentTime / periodMs) * periodMs - 1
+        val coinToCandles = loadAllCandles(endTime)
+        val history = candlesToMatrix(coinToCandles)
+        val bestPortfolio = agent.bestPortfolio(history).data
+        val buyIndex = bestPortfolio.indexOf(bestPortfolio.max()!!)
+
+        val diff = client.serverTime - endTime
+        println("Time diff $diff")
+        rebalancePortfolioTo(buyIndex)
     }
 
     sleepForNextPeriod(client)
@@ -214,11 +221,11 @@ private fun main() {
 }
 
 private fun sleepForNextPeriod(client: BinanceApiRestClient) {
-    var msForNextMinute = periodMs - client.serverTime % periodMs
-    if (msForNextMinute == periodMs) msForNextMinute = 0
+    var msForNextPeriod = periodMs - client.serverTime % periodMs
+    if (msForNextPeriod == periodMs) msForNextPeriod = 0
 
-    require(msForNextMinute < periodMs)
-    println("sleep $msForNextMinute")
-    msForNextMinute += 10 // additional ms
-    Thread.sleep(msForNextMinute)
+    require(msForNextPeriod < periodMs)
+    println("sleep $msForNextPeriod")
+    msForNextPeriod += 10 // additional ms
+    Thread.sleep(msForNextPeriod)
 }
