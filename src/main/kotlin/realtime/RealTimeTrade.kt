@@ -4,14 +4,12 @@ import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.BinanceApiRestClient
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
-import com.binance.api.client.domain.market.OrderBook
 import com.binance.api.client.domain.market.OrderBookEntry
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import net.DoubleMatrix4D
 import net.NNAgent
 import net.PythonUtils
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 private val COINS = listOf(
@@ -28,8 +26,7 @@ private val ALT_NAMES = mapOf(
         "BCH" to "BCC"
 )
 
-private val bitcoins = 0.1
-private val altcoinsNumber = 25
+private val coinNumber = 25
 private val windowSize = 160
 private val period = CandlestickInterval.FIVE_MINUTES
 private val periodMs = 5L * 60 * 1000
@@ -49,7 +46,7 @@ fun main(args: Array<String>) {
 private fun main() {
     val factory = BinanceApiClientFactory.newInstance()
     val client = factory.newRestClient()
-    val coins = COINS.take(altcoinsNumber)
+    val coins = COINS.take(coinNumber)
 
     fun pair(coin: String): String {
         val isReversed = coin in REVERSED_COINS
@@ -70,6 +67,26 @@ private fun main() {
             } else {
                 totalPrice += amountLeft * orderPrice
                 return totalPrice
+            }
+        }
+
+        throw RuntimeException()
+    }
+
+    fun totalAmount(bitcoins: Double, orders: List<OrderBookEntry>): Double {
+        var totalAmount = 0.0
+        var leftBitcoins = bitcoins
+
+        for (order in orders) {
+            val orderAmount = order.qty.toDouble()
+            val orderPrice = order.price.toDouble()
+            val orderBitcoins = orderAmount * orderPrice
+            if (leftBitcoins > orderBitcoins) {
+                totalAmount += orderAmount
+                leftBitcoins -= orderBitcoins
+            } else {
+                totalAmount += orderAmount * leftBitcoins / orderBitcoins
+                return totalAmount
             }
         }
 
@@ -123,7 +140,7 @@ private fun main() {
     }
 
     fun candlesToMatrix(coinToCandles: CoinToCandles): DoubleMatrix4D {
-        return DoubleMatrix4D(1, 3, altcoinsNumber, windowSize) { _, i2, i3, i4 ->
+        return DoubleMatrix4D(1, 3, coinNumber, windowSize) { _, i2, i3, i4 ->
             val coin = coins[i3]
             val isReversed = coin in REVERSED_COINS
             val candle = coinToCandles[i3][i4]
@@ -133,49 +150,56 @@ private fun main() {
 
 
     val currentTime = client.serverTime
-    val endTime = (currentTime / periodMs) * periodMs - 1
 
-    val agent = NNAgent(fee, 3, altcoinsNumber, windowSize, "D:/Development/Projects/coin_predict/train_package/netfile")
-    val history = candlesToMatrix(loadAllCandles(endTime))
-    val portfolio = agent.bestPortfolio(history)
-    var g= 0
-    g++
+    val agent = NNAgent(fee, 3, coinNumber, windowSize, "D:/Development/Projects/coin_predict/train_package/netfile")
 
+    val portfolio = DoubleArray(coinNumber + 1)
+    portfolio[0] = 0.1
 
-//    fun tick() {
-//        val currentTime = client.serverTime
-//        val endTime = (currentTime / periodMs) * periodMs - 1
-//
-//        val coinToCandles = loadAllCandles(endTime)
-//
-//        coinToCandles.forEach { coin, candles ->
-//            val closePrice = coinToCandles[coin]!!.last().close.toDouble()
-//            val orderBook = client.getOrderBook(pair(coin), 100)
-//            val timeDiff = client.serverTime - endTime
-//            printSlippage(orderBook, coin, closePrice, 0.0625, timeDiff)
-//        }
-//    }
-//
-//    sleepForNextMinute(client)
-//
-//    Observable.interval(1, TimeUnit.MINUTES)
-//            .startWith(0)
-//            .timeInterval()
-//            .observeOn(Schedulers.io())
-//            .subscribe {
-//                try {
-//                    tick()
-//                } catch (e: Exception) {
-//                    println(e.message)
-//                }
-//            }
-//
-//    while (true) {
-//        Thread.sleep(10000)
-//    }
+    fun rebalancePortfolio() {
+        val endTime = (currentTime / periodMs) * periodMs - 1
+        val history = candlesToMatrix(loadAllCandles(endTime))
+        val bestPortfolio = agent.bestPortfolio(history).data
+        val currentIndex = portfolio.indexOf(portfolio.max()!!)
+        val buyIndex = bestPortfolio.indexOf(bestPortfolio.max()!!)
+
+        if (currentIndex != buyIndex) {
+            if (currentIndex != 0) {
+                val (_, currentBids) = loadAsksBids(currentIndex)
+                portfolio[0] = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
+                portfolio[currentIndex] = 0.0
+            }
+
+            println("CAPITAL ${portfolio[0]}")
+
+            if (buyIndex != 0) {
+                val (buyAsks, _) = loadAsksBids(buyIndex)
+                portfolio[buyIndex] = totalAmount(portfolio[0], buyAsks) * (1 - fee)
+                portfolio[0] = 0.0
+            }
+        }
+    }
+
+    sleepForNextPeriod(client)
+
+    Observable.interval(5, TimeUnit.MINUTES)
+            .startWith(0)
+            .timeInterval()
+            .observeOn(Schedulers.io())
+            .subscribe {
+                try {
+                    rebalancePortfolio()
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+
+    while (true) {
+        Thread.sleep(10000)
+    }
 }
 
-private fun sleepForNextMinute(client: BinanceApiRestClient) {
+private fun sleepForNextPeriod(client: BinanceApiRestClient) {
     var msForNextMinute = periodMs - client.serverTime % periodMs
     if (msForNextMinute == periodMs) msForNextMinute = 0
 
