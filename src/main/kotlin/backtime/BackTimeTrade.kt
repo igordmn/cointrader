@@ -168,7 +168,7 @@ private fun main() {
     }
 
 //    val endTime = (client.serverTime / periodMs) * periodMs - 1
-    val endTime = ((1514926800000L - 25L * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
+    val endTime = ((1514926800000L - 1 * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
 //    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
     var time = endTime - 24 * 60 * 60 * 1000
 

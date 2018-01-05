@@ -1,10 +1,15 @@
 package data
 
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.statements.Statement
+import org.jetbrains.exposed.sql.statements.StatementType
 import org.jetbrains.exposed.sql.transactions.ThreadLocalTransactionManager
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 val COIN_DATABASE_FILE = "D:/1/coins.db"
 
@@ -97,4 +102,15 @@ fun loadHistory(exchange: String, coin: String, limit: Int, end: Long, period: L
     require(result.first().date == start)
     require(result.last().date == end - period)
     return result
+}
+
+fun <T:Any> execSQL(sql: String, transform : (ResultSet) -> T) : T? {
+    return TransactionManager.current().exec(object : Statement<T>(StatementType.SELECT, emptyList()) {
+        override fun PreparedStatement.executeInternal(transaction: Transaction): T? {
+            return executeQuery()?.let { transform(it) }
+        }
+
+        override fun prepareSQL(transaction: Transaction): String = sql
+        override fun arguments(): Iterable<Iterable<Pair<ColumnType, Any?>>> = emptyList()
+    })
 }

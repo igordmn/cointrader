@@ -4,6 +4,8 @@ import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
 import data.*
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.*
@@ -27,11 +29,14 @@ private val ALT_NAMES = mapOf(
 )
 
 private const val START_DATE = 1420243200L * 1000  // 03.01.2015
-private const val END_DATE = 1514937600L * 1000    // 03.01.2018
-private val PERIOD_TYPE =  CandlestickInterval.ONE_MINUTE
-private val PERIOD_S =  60
+//private const val END_DATE = 1514937600L * 1000    // 03.01.2018
+private val PERIOD_TYPE = CandlestickInterval.ONE_MINUTE
+private val PERIOD_MS = 60 * 1000
 
 fun main(args: Array<String>) {
+    val factory = BinanceApiClientFactory.newInstance()
+    val client = factory.newRestClient()
+
     fun pair(coin: String): String {
         val isReversed = coin in REVERSED_COINS
         val final_name = ALT_NAMES[coin] ?: coin
@@ -39,11 +44,7 @@ fun main(args: Array<String>) {
     }
 
     fun chartDataItems(pair: String, startDate: Long, endDate: Long, periodType: CandlestickInterval): List<Candlestick> {
-        val factory = BinanceApiClientFactory.newInstance()
-        val client = factory.newRestClient()
-
         val all = ArrayList<Candlestick>()
-
         var it = startDate
         val end = endDate
         while (it <= end) {
@@ -63,17 +64,25 @@ fun main(args: Array<String>) {
         return all
     }
 
-    fun fillCoinHistory(coin: String) {
+    fun fillCoinHistory(coin: String, endDate: Long) {
         println(coin)
         val pair = pair(coin)
         val isReversed = coin in REVERSED_COINS
-        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD_TYPE)
 
         transaction {
             deleteHistories(exchange, coin)
+
+            val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+                rs.getString("maxdate")
+            }?.toLong()
+
+            var startDate = startDateDB?.times(1000) ?: START_DATE
+            startDate += PERIOD_MS
+            val items = chartDataItems(pair, startDate, endDate, PERIOD_TYPE)
+
             var lastDate = -1L
             for (item in items) {
-                val date = (item.openTime / 1000.0 / PERIOD_S).roundToLong() * PERIOD_S
+                val date = (item.openTime.toDouble() / PERIOD_MS).roundToLong() * (PERIOD_MS / 1000)
 
                 if (date == lastDate)
                     continue
@@ -95,7 +104,9 @@ fun main(args: Array<String>) {
 
     connectCoinDatabase()
 
+    val endDate = (client.serverTime / PERIOD_MS) * PERIOD_MS
+
     for (coin in COINS) {
-        fillCoinHistory(coin)
+        fillCoinHistory(coin, endDate)
     }
 }
