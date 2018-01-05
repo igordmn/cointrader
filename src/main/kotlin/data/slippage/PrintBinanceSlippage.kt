@@ -1,4 +1,4 @@
-package data
+package data.slippage
 
 import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.BinanceApiRestClient
