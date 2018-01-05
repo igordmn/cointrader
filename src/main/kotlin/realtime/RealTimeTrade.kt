@@ -10,6 +10,7 @@ import io.reactivex.schedulers.Schedulers
 import net.DoubleMatrix4D
 import net.NNAgent
 import net.PythonUtils
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 private val COINS = listOf(
@@ -34,12 +35,16 @@ private val fee = 0.001
 
 private typealias CoinToCandles = List<List<Candlestick>>
 
+private val scheduler = Schedulers.from(Executors.newSingleThreadExecutor())
+
 fun main(args: Array<String>) {
-    try {
-        PythonUtils.startPython()
-        main()
-    } finally {
-        PythonUtils.stopPython()
+    scheduler.scheduleDirect {
+        try {
+            PythonUtils.startPython()
+            main()
+        } finally {
+            PythonUtils.stopPython()
+        }
     }
 }
 
@@ -116,13 +121,13 @@ private fun main() {
 
     fun loadAllCandles(endTime: Long): CoinToCandles {
         val coinToCandles = coins.map {
-                client.getCandlestickBars(
-                        pair(it),
-                        period,
-                        windowSize,
-                        null,
-                        endTime
-                )
+            client.getCandlestickBars(
+                    pair(it),
+                    period,
+                    windowSize,
+                    null,
+                    endTime
+            )
         }
         coinToCandles.forEach {
             require(it.last().closeTime == endTime)
@@ -182,10 +187,10 @@ private fun main() {
 
     sleepForNextPeriod(client)
 
-    Observable.interval(5, TimeUnit.MINUTES)
+    Observable.interval(periodMs, TimeUnit.MILLISECONDS)
             .startWith(0)
             .timeInterval()
-            .observeOn(Schedulers.io())
+            .observeOn(scheduler)
             .subscribe {
                 try {
                     rebalancePortfolio()
