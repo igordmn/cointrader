@@ -99,7 +99,7 @@ private fun main() {
         }
     }
 
-    fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick2): Double {
+    fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick): Double {
         return when (index) {
             0 -> if (isReversed) 1 / candle.close.toDouble() else candle.close.toDouble()
             1 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
@@ -108,7 +108,7 @@ private fun main() {
         }
     }
 
-    fun candlesToMatrix(coinToCandles: CoinToCandles2): DoubleMatrix4D {
+    fun candlesToMatrix(coinToCandles: CoinToCandles): DoubleMatrix4D {
         return DoubleMatrix4D(1, 3, coinNumber, windowSize) { _, i2, i3, i4 ->
             val coin = coins[i3]
             val isReversed = coin in REVERSED_COINS
@@ -124,13 +124,13 @@ private fun main() {
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
 
-    fun coinPrice(index: Int, coinToCandles: CoinToCandles2): Double {
+    fun coinPrice(index: Int, coinToCandles: CoinToCandles): Double {
         val coin = coins[index]
         val isReversed = coin in REVERSED_COINS
         return if (isReversed) 1 / coinToCandles[index].last().close.toDouble() else coinToCandles[index].last().close.toDouble()
     }
 
-    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles2) {
+    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles) {
         val currentIndex = portfolio.indexOf(portfolio.max()!!)
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
@@ -159,7 +159,7 @@ private fun main() {
     }
 
     fun rebalancePortfolio(endTime: Long) {
-        val coinToCandles = loadAllCandlesDB(endTime)
+        val coinToCandles = loadAllCandles(endTime)
         val history = candlesToMatrix(coinToCandles)
         val bestPortfolio = agent.bestPortfolio(history).data
         val buyIndex = bestPortfolio.indexOf(bestPortfolio.max()!!)
@@ -168,7 +168,8 @@ private fun main() {
     }
 
 //    val endTime = (client.serverTime / periodMs) * periodMs - 1
-    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
+    val endTime = ((1514926800000L - 25L * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
+//    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
     var time = endTime - 24 * 60 * 60 * 1000
 
     while (time < endTime) {
