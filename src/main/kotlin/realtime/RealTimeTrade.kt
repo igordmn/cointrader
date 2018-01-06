@@ -161,7 +161,7 @@ private fun main() {
     }
 
 
-    val agent = NNAgent(fee, 3, coinNumber, windowSize, "D:/Development/Projects/coin_predict/train_package/netfile")
+    val agent = NNAgent(fee, 3, coinNumber, windowSize, "D:/Development/Projects/coin_predict/train_package2/netfile")
 
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
