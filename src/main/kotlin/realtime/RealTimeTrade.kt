@@ -42,6 +42,8 @@ fun main(args: Array<String>) {
         try {
             PythonUtils.startPython()
             main()
+        } catch (e: Exception) {
+            e.printStackTrace()
         } finally {
             PythonUtils.stopPython()
         }
@@ -156,7 +158,6 @@ private fun main() {
             indicatorByIndex(isReversed, i2, candle)
         }
     }
-
 
 
     val agent = NNAgent(fee, 3, coinNumber, windowSize, "D:/Development/Projects/coin_predict/train_package/netfile")
