@@ -102,8 +102,8 @@ private fun main() {
     fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick): Double {
         return when (index) {
             0 -> if (isReversed) 1 / candle.close.toDouble() else candle.close.toDouble()
-            1 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
-            2 -> if (isReversed) 1 / candle.low.toDouble() else candle.high.toDouble()
+            1 -> if (isReversed) 1 / candle.low.toDouble() else candle.high.toDouble()
+            2 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
             else -> throw UnsupportedOperationException()
         }
     }
@@ -168,9 +168,14 @@ private fun main() {
     }
 
     val endTime = (client.serverTime / periodMs) * periodMs - 1
-//    val endTime = ((1514926800000L - 1 * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
-//    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
     var time = endTime - 24 * 60 * 60 * 1000
+
+//    val endTime = ((client.serverTime - 1 * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
+//    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
+//    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
+
+//    var time = 1515081600000L + 160 * 5 * 60 * 1000 - 1
+//    val endTime = time + 10 * 5 * 60 * 1000
 
     while (time < endTime) {
         rebalancePortfolio(time)

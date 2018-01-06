@@ -144,8 +144,8 @@ private fun main() {
     fun indicatorByIndex(isReversed: Boolean, index: Int, candle: Candlestick): Double {
         return when (index) {
             0 -> if (isReversed) 1 / candle.close.toDouble() else candle.close.toDouble()
-            1 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
-            2 -> if (isReversed) 1 / candle.low.toDouble() else candle.high.toDouble()
+            1 -> if (isReversed) 1 / candle.low.toDouble() else candle.high.toDouble()
+            2 -> if (isReversed) 1 / candle.high.toDouble() else candle.low.toDouble()
             else -> throw UnsupportedOperationException()
         }
     }
