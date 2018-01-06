@@ -32,6 +32,7 @@ private val windowSize = 160
 private val period = CandlestickInterval.FIVE_MINUTES
 private val periodMs = 5L * 60 * 1000
 private val fee = 0.001
+private val fee2 = 0.005
 
 private typealias CoinToCandles = List<List<Candlestick>>
 
@@ -165,18 +166,19 @@ private fun main() {
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
 
+    val portfolio2 = DoubleArray(coinNumber + 1)
+    portfolio2[0] = 0.1
+
     fun coinPrice(index: Int, coinToCandles: CoinToCandles): Double {
         val coin = coins[index]
         val isReversed = coin in REVERSED_COINS
         return if (isReversed) 1 / coinToCandles[index].last().close.toDouble() else coinToCandles[index].last().close.toDouble()
     }
 
-    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles) {
+    fun rebalancePortfolioTo(buyIndex: Int) {
         val currentIndex = portfolio.indexOf(portfolio.max()!!)
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
-//                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
-//                portfolio[0] = portfolio[currentIndex] * currentPrice * (1 - fee)
                 val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 portfolio[0] = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 portfolio[currentIndex] = 0.0
@@ -186,21 +188,45 @@ private fun main() {
             println("CAPITAL SWITCH $capital")
 
             if (buyIndex != 0) {
-//                val buyPrice = coinPrice(buyIndex - 1, coinToCandles)
-//                portfolio[buyIndex] = portfolio[0] / buyPrice * (1 - fee)
                 val (buyAsks, _) = loadAsksBids(buyIndex - 1)
                 portfolio[buyIndex] = totalAmount(portfolio[0], buyAsks) * (1 - fee)
                 portfolio[0] = 0.0
             }
         } else {
             if (currentIndex != 0) {
-//                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
-//                val capital = portfolio[currentIndex] * currentPrice * (1 - fee)
                 val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 val capital = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 println("CAPITAL $capital")
             } else {
                 println("CAPITAL ${portfolio[0]}")
+            }
+        }
+    }
+
+    fun rebalancePortfolioTo2(buyIndex: Int, coinToCandles: CoinToCandles) {
+        val currentIndex = portfolio2.indexOf(portfolio2.max()!!)
+        if (currentIndex != buyIndex) {
+            if (currentIndex != 0) {
+                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
+                portfolio2[0] = portfolio2[currentIndex] * currentPrice * (1 - fee2)
+                portfolio2[currentIndex] = 0.0
+            }
+
+            val capital = portfolio2[0] * (1 - fee2)
+            println("CAPITAL2 SWITCH $capital")
+
+            if (buyIndex != 0) {
+                val buyPrice = coinPrice(buyIndex - 1, coinToCandles)
+                portfolio2[buyIndex] = portfolio2[0] / buyPrice * (1 - fee2)
+                portfolio2[0] = 0.0
+            }
+        } else {
+            if (currentIndex != 0) {
+                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
+                val capital = portfolio2[currentIndex] * currentPrice * (1 - fee2)
+                println("CAPITAL2 $capital")
+            } else {
+                println("CAPITAL2 ${portfolio2[0]}")
             }
         }
     }
@@ -214,7 +240,8 @@ private fun main() {
 
         val diff = client.serverTime - endTime
         println("Time diff $diff")
-        rebalancePortfolioTo(buyIndex, coinToCandles)
+        rebalancePortfolioTo(buyIndex)
+        rebalancePortfolioTo2(buyIndex, coinToCandles)
     }
 
     sleepForNextPeriod(client)
@@ -227,7 +254,7 @@ private fun main() {
                 try {
                     rebalancePortfolio()
                 } catch (e: Exception) {
-                    println(e.message)
+                    e.printStackTrace()
                 }
             }
 }

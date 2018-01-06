@@ -32,7 +32,7 @@ private val coinNumber = 25
 private val windowSize = 160
 private val period = CandlestickInterval.FIVE_MINUTES
 private val periodMs = 5L * 60 * 1000
-private val fee = 0.001
+private val fee = 0.005
 
 private class Candlestick2(val close: String, val high: String, val low: String)
 
@@ -167,15 +167,15 @@ private fun main() {
         rebalancePortfolioTo(buyIndex, coinToCandles)
     }
 
-    val endTime = (client.serverTime / periodMs) * periodMs - 1
-    var time = endTime - 24 * 60 * 60 * 1000
+//    val endTime = (client.serverTime / periodMs) * periodMs - 1
+//    var time = endTime - 24 * 60 * 60 * 1000
 
 //    val endTime = ((client.serverTime - 1 * 24 * 60 * 60 * 1000) / periodMs) * periodMs - 1
 //    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
 //    val endTime = ((1514926800000L - 5 * 24 * 60 * 60 * 1000) / periodMs) * periodMs
 
-//    var time = 1515081600000L + 160 * 5 * 60 * 1000 - 1
-//    val endTime = time + 10 * 5 * 60 * 1000
+    var time = 1515081600000L + 160 * 5 * 60 * 1000 - 1
+    val endTime = time + 10 * 5 * 60 * 1000
 
     while (time < endTime) {
         rebalancePortfolio(time)
