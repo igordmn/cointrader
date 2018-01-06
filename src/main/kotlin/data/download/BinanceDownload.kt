@@ -70,7 +70,7 @@ fun main(args: Array<String>) {
         val isReversed = coin in REVERSED_COINS
 
         transaction {
-            deleteHistories(exchange, coin)
+//            deleteHistories(exchange, coin)
 
             val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
                 rs.getString("maxdate")

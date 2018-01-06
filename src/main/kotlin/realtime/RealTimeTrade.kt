@@ -165,10 +165,18 @@ private fun main() {
     val portfolio = DoubleArray(coinNumber + 1)
     portfolio[0] = 0.1
 
-    fun rebalancePortfolioTo(buyIndex: Int) {
+    fun coinPrice(index: Int, coinToCandles: CoinToCandles): Double {
+        val coin = coins[index]
+        val isReversed = coin in REVERSED_COINS
+        return if (isReversed) 1 / coinToCandles[index].last().close.toDouble() else coinToCandles[index].last().close.toDouble()
+    }
+
+    fun rebalancePortfolioTo(buyIndex: Int, coinToCandles: CoinToCandles) {
         val currentIndex = portfolio.indexOf(portfolio.max()!!)
         if (currentIndex != buyIndex) {
             if (currentIndex != 0) {
+//                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
+//                portfolio[0] = portfolio[currentIndex] * currentPrice * (1 - fee)
                 val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 portfolio[0] = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 portfolio[currentIndex] = 0.0
@@ -178,12 +186,16 @@ private fun main() {
             println("CAPITAL SWITCH $capital")
 
             if (buyIndex != 0) {
+//                val buyPrice = coinPrice(buyIndex - 1, coinToCandles)
+//                portfolio[buyIndex] = portfolio[0] / buyPrice * (1 - fee)
                 val (buyAsks, _) = loadAsksBids(buyIndex - 1)
                 portfolio[buyIndex] = totalAmount(portfolio[0], buyAsks) * (1 - fee)
                 portfolio[0] = 0.0
             }
         } else {
             if (currentIndex != 0) {
+//                val currentPrice = coinPrice(currentIndex - 1, coinToCandles)
+//                val capital = portfolio[currentIndex] * currentPrice * (1 - fee)
                 val (_, currentBids) = loadAsksBids(currentIndex - 1)
                 val capital = totalPrice(portfolio[currentIndex], currentBids) * (1 - fee)
                 println("CAPITAL $capital")
@@ -202,7 +214,7 @@ private fun main() {
 
         val diff = client.serverTime - endTime
         println("Time diff $diff")
-        rebalancePortfolioTo(buyIndex)
+        rebalancePortfolioTo(buyIndex, coinToCandles)
     }
 
     sleepForNextPeriod(client)
