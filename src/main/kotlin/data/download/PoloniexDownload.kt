@@ -22,7 +22,7 @@ private val ALT_NAMES = mapOf(
 
 private const val START_DATE = 1420243200L  // 03.01.2015
 private const val END_DATE = 1514937600L    // 03.01.2018
-private const val PERIOD = 300   // 5 min
+private const val PERIOD_S = 300   // 5 min
 
 fun main(args: Array<String>) {
     data class ChartDataItem(
@@ -56,17 +56,18 @@ fun main(args: Array<String>) {
         println(coin)
         val pair = pair(coin)
         val isReversed = coin in REVERSED_COINS
-        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD)
+        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD_S)
 
         transaction {
             deleteHistories(exchange, coin)
             for (item in items) {
-                require(item.date % PERIOD == 0L)
+                require(item.date % PERIOD_S == 0L)
 
                 insertHistory(History(
                         exchange = exchange,
                         coin = coin,
-                        date = item.date,
+                        openTime = item.date,
+                        closeTime = item.date + PERIOD_S,
                         open = if (isReversed) BigDecimal.ONE divideMoney item.open else item.open,
                         close = if (isReversed) BigDecimal.ONE divideMoney item.close else item.close,
                         high = if (isReversed) BigDecimal.ONE divideMoney item.low else item.high,

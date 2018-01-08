@@ -24,7 +24,8 @@ fun connectCoinDatabase() {
 object Histories : Table("History") {
     val exchange: Column<String> = varchar("exchange", length = 20).primaryKey()
     val coin: Column<String> = varchar("coin", length = 20).primaryKey()
-    val date: Column<Long> = long("date").primaryKey()
+    val openTime: Column<Long> = long("date").primaryKey()
+    val closeTime: Column<Long> = long("closeTime").primaryKey()
     val open: Column<BigDecimal> = decimal("open", 40, 20)
     val close: Column<BigDecimal> = decimal("close", 40, 20)
     val high: Column<BigDecimal> = decimal("high", 40, 20)
@@ -35,7 +36,8 @@ object Histories : Table("History") {
 data class History(
         val exchange: String,
         val coin: String,
-        val date: Long,
+        val openTime: Long,
+        val closeTime: Long,
         val open: BigDecimal,
         val close: BigDecimal,
         val high: BigDecimal,
@@ -43,7 +45,7 @@ data class History(
         val volume: BigDecimal
 ) {
     init {
-        require(date in 151493761..15149375999)
+        require(openTime in 151493761..15149375999)
         require(high >= low)
         require(high >= open)
         require(high >= close)
@@ -67,7 +69,7 @@ fun insertHistory(history: History) {
     Histories.insert {
         it[Histories.exchange] = history.exchange
         it[Histories.coin] = history.coin
-        it[Histories.date] = history.date
+        it[Histories.openTime] = history.openTime
         it[Histories.open] = history.open
         it[Histories.close] = history.close
         it[Histories.high] = history.high
@@ -84,13 +86,14 @@ fun loadHistory(exchange: String, coin: String, limit: Int, end: Long, period: L
     val result = transaction {
         Histories.select {
             (Histories.exchange eq exchange) and(Histories.coin eq coin) and
-                    (Histories.date greaterEq start) and
-                    (Histories.date less end) and
-                    ((Histories.date.div(period).times(period)) eq Histories.date)
+                    (Histories.openTime greaterEq start) and
+                    (Histories.openTime less end) and
+                    ((Histories.openTime.div(period).times(period)) eq Histories.openTime)
         }.map { History(
                 it[Histories.exchange],
                 it[Histories.coin],
-                it[Histories.date],
+                it[Histories.openTime],
+                it[Histories.closeTime],
                 it[Histories.open],
                 it[Histories.close],
                 it[Histories.high],
@@ -99,8 +102,8 @@ fun loadHistory(exchange: String, coin: String, limit: Int, end: Long, period: L
         ) }.toList()
     }
     require(result.size == limit)
-    require(result.first().date == start)
-    require(result.last().date == end - period)
+    require(result.first().openTime == start)
+    require(result.last().openTime == end - period)
     return result
 }
 

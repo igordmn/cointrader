@@ -132,7 +132,8 @@ fun main(args: Array<String>) {
                 insertHistory(History(
                         exchange = exchange,
                         coin = coin,
-                        date = date,
+                        openTime = date,
+                        closeTime = date + PERIOD_S,
                         open = if (isReversed) BigDecimal.ONE divideMoney item.open else item.open,
                         close = if (isReversed) BigDecimal.ONE divideMoney item.close else item.close,
                         high = if (isReversed) BigDecimal.ONE divideMoney item.low else item.high,

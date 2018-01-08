@@ -4,8 +4,6 @@ import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
 import data.*
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.*
@@ -72,7 +70,7 @@ fun main(args: Array<String>) {
         transaction {
 //            deleteHistories(exchange, coin)
 
-            val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+            val startDateDB = execSQL("select max(openTime) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
                 rs.getString("maxdate")
             }?.toLong()
 
@@ -91,7 +89,8 @@ fun main(args: Array<String>) {
                 insertHistory(History(
                         exchange = exchange,
                         coin = coin,
-                        date = date,
+                        openTime = date,
+                        closeTime = date + (PERIOD_MS / 1000),
                         open = if (isReversed) BigDecimal.ONE divideMoney BigDecimal(item.open) else BigDecimal(item.open),
                         close = if (isReversed) BigDecimal.ONE divideMoney BigDecimal(item.close) else BigDecimal(item.close),
                         high = if (isReversed) BigDecimal.ONE divideMoney BigDecimal(item.low) else BigDecimal(item.high),
