@@ -70,6 +70,7 @@ fun insertHistory(history: History) {
         it[Histories.exchange] = history.exchange
         it[Histories.coin] = history.coin
         it[Histories.openTime] = history.openTime
+        it[Histories.closeTime] = history.closeTime
         it[Histories.open] = history.open
         it[Histories.close] = history.close
         it[Histories.high] = history.high
