@@ -108,7 +108,7 @@ fun main(args: Array<String>) {
             println("$pair    $from    $to")
             it = chunk.last().date - PERIOD_S * 1000
         }
-        return all.filter { it.date >= startDate }
+        return all.filter { it.date >= startDate + PERIOD_S * 1000 }
     }
 
     fun fillCoinHistory(coin: String, endDate: Long) {
