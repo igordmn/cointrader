@@ -6,8 +6,8 @@ private val fee = 0.001
 
 fun main(args: Array<String>) {
     val amounts = listOf(
-//            "0.0625",
-            "0.125"
+            "0.0625"
+//            "0.125"
 //            "0.25"
 //            "0.5",
 //            "1.0"
