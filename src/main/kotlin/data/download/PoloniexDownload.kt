@@ -8,7 +8,11 @@ import java.math.BigDecimal
 private val exchange = "poloniex"
 
 private val COINS = listOf(
-        "STR"
+        "XRP", "USDT", "ETH", "BCH", "LTC", "XLM", "XMR", "NXT",
+        "XEM", "DASH", "DGB", "ETC", "DOGE", "EMC2", "SC", "LSK",
+        "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "VTC",
+        "BCN", "BURST", "MAID", "STEEM", "SYS", "POT", "NAV",
+        "DCR", "LBC", "FLDC", "GAME"
 )
 
 private const val REVERSED_COINS = "USDT"
