@@ -70,7 +70,7 @@ fun main(args: Array<String>) {
         transaction {
 //            deleteHistories(exchange, coin)
 
-            val startDateDB = execSQL("select max(openTime) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+            val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
                 rs.getString("maxdate")
             }?.toLong()
 

@@ -8,11 +8,7 @@ import java.math.BigDecimal
 private val exchange = "poloniex"
 
 private val COINS = listOf(
-        "XRP", "USDT", "ETH", "BCH", "LTC", "XLM", "XMR", "NXT",
-        "XEM", "DASH", "DGB", "ETC", "DOGE", "EMC2", "SC", "LSK",
-        "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "VTC",
-        "BCN", "BURST", "MAID", "STEEM", "SYS", "POT", "NAV",
-        "DCR", "LBC", "FLDC", "GAME"
+        "STR"
 )
 
 private const val REVERSED_COINS = "USDT"
@@ -21,7 +17,7 @@ private val ALT_NAMES = mapOf(
 )
 
 private const val START_DATE = 1420243200L  // 03.01.2015
-private const val END_DATE = 1514937600L    // 03.01.2018
+//private const val END_DATE = 1514937600L    // 03.01.2018
 private const val PERIOD_S = 300   // 5 min
 
 fun main(args: Array<String>) {
@@ -61,7 +57,7 @@ fun main(args: Array<String>) {
         transaction {
 //            deleteHistories(exchange, coin)
 
-            val startDateDB = execSQL("select max(openTime) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+            val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
                 rs.getString("maxdate")
             }?.toLong()
 
