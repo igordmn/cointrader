@@ -42,24 +42,33 @@ fun main(args: Array<String>) {
         return if (isReversed) "${final_name}_BTC" else "BTC_$final_name"
     }
 
-    fun chartDataItems(pair: String, startDate: Long, endDate: Long, period: Int): List<ChartDataItem> {
+    fun chartDataItems(pair: String, startDate: Long, endDate: Long): List<ChartDataItem> {
         return requestList(
                 "https://poloniex.com/public?command=returnChartData&" +
                         "currencyPair=$pair&" +
                         "start=$startDate&" +
                         "end=$endDate&" +
-                        "period=$period"
+                        "period=$PERIOD_S"
         )
     }
 
-    fun fillCoinHistory(coin: String) {
+    fun fillCoinHistory(coin: String, endDate: Long) {
         println(coin)
         val pair = pair(coin)
         val isReversed = coin in REVERSED_COINS
-        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD_S)
+//        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD_S)
 
         transaction {
-            deleteHistories(exchange, coin)
+//            deleteHistories(exchange, coin)
+
+            val startDateDB = execSQL("select max(openTime) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+                rs.getString("maxdate")
+            }?.toLong()
+
+            var startDate = startDateDB ?: START_DATE
+            startDate += PERIOD_S
+            val items = chartDataItems(pair, startDate, endDate)
+
             for (item in items) {
                 require(item.date % PERIOD_S == 0L)
 
@@ -80,7 +89,9 @@ fun main(args: Array<String>) {
 
     connectCoinDatabase()
 
+    val endDate = (System.currentTimeMillis() / PERIOD_S) * PERIOD_S
+
     for (coin in COINS) {
-        fillCoinHistory(coin)
+        fillCoinHistory(coin, endDate)
     }
 }

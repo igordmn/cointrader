@@ -24,7 +24,7 @@ private val ALT_NAMES = mapOf(
 )
 
 private const val START_DATE = 1420243200L * 1000  // 03.01.2015
-private const val END_DATE = 1514937600L * 1000    // 03.01.2018
+//private const val END_DATE = 1514937600L * 1000    // 03.01.2018
 private const val PERIOD_S = 60
 private const val PERIOD_NAME = "1m"
 
@@ -108,17 +108,25 @@ fun main(args: Array<String>) {
             println("$pair    $from    $to")
             it = chunk.last().date - PERIOD_S * 1000
         }
-        return all
+        return all.filter { it.date >= startDate }
     }
 
-    fun fillCoinHistory(coin: String) {
+    fun fillCoinHistory(coin: String, endDate: Long) {
         println(coin)
         val pair = pair(coin)
         val isReversed = coin in REVERSED_COINS
-        val items = chartDataItems(pair, START_DATE, END_DATE)
 
         transaction {
-            deleteHistories(exchange, coin)
+//            deleteHistories(exchange, coin)
+
+            val startDateDB = execSQL("select max(openTime) as maxdate from History where exchange=\"$exchange\" and coin=\"$coin\"") { rs ->
+                rs.getString("maxdate")
+            }?.toLong()
+
+            var startDate = startDateDB?.times(1000) ?: START_DATE
+            startDate += PERIOD_S * 1000
+            val items = chartDataItems(pair, startDate, endDate)
+
             var lastDate = -1L
             for (item in items) {
                 val date = (item.date / 1000.0 / PERIOD_S).roundToLong() * PERIOD_S - PERIOD_S
@@ -146,7 +154,9 @@ fun main(args: Array<String>) {
 
     connectCoinDatabase()
 
+    val endDate = (System.currentTimeMillis() / (PERIOD_S * 1000)) * PERIOD_S * 1000
+
     for (coin in COINS) {
-        fillCoinHistory(coin)
+        fillCoinHistory(coin, endDate)
     }
 }
