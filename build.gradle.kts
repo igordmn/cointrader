@@ -55,6 +55,7 @@ dependencies {
     compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("org.slf4j:slf4j-api:1.7.25")
+    compile("com.github.jnidzwetzki:bitfinex-v2-wss-api:0.5.1")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
