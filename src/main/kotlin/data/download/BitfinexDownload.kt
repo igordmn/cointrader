@@ -16,7 +16,7 @@ private val COINS = listOf(
         "SAN", "ETP", "RRT", "DAT"
 )
 
-private const val REVERSED_COINS = "USDT"
+private val REVERSED_COINS = listOf("USDT", "EUR")
 private val ALT_NAMES = mapOf(
         "DASH" to "DSH",
         "QTUM" to "QTM",
@@ -108,7 +108,7 @@ fun main(args: Array<String>) {
             println("$pair    $from    $to")
             it = chunk.last().date - PERIOD_S * 1000
         }
-        return all.filter { it.date >= startDate + PERIOD_S * 1000 }
+        return all.filter { it.date >= startDate + PERIOD_S }
     }
 
     fun fillCoinHistory(coin: String, endDate: Long) {

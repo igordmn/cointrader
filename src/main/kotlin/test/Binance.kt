@@ -27,61 +27,31 @@ fun main(args: Array<String>) {
         return if (isReversed) "BTC$final_name" else "${final_name}BTC"
     }
 
-    var candlesticksCache: MutableMap<String, Candlestick>? = null
+    fun startCandlestickEventStreaming() {
+        COINS.take(30).shuffled().forEach {
+            val factory = BinanceApiClientFactory.newInstance()
+            val client = factory.newWebSocketClient()
+            val pair = pair(it)
+            client.onCandlestickEvent(pair.toLowerCase(), CandlestickInterval.ONE_MINUTE) { response ->
+                val updateCandlestick = Candlestick()
+                updateCandlestick.openTime = response.openTime
+                updateCandlestick.open = response.open
+                updateCandlestick.low = response.low
+                updateCandlestick.high = response.high
+                updateCandlestick.close = response.close
+                updateCandlestick.closeTime = response.closeTime
+                updateCandlestick.volume = response.volume
+                updateCandlestick.numberOfTrades = response.numberOfTrades
+                updateCandlestick.quoteAssetVolume = response.quoteAssetVolume
+                updateCandlestick.takerBuyQuoteAssetVolume = response.takerBuyQuoteAssetVolume
+                updateCandlestick.takerBuyBaseAssetVolume = response.takerBuyQuoteAssetVolume
 
-    /**
-     * Initializes the candlestick cache by using the REST API.
-     */
-    fun initializeCandlestickCache(symbol: String, interval: CandlestickInterval) {
-        val factory = BinanceApiClientFactory.newInstance()
-        val client = factory.newRestClient()
-        val candlestickBars = client.getCandlestickBars(symbol.toUpperCase(), interval)
-
-        candlesticksCache = TreeMap()
-        for (candlestickBar in candlestickBars) {
-            candlesticksCache!![symbol + candlestickBar.openTime] = candlestickBar
-        }
-    }
-
-    /**
-     * Begins streaming of depth events.
-     */
-    fun startCandlestickEventStreaming(symbol: String, interval: CandlestickInterval) {
-        val factory = BinanceApiClientFactory.newInstance()
-        val client = factory.newWebSocketClient()
-
-        client.onCandlestickEvent(symbol.toLowerCase(), interval) { response ->
-            val openTime = response.openTime
-            var updateCandlestick: Candlestick? = candlesticksCache!![symbol + openTime]
-            if (updateCandlestick == null) {
-                // new candlestick
-                updateCandlestick = Candlestick()
-            }
-            // update candlestick with the stream data
-            updateCandlestick.openTime = response.openTime
-            updateCandlestick.open = response.open
-            updateCandlestick.low = response.low
-            updateCandlestick.high = response.high
-            updateCandlestick.close = response.close
-            updateCandlestick.closeTime = response.closeTime
-            updateCandlestick.volume = response.volume
-            updateCandlestick.numberOfTrades = response.numberOfTrades
-            updateCandlestick.quoteAssetVolume = response.quoteAssetVolume
-            updateCandlestick.takerBuyQuoteAssetVolume = response.takerBuyQuoteAssetVolume
-            updateCandlestick.takerBuyBaseAssetVolume = response.takerBuyQuoteAssetVolume
-
-            // Store the updated candlestick in the cache
-            candlesticksCache!![symbol + openTime] = updateCandlestick
-
-            if (response.eventTime >= response.closeTime) {
-                println("" + System.currentTimeMillis() + "   " + symbol + "   "+ updateCandlestick)
+                if (response.eventTime >= response.closeTime) {
+                    println("" + (response.eventTime - response.closeTime) + "   " + pair + "   " + updateCandlestick)
+                }
             }
         }
     }
 
-    COINS.take(30).forEach {
-        val pair = pair(it)
-        initializeCandlestickCache(pair, CandlestickInterval.ONE_MINUTE)
-        startCandlestickEventStreaming(pair, CandlestickInterval.ONE_MINUTE)
-    }
+    startCandlestickEventStreaming()
 }
