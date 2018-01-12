@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.Coroutines
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
 group = "dmi"
 version = "1.0-SNAPSHOT"
@@ -56,6 +58,7 @@ dependencies {
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("com.github.jnidzwetzki:bitfinex-v2-wss-api:0.5.1")
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-android:0.21")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
@@ -65,4 +68,8 @@ configure<JavaPluginConvention> {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+configure<KotlinProjectExtension> {
+    experimental.coroutines = Coroutines.ENABLE
 }

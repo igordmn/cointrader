@@ -1,4 +1,4 @@
-package net
+package adviser.net
 
 import org.jpy.PyModule
 

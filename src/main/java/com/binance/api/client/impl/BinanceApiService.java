@@ -46,7 +46,7 @@ public interface BinanceApiService {
   @GET("/api/v1/exchangeInfo")
   Call<ExchangeInfo> getExchangeInfo();
 
-  // Market data endpoints
+  // Exchange data endpoints
 
   @GET("/api/v1/depth")
   Call<OrderBook> getOrderBook(@Query("symbol") String symbol, @Query("limit") Integer limit);

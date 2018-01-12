@@ -1,4 +1,4 @@
-package net
+package adviser.net
 
 class DoubleMatrix4D(
         val n1: Int,
