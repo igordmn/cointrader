@@ -1,6 +1,9 @@
 package adviser.net
 
 import org.jpy.PyModule
+import util.math.DoubleMatrix2D
+import util.math.DoubleMatrix4D
+import util.python.PythonUtils
 
 class NNAgent(
         fee: Double,
@@ -13,7 +16,7 @@ class NNAgent(
     private val numpy = PyModule.importModule("numpy")
     private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, coinNumber, windowSize, restore_dir)
 
-    fun bestPortfolio(history: DoubleMatrix4D): DoubleMatrix2D {
+    fun bestPortfolioPortions(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D {
         require(history.n2 == indicatorNumber)
         require(history.n3 == coinNumber)
         require(history.n4 == windowSize)

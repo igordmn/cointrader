@@ -1,4 +1,4 @@
-package adviser.net;
+package util.python;
 
 import org.jpy.PyLib;
 import org.jpy.PyModule;

@@ -70,7 +70,7 @@ public class ExchangeInfo {
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
         .append("timezone", timezone)
-        .append("serverTime", serverTime)
+        .append("currentTime", serverTime)
         .append("rateLimits", rateLimits)
         .append("symbols", symbols)
         .toString();
