@@ -26,7 +26,7 @@ class Trader(
         val markets: Map<String, MainCoinMarket> = altCoins.associate { it to mainCoinMarket(it) }
         val previousCandles: CoinToCandles = markets.mapValues { it.value.candlesBefore(tradeTime) }.withMainCoin()
         val prices: Map<String, BigDecimal> = allCoins.associate { it to previousCandles[it]!!.last().closePrice }
-        val capitals: Map<String, BigDecimal> = capitals(allCoins, prices)
+        val capitals: Map<String, BigDecimal> = capitals(prices)
         val portions = capitals.portions(operationScale)
 
         val bestPortions = adviser.bestPortfolioPortions(portions, previousCandles)
@@ -51,8 +51,8 @@ class Trader(
     }
 
     private fun mainCoinMarket(coin: String): MainCoinMarket {
-        val market: Market? = exchange.marketFor(mainCoin, coin)
-        val reversedMarket: Market? = exchange.marketFor(coin, mainCoin)
+        val market: Market? = exchange.markets.of(mainCoin, coin)
+        val reversedMarket: Market? = exchange.markets.of(coin, mainCoin)
         require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
         val finalMarket: Market
         val isReversed: Boolean
@@ -68,10 +68,10 @@ class Trader(
 
     private fun CoinToCandles.withMainCoin(): CoinToCandles = this + Pair(mainCoin, mainCoinCandles())
 
-    private suspend fun capitals(allCoins: List<String>, prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
+    private suspend fun capitals(prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
         fun coinCapital(amount: BigDecimal, price: BigDecimal) = amount * price
-        val portfolio = exchange.portfolio()
-        val amounts: Map<String, BigDecimal> = allCoins.associate { it to portfolio.amounts(it) }
+        val portfolio = exchange.portfolio
+        val amounts: Map<String, BigDecimal> = portfolio.amounts()
         return amounts.zipValues(prices, ::coinCapital)
     }
 
