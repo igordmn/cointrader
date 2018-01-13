@@ -9,7 +9,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 
-class Trader(
+class AdvisibleTrade(
         private val mainCoin: String,
         private val altCoins: List<String>,
         private val period: Duration,
@@ -17,8 +17,8 @@ class Trader(
         private val adviser: TradeAdviser,
         private val exchange: Exchange,
         private val operationScale: Int
-) {
-    suspend fun trade() {
+) : Trade {
+    override suspend fun perform() {
         val currentTime = exchange.currentTime()
         val tradeTime = startOfTradePeriod(currentTime)
 
@@ -96,7 +96,7 @@ class Trader(
                     lowPrice = BigDecimal.ONE.divide(lowPrice, operationScale)
             )
 
-            val originalCandles = market.history().candlesBefore(time, historyCount, period)
+            val originalCandles = market.history.candlesBefore(time, historyCount, period)
             return if (isReversed) originalCandles else originalCandles.map(Candle::reverse)
         }
 
