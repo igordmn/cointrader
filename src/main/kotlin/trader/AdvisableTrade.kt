@@ -9,7 +9,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 
-class AdvisibleTrade(
+class AdvisableTrade(
         private val mainCoin: String,
         private val altCoins: List<String>,
         private val period: Duration,

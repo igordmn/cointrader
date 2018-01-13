@@ -8,7 +8,7 @@ import exchange.Markets
 import exchange.binance.*
 import exchange.test.TestMarket
 import exchange.test.TestPortfolio
-import trader.AdvisibleTrade
+import trader.AdvisableTrade
 import java.math.BigDecimal
 import java.nio.file.Paths
 
@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
             TestConfig.fee,
             TestConfig.indicators
     )
-    val trader = AdvisibleTrade(
+    val trader = AdvisableTrade(
             TestConfig.mainCoin,
             TestConfig.altCoins,
             TestConfig.period,
