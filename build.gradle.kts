@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.plugin.android.AndroidGradleWrapper.srcDir
 
 group = "dmi"
 version = "1.0-SNAPSHOT"
@@ -64,6 +65,7 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
+    sourceSets["test"].java.srcDir(file("src/backtest/kotlin"))
 }
 
 tasks.withType<KotlinCompile> {

@@ -9,3 +9,5 @@ fun Iterable<BigDecimal>.sum(): BigDecimal {
     }
     return sum
 }
+
+fun min(v1: BigDecimal, v2: BigDecimal): BigDecimal = if (v1 > v2) v2 else v1
