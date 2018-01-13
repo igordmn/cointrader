@@ -42,9 +42,4 @@ class TestMarketWithRealPrices(
             }
         }
     }
-
-    interface Prices {
-        val history: MarketHistory
-        suspend fun current(): BigDecimal
-    }
 }
