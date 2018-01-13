@@ -111,7 +111,7 @@ public class Withdraw {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-        .append("amount", amount)
+        .append("amounts", amount)
         .append("address", address)
         .append("asset", asset)
         .append("applyTime", applyTime)

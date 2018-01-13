@@ -78,7 +78,7 @@ public class Deposit {
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-        .append("amount", amount)
+        .append("amounts", amount)
         .append("asset", asset)
         .append("insertTime", insertTime)
         .append("txId", txId)

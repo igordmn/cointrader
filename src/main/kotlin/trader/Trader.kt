@@ -71,9 +71,8 @@ class Trader(
     private suspend fun capitals(allCoins: List<String>, prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
         fun coinCapital(amount: BigDecimal, price: BigDecimal) = amount * price
         val portfolio = exchange.portfolio()
-        val amounts: Map<String, BigDecimal> = allCoins.associate { it to portfolio.amount(it) }
-        val capitals: Map<String, BigDecimal> = amounts.zipValues(prices, ::coinCapital)
-        return capitals
+        val amounts: Map<String, BigDecimal> = allCoins.associate { it to portfolio.amounts(it) }
+        return amounts.zipValues(prices, ::coinCapital)
     }
 
     private fun mainCoinCandles(): List<Candle> = List(historyCount) { mainCoinCandle() }

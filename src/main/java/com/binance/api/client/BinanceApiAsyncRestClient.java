@@ -217,7 +217,7 @@ public interface BinanceApiAsyncRestClient {
    *
    * @param asset asset symbol to withdraw
    * @param address address to withdraw to
-   * @param amount amount to withdraw
+   * @param amount amounts to withdraw
    * @param name description/alias of the address
    */
   void withdraw(String asset, String address, String amount, String name, BinanceApiCallback<Void> callback);
