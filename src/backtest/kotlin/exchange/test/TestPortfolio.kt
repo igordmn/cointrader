@@ -1,8 +1,10 @@
 package exchange.test
 
 import exchange.Portfolio
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import java.math.BigDecimal
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.suspendCoroutine
 
 @Suppress("RedundantSuspendModifier")
@@ -12,7 +14,9 @@ class TestPortfolio(private val initialAmounts: Map<String, BigDecimal>) : Portf
     val coins: Set<String> = amounts.keys
 
     override suspend fun amounts(): Map<String, BigDecimal> = suspendCoroutine { continuation ->
+        // todo синхронизировать с market
         launch {
+            delay(50, TimeUnit.MILLISECONDS)
             synchronized(amounts) {
                 continuation.resume(HashMap(amounts))
             }

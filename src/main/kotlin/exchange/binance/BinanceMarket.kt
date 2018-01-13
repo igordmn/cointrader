@@ -11,20 +11,19 @@ import kotlin.coroutines.experimental.suspendCoroutine
 
 class BinanceMarket(
         private val name: String,
-        private val client: BinanceApiAsyncRestClient
+        private val client: BinanceApiAsyncRestClient,
+        override val history: BinanceMarketHistory
 ) : Market {
-    override fun history() = BinanceMarketHistory(name, client)
-
     override suspend fun buy(amount: BigDecimal) = suspendCoroutine<Unit> { continuation ->
         val order = NewOrder(name, OrderSide.BUY, OrderType.MARKET, TimeInForce.IOC, amount.toString())
-        client.newOrder(order) { response ->
+        client.newOrder(order) {
             continuation.resume(Unit)
         }
     }
 
     override suspend fun sell(amount: BigDecimal) = suspendCoroutine<Unit> { continuation ->
         val order = NewOrder(name, OrderSide.SELL, OrderType.MARKET, TimeInForce.IOC, amount.toString())
-        client.newOrder(order) { response ->
+        client.newOrder(order) {
             continuation.resume(Unit)
         }
     }

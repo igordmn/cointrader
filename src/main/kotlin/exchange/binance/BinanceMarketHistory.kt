@@ -34,6 +34,7 @@ class BinanceMarketHistory(
 
         val endOfPeriod = time.truncatedTo(period).epochSecond - 1
         client.getCandlestickBars(name, period.toServerInterval(), count, null, endOfPeriod) { result ->
+            require(result.size == count)
             require(result.last().closeTime == endOfPeriod)
             continuation.resume(result.map(Candlestick::toLocalCandle))
         }

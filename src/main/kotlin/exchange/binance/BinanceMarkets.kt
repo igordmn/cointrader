@@ -10,6 +10,14 @@ class BinanceMarkets(
 ) : Markets {
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = info.marketName(fromCoin, toCoin)
-        return if (name != null) BinanceMarket(name, client) else null
+        return if (name != null) {
+            BinanceMarket(
+                    name,
+                    client,
+                    BinanceMarketHistory(name, client)
+            )
+        } else {
+            null
+        }
     }
 }
