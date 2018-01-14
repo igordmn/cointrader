@@ -20,10 +20,12 @@ const val NANOS_PER_DAY = NANOS_PER_HOUR * HOURS_PER_DAY
 
 fun Instant.truncatedTo(duration: Duration): Instant {
     val dur = duration.toNanos()
-    require(duration.seconds > SECONDS_PER_DAY)
-    require(NANOS_PER_DAY % dur != 0L)
+    require(duration.seconds <= SECONDS_PER_DAY)
+    require(NANOS_PER_DAY % dur == 0L)
 
     val nod = (epochSecond % SECONDS_PER_DAY) * NANOS_PER_SECOND + nano
     val result = (nod / dur) * dur
     return plusNanos(result - nod)
 }
+
+operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multiplier.toLong())

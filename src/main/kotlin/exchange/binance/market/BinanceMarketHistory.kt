@@ -5,6 +5,7 @@ import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
 import exchange.Candle
 import exchange.MarketHistory
+import util.lang.times
 import util.lang.truncatedTo
 import java.math.BigDecimal
 import java.time.Duration
@@ -32,10 +33,15 @@ class BinanceMarketHistory(
                 BigDecimal(low)
         )
 
-        val endOfPeriod = time.truncatedTo(period).epochSecond - 1
-        client.getCandlestickBars(name, period.toServerInterval(), count, null, endOfPeriod) { result ->
+        val start = time.truncatedTo(period) - (period * count)
+        val end = time.truncatedTo(period) - Duration.ofMillis(1)
+        val startMillis = start.toEpochMilli()
+        val endMillis = end.toEpochMilli()
+
+        client.getCandlestickBars(name, period.toServerInterval(), count, null, endMillis) { result ->
             require(result.size == count)
-            require(result.last().closeTime == endOfPeriod)
+            require(result.first().openTime == startMillis)
+            require(result.last().closeTime == endMillis)
             continuation.resume(result.map(Candlestick::toLocalCandle))
         }
     }

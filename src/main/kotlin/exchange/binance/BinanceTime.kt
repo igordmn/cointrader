@@ -10,7 +10,7 @@ class BinanceTime(
 ) : ExchangeTime {
     override suspend fun current(): Instant = suspendCoroutine { continuation ->
         client.getServerTime {
-            continuation.resume(Instant.ofEpochSecond(it.serverTime))
+            continuation.resume(Instant.ofEpochMilli(it.serverTime))
         }
     }
 }
