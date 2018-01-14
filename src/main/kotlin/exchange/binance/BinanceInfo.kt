@@ -10,7 +10,7 @@ class BinanceInfo {
             "MTL"
     )
 
-    val btcReversedMarkets = "USDT"
+    val btcReversedMarkets = listOf("USDT")
 
     val standardNameToBinance = mapOf(
             "BCH" to "BCC"
@@ -25,7 +25,7 @@ class BinanceInfo {
         val toCoinBinanceName = standardNameToBinance[toCoin]?: toCoin
         return when {
             fromCoin == "BTC" && toCoin in btcMarkets -> "{$toCoinBinanceName}BTC"
-            toCoin == "BTC" && toCoin in btcReversedMarkets -> "BTC$fromCoinBinanceName"
+            toCoin == "BTC" && fromCoin in btcReversedMarkets -> "BTC$fromCoinBinanceName"
             else -> null
         }
     }
