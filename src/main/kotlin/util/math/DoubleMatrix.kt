@@ -22,11 +22,17 @@ class DoubleMatrix4D(
 class DoubleMatrix2D(
         val n1: Int,
         val n2: Int,
-        value: (i1: Int, i2: Int) -> Double
+        val data: DoubleArray
 ) {
-    val data: DoubleArray = DoubleArray(n1 * n2)
-
     init {
+        require(data.size == n1 * n2)
+    }
+
+    constructor(
+            n1: Int,
+            n2: Int,
+            value: (i1: Int, i2: Int) -> Double
+    ) : this(n1, n2, DoubleArray(n1 * n2)) {
         var k = 0
         for (i1 in 0 until n1)
             for (i2 in 0 until n2)

@@ -15,11 +15,13 @@ class AdvisableTrade(
         private val period: Duration,
         private val historyCount: Int,
         private val adviser: TradeAdviser,
-        private val exchange: Exchange,
+        private val time: ExchangeTime,
+        private val markets: Markets,
+        private val portfolio: Portfolio,
         private val operationScale: Int
 ) : Trade {
     override suspend fun perform() {
-        val currentTime = exchange.currentTime()
+        val currentTime = time.current()
         val tradeTime = startOfTradePeriod(currentTime)
 
         val allCoins = listOf(mainCoin) + altCoins
@@ -51,8 +53,8 @@ class AdvisableTrade(
     }
 
     private fun mainCoinMarket(coin: String): MainCoinMarket {
-        val market: Market? = exchange.markets.of(mainCoin, coin)
-        val reversedMarket: Market? = exchange.markets.of(coin, mainCoin)
+        val market: Market? = markets.of(mainCoin, coin)
+        val reversedMarket: Market? = markets.of(coin, mainCoin)
         require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
         val finalMarket: Market
         val isReversed: Boolean
@@ -70,7 +72,6 @@ class AdvisableTrade(
 
     private suspend fun capitals(prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
         fun coinCapital(amount: BigDecimal, price: BigDecimal) = amount * price
-        val portfolio = exchange.portfolio
         val amounts: Map<String, BigDecimal> = portfolio.amounts()
         return amounts.zipValues(prices, ::coinCapital)
     }
@@ -102,17 +103,17 @@ class AdvisableTrade(
 
         suspend fun buy(mainCoinAmount: BigDecimal, altCoinPrice: BigDecimal) {
             if (isReversed) {
-                market.sell(mainCoinAmount)
+                market.orders.sell(mainCoinAmount)
             } else {
-                market.buy(mainCoinAmount * altCoinPrice)
+                market.orders.buy(mainCoinAmount * altCoinPrice)
             }
         }
 
         suspend fun sell(mainCoinAmount: BigDecimal, altCoinPrice: BigDecimal) {
             if (isReversed) {
-                market.buy(mainCoinAmount)
+                market.orders.buy(mainCoinAmount)
             } else {
-                market.sell(mainCoinAmount * altCoinPrice)
+                market.orders.sell(mainCoinAmount * altCoinPrice)
             }
         }
     }

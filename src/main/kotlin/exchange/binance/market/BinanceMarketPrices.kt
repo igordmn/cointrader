@@ -1,15 +1,14 @@
-package exchange.binance
+package exchange.binance.market
 
 import com.binance.api.client.BinanceApiAsyncRestClient
-import exchange.MarketHistory
-import exchange.Prices
+import exchange.MarketPrices
 import java.math.BigDecimal
 import kotlin.coroutines.experimental.suspendCoroutine
 
-class BinancePrices(
+class BinanceMarketPrices(
         private val name: String,
         private val client: BinanceApiAsyncRestClient
-): Prices {
+): MarketPrices {
     override suspend fun current(): BigDecimal = suspendCoroutine { continuation ->
         client.getAllPrices { allPrices ->
             val ticket = allPrices.find { it.symbol == name }!!

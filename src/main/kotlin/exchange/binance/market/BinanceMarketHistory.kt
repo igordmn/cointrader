@@ -1,4 +1,4 @@
-package exchange.binance
+package exchange.binance.market
 
 import com.binance.api.client.BinanceApiAsyncRestClient
 import com.binance.api.client.domain.market.Candlestick

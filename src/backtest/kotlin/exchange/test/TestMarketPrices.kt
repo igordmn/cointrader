@@ -1,14 +1,14 @@
 package exchange.test
 
-import exchange.Prices
+import exchange.MarketPrices
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import java.math.BigDecimal
 import kotlin.coroutines.experimental.suspendCoroutine
 
-class TestPrices(
+class TestMarketPrices(
         private var current: BigDecimal
-): Prices {
+): MarketPrices {
     override suspend fun current(): BigDecimal = suspendCoroutine{ continuation ->
         launch {
             delay(50)

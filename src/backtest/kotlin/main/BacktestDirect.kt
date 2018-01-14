@@ -6,14 +6,18 @@ import exchange.Exchange
 import exchange.Market
 import exchange.Markets
 import exchange.binance.*
-import exchange.test.TestMarket
+import exchange.binance.market.BinanceMarketHistory
+import exchange.binance.market.BinanceMarketPrices
+import exchange.test.TestMarketOrders
 import exchange.test.TestPortfolio
-import kotlinx.coroutines.experimental.launch
+import exchange.test.TestTime
 import kotlinx.coroutines.experimental.runBlocking
 import trader.AdvisableTrade
 import trader.TradingBot
 import java.math.BigDecimal
 import java.nio.file.Paths
+import java.time.Duration
+import java.time.Instant
 
 fun main(args: Array<String>) {
     val operationScale = 32
@@ -32,10 +36,12 @@ fun main(args: Array<String>) {
             TestConfig.period,
             TestConfig.historyCount,
             adviser,
-            exchange,
+            exchange.time,
+            exchange.markets,
+            exchange.portfolio,
             operationScale
     )
-    val bot = TradingBot(TestConfig.period, exchange, trade)
+    val bot = TradingBot(TestConfig.period, exchange.time, trade)
 
     runBlocking {
         bot.run()
@@ -51,13 +57,15 @@ private fun testExchange(initialCoins: Map<String, String>): Exchange {
         override fun of(fromCoin: String, toCoin: String): Market? {
             val name = info.marketName(fromCoin, toCoin)
             return if (name != null) {
-                val prices = BinancePrices(name, client)
+                val prices = BinanceMarketPrices(name, client)
+                val orders = TestMarketOrders(fromCoin, toCoin, portfolio, prices)
                 val history = BinanceMarketHistory(name, client)
-                TestMarket(fromCoin, toCoin, portfolio, prices, history)
+                Market(orders, history, prices)
             } else {
                 null
             }
         }
     }
-    return BinanceExchange(portfolio, markets, client)
+    val time = TestTime(TestConfig.startTime)
+    return Exchange(portfolio, markets, time)
 }

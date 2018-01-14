@@ -2,20 +2,20 @@ package exchange.test
 
 import exchange.Market
 import exchange.MarketHistory
-import exchange.Prices
+import exchange.MarketOrders
+import exchange.MarketPrices
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
-class TestMarket(
+class TestMarketOrders(
         private val fromCoin: String,
         private val toCoin: String,
         private val portfolio: TestPortfolio,
-        private val prices: Prices,
-        override val history: MarketHistory
-) : Market {
+        private val prices: MarketPrices
+) : MarketOrders {
     private val threadContext = newSingleThreadContext("testMarket")
 
     override suspend fun buy(amount: BigDecimal) {

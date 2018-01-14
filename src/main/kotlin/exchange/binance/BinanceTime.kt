@@ -1,19 +1,14 @@
 package exchange.binance
 
 import com.binance.api.client.BinanceApiAsyncRestClient
-import exchange.Exchange
-import exchange.Market
-import exchange.Markets
-import exchange.Portfolio
+import exchange.*
 import java.time.Instant
 import kotlin.coroutines.experimental.suspendCoroutine
 
-class BinanceExchange(
-        override val portfolio: Portfolio,
-        override val markets: Markets,
+class BinanceTime(
         private val client: BinanceApiAsyncRestClient
-) : Exchange {
-    override suspend fun currentTime(): Instant = suspendCoroutine { continuation ->
+) : ExchangeTime {
+    override suspend fun current(): Instant = suspendCoroutine { continuation ->
         client.getServerTime {
             continuation.resume(Instant.ofEpochSecond(it.serverTime))
         }
