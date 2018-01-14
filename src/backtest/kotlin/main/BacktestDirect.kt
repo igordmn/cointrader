@@ -8,7 +8,10 @@ import exchange.Markets
 import exchange.binance.*
 import exchange.test.TestMarket
 import exchange.test.TestPortfolio
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import trader.AdvisableTrade
+import trader.TradingBot
 import java.math.BigDecimal
 import java.nio.file.Paths
 
@@ -23,7 +26,7 @@ fun main(args: Array<String>) {
             TestConfig.fee,
             TestConfig.indicators
     )
-    val trader = AdvisableTrade(
+    val trade = AdvisableTrade(
             TestConfig.mainCoin,
             TestConfig.altCoins,
             TestConfig.period,
@@ -32,6 +35,11 @@ fun main(args: Array<String>) {
             exchange,
             operationScale
     )
+    val bot = TradingBot(TestConfig.period, exchange, trade)
+
+    runBlocking {
+        bot.run()
+    }
 }
 
 private fun testExchange(initialCoins: Map<String, String>): Exchange {
