@@ -1,21 +1,21 @@
 package exchange.test
 
 import exchange.Portfolio
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.suspendCoroutine
 
 @Suppress("RedundantSuspendModifier")
 class TestPortfolio(private val initialAmounts: Map<String, BigDecimal>) : Portfolio {
+    private val threadContext = newSingleThreadContext("testPortfolio")
     private val amounts = HashMap<String, BigDecimal>(initialAmounts)
 
-    val coins: Set<String> = amounts.keys
-
     override suspend fun amounts(): Map<String, BigDecimal> = suspendCoroutine { continuation ->
-        // todo синхронизировать с market
-        launch {
+        launch(threadContext) {
             delay(50, TimeUnit.MILLISECONDS)
             synchronized(amounts) {
                 continuation.resume(HashMap(amounts))
@@ -23,8 +23,14 @@ class TestPortfolio(private val initialAmounts: Map<String, BigDecimal>) : Portf
         }
     }
 
-    fun transaction(action: (Modifier) -> Unit) = synchronized(amounts) {
-        action(Modifier())
+    suspend fun modify(perform: (Modifier) -> Unit) = suspendCoroutine<Unit> { continuation ->
+        launch(threadContext) {
+            delay(50, TimeUnit.MILLISECONDS)
+            synchronized(amounts) {
+                perform(Modifier())
+            }
+            continuation.resume(Unit)
+        }
     }
 
     inner class Modifier {

@@ -1,3 +1,3 @@
 package exchange
 
-class Market(val orders: MarketOrders, val history: MarketHistory, val prices: MarketPrices)
+class Market(val orders: MarketOrders, val history: MarketHistory, val price: MarketPrice)

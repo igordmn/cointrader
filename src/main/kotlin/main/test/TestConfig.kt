@@ -1,4 +1,4 @@
-package main
+package main.test
 
 import adviser.AdviseIndicators
 import java.time.Duration

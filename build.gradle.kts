@@ -65,7 +65,6 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
-    sourceSets["test"].java.srcDir(file("src/backtest/kotlin"))
     sourceSets["test"].java.srcDir(file("src/inttest/kotlin"))
 }
 

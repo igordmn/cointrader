@@ -2,6 +2,6 @@ package exchange
 
 import java.math.BigDecimal
 
-interface MarketPrices {
+interface MarketPrice {
     suspend fun current(): BigDecimal
 }
