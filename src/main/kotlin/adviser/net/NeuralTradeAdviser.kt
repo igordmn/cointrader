@@ -46,9 +46,9 @@ class NeuralTradeAdviser(
     }
 
     private fun CoinToCandles.toMatrix() = DoubleMatrix4D(
-            1, indicators.count, coinCount, previousCount
-    ) { _, indicatorIndex, coinIndex, candleIndex ->
-        val coin = coinOf(coinIndex)
+            1, indicators.count, altCoins.size, previousCount
+    ) { _, indicatorIndex, altCoinIndex, candleIndex ->
+        val coin = altCoins[altCoinIndex]
         val candles = this[coin]!!
         val candle = candles[candleIndex]
         candle.indicatorValue(indicatorIndex)
