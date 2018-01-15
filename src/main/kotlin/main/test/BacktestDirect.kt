@@ -1,25 +1,36 @@
 package main.test
 
 import adviser.net.NeuralTradeAdviser
+import com.binance.api.client.BinanceApiAsyncRestClient
 import com.binance.api.client.BinanceApiClientFactory
-import exchange.Exchange
-import exchange.Market
-import exchange.Markets
+import exchange.*
 import exchange.binance.*
 import exchange.binance.market.BinanceMarketHistory
-import exchange.binance.market.BinanceMarketPrice
 import exchange.test.TestMarketBroker
+import exchange.test.TestMarketPrice
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import trader.AdvisableTrade
+import trader.Trade
 import trader.TradingBot
+import util.lang.truncatedTo
 import java.math.BigDecimal
 import java.nio.file.Paths
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) {
     val operationScale = 32
-    val exchange = testExchange(TestConfig.initialCoins, TestConfig.fee)
+
+    val factory = BinanceApiClientFactory.newInstance()
+    val client = factory.newAsyncRestClient()
+    val info = BinanceInfo()
+    val portfolio = TestPortfolio(TestConfig.initialCoins.mapValues { BigDecimal(it.value) })
+    val time = TestTime(TestConfig.startTime)
+    val markets = TestMarkets(info, client, time, portfolio, TestConfig.fee)
+
     val adviser = NeuralTradeAdviser(
             TestConfig.mainCoin,
             TestConfig.altCoins,
@@ -33,37 +44,57 @@ fun main(args: Array<String>) {
             TestConfig.altCoins,
             TestConfig.period,
             TestConfig.historyCount,
-            exchange.time,
+            time,
             adviser,
-            exchange.markets,
-            exchange.portfolio,
+            markets,
+            portfolio,
             operationScale
     )
-    val bot = TradingBot(TestConfig.period, exchange.time, trade)
+
+    val testTrade = TestTrade(trade, time, TestConfig.period)
+    val bot = TradingBot(TestConfig.period, time, trade)
 
     runBlocking {
+        testTrade.setTimeCloseToNextPeriod()
         bot.run()
     }
 }
 
-private fun testExchange(initialCoins: Map<String, String>, fee: BigDecimal): Exchange {
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newAsyncRestClient()
-    val info = BinanceInfo()
-    val portfolio = TestPortfolio(initialCoins.mapValues { BigDecimal(it.value) })
-    val markets = object : Markets {
-        override fun of(fromCoin: String, toCoin: String): Market? {
-            val name = info.marketName(fromCoin, toCoin)
-            return if (name != null) {
-                val prices = BinanceMarketPrice(name, client)
-                val orders = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee)
-                val history = BinanceMarketHistory(name, client)
-                Market(orders, history, prices)
-            } else {
-                null
-            }
+private class TestMarkets(
+        private val info: BinanceInfo,
+        private val client: BinanceApiAsyncRestClient,
+        private val time: ExchangeTime,
+        private val portfolio: TestPortfolio,
+        private val fee: BigDecimal
+) : Markets {
+    override fun of(fromCoin: String, toCoin: String): Market? {
+        val name = info.marketName(fromCoin, toCoin)
+        return if (name != null) {
+            val history = BinanceMarketHistory(name, client)
+            val prices = TestMarketPrice(time, history)
+            val orders = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee)
+            Market(orders, history, prices)
+        } else {
+            null
         }
     }
-    val time = TestTime(TestConfig.startTime)
-    return Exchange(portfolio, markets, time)
+}
+
+private class TestTrade(
+        private val original: Trade,
+        private val time: TestTime,
+        private val period: Duration
+) : Trade {
+    override suspend fun perform() {
+        delay(50, TimeUnit.MILLISECONDS)
+        original.perform()
+        setTimeCloseToNextPeriod()
+    }
+
+    suspend fun setTimeCloseToNextPeriod() {
+        val distance = Duration.ofMillis(100)
+        val currentTime = time.current()
+        val nextPeriodTime = currentTime.truncatedTo(period) + period
+        time.setCurrent(nextPeriodTime - distance)
+    }
 }

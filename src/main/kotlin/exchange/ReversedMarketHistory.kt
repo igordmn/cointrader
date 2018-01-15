@@ -11,10 +11,10 @@ class ReversedMarketHistory(
 ): MarketHistory {
     override suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
         fun Candle.reverse() = Candle(
-                closePrice = BigDecimal.ONE.divide(closePrice, operationScale, RoundingMode.HALF_UP),
-                openPrice = BigDecimal.ONE.divide(openPrice, operationScale, RoundingMode.HALF_UP),
-                lowPrice = BigDecimal.ONE.divide(highPrice, operationScale, RoundingMode.HALF_UP),
-                highPrice = BigDecimal.ONE.divide(lowPrice, operationScale, RoundingMode.HALF_UP)
+                close = BigDecimal.ONE.divide(close, operationScale, RoundingMode.HALF_UP),
+                open = BigDecimal.ONE.divide(open, operationScale, RoundingMode.HALF_UP),
+                low = BigDecimal.ONE.divide(high, operationScale, RoundingMode.HALF_UP),
+                high = BigDecimal.ONE.divide(low, operationScale, RoundingMode.HALF_UP)
         )
 
         return original.candlesBefore(time, count, period).map(Candle::reverse)

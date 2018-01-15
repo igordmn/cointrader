@@ -32,7 +32,7 @@ class AdvisableTrade(
         }.withMainCoin(historyCount)
 
         val prices = previousCandles.mapValues {
-            it.value.last().closePrice
+            it.value.last().close
         }
         val brokers = markets.mapValues {
             val price = prices[it.key]!!

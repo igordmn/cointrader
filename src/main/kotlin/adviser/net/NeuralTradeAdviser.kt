@@ -55,9 +55,9 @@ class NeuralTradeAdviser(
     }
 
     private fun Candle.indicatorValue(index: Int): Double = when (index) {
-        0 -> closePrice.toDouble()
-        1 -> lowPrice.toDouble()
-        2 -> highPrice.toDouble()
+        0 -> close.toDouble()
+        1 -> low.toDouble()
+        2 -> high.toDouble()
         else -> throw UnsupportedOperationException()
     }
 
