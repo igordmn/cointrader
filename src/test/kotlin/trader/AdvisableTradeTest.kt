@@ -15,8 +15,10 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class TestMarketBrokerSpec : StringSpec({
+class AdvisableTradeTest : StringSpec({
     val currentTime = ZonedDateTime.of(2018, 1, 10, 1, 1, 13, 12, ZoneOffset.UTC).toInstant()
+
+    fun Map<String, BigDecimal>.round(scale: Int) = mapValues { it.value.setScale(scale) }
 
     class TestAdviser : TradeAdviser {
         var advisableCoin: String = ""
@@ -62,6 +64,7 @@ class TestMarketBrokerSpec : StringSpec({
     val portfolio = TestPortfolio(mapOf(
             "BTC" to BigDecimal("1.0"),
             "XRP" to BigDecimal("10.0"),
+            "ETH" to BigDecimal("5.0"),
             "NEO" to BigDecimal("0.0")
     ))
     val markets = object : Markets {
@@ -90,12 +93,52 @@ class TestMarketBrokerSpec : StringSpec({
         runBlocking {
             adviser.advisableCoin = "LTC"
             trade.perform()
-            val amounts = portfolio.amounts()
-            amounts shouldBe mapOf(
-                    "BTC" to BigDecimal("0.0"),
-                    "XRP" to BigDecimal("10.0"),
-                    "NEO" to BigDecimal("0.0"),
-                    "LTC" to BigDecimal("100.0")
+            portfolio.amounts().round(scale = 2) shouldBe mapOf(
+                    "BTC" to BigDecimal("0.00"),
+                    "XRP" to BigDecimal("10.00"),
+                    "NEO" to BigDecimal("0.00"),
+                    "ETH" to BigDecimal("5.00"),
+                    "LTC" to BigDecimal("100.00")
+            )
+
+            adviser.advisableCoin = "LTC"
+            trade.perform()
+            portfolio.amounts().round(scale = 2) shouldBe mapOf(
+                    "BTC" to BigDecimal("0.00"),
+                    "XRP" to BigDecimal("10.00"),
+                    "NEO" to BigDecimal("0.00"),
+                    "ETH" to BigDecimal("5.00"),
+                    "LTC" to BigDecimal("100.00")
+            )
+
+            adviser.advisableCoin = "ETH"
+            trade.perform()
+            portfolio.amounts().round(scale = 2) shouldBe mapOf(
+                    "BTC" to BigDecimal("0.00"),
+                    "XRP" to BigDecimal("10.00"),
+                    "NEO" to BigDecimal("0.00"),
+                    "ETH" to BigDecimal("15.00"),
+                    "LTC" to BigDecimal("0.00")
+            )
+
+            adviser.advisableCoin = "BTC"
+            trade.perform()
+            portfolio.amounts().round(scale = 2) shouldBe mapOf(
+                    "BTC" to BigDecimal("1.50"),
+                    "XRP" to BigDecimal("10.00"),
+                    "NEO" to BigDecimal("0.00"),
+                    "ETH" to BigDecimal("0.00"),
+                    "LTC" to BigDecimal("0.00")
+            )
+
+            adviser.advisableCoin = "BTC"
+            trade.perform()
+            portfolio.amounts().round(scale = 2) shouldBe mapOf(
+                    "BTC" to BigDecimal("1.50"),
+                    "XRP" to BigDecimal("10.00"),
+                    "NEO" to BigDecimal("0.00"),
+                    "ETH" to BigDecimal("0.00"),
+                    "LTC" to BigDecimal("0.00")
             )
         }
     }

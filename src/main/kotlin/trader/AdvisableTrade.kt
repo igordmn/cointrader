@@ -122,10 +122,16 @@ class AdvisableTrade(
             return history().candlesBefore(time, count, period)
         }
 
+        /**
+         * History in main coin prices
+         */
         private fun history(): MarketHistory {
-            return if (isReversed) ReversedMarketHistory(original.history, operationScale) else original.history
+            return if (isReversed) original.history else ReversedMarketHistory(original.history, operationScale)
         }
 
+        /**
+         * Amount of buy/sell main coins
+         */
         fun broker(price: BigDecimal): MarketBroker {
             return if (isReversed) ReversedMarketBroker(original.broker, price, operationScale) else original.broker
         }
