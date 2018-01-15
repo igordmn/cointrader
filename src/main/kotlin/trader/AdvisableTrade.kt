@@ -22,22 +22,31 @@ class AdvisableTrade(
         private val operationScale: Int
 ) : Trade {
     override suspend fun perform() {
+        fun withMainMarket(coin: String) = coin to findMainMarket(coin)
+
         val currentTime = time.current()
         val tradeTime = startOfTradePeriod(currentTime)
-        val allCoins = listOf(mainCoin) + altCoins
 
-        val markets: Map<String, MainMarket> = altCoins.associate { it to findMarket(mainCoin, it) }
-        val previousCandles: CoinToCandles = markets.mapValues { it.value.candlesBefore(tradeTime, historyCount, period) }.withMainCoin(historyCount)
-        val prices: Map<String, BigDecimal> = allCoins.associate { it to previousCandles[it]!!.last().closePrice }
-        val brokers = markets.mapValues { it.value.broker(prices[it.key]!!) }
+        val markets = altCoins.associate(::withMainMarket)
+        val previousCandles = markets.mapValues {
+            it.value.candlesBefore(tradeTime, historyCount, period)
+        }.withMainCoin(historyCount)
+        val prices = previousCandles.mapValues {
+            it.value.last().closePrice
+        }
+        val brokers = markets.mapValues {
+            val price = prices[it.key]!!
+            it.value.broker(price)
+        }
 
-        val capitals: Map<String, BigDecimal> = capitals(prices)
-        val portions: CoinPortions = capitals.portions(operationScale)
+        val capitals = capitals(prices)
+        val portions = capitals.portions(operationScale)
 
         val bestPortions = adviser.bestPortfolioPortions(portions, previousCandles)
 
         rebalance(portions, capitals, bestPortions, brokers)
     }
+
 
     private suspend fun rebalance(
             portions: CoinPortions,
@@ -62,11 +71,11 @@ class AdvisableTrade(
         }
     }
 
-    private fun findMarket(fromCoin: String, toCoin: String): MainMarket {
-        val market: Market? = markets.of(fromCoin, toCoin)
-        val reversedMarket: Market? = markets.of(toCoin, fromCoin)
+    private fun findMainMarket(coin: String): MainMarket {
+        val market: Market? = markets.of(mainCoin, coin)
+        val reversedMarket: Market? = markets.of(coin, mainCoin)
 
-        require(market != null || reversedMarket != null) { "Market $fromCoin -> $toCoin doesn't exist" }
+        require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
 
         val finalMarket: Market
         val isReversed: Boolean
