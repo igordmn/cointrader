@@ -33,8 +33,8 @@ fun main(args: Array<String>) {
             TestConfig.altCoins,
             TestConfig.period,
             TestConfig.historyCount,
-            adviser,
             exchange.time,
+            adviser,
             exchange.markets,
             exchange.portfolio,
             operationScale

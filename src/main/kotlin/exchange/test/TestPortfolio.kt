@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.suspendCoroutine
 
 @Suppress("RedundantSuspendModifier")
-class TestPortfolio(private val initialAmounts: Map<String, BigDecimal>) : Portfolio {
+class TestPortfolio(initialAmounts: Map<String, BigDecimal>) : Portfolio {
     private val threadContext = newSingleThreadContext("testPortfolio")
     private val amounts = HashMap<String, BigDecimal>(initialAmounts)
 
@@ -38,6 +38,6 @@ class TestPortfolio(private val initialAmounts: Map<String, BigDecimal>) : Portf
             amounts[coin] = amount
         }
 
-        operator fun get(coin: String): BigDecimal = amounts[coin]!!
+        operator fun get(coin: String): BigDecimal = amounts[coin] ?: BigDecimal.ZERO
     }
 }

@@ -15,8 +15,8 @@ class AdvisableTrade(
         private val altCoins: List<String>,
         private val period: Duration,
         private val historyCount: Int,
-        private val adviser: TradeAdviser,
         private val time: ExchangeTime,
+        private val adviser: TradeAdviser,
         private val markets: Markets,
         private val portfolio: Portfolio,
         private val operationScale: Int
@@ -24,13 +24,13 @@ class AdvisableTrade(
     override suspend fun perform() {
         fun withMainMarket(coin: String) = coin to findMainMarket(coin)
 
-        val currentTime = time.current()
-        val tradeTime = startOfTradePeriod(currentTime)
-
         val markets = altCoins.associate(::withMainMarket)
+
+        val tradeStart = time.current().truncatedTo(period)
         val previousCandles = markets.mapValues {
-            it.value.candlesBefore(tradeTime, historyCount, period)
+            it.value.candlesBefore(tradeStart, historyCount, period)
         }.withMainCoin(historyCount)
+
         val prices = previousCandles.mapValues {
             it.value.last().closePrice
         }
@@ -44,13 +44,12 @@ class AdvisableTrade(
 
         val bestPortions = adviser.bestPortfolioPortions(portions, previousCandles)
 
-        rebalance(portions, capitals, bestPortions, brokers)
+        rebalance(capitals, portions, bestPortions, brokers)
     }
 
-
     private suspend fun rebalance(
-            portions: CoinPortions,
             capitals: Map<String, BigDecimal>,
+            portions: CoinPortions,
             bestPortions: CoinPortions,
             brokers: Map<String, MarketBroker>
     ) {
@@ -72,8 +71,8 @@ class AdvisableTrade(
     }
 
     private fun findMainMarket(coin: String): MainMarket {
-        val market: Market? = markets.of(mainCoin, coin)
-        val reversedMarket: Market? = markets.of(coin, mainCoin)
+        val market: Market? = markets.of(coin, mainCoin)
+        val reversedMarket: Market? = markets.of(mainCoin, coin)
 
         require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
 
@@ -102,13 +101,17 @@ class AdvisableTrade(
     }
 
     private suspend fun capitals(prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
-        fun coinCapital(amount: BigDecimal, price: BigDecimal) = amount * price
-        val amounts: Map<String, BigDecimal> = portfolio.amounts()
-        return amounts.zipValues(prices, ::coinCapital)
+        fun coinCapital(price: BigDecimal, amount: BigDecimal) = amount * price
+        val amounts = HashMap(portfolio.amounts())
+        for (key in prices.keys) {
+            if (!amounts.containsKey(key)) {
+                amounts[key] = BigDecimal.ZERO
+            }
+        }
+        return prices.zipValues(amounts, ::coinCapital)
     }
 
     private fun maxCoin(portions: Map<String, BigDecimal>): String = portions.maxBy { it.value }!!.key
-    private fun startOfTradePeriod(time: Instant) = time.truncatedTo(period)
 
     private class MainMarket(
             private val original: Market,
