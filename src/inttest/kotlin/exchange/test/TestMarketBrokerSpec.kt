@@ -5,7 +5,7 @@ import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
-class TestMarketOrdersSpec : StringSpec({
+class TestMarketBrokerSpec : StringSpec({
     val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
     val ethInBtcPrice = TestMarketPrice(BigDecimal("0.1"))
     val portfolio = TestPortfolio(mapOf(
@@ -13,8 +13,9 @@ class TestMarketOrdersSpec : StringSpec({
             "LTC" to BigDecimal("20.0"),
             "ETH" to BigDecimal("25.0")
     ))
-    val btcToLtc = TestMarketOrders("BTC", "LTC", portfolio, ltcInBtcPrice)
-    val btcToEth = TestMarketOrders("BTC", "ETH", portfolio, ethInBtcPrice)
+    // todo fee
+    val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO)
+    val btcToEth = TestMarketBroker("BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO)
 
     "buy LTC" {
         runBlocking {

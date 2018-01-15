@@ -16,12 +16,12 @@ class NeuralTradeAdviser(
         private val altCoins: List<String>,
         private val previousCount: Int,
         private val netDirectory: Path,
-        fee: Double,
+        fee: BigDecimal,
         private val indicators: AdviseIndicators
 
 ) : TradeAdviser {
     private val coinCount = 1 + altCoins.size
-    private val net = NNAgent(fee, indicators.count, altCoins.size, previousCount, netDirectory.toAbsolutePath().toString())
+    private val net = NNAgent(fee.toDouble(), indicators.count, altCoins.size, previousCount, netDirectory.toAbsolutePath().toString())
 
     override suspend fun bestPortfolioPortions(currentPortions: CoinPortions, previousCandles: CoinToCandles): CoinPortions {
         val scale = currentPortions[mainCoin]!!.scale()

@@ -5,16 +5,14 @@ import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
 import com.binance.api.client.domain.TimeInForce
 import com.binance.api.client.domain.account.NewOrder
-import exchange.Market
-import exchange.MarketHistory
-import exchange.MarketOrders
+import exchange.MarketBroker
 import java.math.BigDecimal
 import kotlin.coroutines.experimental.suspendCoroutine
 
-class BinanceMarketOrders(
+class BinanceMarketBroker(
         private val name: String,
         private val client: BinanceApiAsyncRestClient
-) : MarketOrders {
+) : MarketBroker {
     override suspend fun buy(amount: BigDecimal) = suspendCoroutine<Unit> { continuation ->
         val order = NewOrder(name, OrderSide.BUY, OrderType.MARKET, TimeInForce.IOC, amount.toString())
         client.newOrder(order) {

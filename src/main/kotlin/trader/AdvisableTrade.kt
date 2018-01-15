@@ -1,5 +1,6 @@
 package trader
 
+import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
 import util.lang.truncatedTo
@@ -23,39 +24,50 @@ class AdvisableTrade(
     override suspend fun perform() {
         val currentTime = time.current()
         val tradeTime = startOfTradePeriod(currentTime)
-
         val allCoins = listOf(mainCoin) + altCoins
-        val markets: Map<String, MainCoinMarket> = altCoins.associate { it to mainCoinMarket(it) }
-        val previousCandles: CoinToCandles = markets.mapValues { it.value.candlesBefore(tradeTime) }.withMainCoin()
+
+        val markets: Map<String, MainMarket> = altCoins.associate { it to findMarket(mainCoin, it) }
+        val previousCandles: CoinToCandles = markets.mapValues { it.value.candlesBefore(tradeTime, historyCount, period) }.withMainCoin(historyCount)
         val prices: Map<String, BigDecimal> = allCoins.associate { it to previousCandles[it]!!.last().closePrice }
+        val brokers = markets.mapValues { it.value.broker(prices[it.key]!!) }
+
         val capitals: Map<String, BigDecimal> = capitals(prices)
-        val portions = capitals.portions(operationScale)
+        val portions: CoinPortions = capitals.portions(operationScale)
 
         val bestPortions = adviser.bestPortfolioPortions(portions, previousCandles)
 
+        rebalance(portions, capitals, bestPortions, brokers)
+    }
+
+    private suspend fun rebalance(
+            portions: CoinPortions,
+            capitals: Map<String, BigDecimal>,
+            bestPortions: CoinPortions,
+            brokers: Map<String, MarketBroker>
+    ) {
         val currentCoin = maxCoin(portions)
         val buyCoin = maxCoin(bestPortions)
 
         if (currentCoin != buyCoin) {
-            val currentCapital = capitals[currentCoin]!!
+            val amount = capitals[currentCoin]!!
             if (currentCoin != mainCoin) {
-                val market = markets[currentCoin]!!
-                val price = prices[currentCoin]!!
-                market.sell(currentCapital, price)
+                val broker = brokers[currentCoin]!!
+                broker.buy(amount)
             }
 
             if (buyCoin != mainCoin) {
-                val market = markets[buyCoin]!!
-                val price = prices[buyCoin]!!
-                market.buy(currentCapital, price)
+                val broker = brokers[buyCoin]!!
+                broker.sell(amount)
             }
         }
     }
 
-    private fun mainCoinMarket(coin: String): MainCoinMarket {
-        val market: Market? = markets.of(mainCoin, coin)
-        val reversedMarket: Market? = markets.of(coin, mainCoin)
-        require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
+    private fun findMarket(fromCoin: String, toCoin: String): MainMarket {
+        val market: Market? = markets.of(fromCoin, toCoin)
+        val reversedMarket: Market? = markets.of(toCoin, fromCoin)
+
+        require(market != null || reversedMarket != null) { "Market $fromCoin -> $toCoin doesn't exist" }
+
         val finalMarket: Market
         val isReversed: Boolean
         if (market != null) {
@@ -65,10 +77,20 @@ class AdvisableTrade(
             finalMarket = reversedMarket!!
             isReversed = true
         }
-        return MainCoinMarket(finalMarket, isReversed)
+
+        return MainMarket(finalMarket, isReversed, operationScale)
     }
 
-    private fun CoinToCandles.withMainCoin(): CoinToCandles = this + Pair(mainCoin, mainCoinCandles())
+    private fun CoinToCandles.withMainCoin(count: Int): CoinToCandles = this + Pair(mainCoin, mainCoinCandles(count))
+
+    private fun mainCoinCandles(count: Int) = List(count) {
+        Candle(
+                BigDecimal.ONE,
+                BigDecimal.ONE,
+                BigDecimal.ONE,
+                BigDecimal.ONE
+        )
+    }
 
     private suspend fun capitals(prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
         fun coinCapital(amount: BigDecimal, price: BigDecimal) = amount * price
@@ -76,45 +98,24 @@ class AdvisableTrade(
         return amounts.zipValues(prices, ::coinCapital)
     }
 
-    private fun mainCoinCandles(): List<Candle> = List(historyCount) { mainCoinCandle() }
-
-    private fun mainCoinCandle() = Candle(
-            BigDecimal.ONE,
-            BigDecimal.ONE,
-            BigDecimal.ONE,
-            BigDecimal.ONE
-    )
-
     private fun maxCoin(portions: Map<String, BigDecimal>): String = portions.maxBy { it.value }!!.key
     private fun startOfTradePeriod(time: Instant) = time.truncatedTo(period)
 
-    private inner class MainCoinMarket(private val market: Market, private val isReversed: Boolean) {
-        suspend fun candlesBefore(time: Instant): List<Candle> {
-            fun Candle.reverse() = Candle(
-                    closePrice = BigDecimal.ONE.divide(closePrice, operationScale),
-                    openPrice = BigDecimal.ONE.divide(openPrice, operationScale),
-                    highPrice = BigDecimal.ONE.divide(highPrice, operationScale),
-                    lowPrice = BigDecimal.ONE.divide(lowPrice, operationScale)
-            )
-
-            val originalCandles = market.history.candlesBefore(time, historyCount, period)
-            return if (isReversed) originalCandles else originalCandles.map(Candle::reverse)
+    private class MainMarket(
+            private val original: Market,
+            private val isReversed: Boolean,
+            private val operationScale: Int
+    ) {
+        suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
+            return history().candlesBefore(time, count, period)
         }
 
-        suspend fun buy(mainCoinAmount: BigDecimal, altCoinPrice: BigDecimal) {
-            if (isReversed) {
-                market.orders.sell(mainCoinAmount)
-            } else {
-                market.orders.buy(mainCoinAmount * altCoinPrice)
-            }
+        private fun history(): MarketHistory {
+            return if (isReversed) ReversedMarketHistory(original.history, operationScale) else original.history
         }
 
-        suspend fun sell(mainCoinAmount: BigDecimal, altCoinPrice: BigDecimal) {
-            if (isReversed) {
-                market.orders.buy(mainCoinAmount)
-            } else {
-                market.orders.sell(mainCoinAmount * altCoinPrice)
-            }
+        fun broker(price: BigDecimal): MarketBroker {
+            return if (isReversed) ReversedMarketBroker(original.broker, price, operationScale) else original.broker
         }
     }
 }

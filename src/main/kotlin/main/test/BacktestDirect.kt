@@ -8,7 +8,7 @@ import exchange.Markets
 import exchange.binance.*
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketPrice
-import exchange.test.TestMarketOrders
+import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
 import kotlinx.coroutines.experimental.runBlocking
@@ -19,7 +19,7 @@ import java.nio.file.Paths
 
 fun main(args: Array<String>) {
     val operationScale = 32
-    val exchange = testExchange(TestConfig.initialCoins)
+    val exchange = testExchange(TestConfig.initialCoins, TestConfig.fee)
     val adviser = NeuralTradeAdviser(
             TestConfig.mainCoin,
             TestConfig.altCoins,
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun testExchange(initialCoins: Map<String, String>): Exchange {
+private fun testExchange(initialCoins: Map<String, String>, fee: BigDecimal): Exchange {
     val factory = BinanceApiClientFactory.newInstance()
     val client = factory.newAsyncRestClient()
     val info = BinanceInfo()
@@ -56,7 +56,7 @@ private fun testExchange(initialCoins: Map<String, String>): Exchange {
             val name = info.marketName(fromCoin, toCoin)
             return if (name != null) {
                 val prices = BinanceMarketPrice(name, client)
-                val orders = TestMarketOrders(fromCoin, toCoin, portfolio, prices)
+                val orders = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee)
                 val history = BinanceMarketHistory(name, client)
                 Market(orders, history, prices)
             } else {
