@@ -5,7 +5,6 @@ import com.binance.api.client.BinanceApiRestClient
 import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
-import com.binance.api.client.domain.market.TickerPrice
 import exchange.binance.market.BinanceMarketLimits
 import java.math.BigDecimal
 
@@ -27,7 +26,7 @@ fun main(args: Array<String>) {
         val limits = allLimits[it]!!.get()
         val price = prices[it]!!
         val volume = volumes[it]!!
-        it to CoinInfo(volume * oneBTCinUSDT, limits.minAmount * price * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * price * oneBTCinUSDT)
+        it to CoinInfo(volume * oneBTCinUSDT, limits.minAmount * price * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
     }
     infos.forEach(::println)
 }
