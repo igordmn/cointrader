@@ -1,4 +1,4 @@
-package main.test
+package main.test.back
 
 import adviser.net.NeuralTradeAdviser
 import com.binance.api.client.BinanceApiAsyncRestClient
@@ -12,6 +12,7 @@ import exchange.test.TestPortfolio
 import exchange.test.TestTime
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
+import main.test.TestConfig
 import trader.AdvisableTrade
 import trader.Trade
 import trader.TradingBot
