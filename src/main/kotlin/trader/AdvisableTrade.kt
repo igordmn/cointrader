@@ -3,6 +3,7 @@ package trader
 import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
+import kotlinx.coroutines.experimental.async
 import org.slf4j.Logger
 import util.lang.truncatedTo
 import util.lang.zipValues
@@ -29,9 +30,7 @@ class AdvisableTrade(
 
         val markets = altCoins.associate(::withMainMarket)
 
-        val previousCandles = markets.mapValues {
-            it.value.candlesBefore(time, historyCount, period)
-        }.withMainCoin(historyCount)
+        val previousCandles = previousCandles(markets, time)
         listener.afterGetCandles(previousCandles)
 
         val prices = previousCandles.mapValues {
@@ -51,6 +50,16 @@ class AdvisableTrade(
         listener.afterGetBestPortions(bestPortions)
 
         rebalance(capitals, portions, bestPortions, brokers)
+    }
+
+    private suspend fun previousCandles(markets: Map<String, MainMarket>, time: Instant): CoinToCandles {
+        return markets.mapValues {
+            async {
+                it.value.candlesBefore(time, historyCount, period)
+            }
+        }.mapValues {
+            it.value.await()
+        }.withMainCoin(historyCount)
     }
 
     private suspend fun rebalance(
