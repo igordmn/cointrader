@@ -57,7 +57,7 @@ public interface BinanceApiService {
 
   @GET("/api/v1/klines")
   Call<List<Candlestick>> getCandlestickBars(@Query("symbol") String symbol, @Query("interval") String interval, @Query("limit") Integer limit,
-                                             @Query("startTime") Long startTime, @Query("endTime") Long endTime);
+                                       @Query("startTime") Long startTime, @Query("endTime") Long endTime);
 
   @GET("/api/v1/ticker/24hr")
   Call<TickerStatistics> get24HrPriceStatistics(@Query("symbol") String symbol);
@@ -87,14 +87,14 @@ public interface BinanceApiService {
   @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
   @GET("/api/v3/order")
   Call<Order> getOrderStatus(@Query("symbol") String symbol, @Query("orderId") Long orderId,
-                             @Query("origClientOrderId") String origClientOrderId, @Query("recvWindow") Long recvWindow,
-                             @Query("timestamp") Long timestamp);
+                                    @Query("origClientOrderId") String origClientOrderId, @Query("recvWindow") Long recvWindow,
+                                    @Query("timestamp") Long timestamp);
 
   @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
   @DELETE("/api/v3/order")
   Call<Void> cancelOrder(@Query("symbol") String symbol, @Query("orderId") Long orderId,
-                         @Query("origClientOrderId") String origClientOrderId, @Query("newClientOrderId") String newClientOrderId,
-                         @Query("recvWindow") Long recvWindow, @Query("timestamp") Long timestamp);
+                             @Query("origClientOrderId") String origClientOrderId, @Query("newClientOrderId") String newClientOrderId,
+                             @Query("recvWindow") Long recvWindow, @Query("timestamp") Long timestamp);
 
   @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
   @GET("/api/v3/openOrders")
