@@ -1,26 +1,23 @@
 package main.info
 
-import com.binance.api.client.BinanceApiAsyncRestClient
-import com.binance.api.client.BinanceApiClientFactory
-import com.binance.api.client.BinanceApiRestClient
 import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.Candlestick
-import com.binance.api.client.domain.market.CandlestickInterval
-import com.binance.api.client.impl.BinanceApiAsyncRestClientImpl
+import exchange.binance.api.BinanceAPI
+import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketLimits
+import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
-fun main(args: Array<String>) {
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newRestClient()
-    val exchangeInfo = client.exchangeInfo
-    val allPrices = client.allPrices
+fun main(args: Array<String>) = runBlocking {
+    val api = binanceAPI()
+    val exchangeInfo = api.exchangeInfo.await()
+    val allPrices = api.latestPrices.await()
 
     val oneBTCinUSDT = BigDecimal(allPrices.find { it.symbol == "BTCUSDT" }!!.price)
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
     val prices: Map<String, BigDecimal> = allPrices.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to BigDecimal(it.price) }
     val allLimits: Map<String, BinanceMarketLimits> = prices.keys.associate { it to BinanceMarketLimits(it, exchangeInfo) }
-    val volumes = info.keys.associate { it to BigDecimal(lastCandle(client, it).quoteAssetVolume) }
+    val volumes = info.keys.associate { it to BigDecimal(lastCandle(api, it).quoteAssetVolume) }
     val volumesList = volumes.entries.sortedByDescending { it.value }
     val topCoins = volumesList.map { it.key }.take(50)
 
@@ -34,8 +31,8 @@ fun main(args: Array<String>) {
 }
 
 
-private fun lastCandle(client: BinanceApiRestClient, coin: String): Candlestick {
-    return client.getCandlestickBars(coin, CandlestickInterval.MONTHLY, 1, null, null).last()
+private suspend fun lastCandle(client: BinanceAPI, coin: String): Candlestick {
+    return client.getCandlestickBars(coin, "1M", 1, null, null).await().last()
 }
 
 // Prices in USDT

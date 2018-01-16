@@ -60,7 +60,8 @@ dependencies {
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("com.github.jnidzwetzki:bitfinex-v2-wss-api:0.5.1")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-android:0.21")
-    compile("com.squareup.okhttp:logging-interceptor:2.7.5")
+    compile("com.squareup.okhttp3:logging-interceptor:3.9.1")
+    compile("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-experimental-adapter:1.0.0")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 

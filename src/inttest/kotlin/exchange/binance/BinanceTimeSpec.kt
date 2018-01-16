@@ -1,5 +1,6 @@
 package exchange.binance
 
+import com.binance.api.client.BinanceApiClientFactory
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
