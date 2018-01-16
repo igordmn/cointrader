@@ -46,7 +46,7 @@ fun main(args: Array<String>) = runBlocking {
 private suspend fun run() {
     val operationScale = 32
 
-    val api = binanceAPI()
+    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val exchangeInfo = api.exchangeInfo.await()
     val info = BinanceInfo()
     val portfolio = TestPortfolio(TestConfig.initialCoins.mapValues { BigDecimal(it.value) })
