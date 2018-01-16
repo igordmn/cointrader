@@ -24,6 +24,7 @@ import trader.Trade
 import trader.TradingBot
 import util.lang.truncatedTo
 import util.log.logger
+import util.python.PythonUtils
 import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
@@ -37,9 +38,12 @@ fun main(args: Array<String>) = runBlocking {
     log.info("Config:\n$TestConfig")
 
     try {
+        PythonUtils.startPython()
         run()
     } catch (e: Exception) {
         log.error("Error on running", e)
+    } finally {
+        PythonUtils.stopPython()
     }
 }
 
