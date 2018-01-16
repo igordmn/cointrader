@@ -5,9 +5,12 @@ import adviser.TradeAdviser
 import exchange.*
 import kotlinx.coroutines.experimental.async
 import org.slf4j.Logger
+import util.lang.round
+import util.lang.roundValues
 import util.lang.truncatedTo
 import util.lang.zipValues
 import util.math.portions
+import util.math.sum
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -50,6 +53,12 @@ class AdvisableTrade(
         listener.afterGetBestPortions(bestPortions)
 
         rebalance(capitals, portions, bestPortions, brokers)
+
+        // todo move from here
+        val newCapitals = capitals(prices)
+        val newPortions = capitals.portions(operationScale)
+        val totalCapital = newCapitals.values.sum()
+        listener.afterTrade(totalCapital, newCapitals, newPortions)
     }
 
     private suspend fun previousCandles(markets: Map<String, MainMarket>, time: Instant): CoinToCandles {
@@ -163,38 +172,65 @@ class AdvisableTrade(
         fun afterGetBestPortions(bestPortions: CoinPortions) = Unit
         fun afterBuyMainCoin(sellingCoin: String, mainAmount: BigDecimal) = Unit
         fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) = Unit
+        fun afterTrade(totalCapital: BigDecimal, capitals: Map<String, BigDecimal>, portions: CoinPortions) = Unit
     }
 
-    class EmptyListener: Listener
+    class EmptyListener : Listener
 
     class LogListener(private val log: Logger) : Listener {
         override fun afterGetCandles(previousCandles: CoinToCandles) {
             val firstAndLastCandles = previousCandles.mapValues {
                 Pair(it.value.first(), it.value.last())
             }.entries.joinToString("\n") {
-                "${it.key}   first ${it.value.first}   last ${it.value.second}"
+                val coin = it.key
+                val firstCandle = Candle(
+                        it.value.first.open.round(6),
+                        it.value.first.close.round(6),
+                        it.value.first.high.round(6),
+                        it.value.first.low.round(6)
+                )
+                val secondCandle = Candle(
+                        it.value.second.open.round(6),
+                        it.value.second.close.round(6),
+                        it.value.second.high.round(6),
+                        it.value.second.low.round(6)
+                )
+                "$coin   first $firstCandle   last $secondCandle"
             }
-            log.info("afterGetCandles\n$firstAndLastCandles\n")
+            log.debug("afterGetCandles\n$firstAndLastCandles\n")
         }
 
         override fun afterGetAmounts(amounts: Map<String, BigDecimal>) {
-            log.info("afterGetAmounts    $amounts")
+            val amountsR = amounts.roundValues(6)
+            log.debug("afterGetAmounts    $amountsR")
         }
 
         override fun afterGetCapitals(capitals: Map<String, BigDecimal>, portions: CoinPortions) {
-            log.info("afterGetCapitals\ncapitals $capitals\nportions $portions")
+            val capitalsR = capitals.roundValues(6)
+            val portionsR = portions.roundValues(6)
+            log.debug("afterGetCapitals\ncapitals $capitalsR\nportions $portionsR")
         }
 
         override fun afterGetBestPortions(bestPortions: CoinPortions) {
-            log.info("afterGetBestPortions\nbestPortions=$bestPortions")
+            val bestPortionsR = bestPortions.roundValues(6)
+            log.debug("afterGetBestPortions\nbestPortions=$bestPortionsR")
         }
 
         override fun afterBuyMainCoin(sellingCoin: String, mainAmount: BigDecimal) {
-            log.info("afterBuyMainCoin   sellingCoin $sellingCoin   mainAmount $mainAmount")
+            val mainAmountR = mainAmount.round(6)
+            log.debug("afterBuyMainCoin   sellingCoin $sellingCoin   mainAmount $mainAmountR")
         }
 
         override fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) {
-            log.info("afterSellMainCoin   buyingCoin $buyingCoin   mainAmount $mainAmount")
+            val mainAmountR = mainAmount.round(6)
+            log.debug("afterSellMainCoin   buyingCoin $buyingCoin   mainAmount $mainAmountR")
+        }
+
+        override fun afterTrade(totalCapital: BigDecimal, capitals: Map<String, BigDecimal>, portions: CoinPortions) {
+            val totalCapitalR = totalCapital.round(6)
+            val capitalsR = capitals.roundValues(6)
+            val portionsR = portions.roundValues(6)
+            log.info("afterTrade   totalCapital $totalCapitalR\ncapitals $capitalsR\nportions $portionsR")
         }
     }
 }

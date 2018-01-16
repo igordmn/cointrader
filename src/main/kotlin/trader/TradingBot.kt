@@ -47,19 +47,19 @@ class TradingBot(
 
     class LogListener(private val log: Logger) : Listener {
         override fun beforeDelay(currentTime: Instant, delay: Duration) {
-            log.info("beforeDelay   currentTime $currentTime   delay $delay")
+            log.debug("beforeDelay   currentTime $currentTime   delay $delay")
         }
 
         override fun beforePerform() {
-            log.info("beforePerform")
+            log.debug("beforePerform")
         }
 
         override fun afterPerform(currentTime: Instant) {
-            log.info("afterPerform   currentTime $currentTime")
+            log.debug("afterPerform   currentTime $currentTime")
         }
 
         override fun afterException(exception: Exception) {
-            log.error("afterException", exception)
+            log.debug("afterException", exception)
         }
     }
 }

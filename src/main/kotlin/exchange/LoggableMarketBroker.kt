@@ -1,6 +1,7 @@
 package exchange
 
 import org.slf4j.Logger
+import util.lang.round
 import java.math.BigDecimal
 
 class LoggableMarketBroker(
@@ -10,14 +11,16 @@ class LoggableMarketBroker(
         private val log: Logger
 ) : MarketBroker {
     override suspend fun buy(amount: BigDecimal) {
-        log.info("buying $amount $toCoin from $fromCoin")
+        val amountR = amount.round(6)
+        log.debug("buying $amountR $toCoin from $fromCoin")
         original.buy(amount)
-        log.info("buying successful")
+        log.debug("buying successful")
     }
 
     override suspend fun sell(amount: BigDecimal) {
-        log.info("selling $amount $toCoin to $fromCoin")
+        val amountR = amount.round(6)
+        log.debug("selling $amountR $toCoin to $fromCoin")
         original.sell(amount)
-        log.info("selling successful")
+        log.debug("selling successful")
     }
 }

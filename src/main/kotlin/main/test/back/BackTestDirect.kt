@@ -133,4 +133,8 @@ private class TestTrade(
         val nextPeriodTime = currentTime.truncatedTo(period) + period
         time.setCurrent(nextPeriodTime - distance)
     }
+
+    fun printPortfolio() {
+
+    }
 }
