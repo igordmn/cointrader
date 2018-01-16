@@ -6,6 +6,8 @@ import com.binance.api.client.domain.OrderType
 import com.binance.api.client.domain.TimeInForce
 import com.binance.api.client.domain.account.NewOrder
 import exchange.MarketBroker
+import org.slf4j.Logger
+import trader.AdvisableTrade
 import java.math.BigDecimal
 import kotlin.coroutines.experimental.suspendCoroutine
 

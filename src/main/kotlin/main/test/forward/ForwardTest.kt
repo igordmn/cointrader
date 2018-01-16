@@ -4,6 +4,7 @@ import adviser.net.NeuralTradeAdviser
 import com.binance.api.client.BinanceApiAsyncRestClient
 import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.domain.general.ExchangeInfo
+import exchange.LoggableMarketBroker
 import exchange.Market
 import exchange.Markets
 import exchange.binance.BinanceInfo
@@ -88,8 +89,12 @@ private class TestMarkets(
             val history = BinanceMarketHistory(name, client)
             val prices = BinanceMarketPrice(name, client)
             val limits = BinanceMarketLimits(name, exchangeInfo)
-            val orders = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits)
-            Market(orders, history, prices)
+            val broker = LoggableMarketBroker(
+                    TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits),
+                    fromCoin, toCoin,
+                    logger(TestMarketBroker::class)
+            )
+            Market(broker, history, prices)
         } else {
             null
         }
