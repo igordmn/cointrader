@@ -9,6 +9,7 @@ import util.math.portions
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
+import java.util.logging.Logger
 
 class AdvisableTrade(
         private val mainCoin: String,
@@ -18,7 +19,8 @@ class AdvisableTrade(
         private val adviser: TradeAdviser,
         private val markets: Markets,
         private val portfolio: Portfolio,
-        private val operationScale: Int
+        private val operationScale: Int,
+        private val listener: Listener
 ) : Trade {
     override suspend fun perform(time: Instant) {
         require(time.truncatedTo(period) == time)
@@ -30,10 +32,12 @@ class AdvisableTrade(
         val previousCandles = markets.mapValues {
             it.value.candlesBefore(time, historyCount, period)
         }.withMainCoin(historyCount)
+        listener.afterGetCandles(previousCandles)
 
         val prices = previousCandles.mapValues {
             it.value.last().close
         }
+
         val brokers = markets.mapValues {
             val price = prices[it.key]!!
             it.value.broker(price)
@@ -41,8 +45,10 @@ class AdvisableTrade(
 
         val capitals = capitals(prices)
         val portions = capitals.portions(operationScale)
+        listener.afterGetCapitals(capitals, portions)
 
         val bestPortions = adviser.bestPortfolioPortions(portions, previousCandles)
+        listener.afterGetBestPortions(bestPortions)
 
         rebalance(capitals, portions, bestPortions, brokers)
     }
@@ -61,11 +67,13 @@ class AdvisableTrade(
             if (currentCoin != mainCoin) {
                 val broker = brokers[currentCoin]!!
                 broker.buy(amount)
+                listener.afterBuyMainCoin(currentCoin, amount)
             }
 
             if (buyCoin != mainCoin) {
                 val broker = brokers[buyCoin]!!
                 broker.sell(amount)
+                listener.afterSellMainCoin(buyCoin, amount)
             }
         }
     }
@@ -103,6 +111,8 @@ class AdvisableTrade(
     private suspend fun capitals(prices: Map<String, BigDecimal>): Map<String, BigDecimal> {
         fun coinCapital(price: BigDecimal, amount: BigDecimal) = amount * price
         val amounts = HashMap(portfolio.amounts())
+        listener.afterGetAmounts(amounts)
+
         for (key in prices.keys) {
             if (!amounts.containsKey(key)) {
                 amounts[key] = BigDecimal.ZERO
@@ -134,6 +144,46 @@ class AdvisableTrade(
          */
         fun broker(price: BigDecimal): MarketBroker {
             return if (isReversed) ReversedMarketBroker(original.broker, price, operationScale) else original.broker
+        }
+    }
+
+    interface Listener {
+        fun afterGetCandles(previousCandles: CoinToCandles) = Unit
+        fun afterGetAmounts(amounts: Map<String, BigDecimal>) = Unit
+        fun afterGetCapitals(capitals: Map<String, BigDecimal>, portions: CoinPortions) = Unit
+        fun afterGetBestPortions(bestPortions: CoinPortions) = Unit
+        fun afterBuyMainCoin(sellingCoin: String, mainAmount: BigDecimal) = Unit
+        fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) = Unit
+    }
+
+    class LogListener(private val log: Logger) : Listener {
+        override fun afterGetCandles(previousCandles: CoinToCandles) {
+            val firstAndLastCandles = previousCandles.mapValues {
+                Pair(it.value.first(), it.value.last())
+            }.entries.joinToString("\n") {
+                "${it.key}   first ${it.value.first}   last ${it.value.second}"
+            }
+            log.info("afterGetCandles\n$firstAndLastCandles\n")
+        }
+
+        override fun afterGetAmounts(amounts: Map<String, BigDecimal>) {
+            log.info("afterGetAmounts    $amounts")
+        }
+
+        override fun afterGetCapitals(capitals: Map<String, BigDecimal>, portions: CoinPortions) {
+            log.info("afterGetCapitals\ncapitals $capitals\nportions $portions")
+        }
+
+        override fun afterGetBestPortions(bestPortions: CoinPortions) {
+            log.info("afterGetBestPortions\nbestPortions=$bestPortions")
+        }
+
+        override fun afterBuyMainCoin(sellingCoin: String, mainAmount: BigDecimal) {
+            log.info("afterBuyMainCoin   sellingCoin $sellingCoin   mainAmount $mainAmount")
+        }
+
+        override fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) {
+            log.info("afterSellMainCoin   buyingCoin $buyingCoin   mainAmount $mainAmount")
         }
     }
 }
