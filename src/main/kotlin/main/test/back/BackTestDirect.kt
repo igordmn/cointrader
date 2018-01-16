@@ -18,6 +18,7 @@ import exchange.test.TestTime
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
 import trader.Trade
@@ -32,14 +33,12 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) = runBlocking {
-    System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("backTest.log").toString())
+    System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("backTest.log").toAbsolutePath().toString())
     val log = LoggerFactory.getLogger("main")
-
-    log.info("Config:\n$TestConfig")
 
     try {
         PythonUtils.startPython()
-        run()
+        run(log)
     } catch (e: Exception) {
         log.error("Error on running", e)
     } finally {
@@ -47,29 +46,32 @@ fun main(args: Array<String>) = runBlocking {
     }
 }
 
-private suspend fun run() {
+private suspend fun run(log: Logger) {
+    val config = TestConfig()
+    log.info("Config:\n$config")
+
     val operationScale = 32
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val exchangeInfo = api.exchangeInfo.await()
     val info = BinanceInfo()
-    val portfolio = TestPortfolio(TestConfig.initialCoins.mapValues { BigDecimal(it.value) })
-    val time = TestTime(TestConfig.startTime)
-    val markets = TestMarkets(info, api, time, portfolio, TestConfig.fee, exchangeInfo)
+    val portfolio = TestPortfolio(config.initialCoins)
+    val time = TestTime(config.startTime)
+    val markets = TestMarkets(info, api, time, portfolio, config.fee, exchangeInfo)
 
     val adviser = NeuralTradeAdviser(
-            TestConfig.mainCoin,
-            TestConfig.altCoins,
-            TestConfig.historyCount,
+            config.mainCoin,
+            config.altCoins,
+            config.historyCount,
             Paths.get("D:/Development/Projects/coin_predict/train_package2/netfile"),
-            TestConfig.fee,
-            TestConfig.indicators
+            config.fee,
+            config.indicators
     )
     val trade = AdvisableTrade(
-            TestConfig.mainCoin,
-            TestConfig.altCoins,
-            TestConfig.period,
-            TestConfig.historyCount,
+            config.mainCoin,
+            config.altCoins,
+            config.period,
+            config.historyCount,
             adviser,
             markets,
             portfolio,
@@ -77,9 +79,9 @@ private suspend fun run() {
             AdvisableTrade.LogListener(logger(AdvisableTrade::class))
     )
 
-    val testTrade = TestTrade(trade, time, TestConfig.period)
+    val testTrade = TestTrade(trade, time, config.period)
     val bot = TradingBot(
-            TestConfig.period, time, trade,
+            config.period, time, trade,
             TradingBot.LogListener(logger(TradingBot::class))
     )
 
