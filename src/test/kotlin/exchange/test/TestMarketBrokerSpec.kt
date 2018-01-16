@@ -14,8 +14,8 @@ class TestMarketBrokerSpec : StringSpec({
             "ETH" to BigDecimal("25.0")
     ))
     // todo fee
-    val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO)
-    val btcToEth = TestMarketBroker("BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO)
+    val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO))
+    val btcToEth = TestMarketBroker("BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO))
 
     "buy LTC" {
         runBlocking {

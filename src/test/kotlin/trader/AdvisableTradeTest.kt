@@ -4,6 +4,7 @@ import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
 import exchange.test.TestMarketBroker
+import exchange.test.TestMarketLimits
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
 import io.kotlintest.matchers.shouldBe
@@ -56,7 +57,7 @@ class AdvisableTradeTest : StringSpec({
     fun market(portfolio: TestPortfolio, fromCoin: String, toCoin: String): Market {
         val price = price(fromCoin, toCoin)
         return Market(
-                TestMarketBroker(fromCoin, toCoin, portfolio, price, BigDecimal.ZERO),
+                TestMarketBroker(fromCoin, toCoin, portfolio, price, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO)),
                 history(price, fromCoin, toCoin),
                 price
         )
