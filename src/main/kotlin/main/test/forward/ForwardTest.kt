@@ -45,7 +45,6 @@ fun main(args: Array<String>) = runBlocking {
             TestConfig.altCoins,
             TestConfig.period,
             TestConfig.historyCount,
-            time,
             adviser,
             markets,
             portfolio,
