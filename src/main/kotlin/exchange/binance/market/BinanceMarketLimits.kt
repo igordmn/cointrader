@@ -14,8 +14,6 @@ class BinanceMarketLimits(
         val lotSizeFilter = symbolInfo.filters.find { it.filterType == FilterType.LOT_SIZE }!!
         val notionalFilter = symbolInfo.filters.find { it.filterType == FilterType.MIN_NOTIONAL }!!
         return MarketLimits.Value(
-                minAmount = BigDecimal(lotSizeFilter.minQty),
-                maxAmount = BigDecimal(lotSizeFilter.maxQty),
                 amountStep = BigDecimal(lotSizeFilter.stepSize),
                 minTotalPrice = BigDecimal(notionalFilter.minNotional)
         )

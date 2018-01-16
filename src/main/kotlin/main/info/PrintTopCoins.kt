@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
         val limits = allLimits[it]!!.get()
         val price = prices[it]!!
         val volume = volumes[it]!!
-        it to CoinInfo(volume * oneBTCinUSDT, limits.minAmount * price * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
+        it to CoinInfo(volume * oneBTCinUSDT / BigDecimal(30), limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
     }
     infos.forEach(::println)
 }
@@ -37,4 +37,4 @@ private fun lastCandle(client: BinanceApiRestClient, coin: String): Candlestick 
 }
 
 // Prices in USDT
-private data class CoinInfo(val volume: BigDecimal, val minAmount: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal)
+private data class CoinInfo(val volume: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal)
