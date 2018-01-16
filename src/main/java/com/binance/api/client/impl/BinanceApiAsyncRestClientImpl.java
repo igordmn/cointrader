@@ -58,7 +58,7 @@ public class BinanceApiAsyncRestClientImpl implements BinanceApiAsyncRestClient 
     binanceApiService.getExchangeInfo().enqueue(new BinanceApiCallbackAdapter<>(callback));
   }
 
-  // Exchange Data endpoints
+  // Market Data endpoints
 
   @Override
   public void getOrderBook(String symbol, Integer limit, BinanceApiCallback<OrderBook> callback) {

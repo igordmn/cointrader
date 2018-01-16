@@ -20,7 +20,6 @@ import com.binance.api.client.domain.market.CandlestickInterval;
 import com.binance.api.client.domain.market.OrderBook;
 import com.binance.api.client.domain.market.TickerPrice;
 import com.binance.api.client.domain.market.TickerStatistics;
-import retrofit2.Call;
 
 import java.util.List;
 
@@ -209,7 +208,7 @@ public interface BinanceApiRestClient {
    *
    * @param asset asset symbol to withdraw
    * @param address address to withdraw to
-   * @param amount amounts to withdraw
+   * @param amount amount to withdraw
    * @param name description/alias of the address
    */
   void withdraw(String asset, String address, String amount, String name);

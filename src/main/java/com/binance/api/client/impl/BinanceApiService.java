@@ -46,7 +46,7 @@ public interface BinanceApiService {
   @GET("/api/v1/exchangeInfo")
   Call<ExchangeInfo> getExchangeInfo();
 
-  // Exchange data endpoints
+  // Market data endpoints
 
   @GET("/api/v1/depth")
   Call<OrderBook> getOrderBook(@Query("symbol") String symbol, @Query("limit") Integer limit);
@@ -116,7 +116,7 @@ public interface BinanceApiService {
 
   @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
   @POST("/wapi/v3/withdraw.html")
-  Call<Void> withdraw(@Query("asset") String asset, @Query("address") String address, @Query("amounts") String amount, @Query("name") String name,
+  Call<Void> withdraw(@Query("asset") String asset, @Query("address") String address, @Query("amount") String amount, @Query("name") String name,
                       @Query("recvWindow") Long recvWindow, @Query("timestamp") Long timestamp);
 
 

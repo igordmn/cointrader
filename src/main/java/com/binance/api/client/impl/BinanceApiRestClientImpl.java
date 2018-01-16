@@ -56,7 +56,7 @@ public class BinanceApiRestClientImpl implements BinanceApiRestClient {
     return executeSync(binanceApiService.getExchangeInfo());
   }
 
-  // Exchange Data endpoints
+  // Market Data endpoints
 
   @Override
   public OrderBook getOrderBook(String symbol, Integer limit) {
