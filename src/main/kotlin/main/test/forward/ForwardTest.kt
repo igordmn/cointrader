@@ -26,7 +26,8 @@ import java.math.BigDecimal
 import java.nio.file.Paths
 
 fun main(args: Array<String>) = runBlocking {
-    System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("forwardTest.log").toAbsolutePath().toString())
+    System.setProperty("log.name", "forwardTest")
+
     val log = LoggerFactory.getLogger("main")
 
     try {
