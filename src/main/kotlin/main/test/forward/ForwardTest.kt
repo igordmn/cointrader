@@ -16,19 +16,27 @@ import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
+import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
 import trader.TradingBot
 import util.log.logger
 import java.math.BigDecimal
 import java.nio.file.Paths
-import java.util.logging.Logger
 
 fun main(args: Array<String>) = runBlocking {
     System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("forwardTest.log").toString())
-    val log = Logger.getLogger("main")
+    val log = LoggerFactory.getLogger("main")
 
     log.info("Config:\n$TestConfig")
 
+    try {
+        run()
+    } catch (e: Exception) {
+        log.error("Error on running", e)
+    }
+}
+
+private suspend fun run() {
     val operationScale = 32
 
     val factory = BinanceApiClientFactory.newInstance()

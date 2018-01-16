@@ -13,6 +13,7 @@ import exchange.test.*
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
+import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
 import trader.Trade
 import trader.TradingBot
@@ -23,14 +24,21 @@ import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import java.util.logging.Logger
 
 fun main(args: Array<String>) = runBlocking {
     System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("backTest.log").toString())
-    val log = Logger.getLogger("main")
+    val log = LoggerFactory.getLogger("main")
 
     log.info("Config:\n$TestConfig")
 
+    try {
+        run()
+    } catch (e: Exception) {
+        log.error("Error on running", e)
+    }
+}
+
+private suspend fun run() {
     val operationScale = 32
 
     val factory = BinanceApiClientFactory.newInstance()

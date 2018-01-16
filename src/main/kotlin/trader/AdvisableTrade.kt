@@ -3,13 +3,13 @@ package trader
 import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
+import org.slf4j.Logger
 import util.lang.truncatedTo
 import util.lang.zipValues
 import util.math.portions
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
-import java.util.logging.Logger
 
 class AdvisableTrade(
         private val mainCoin: String,

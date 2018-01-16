@@ -2,12 +2,12 @@ package trader
 
 import exchange.ExchangeTime
 import kotlinx.coroutines.experimental.NonCancellable.isActive
+import org.slf4j.Logger
 import util.concurrent.delay
 import util.lang.truncatedTo
 import util.log.stackTraceString
 import java.time.Duration
 import java.time.Instant
-import java.util.logging.Logger
 
 class TradingBot(
         private val period: Duration,
@@ -60,8 +60,7 @@ class TradingBot(
         }
 
         override fun afterException(exception: Exception) {
-            val str = exception.stackTraceString()
-            log.severe("afterException\n\n$str\n\n")
+            log.error("afterException", exception)
         }
     }
 }
