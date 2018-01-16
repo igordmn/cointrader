@@ -20,6 +20,7 @@ import util.lang.truncatedTo
 import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) = runBlocking {
@@ -46,7 +47,6 @@ fun main(args: Array<String>) = runBlocking {
             TestConfig.altCoins,
             TestConfig.period,
             TestConfig.historyCount,
-            time,
             adviser,
             markets,
             portfolio,
@@ -87,9 +87,9 @@ private class TestTrade(
         private val time: TestTime,
         private val period: Duration
 ) : Trade {
-    override suspend fun perform() {
+    override suspend fun perform(time: Instant) {
         delay(50, TimeUnit.MILLISECONDS)
-        original.perform()
+        original.perform(time)
         setTimeCloseToNextPeriod()
     }
 

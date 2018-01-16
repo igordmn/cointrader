@@ -6,10 +6,10 @@ import exchange.*
 import exchange.test.TestMarketBroker
 import exchange.test.TestMarketLimits
 import exchange.test.TestPortfolio
-import exchange.test.TestTime
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
+import util.lang.truncatedTo
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -17,7 +17,8 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class AdvisableTradeTest : StringSpec({
-    val currentTime = ZonedDateTime.of(2018, 1, 10, 1, 1, 13, 12, ZoneOffset.UTC).toInstant()
+    val period = Duration.ofMinutes(30)
+    val tradeTime = ZonedDateTime.of(2018, 1, 10, 1, 1, 13, 12, ZoneOffset.UTC).toInstant().truncatedTo(period)
 
     fun Map<String, BigDecimal>.round(scale: Int) = mapValues { it.value.setScale(scale) }
 
@@ -76,14 +77,12 @@ class AdvisableTradeTest : StringSpec({
             else -> null
         }
     }
-    val time = TestTime(currentTime)
     val adviser = TestAdviser()
     val trade = AdvisableTrade(
             mainCoin = "BTC",
             altCoins = listOf("USDT", "LTC", "ETH"),
-            period = Duration.ofMinutes(30),
+            period = period,
             historyCount = 120,
-            time = time,
             adviser = adviser,
             markets = markets,
             portfolio = portfolio,
@@ -93,7 +92,7 @@ class AdvisableTradeTest : StringSpec({
     "perform multiple trades" {
         runBlocking {
             adviser.advisableCoin = "LTC"
-            trade.perform()
+            trade.perform(tradeTime)
             portfolio.amounts().round(scale = 2) shouldBe mapOf(
                     "BTC" to BigDecimal("0.00"),
                     "XRP" to BigDecimal("10.00"),
@@ -103,7 +102,7 @@ class AdvisableTradeTest : StringSpec({
             )
 
             adviser.advisableCoin = "LTC"
-            trade.perform()
+            trade.perform(tradeTime)
             portfolio.amounts().round(scale = 2) shouldBe mapOf(
                     "BTC" to BigDecimal("0.00"),
                     "XRP" to BigDecimal("10.00"),
@@ -113,7 +112,7 @@ class AdvisableTradeTest : StringSpec({
             )
 
             adviser.advisableCoin = "ETH"
-            trade.perform()
+            trade.perform(tradeTime)
             portfolio.amounts().round(scale = 2) shouldBe mapOf(
                     "BTC" to BigDecimal("0.00"),
                     "XRP" to BigDecimal("10.00"),
@@ -123,7 +122,7 @@ class AdvisableTradeTest : StringSpec({
             )
 
             adviser.advisableCoin = "BTC"
-            trade.perform()
+            trade.perform(tradeTime)
             portfolio.amounts().round(scale = 2) shouldBe mapOf(
                     "BTC" to BigDecimal("1.50"),
                     "XRP" to BigDecimal("10.00"),
@@ -133,7 +132,7 @@ class AdvisableTradeTest : StringSpec({
             )
 
             adviser.advisableCoin = "BTC"
-            trade.perform()
+            trade.perform(tradeTime)
             portfolio.amounts().round(scale = 2) shouldBe mapOf(
                     "BTC" to BigDecimal("1.50"),
                     "XRP" to BigDecimal("10.00"),

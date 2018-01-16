@@ -15,20 +15,20 @@ class AdvisableTrade(
         private val altCoins: List<String>,
         private val period: Duration,
         private val historyCount: Int,
-        private val time: ExchangeTime,
         private val adviser: TradeAdviser,
         private val markets: Markets,
         private val portfolio: Portfolio,
         private val operationScale: Int
 ) : Trade {
-    override suspend fun perform() {
+    override suspend fun perform(time: Instant) {
+        require(time.truncatedTo(period) == time)
+
         fun withMainMarket(coin: String) = coin to findMainMarket(coin)
 
         val markets = altCoins.associate(::withMainMarket)
 
-        val tradeStart = time.current().truncatedTo(period)
         val previousCandles = markets.mapValues {
-            it.value.candlesBefore(tradeStart, historyCount, period)
+            it.value.candlesBefore(time, historyCount, period)
         }.withMainCoin(historyCount)
 
         val prices = previousCandles.mapValues {

@@ -1,6 +1,5 @@
 package trader
 
-import exchange.Exchange
 import exchange.ExchangeTime
 import kotlinx.coroutines.experimental.NonCancellable.isActive
 import util.concurrent.delay
@@ -14,14 +13,12 @@ class TradingBot(
 ) {
     suspend fun run() {
         while (isActive) {
-            delay(timeUntilNextPeriod())
-            trade.perform()
+            val currentTime = time.current()
+            val truncated = currentTime.truncatedTo(period)
+            val nextStart = if (truncated == currentTime) truncated else truncated + period
+            val timeForStart = Duration.between(currentTime, nextStart)
+            delay(timeForStart)
+            trade.perform(nextStart)
         }
-    }
-
-    private suspend fun timeUntilNextPeriod(): Duration {
-        val currentTime = time.current()
-        val truncated = currentTime.truncatedTo(period)
-        return if (truncated == currentTime) Duration.ZERO else Duration.between(currentTime, truncated + period)
     }
 }
