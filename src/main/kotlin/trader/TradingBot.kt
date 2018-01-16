@@ -5,7 +5,6 @@ import kotlinx.coroutines.experimental.NonCancellable.isActive
 import org.slf4j.Logger
 import util.concurrent.delay
 import util.lang.truncatedTo
-import util.log.stackTraceString
 import java.time.Duration
 import java.time.Instant
 
