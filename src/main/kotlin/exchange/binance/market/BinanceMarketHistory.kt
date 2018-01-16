@@ -41,6 +41,9 @@ class BinanceMarketHistory(
 
         val result = api.getCandlestickBars(name, period.toServerInterval(), count, null, endMillis).await()
         require(result.size == count)
+        result.zipWithNext { a, b ->
+            require(a.closeTime + 1 == b.openTime)
+        }
         require(result.first().openTime == startMillis)
         require(result.last().closeTime == endMillis)
 
