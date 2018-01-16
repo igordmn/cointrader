@@ -207,12 +207,12 @@ class AdvisableTrade(
 
         override fun afterGetCapitals(capitals: Map<String, BigDecimal>, portions: CoinPortions) {
             val capitalsR = capitals.roundValues(6)
-            val portionsR = portions.roundValues(6)
+            val portionsR = portions.roundValues(2)
             log.debug("afterGetCapitals\ncapitals $capitalsR\nportions $portionsR")
         }
 
         override fun afterGetBestPortions(bestPortions: CoinPortions) {
-            val bestPortionsR = bestPortions.roundValues(6)
+            val bestPortionsR = bestPortions.roundValues(2)
             log.debug("afterGetBestPortions\nbestPortions=$bestPortionsR")
         }
 
@@ -229,7 +229,7 @@ class AdvisableTrade(
         override fun afterTrade(totalCapital: BigDecimal, capitals: Map<String, BigDecimal>, portions: CoinPortions) {
             val totalCapitalR = totalCapital.round(6)
             val capitalsR = capitals.roundValues(6)
-            val portionsR = portions.roundValues(6)
+            val portionsR = portions.roundValues(2)
             log.info("afterTrade   totalCapital $totalCapitalR\ncapitals $capitalsR\nportions $portionsR")
         }
     }
