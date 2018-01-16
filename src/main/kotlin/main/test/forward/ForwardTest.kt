@@ -18,10 +18,17 @@ import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
 import trader.AdvisableTrade
 import trader.TradingBot
+import util.log.logger
 import java.math.BigDecimal
 import java.nio.file.Paths
+import java.util.logging.Logger
 
 fun main(args: Array<String>) = runBlocking {
+    System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("forwardTest.log").toString())
+    val log = Logger.getLogger("main")
+
+    log.info("Config:\n$TestConfig")
+
     val operationScale = 32
 
     val factory = BinanceApiClientFactory.newInstance()
@@ -48,10 +55,14 @@ fun main(args: Array<String>) = runBlocking {
             adviser,
             markets,
             portfolio,
-            operationScale
+            operationScale,
+            AdvisableTrade.LogListener(logger(AdvisableTrade::class))
     )
 
-    val bot = TradingBot(TestConfig.period, time, trade)
+    val bot = TradingBot(
+            TestConfig.period, time, trade,
+            TradingBot.LogListener(logger(TradingBot::class))
+    )
 
     bot.run()
 }
