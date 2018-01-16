@@ -1,10 +1,12 @@
 package main.info
 
+import com.binance.api.client.BinanceApiAsyncRestClient
 import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.BinanceApiRestClient
 import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
+import com.binance.api.client.impl.BinanceApiAsyncRestClientImpl
 import exchange.binance.market.BinanceMarketLimits
 import java.math.BigDecimal
 

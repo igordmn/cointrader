@@ -1,12 +1,10 @@
 package exchange.binance
 
-import com.binance.api.client.BinanceApiClientFactory
 import exchange.binance.market.BinanceMarketHistory
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.time.Duration
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
