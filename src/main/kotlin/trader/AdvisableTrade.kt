@@ -156,6 +156,8 @@ class AdvisableTrade(
         fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) = Unit
     }
 
+    class EmptyListener: Listener
+
     class LogListener(private val log: Logger) : Listener {
         override fun afterGetCandles(previousCandles: CoinToCandles) {
             val firstAndLastCandles = previousCandles.mapValues {

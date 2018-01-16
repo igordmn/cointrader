@@ -86,7 +86,8 @@ class AdvisableTradeTest : StringSpec({
             adviser = adviser,
             markets = markets,
             portfolio = portfolio,
-            operationScale = 30
+            operationScale = 30,
+            listener = AdvisableTrade.EmptyListener()
     )
 
     "perform multiple trades" {
