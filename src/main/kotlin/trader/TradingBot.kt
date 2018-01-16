@@ -59,7 +59,7 @@ class TradingBot(
         }
 
         override fun afterException(exception: Exception) {
-            log.debug("afterException", exception)
+            log.error("afterException", exception)
         }
     }
 }
