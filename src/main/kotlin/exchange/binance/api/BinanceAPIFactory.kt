@@ -2,7 +2,6 @@ package exchange.binance.api
 
 import com.binance.api.client.constant.BinanceApiConstants
 import com.binance.api.client.security.AuthenticationInterceptor
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.experimental.CoroutineCallAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.slf4j.Logger
@@ -28,7 +27,7 @@ fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = nu
 
     val retrofit = Retrofit.Builder()
             .baseUrl(BinanceApiConstants.API_BASE_URL)
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .addCallAdapterFactory(BinanceCallAdapterFactory())
             .addConverterFactory(JacksonConverterFactory.create())
             .client(httpClient.build()).build()
 

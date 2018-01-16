@@ -16,7 +16,7 @@ data class TestConfig(
         ),
         val period: Duration = Duration.ofMinutes(30),
         val historyCount: Int = 160,
-        val fee: BigDecimal = BigDecimal(0.0005),
+        val fee: BigDecimal = BigDecimal("0.0005"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE,
         val startTime: Instant = Instant.now() - Duration.ofDays(10)
 )
