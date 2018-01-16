@@ -17,7 +17,7 @@ fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = nu
     if (log != null) {
         httpClient.addInterceptor(
                 HttpLoggingInterceptor(HttpLoggingInterceptor.Logger {
-                    log.info(it)
+                    log.trace(it)
                 }).setLevel(HttpLoggingInterceptor.Level.BODY)
         )
     }

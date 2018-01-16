@@ -33,7 +33,8 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) = runBlocking {
-    System.setProperty("org.slf4j.simpleLogger.logFile", Paths.get("backTest.log").toAbsolutePath().toString())
+    System.setProperty("log.name", "backTest")
+
     val log = LoggerFactory.getLogger("main")
 
     try {
