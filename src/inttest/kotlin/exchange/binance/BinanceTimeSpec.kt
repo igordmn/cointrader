@@ -1,6 +1,7 @@
 package exchange.binance
 
 import com.binance.api.client.BinanceApiClientFactory
+import exchange.binance.api.binanceAPI
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
@@ -9,9 +10,8 @@ import util.test.between
 import java.time.Duration
 
 class BinanceTimeSpec : StringSpec({
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newAsyncRestClient()
-    val time = BinanceTime(client)
+    val api = binanceAPI()
+    val time = BinanceTime(api)
 
     "current time diff after delay" {
         runBlocking {

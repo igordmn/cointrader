@@ -9,6 +9,8 @@ import org.slf4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 
+const val DEFAULT_RECEIVING_WINDOW = 6_000_000L
+
 fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = null): BinanceAPI {
     val httpClient = OkHttpClient.Builder()
 

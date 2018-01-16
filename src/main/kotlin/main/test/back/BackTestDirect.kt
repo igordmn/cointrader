@@ -1,15 +1,20 @@
 package main.test.back
 
 import adviser.net.NeuralTradeAdviser
-import com.binance.api.client.BinanceApiAsyncRestClient
-import com.binance.api.client.BinanceApiClientFactory
 import com.binance.api.client.domain.general.ExchangeInfo
-import exchange.*
-import exchange.binance.*
+import exchange.ExchangeTime
+import exchange.LoggableMarketBroker
+import exchange.Market
+import exchange.Markets
+import exchange.binance.BinanceInfo
+import exchange.binance.api.BinanceAPI
+import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketLimits
-import exchange.binance.market.loadExchangeInfo
-import exchange.test.*
+import exchange.test.TestHistoricalMarketPrice
+import exchange.test.TestMarketBroker
+import exchange.test.TestPortfolio
+import exchange.test.TestTime
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
@@ -41,13 +46,12 @@ fun main(args: Array<String>) = runBlocking {
 private suspend fun run() {
     val operationScale = 32
 
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newAsyncRestClient()
-    val exchangeInfo = loadExchangeInfo(client)
+    val api = binanceAPI()
+    val exchangeInfo = api.exchangeInfo.await()
     val info = BinanceInfo()
     val portfolio = TestPortfolio(TestConfig.initialCoins.mapValues { BigDecimal(it.value) })
     val time = TestTime(TestConfig.startTime)
-    val markets = TestMarkets(info, client, time, portfolio, TestConfig.fee, exchangeInfo)
+    val markets = TestMarkets(info, api, time, portfolio, TestConfig.fee, exchangeInfo)
 
     val adviser = NeuralTradeAdviser(
             TestConfig.mainCoin,
@@ -81,7 +85,7 @@ private suspend fun run() {
 
 private class TestMarkets(
         private val info: BinanceInfo,
-        private val client: BinanceApiAsyncRestClient,
+        private val api: BinanceAPI,
         private val time: ExchangeTime,
         private val portfolio: TestPortfolio,
         private val fee: BigDecimal,
@@ -90,7 +94,7 @@ private class TestMarkets(
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = info.marketName(fromCoin, toCoin)
         return if (name != null) {
-            val history = BinanceMarketHistory(name, client)
+            val history = BinanceMarketHistory(name, api)
             val prices = TestHistoricalMarketPrice(time, history)
             val limits = BinanceMarketLimits(name, exchangeInfo)
             val broker = LoggableMarketBroker(

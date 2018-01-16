@@ -5,6 +5,7 @@ import com.binance.api.client.domain.market.Candlestick
 import com.binance.api.client.domain.market.CandlestickInterval
 import exchange.Candle
 import exchange.MarketHistory
+import exchange.binance.api.BinanceAPI
 import util.lang.times
 import util.lang.truncatedTo
 import java.math.BigDecimal
@@ -14,15 +15,15 @@ import kotlin.coroutines.experimental.suspendCoroutine
 
 class BinanceMarketHistory(
         private val name: String,
-        private val client: BinanceApiAsyncRestClient
+        private val api: BinanceAPI
 ) : MarketHistory {
-    override suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> = suspendCoroutine { continuation ->
+    override suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
         fun Duration.toServerInterval() = when(this) {
-            Duration.ofMinutes(1) -> CandlestickInterval.ONE_MINUTE
-            Duration.ofMinutes(5) -> CandlestickInterval.FIVE_MINUTES
-            Duration.ofMinutes(15) -> CandlestickInterval.FIFTEEN_MINUTES
-            Duration.ofMinutes(30) -> CandlestickInterval.HALF_HOURLY
-            Duration.ofMinutes(60) -> CandlestickInterval.HOURLY
+            Duration.ofMinutes(1) -> "1m"
+            Duration.ofMinutes(5) -> "5m"
+            Duration.ofMinutes(15) -> "15m"
+            Duration.ofMinutes(30) -> "30m"
+            Duration.ofMinutes(60) -> "1h"
             else -> throw UnsupportedOperationException()
         }
 
@@ -38,11 +39,11 @@ class BinanceMarketHistory(
         val startMillis = start.toEpochMilli()
         val endMillis = end.toEpochMilli()
 
-        client.getCandlestickBars(name, period.toServerInterval(), count, null, endMillis) { result ->
-            require(result.size == count)
-            require(result.first().openTime == startMillis)
-            require(result.last().closeTime == endMillis)
-            continuation.resume(result.map(Candlestick::toLocalCandle))
-        }
+        val result = api.getCandlestickBars(name, period.toServerInterval(), count, null, endMillis).await()
+        require(result.size == count)
+        require(result.first().openTime == startMillis)
+        require(result.last().closeTime == endMillis)
+
+        return result.map(Candlestick::toLocalCandle)
     }
 }

@@ -1,6 +1,7 @@
 package exchange.binance
 
 import com.binance.api.client.BinanceApiClientFactory
+import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketPrice
 import io.kotlintest.matchers.beLessThan
 import io.kotlintest.matchers.should
@@ -12,10 +13,9 @@ import java.math.BigDecimal
 import java.time.Duration
 
 class BinancePricesSpec : StringSpec({
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newAsyncRestClient()
+    val api = binanceAPI()
     val marketName = BinanceInfo().marketName("USDT", "BTC")!!
-    val prices = BinanceMarketPrice(marketName, client)
+    val prices = BinanceMarketPrice(marketName, api)
 
     "get current price multiple times" {
         fun diff(price1: BigDecimal, price2: BigDecimal): Double {

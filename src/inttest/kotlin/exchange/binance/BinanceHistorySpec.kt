@@ -1,6 +1,8 @@
 package exchange.binance
 
 import com.binance.api.client.BinanceApiClientFactory
+import exchange.binance.api.BinanceAPI
+import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
@@ -10,10 +12,9 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class BinanceHistorySpec : StringSpec({
-    val factory = BinanceApiClientFactory.newInstance()
-    val client = factory.newAsyncRestClient()
+    val api = binanceAPI()
     val marketName = BinanceInfo().marketName("USDT", "BTC")!!
-    val history = BinanceMarketHistory(marketName, client)
+    val history = BinanceMarketHistory(marketName, api)
 
     "get candles" {
         runBlocking {
