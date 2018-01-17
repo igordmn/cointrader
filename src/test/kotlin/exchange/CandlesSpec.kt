@@ -15,21 +15,51 @@ class CandlesSpec : FreeSpec({
         val approximatedPrices = LinearApproximatedPrices(candle, operationScale = 2)
 
         "approximate price" {
-            approximatedPrices.exactAt(0.0) shouldBe BigDecimal("10.00")
-            approximatedPrices.exactAt(1.0) shouldBe BigDecimal("12.00")
-            approximatedPrices.exactAt(1.0 / 3) shouldBe BigDecimal("8.00")
-            approximatedPrices.exactAt(2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.exactAt(0.0 / 3) shouldBe BigDecimal("10.00")
             approximatedPrices.exactAt(0.5 / 3) shouldBe BigDecimal("9.00")
+            approximatedPrices.exactAt(1.0 / 3) shouldBe BigDecimal("8.00")
+            approximatedPrices.exactAt(1.5 / 3) shouldBe BigDecimal("12.00")
+            approximatedPrices.exactAt(2.0 / 3) shouldBe BigDecimal("16.00")
             approximatedPrices.exactAt(2.5 / 3) shouldBe BigDecimal("14.00")
+            approximatedPrices.exactAt(3.0 / 3) shouldBe BigDecimal("12.00")
         }
 
-        "approximate high" {
-            approximatedPrices.exactAt(0.0) shouldBe BigDecimal("10.00")
-            approximatedPrices.exactAt(1.0) shouldBe BigDecimal("12.00")
-            approximatedPrices.exactAt(1.0 / 3) shouldBe BigDecimal("8.00")
-            approximatedPrices.exactAt(2.0 / 3) shouldBe BigDecimal("16.00")
-            approximatedPrices.exactAt(0.5 / 3) shouldBe BigDecimal("9.00")
-            approximatedPrices.exactAt(2.5 / 3) shouldBe BigDecimal("14.00")
+        "approximate high at extremums" {
+            approximatedPrices.highBetween(0.0 / 3, 1.0 / 3) shouldBe BigDecimal("10.00")
+            approximatedPrices.highBetween(1.0 / 3, 2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(2.0 / 3, 1.0 / 3) shouldBe BigDecimal("16.00")
+
+            approximatedPrices.highBetween(0.0 / 3, 2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(1.0 / 3, 3.0 / 3) shouldBe BigDecimal("16.00")
+
+            approximatedPrices.highBetween(0.0 / 3, 3.0 / 3) shouldBe BigDecimal("16.00")
+        }
+
+        "approximate high at mids" {
+            approximatedPrices.highBetween(0.0 / 3, 0.5 / 3) shouldBe BigDecimal("10.00")
+            approximatedPrices.highBetween(0.5 / 3, 1.0 / 3) shouldBe BigDecimal("9.00")
+            approximatedPrices.highBetween(1.0 / 3, 1.5 / 3) shouldBe BigDecimal("12.00")
+            approximatedPrices.highBetween(1.5 / 3, 2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(2.0 / 3, 2.5 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(2.5 / 3, 3.0 / 3) shouldBe BigDecimal("14.00")
+
+            approximatedPrices.highBetween(0.0 / 3, 1.5 / 3) shouldBe BigDecimal("12.00")
+            approximatedPrices.highBetween(0.5 / 3, 2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(1.0 / 3, 2.5 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(1.5 / 3, 3.0 / 3) shouldBe BigDecimal("16.00")
+
+            approximatedPrices.highBetween(0.0 / 3, 2.5 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(0.5 / 3, 3.0 / 3) shouldBe BigDecimal("16.00")
+        }
+
+        "approximate high at single points" {
+            approximatedPrices.highBetween(0.0 / 3, 0.0 / 3) shouldBe BigDecimal("10.00")
+            approximatedPrices.highBetween(0.5 / 3, 0.5 / 3) shouldBe BigDecimal("9.00")
+            approximatedPrices.highBetween(1.0 / 3, 1.0 / 3) shouldBe BigDecimal("8.00")
+            approximatedPrices.highBetween(1.5 / 3, 1.5 / 3) shouldBe BigDecimal("12.00")
+            approximatedPrices.highBetween(2.0 / 3, 2.0 / 3) shouldBe BigDecimal("16.00")
+            approximatedPrices.highBetween(2.5 / 3, 2.5 / 3) shouldBe BigDecimal("14.00")
+            approximatedPrices.highBetween(3.0 / 3, 3.0 / 3) shouldBe BigDecimal("12.00")
         }
     }
 
@@ -44,12 +74,13 @@ class CandlesSpec : FreeSpec({
         val approximatedPrices = LinearApproximatedPrices(candle, operationScale = 2)
 
         "approximate price" {
-            approximatedPrices.exactAt(0.0) shouldBe BigDecimal("10.00")
-            approximatedPrices.exactAt(1.0) shouldBe BigDecimal("12.00")
-            approximatedPrices.exactAt(1.0 / 3) shouldBe BigDecimal("14.00")
-            approximatedPrices.exactAt(2.0 / 3) shouldBe BigDecimal("4.00")
+            approximatedPrices.exactAt(0.0 / 3) shouldBe BigDecimal("10.00")
             approximatedPrices.exactAt(0.5 / 3) shouldBe BigDecimal("12.00")
+            approximatedPrices.exactAt(1.0 / 3) shouldBe BigDecimal("14.00")
+            approximatedPrices.exactAt(1.5 / 3) shouldBe BigDecimal("9.00")
+            approximatedPrices.exactAt(2.0 / 3) shouldBe BigDecimal("4.00")
             approximatedPrices.exactAt(2.5 / 3) shouldBe BigDecimal("8.00")
+            approximatedPrices.exactAt(3.0 / 3) shouldBe BigDecimal("12.00")
         }
     }
 })
