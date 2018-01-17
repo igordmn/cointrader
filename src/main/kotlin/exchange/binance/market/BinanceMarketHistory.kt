@@ -1,22 +1,18 @@
 package exchange.binance.market
 
 import com.binance.api.client.domain.market.Candlestick
-import exchange.candle.Candle
 import exchange.MarketHistory
-import exchange.candle.TimedCandle
 import exchange.binance.api.BinanceAPI
+import exchange.candle.Candle
+import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import util.lang.times
 import util.lang.truncatedTo
-import util.lang.zipWithNext
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import util.math.max
-import util.math.min
 
 class BinanceMarketHistory(
         private val name: String,
@@ -60,47 +56,6 @@ class BinanceMarketHistory2(
         private val name: String,
         private val api: BinanceAPI
 ) {
-    suspend fun ReceiveChannel<TimedCandle>.fillSkippedReversed(endTime: Instant): ReceiveChannel<TimedCandle> = produce {
-        var isFirst = true
-        zipWithNext().consumeEach { (current, previous) ->
-            require(previous.closedTime <= current.openTime)
-
-            if (isFirst && current.closedTime < endTime) {
-                send(TimedCandle(
-                        current.closedTime,
-                        endTime,
-                        Candle(
-                                current.candle.close,
-                                current.candle.close,
-                                current.candle.close,
-                                current.candle.close
-                        )
-                ))
-            }
-
-            send(current)
-
-            if (current.openTime != previous.closedTime) {
-                send(TimedCandle(
-                        previous.closedTime,
-                        current.openTime,
-                        Candle(
-                                previous.candle.close,
-                                current.candle.open,
-                                max(previous.candle.close, current.candle.open),
-                                min(previous.candle.close, current.candle.open)
-                        )
-                ))
-            }
-
-            send(previous)
-
-            isFirst = false
-        }
-
-        close()
-    }
-
     suspend fun candlesByMinuteBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
 
@@ -131,8 +86,8 @@ class BinanceMarketHistory2(
         val end = time.truncatedTo(ChronoUnit.MINUTES) - Duration.ofMillis(1)
         val result = api.getCandlestickBars(name, "1m", maxBinanceCount, null, end.toEpochMilli()).await().map(Candlestick::toLocalCandle)
 
-        result.filter { it.closedTime <= end }.asReversed().zipWithNext().forEach { (current, next) ->
-            require(current.closedTime <= next.openTime)
+        result.filter { it.closeTime <= end }.asReversed().zipWithNext().forEach { (current, next) ->
+            require(current.closeTime <= next.openTime)
         }
 
         return result

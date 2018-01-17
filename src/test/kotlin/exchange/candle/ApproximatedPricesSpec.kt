@@ -1,7 +1,5 @@
 package exchange.candle
 
-import exchange.candle.Candle
-import exchange.candle.LinearApproximatedPrices
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
 import java.math.BigDecimal
