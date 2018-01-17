@@ -68,9 +68,8 @@ class ContinuouslyCandles(
         var builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
 
         for (candle in original) {
-            val completedCandle = builder.build(candle)
-            if (completedCandle != null) {
-                send(completedCandle!!)
+            builder.build(candle)?.let {
+                send(it)
                 closeTime -= period
                 builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
             }
