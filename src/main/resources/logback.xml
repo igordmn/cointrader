@@ -35,7 +35,9 @@
             <onMatch>DENY</onMatch>
         </filter>
         <encoder>
-            <pattern>%date [%thread] - 5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} %msg%n
+            </pattern>
         </encoder>
     </appender>
     <appender name="stderr" class="ch.qos.logback.core.ConsoleAppender">
@@ -45,7 +47,9 @@
             <onMatch>ACCEPT</onMatch>
         </filter>
         <encoder>
-            <pattern>%date [%thread] - 5level %logger{36} - %msg%n</pattern>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} %msg%n
+            </pattern>
         </encoder>
     </appender>
     <root level="TRACE">

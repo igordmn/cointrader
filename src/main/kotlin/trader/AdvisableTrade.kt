@@ -5,11 +5,11 @@ import adviser.TradeAdviser
 import exchange.*
 import kotlinx.coroutines.experimental.async
 import org.slf4j.Logger
-import util.lang.round
-import util.lang.roundValues
 import util.lang.truncatedTo
 import util.lang.zipValues
 import util.math.portions
+import util.math.round
+import util.math.roundValues
 import util.math.sum
 import java.math.BigDecimal
 import java.time.Duration

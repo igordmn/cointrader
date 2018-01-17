@@ -8,16 +8,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.experimental.suspendCoroutine
 
 class TestTime(
-        private var current: Instant
+        var current: Instant
 ) : ExchangeTime {
     override suspend fun current(): Instant = suspendCoroutine { continuation ->
         launch {
             delay(50, TimeUnit.MILLISECONDS)
             continuation.resume(current)
         }
-    }
-
-    fun setCurrent(time: Instant) {
-        current = time
     }
 }

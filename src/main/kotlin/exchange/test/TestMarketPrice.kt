@@ -7,16 +7,12 @@ import java.math.BigDecimal
 import kotlin.coroutines.experimental.suspendCoroutine
 
 class TestMarketPrice(
-        private var current: BigDecimal
+        var current: BigDecimal
 ) : MarketPrice {
     override suspend fun current(): BigDecimal = suspendCoroutine { continuation ->
         launch {
             delay(50)
             continuation.resume(current)
         }
-    }
-
-    fun setCurrent(current: BigDecimal) {
-        this.current = current
     }
 }

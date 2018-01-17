@@ -58,7 +58,7 @@ private suspend fun run(log: Logger) {
     val info = BinanceInfo()
     val portfolio = TestPortfolio(config.initialCoins)
     val time = TestTime(config.startTime)
-    val markets = TestMarkets(info, api, time, portfolio, config.fee, exchangeInfo)
+    val markets = TestMarkets(info, api, time, portfolio, config.fee, exchangeInfo, operationScale)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,
@@ -96,13 +96,14 @@ private class TestMarkets(
         private val time: ExchangeTime,
         private val portfolio: TestPortfolio,
         private val fee: BigDecimal,
-        private val exchangeInfo: ExchangeInfo
+        private val exchangeInfo: ExchangeInfo,
+        private val operationScale: Int
 ) : Markets {
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = info.marketName(fromCoin, toCoin)
         return if (name != null) {
             val history = BinanceMarketHistory(name, api)
-            val prices = TestHistoricalMarketPrice(time, history)
+            val prices = TestHistoricalMarketPrice(time, history, operationScale)
             val limits = BinanceMarketLimits(name, exchangeInfo)
             val broker = LoggableMarketBroker(
                     TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits),
@@ -131,6 +132,6 @@ private class TestTrade(
         val distance = Duration.ofMillis(3000)
         val currentTime = time.current()
         val nextPeriodTime = currentTime.truncatedTo(period) + period
-        time.setCurrent(nextPeriodTime - distance)
+        time.current = nextPeriodTime - distance
     }
 }
