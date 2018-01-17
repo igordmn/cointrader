@@ -26,6 +26,6 @@ data class TimedCandle(
         val candle: Candle
 ) {
     init {
-        require(closeTime >= openTime)
+        require(closeTime > openTime)
     }
 }

@@ -61,10 +61,10 @@ class BinanceMarketHistory2(
 
         do {
             val chunk = candlesChunkByMinuteBefore(timeIt)
-            chunk.asReversed().forEach {
+            chunk.forEach {
                 send(it)
             }
-            timeIt = chunk.first().openTime
+            timeIt = chunk.last().openTime
         } while (chunk.isNotEmpty())
 
         close()
@@ -84,9 +84,17 @@ class BinanceMarketHistory2(
 
         val maxBinanceCount = 500
         val end = time.truncatedTo(ChronoUnit.MINUTES) - Duration.ofMillis(1)
-        val result = api.getCandlestickBars(name, "1m", maxBinanceCount, null, end.toEpochMilli()).await().map(Candlestick::toLocalCandle)
+        val result = api
+                .getCandlestickBars(name, "1m", maxBinanceCount, null, end.toEpochMilli())
+                .await()
+                .asSequence()
+                .map(Candlestick::toLocalCandle)
+                .filter { it.closeTime <= end }
+                .filter { it.closeTime > it.openTime }
+                .toList()
+                .asReversed()
 
-        result.filter { it.closeTime <= end }.asReversed().zipWithNext().forEach { (current, next) ->
+        result.zipWithNext().forEach { (current, next) ->
             require(current.closeTime <= next.openTime)
         }
 
