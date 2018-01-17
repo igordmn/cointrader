@@ -1,6 +1,6 @@
 package adviser
 
-import exchange.CoinToCandles
+import exchange.candle.CoinToCandles
 import java.math.BigDecimal
 
 typealias CoinPortions = Map<String, BigDecimal>

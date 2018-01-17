@@ -1,6 +1,8 @@
 package exchange.test
 
 import exchange.*
+import exchange.candle.ApproximatedPricesFactory
+import exchange.candle.Candle
 import kotlinx.coroutines.experimental.delay
 import java.math.BigDecimal
 import java.time.Duration

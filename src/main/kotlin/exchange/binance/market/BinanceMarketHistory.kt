@@ -1,11 +1,9 @@
 package exchange.binance.market
 
-import com.binance.api.client.BinanceApiAsyncRestClient
 import com.binance.api.client.domain.market.Candlestick
-import com.binance.api.client.domain.market.CandlestickInterval
-import exchange.Candle
+import exchange.candle.Candle
 import exchange.MarketHistory
-import exchange.TimedCandle
+import exchange.candle.TimedCandle
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
@@ -17,7 +15,6 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import kotlin.coroutines.experimental.suspendCoroutine
 import util.math.max
 import util.math.min
 

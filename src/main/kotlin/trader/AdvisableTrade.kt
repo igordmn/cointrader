@@ -3,6 +3,8 @@ package trader
 import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
+import exchange.candle.Candle
+import exchange.candle.CoinToCandles
 import kotlinx.coroutines.experimental.async
 import org.slf4j.Logger
 import util.lang.truncatedTo

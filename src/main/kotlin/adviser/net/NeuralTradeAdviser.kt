@@ -3,9 +3,9 @@ package adviser.net
 import adviser.AdviseIndicators
 import adviser.CoinPortions
 import adviser.TradeAdviser
-import exchange.Candle
+import exchange.candle.Candle
 import util.math.DoubleMatrix4D
-import exchange.CoinToCandles
+import exchange.candle.CoinToCandles
 import util.math.DoubleMatrix2D
 import util.math.portions
 import java.math.BigDecimal

@@ -8,6 +8,7 @@ import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketLimits
+import exchange.candle.LinearApproximatedPricesFactory
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio

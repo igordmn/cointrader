@@ -1,6 +1,6 @@
 package exchange
 
-import kotlinx.coroutines.experimental.channels.produce
+import exchange.candle.Candle
 import java.time.Duration
 import java.time.Instant
 

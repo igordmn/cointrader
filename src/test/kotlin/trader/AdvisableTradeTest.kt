@@ -3,6 +3,8 @@ package trader
 import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.*
+import exchange.candle.Candle
+import exchange.candle.CoinToCandles
 import exchange.test.TestMarketBroker
 import exchange.test.TestMarketLimits
 import exchange.test.TestPortfolio

@@ -1,5 +1,6 @@
 package exchange
 
+import exchange.candle.Candle
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
