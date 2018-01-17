@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class TestHistoricalMarketPrice(
         private val time: ExchangeTime,
         private val history: MarketHistory,
-        private val operationScale: Int
+        private val approximatedPricesFactory: ApproximatedPricesFactory
 ) : MarketPrice {
     override suspend fun current(): BigDecimal {
         delay(10, TimeUnit.MILLISECONDS)
@@ -19,5 +19,5 @@ class TestHistoricalMarketPrice(
         return randomPriceIn(candle)
     }
 
-    private fun randomPriceIn(candle: Candle): BigDecimal = candle.approximate(Math.random(), operationScale)
+    private fun randomPriceIn(candle: Candle): BigDecimal = approximatedPricesFactory.forCandle(candle).exactAt(Math.random())
 }

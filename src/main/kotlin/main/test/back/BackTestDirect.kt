@@ -2,10 +2,7 @@ package main.test.back
 
 import adviser.net.NeuralTradeAdviser
 import com.binance.api.client.domain.general.ExchangeInfo
-import exchange.ExchangeTime
-import exchange.LoggableMarketBroker
-import exchange.Market
-import exchange.Markets
+import exchange.*
 import exchange.binance.BinanceInfo
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
@@ -103,7 +100,8 @@ private class TestMarkets(
         val name = info.marketName(fromCoin, toCoin)
         return if (name != null) {
             val history = BinanceMarketHistory(name, api)
-            val prices = TestHistoricalMarketPrice(time, history, operationScale)
+            val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
+            val prices = TestHistoricalMarketPrice(time, history, approximatedPricesFactory)
             val limits = BinanceMarketLimits(name, exchangeInfo)
             val broker = LoggableMarketBroker(
                     TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits),
