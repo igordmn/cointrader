@@ -31,5 +31,5 @@ fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = nu
             .addConverterFactory(JacksonConverterFactory.create())
             .client(httpClient.build()).build()
 
-    return retrofit.create(BinanceAPI::class.java)
+    return BinanceAPI(retrofit.create(BinanceAPIService::class.java))
 }

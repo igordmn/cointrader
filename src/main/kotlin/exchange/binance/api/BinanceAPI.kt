@@ -1,6 +1,5 @@
 package exchange.binance.api
 
-import com.binance.api.client.constant.BinanceApiConstants
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
 import com.binance.api.client.domain.TimeInForce
@@ -10,116 +9,120 @@ import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
 import kotlinx.coroutines.experimental.Deferred
-import retrofit2.http.*
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.newSingleThreadContext
+import java.util.concurrent.TimeUnit
+import kotlin.math.ceil
 
-interface BinanceAPI {
-    @get:GET("/api/v1/time")
-    val serverTime: Deferred<ServerTime>
+private const val MAX_REQUESTS_PER_SECOND = 19
+private const val MAX_RETRY_COUNT = 10
 
-    @get:GET("/api/v1/exchangeInfo")
-    val exchangeInfo: Deferred<ExchangeInfo>
+class BinanceAPI(
+        private val service: BinanceAPIService
+) {
+    private val binanceThread = newSingleThreadContext("binance")
 
-    @get:GET("/api/v1/ticker/allPrices")
-    val latestPrices: Deferred<List<TickerPrice>>
+    suspend fun serverTime(): ServerTime = perform {
+        service.serverTime
+    }
+    
+    suspend fun exchangeInfo(): ExchangeInfo = perform {
+        service.exchangeInfo
+    }
+    
+    suspend fun latestPrices(): List<TickerPrice> = perform {
+        service.latestPrices
+    }
+    
+    suspend fun bookTickers(): List<BookTicker> = perform {
+        service.bookTickers
+    }
 
-    @get:GET("/api/v1/ticker/allBookTickers")
-    val bookTickers: Deferred<List<BookTicker>>
-    // General endpoints
+    suspend fun ping() = perform {
+        service.ping()
+    }
 
-    @GET("/api/v1/ping")
-    fun ping(): Deferred<Void>
+    suspend fun getOrderBook(symbol: String, limit: Int?): OrderBook = perform {
+        service.getOrderBook(symbol, limit)
+    }
 
-    // Market data endpoints
+    suspend fun getAggTrades(symbol: String, fromId: String, limit: Int?, startTime: Long?, endTime: Long?): List<AggTrade> = perform {
+        service.getAggTrades(symbol, fromId, limit, startTime, endTime)
+    }
 
-    @GET("/api/v1/depth")
-    fun getOrderBook(@Query("symbol") symbol: String, @Query("limit") limit: Int?): Deferred<OrderBook>
+    suspend fun getCandlestickBars(symbol: String, interval: String, limit: Int?, startTime: Long?, endTime: Long?): List<Candlestick> = perform {
+        service.getCandlestickBars(symbol, interval, limit, startTime, endTime)
+    }
 
-    @GET("/api/v1/aggTrades")
-    fun getAggTrades(@Query("symbol") symbol: String, @Query("fromId") fromId: String, @Query("limit") limit: Int?,
-                     @Query("startTime") startTime: Long?, @Query("endTime") endTime: Long?): Deferred<List<AggTrade>>
+    suspend fun get24HrPriceStatistics(symbol: String): TickerStatistics = perform {
+        service.get24HrPriceStatistics(symbol)
+    }
 
-    @GET("/api/v1/klines")
-    fun getCandlestickBars(@Query("symbol") symbol: String, @Query("interval") interval: String, @Query("limit") limit: Int?,
-                           @Query("startTime") startTime: Long?, @Query("endTime") endTime: Long?): Deferred<List<Candlestick>>
+    suspend fun newOrder(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String?, stopPrice: String?, icebergQty: String?, recvWindow: Long?, timestamp: Long?): NewOrderResponse = perform {
+        service.newOrder(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, recvWindow, timestamp)
+    }
 
-    @GET("/api/v1/ticker/24hr")
-    fun get24HrPriceStatistics(@Query("symbol") symbol: String): Deferred<TickerStatistics>
+    suspend fun newOrderTest(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String, stopPrice: String, icebergQty: String, recvWindow: Long?, timestamp: Long?) = perform {
+        service.newOrderTest(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, recvWindow, timestamp)
+    }
 
-    // Account endpoints
+    suspend fun getOrderStatus(symbol: String, orderId: Long?, origClientOrderId: String, recvWindow: Long?, timestamp: Long?): Order = perform {
+        service.getOrderStatus(symbol, orderId, origClientOrderId, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @POST("/api/v3/order")
-    fun newOrder(@Query("symbol") symbol: String, @Query("side") side: OrderSide, @Query("type") type: OrderType,
-                 @Query("timeInForce") timeInForce: TimeInForce, @Query("quantity") quantity: String, @Query("price") price: String?,
-                 @Query("stopPrice") stopPrice: String?, @Query("icebergQty") icebergQty: String?,
-                 @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<NewOrderResponse>
+    suspend fun cancelOrder(symbol: String, orderId: Long?, origClientOrderId: String, newClientOrderId: String, recvWindow: Long?, timestamp: Long?) = perform {
+        service.cancelOrder(symbol, orderId, origClientOrderId, newClientOrderId, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @POST("/api/v3/order/test")
-    fun newOrderTest(@Query("symbol") symbol: String, @Query("side") side: OrderSide, @Query("type") type: OrderType,
-                     @Query("timeInForce") timeInForce: TimeInForce, @Query("quantity") quantity: String, @Query("price") price: String,
-                     @Query("stopPrice") stopPrice: String, @Query("icebergQty") icebergQty: String,
-                     @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<Void>
+    suspend fun getOpenOrders(symbol: String, recvWindow: Long?, timestamp: Long?): List<Order> = perform {
+        service.getOpenOrders(symbol, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/api/v3/order")
-    fun getOrderStatus(@Query("symbol") symbol: String, @Query("orderId") orderId: Long?,
-                       @Query("origClientOrderId") origClientOrderId: String, @Query("recvWindow") recvWindow: Long?,
-                       @Query("timestamp") timestamp: Long?): Deferred<Order>
+    suspend fun getAllOrders(symbol: String, orderId: Long?, limit: Int?, recvWindow: Long?, timestamp: Long?): List<Order> = perform {
+        service.getAllOrders(symbol, orderId, limit, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @DELETE("/api/v3/order")
-    fun cancelOrder(@Query("symbol") symbol: String, @Query("orderId") orderId: Long?,
-                    @Query("origClientOrderId") origClientOrderId: String, @Query("newClientOrderId") newClientOrderId: String,
-                    @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<Void>
+    suspend fun getAccount(recvWindow: Long?, timestamp: Long?): Account = perform {
+        service.getAccount(recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/api/v3/openOrders")
-    fun getOpenOrders(@Query("symbol") symbol: String, @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<List<Order>>
+    suspend fun getMyTrades(symbol: String, limit: Int?, fromId: Long?, recvWindow: Long?, timestamp: Long?): List<Trade> = perform {
+        service.getMyTrades(symbol, limit, fromId, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/api/v3/allOrders")
-    fun getAllOrders(@Query("symbol") symbol: String, @Query("orderId") orderId: Long?,
-                     @Query("limit") limit: Int?, @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<List<Order>>
+    suspend fun withdraw(asset: String, address: String, amount: String, name: String, recvWindow: Long?, timestamp: Long?) = perform {
+        service.withdraw(asset, address, amount, name, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/api/v3/account")
-    fun getAccount(@Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<Account>
+    suspend fun getDepositHistory(asset: String, recvWindow: Long?, timestamp: Long?): DepositHistory = perform {
+        service.getDepositHistory(asset, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/api/v3/myTrades")
-    fun getMyTrades(@Query("symbol") symbol: String, @Query("limit") limit: Int?, @Query("fromId") fromId: Long?,
-                    @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<List<Trade>>
+    suspend fun getWithdrawHistory(asset: String, recvWindow: Long?, timestamp: Long?): WithdrawHistory = perform {
+        service.getWithdrawHistory(asset, recvWindow, timestamp)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @POST("/wapi/v3/withdraw.html")
-    fun withdraw(@Query("asset") asset: String, @Query("address") address: String, @Query("amount") amount: String, @Query("name") name: String,
-                 @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<Void>
+    suspend fun getDepositAddress(asset: String, recvWindow: Long?, timestamp: Long?): DepositAddress = perform {
+        service.getDepositAddress(asset, recvWindow, timestamp)
+    }
 
+    suspend fun startUserDataStream(): ListenKey = perform {
+        service.startUserDataStream()
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/wapi/v3/depositHistory.html")
-    fun getDepositHistory(@Query("asset") asset: String, @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<DepositHistory>
+    suspend fun keepAliveUserDataStream(listenKey: String) = perform {
+        service.keepAliveUserDataStream(listenKey)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/wapi/v3/withdrawHistory.html")
-    fun getWithdrawHistory(@Query("asset") asset: String, @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<WithdrawHistory>
+    suspend fun closeAliveUserDataStream(listenKey: String) = perform {
+        service.closeAliveUserDataStream(listenKey)
+    }
 
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
-    @GET("/wapi/v3/depositAddress.html")
-    fun getDepositAddress(@Query("asset") asset: String, @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<DepositAddress>
-
-    // User stream endpoints
-
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_APIKEY_HEADER)
-    @POST("/api/v1/userDataStream")
-    fun startUserDataStream(): Deferred<ListenKey>
-
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_APIKEY_HEADER)
-    @PUT("/api/v1/userDataStream")
-    fun keepAliveUserDataStream(@Query("listenKey") listenKey: String): Deferred<Void>
-
-    @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_APIKEY_HEADER)
-    @DELETE("/api/v1/userDataStream")
-    fun closeAliveUserDataStream(@Query("listenKey") listenKey: String): Deferred<Void>
+    private suspend fun <T> perform(action: suspend () -> Deferred<T>): T {
+        return async(binanceThread) {
+            delay(ceil(1000.0 / MAX_REQUESTS_PER_SECOND).toLong(), TimeUnit.MILLISECONDS)
+            action().await()
+        }.await()
+    }
 }

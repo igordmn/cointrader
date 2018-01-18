@@ -21,7 +21,6 @@ class NeuralTradeAdviser(
         private val indicators: AdviseIndicators
 
 ) : TradeAdviser {
-    private val coinCount = 1 + altCoins.size
     private val net = NNAgent(fee.toDouble(), indicators.count, altCoins.size, previousCount, netDirectory.toAbsolutePath().toString())
 
     override suspend fun bestPortfolioPortions(currentPortions: CoinPortions, previousCandles: CoinToCandles): CoinPortions {
@@ -32,8 +31,8 @@ class NeuralTradeAdviser(
         ).toPortions(scale)
     }
 
-    private fun CoinPortions.toMatrix() = DoubleMatrix2D(1, coinCount) { _, index ->
-        val coin = coinOf(index)
+    private fun CoinPortions.toMatrix() = DoubleMatrix2D(1, altCoins.size) { _, altCoinIndex ->
+        val coin = altCoins[altCoinIndex]
         this[coin]!!.toDouble()
     }
 
