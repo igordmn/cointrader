@@ -19,6 +19,8 @@ const val NANOS_PER_MINUTE = NANOS_PER_SECOND * SECONDS_PER_MINUTE
 const val NANOS_PER_HOUR = NANOS_PER_MINUTE * MINUTES_PER_HOUR
 const val NANOS_PER_DAY = NANOS_PER_HOUR * HOURS_PER_DAY
 
+typealias InstantRange = ClosedRange<Instant>
+
 fun Instant.truncatedTo(duration: Duration): Instant {
     val dur = duration.toNanos()
     require(duration.seconds <= SECONDS_PER_DAY)
@@ -33,12 +35,18 @@ operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multi
 
 fun Duration.toNanosDouble(): Double = NANOS_PER_SECOND * seconds.toDouble() + nano.toDouble()
 
-fun instantRangeOfMilli(startMilli: Long, endMilli: Long): ClosedRange<Instant> {
+fun instantRangeOfMilli(startMilli: Long, endMilli: Long): InstantRange {
     return Instant.ofEpochMilli(startMilli)..Instant.ofEpochMilli(endMilli)
 }
 
-fun ClosedRange<Instant>.portion(time: Instant): Double {
+fun InstantRange.portion(time: Instant): Double {
     require(time in this)
     require(endInclusive > start)
     return Duration.between(start, time).toNanosDouble() / Duration.between(start, endInclusive).toNanosDouble()
+}
+
+data class RangeTimed<out T>(val timeRange: InstantRange, val item: T) {
+    init {
+        require(timeRange.endInclusive > timeRange.start)
+    }
 }

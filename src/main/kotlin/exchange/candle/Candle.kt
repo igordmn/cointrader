@@ -1,9 +1,10 @@
 package exchange.candle
 
+import util.lang.InstantRange
+import util.lang.RangeTimed
 import util.math.max
 import util.math.min
 import java.math.BigDecimal
-import java.time.Instant
 
 typealias CoinToCandles = Map<String, List<Candle>>
 
@@ -23,7 +24,7 @@ data class Candle(
 }
 
 data class TimedCandle(
-        val timeRange: ClosedRange<Instant>,
+        val timeRange: InstantRange,
         val candle: Candle
 ) {
     init {
@@ -42,6 +43,8 @@ data class TimedCandle(
                 )
         )
     }
+
+    fun asRangeTimed() = RangeTimed(timeRange, candle)
 }
 
 infix fun TimedCandle?.addAfter(other: TimedCandle): TimedCandle = this?.addAfter(other) ?: other
