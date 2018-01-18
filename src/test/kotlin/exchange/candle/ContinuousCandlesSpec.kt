@@ -1,5 +1,6 @@
 package exchange.candle
 
+import exchange.item.fillSkipped
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.channels.asReceiveChannel

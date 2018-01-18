@@ -18,7 +18,7 @@ class RangeTimedCutterTest : FreeSpec({
         val cutCandleAtEnd = Any()
 
         @Suppress("UNUSED_PARAMETER")
-        fun cutInsideCandle(ignored: Any, t1: Double, t2: Double): Any = when {
+        fun cutInside(ignored: Any, t1: Double, t2: Double): Any = when {
             t1 < 0.0001 && t2 > 0.9999 -> cutCandle00to10
             t1 == 0.2 && t2 > 0.9999 -> cutCandle02to10
             t1 < 0.0001 && t2 == 0.8 -> cutCandle00to08
@@ -28,7 +28,7 @@ class RangeTimedCutterTest : FreeSpec({
             else -> unsupportedOperation()
         }
 
-        val cutter = RangeTimedCutter(::cutInsideCandle)
+        val cutter = RangeTimedCutter(::cutInside)
 
         "cut small item" - {
             val timedCandle = RangeTimed(instant(20)..instant(30), Any())
@@ -132,18 +132,4 @@ class RangeTimedCutterTest : FreeSpec({
             }
         }
     }
-
-//    "continuously items" {
-//        runBlocking {
-//            val period = Duration.ofMillis(10)
-//            val continuouslyCandles = ContinuouslyRanges()
-//
-//            val items = listOf(
-//                    timed(period = instant(20)..instant(23), open = "15", close = "17", high = "18", low = "9"),
-//                    timed(period = instant(19)..instant(20), open = "14", close = "15", high = "17", low = "8"),
-//                    timed(period = instant(18)..instant(19), open = "13", close = "14", high = "16", low = "7"),
-//                    timed(period = instant(10)..instant(13), open = "12", close = "11", high = "15", low = "6")
-//            )
-//        }
-//    }
 })

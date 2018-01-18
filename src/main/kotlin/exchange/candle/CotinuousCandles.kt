@@ -1,10 +1,10 @@
-package exchange.candle
+package exchange.item
 
+import exchange.candle.Candle
+import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
-import util.lang.*
-import java.time.Duration
 import java.time.Instant
 
 suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandle> = produce {
@@ -15,10 +15,10 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
             send(TimedCandle(
                     current.timeRange.endInclusive..Instant.MAX,
                     Candle(
-                            current.candle.close,
-                            current.candle.close,
-                            current.candle.close,
-                            current.candle.close
+                            current.item.close,
+                            current.item.close,
+                            current.item.close,
+                            current.item.close
                     )
             ))
         } else {
@@ -28,10 +28,10 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
                 send(TimedCandle(
                         current.timeRange.endInclusive..previous!!.timeRange.start,
                         Candle(
-                                current.candle.close,
-                                current.candle.close,
-                                current.candle.close,
-                                current.candle.close
+                                current.item.close,
+                                current.item.close,
+                                current.item.close,
+                                current.item.close
                         )
                 ))
             }
@@ -46,10 +46,10 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
         send(TimedCandle(
                 Instant.MIN..previous!!.timeRange.start,
                 Candle(
-                        previous!!.candle.open,
-                        previous!!.candle.open,
-                        previous!!.candle.open,
-                        previous!!.candle.open
+                        previous!!.item.open,
+                        previous!!.item.open,
+                        previous!!.item.open,
+                        previous!!.item.open
                 )
         ))
     }

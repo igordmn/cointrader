@@ -3,13 +3,14 @@ package util.lang.time
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import util.lang.RangeTimed
+import util.lang.RangeTimedMerger
 import java.time.Duration
 import java.time.Instant
 
-class ContinuouslyRanges<T>(
+class ContinuouslyRanges<out T>(
         private val original: ReceiveChannel<RangeTimed<T>>,
         private val cutter: RangeTimedCutter<T>,
-        private val addBefore : RangeTimed<T>?.(other: RangeTimed<T>) -> RangeTimed<T>,
+        private val merger: RangeTimedMerger<T>,
         private val period: Duration
 ) {
     suspend fun before(endTime: Instant): ReceiveChannel<RangeTimed<T>> = produce<RangeTimed<T>> {
@@ -32,9 +33,7 @@ class ContinuouslyRanges<T>(
                     val leftCandle = cutter.cut(item, Instant.MIN..timeRange.start)
                     val insideCandle = cutter.cut(item, timeRange)
 
-                    if (insideCandle != null) {
-                        combined = combined.addBefore(insideCandle)
-                    }
+                    combined = merger.mergeNullable(insideCandle, combined)
 
                     if (combined != null && combined.timeRange == timeRange) {
                         if (combined.timeRange == timeRange) {

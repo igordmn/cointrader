@@ -50,3 +50,13 @@ data class RangeTimed<out T>(val timeRange: InstantRange, val item: T) {
         require(timeRange.endInclusive > timeRange.start)
     }
 }
+
+interface RangeTimedMerger<T> {
+    fun mergeNullable(a: RangeTimed<T>?, b: RangeTimed<T>?): RangeTimed<T>? = when {
+        a == null -> b
+        b == null -> a
+        else -> merge(a, b)
+    }
+
+    fun merge(a: RangeTimed<T>, b: RangeTimed<T>): RangeTimed<T>
+}

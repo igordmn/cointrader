@@ -2,6 +2,7 @@ package exchange.candle
 
 import util.lang.InstantRange
 import util.lang.RangeTimed
+import util.lang.RangeTimedMerger
 import util.math.max
 import util.math.min
 import java.math.BigDecimal
@@ -23,29 +24,19 @@ data class Candle(
     }
 }
 
-data class TimedCandle(
-        val timeRange: InstantRange,
-        val candle: Candle
-) {
-    init {
-        require(timeRange.endInclusive > timeRange.start)
-    }
+typealias TimedCandle = RangeTimed<Candle>
 
-    infix fun addAfter(other: TimedCandle): TimedCandle {
-        require(other.timeRange.start == timeRange.endInclusive)
-        return TimedCandle(
-                timeRange = timeRange.start..other.timeRange.endInclusive,
-                candle = Candle(
-                        open = candle.open,
-                        close = other.candle.close,
-                        high = max(candle.high, other.candle.high),
-                        low = min(candle.low, other.candle.low)
+class TimedCandleMerger : RangeTimedMerger<Candle> {
+    override fun merge(a: TimedCandle, b: TimedCandle): TimedCandle {
+        require(a.timeRange.endInclusive == b.timeRange.start)
+        return RangeTimed(
+                timeRange = a.timeRange.start..b.timeRange.endInclusive,
+                item = Candle(
+                        open = a.item.open,
+                        close = b.item.close,
+                        high = max(a.item.high, b.item.high),
+                        low = min(a.item.low, b.item.low)
                 )
         )
     }
-
-    fun asRangeTimed() = RangeTimed(timeRange, candle)
 }
-
-infix fun TimedCandle?.addAfter(other: TimedCandle): TimedCandle = this?.addAfter(other) ?: other
-infix fun TimedCandle?.addBefore(other: TimedCandle): TimedCandle = if (this == null) other else other.addAfter(this)
