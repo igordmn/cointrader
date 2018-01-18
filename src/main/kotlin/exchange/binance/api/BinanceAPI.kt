@@ -10,9 +10,7 @@ import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.newSingleThreadContext
-import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 
 private const val MAX_REQUESTS_PER_SECOND = 19
@@ -120,7 +118,7 @@ class BinanceAPI(
 
     private suspend fun <T> perform(action: suspend () -> Deferred<T>): T {
         return async(binanceThread) {
-            delay(ceil(1000.0 / MAX_REQUESTS_PER_SECOND).toLong(), TimeUnit.MILLISECONDS)
+            Thread.sleep(ceil(1000.0 / MAX_REQUESTS_PER_SECOND).toLong())  // don't use delay here. binanceThread need to sleep
             action().await()
         }.await()
     }
