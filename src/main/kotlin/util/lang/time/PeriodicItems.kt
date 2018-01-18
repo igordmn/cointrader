@@ -7,7 +7,7 @@ import util.lang.RangeTimedMerger
 import java.time.Duration
 import java.time.Instant
 
-class ContinuouslyRanges<out T>(
+class PeriodicItems<out T>(
         private val original: ReceiveChannel<RangeTimed<T>>,
         private val cutter: RangeTimedCutter<T>,
         private val merger: RangeTimedMerger<T>,

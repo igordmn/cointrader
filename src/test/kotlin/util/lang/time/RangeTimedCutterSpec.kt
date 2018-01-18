@@ -6,7 +6,7 @@ import util.lang.RangeTimed
 import util.lang.unsupportedOperation
 import java.time.Instant
 
-class RangeTimedCutterTest : FreeSpec({
+class RangeTimedCutterSpec : FreeSpec({
     fun instant(millis: Int) = Instant.ofEpochMilli(millis.toLong())
 
     "cut timed" - {
