@@ -12,6 +12,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 class BinanceHistorySpec : StringSpec({
     val operationScale = 32
@@ -23,7 +24,10 @@ class BinanceHistorySpec : StringSpec({
 
     "get candles" {
         runBlocking {
-            val historyEndTime = ZonedDateTime.of(2018, 1, 10, 12, 0, 2, 0, ZoneOffset.UTC).toInstant()
+            val historyEndTime =
+                    ZonedDateTime.of(2018, 1, 10, 12, 0, 2, 0, ZoneOffset.UTC)
+                    .toInstant()
+                    .truncatedTo(ChronoUnit.MINUTES)
             val count = 10
             val period = Duration.ofMinutes(5)
 

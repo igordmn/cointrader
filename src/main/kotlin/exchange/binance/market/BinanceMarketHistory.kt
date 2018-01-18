@@ -23,8 +23,8 @@ class BinanceMarketHistory(
 ) : MarketHistory {
     override suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
         val candles = candlesByMinuteBefore(time)
-        val normilized = normalizer.normalizeBefore(candles, time, period)
-        return normilized.map { it.item }.take(count).toList()
+        val normalized = normalizer.normalizeBefore(candles, time, period)
+        return normalized.map { it.item }.take(count).toList()
     }
 
     private fun candlesByMinuteBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
