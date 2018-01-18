@@ -31,17 +31,14 @@ fun Instant.truncatedTo(duration: Duration): Instant {
 
 operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multiplier.toLong())
 
+fun Duration.toNanosDouble(): Double = NANOS_PER_SECOND * seconds.toDouble() + nano.toDouble()
+
 fun instantRangeOfMilli(startMilli: Long, endMilli: Long): ClosedRange<Instant> {
     return Instant.ofEpochMilli(startMilli)..Instant.ofEpochMilli(endMilli)
 }
 
-infix fun ClosedRange<Instant>.intersects(other: ClosedRange<Instant>): Boolean {
-    return endInclusive > other.start || other.endInclusive > start
-}
-
 fun ClosedRange<Instant>.portion(time: Instant): Double {
-    require(timeRange.endInclusive >= timeRange.start)
-    require(time in timeRange)
-
-    return Duration.between(time, end) / Duration.between(start, end)
+    require(time in this)
+    require(endInclusive > start)
+    return Duration.between(start, time).toNanosDouble() / Duration.between(start, endInclusive).toNanosDouble()
 }
