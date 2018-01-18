@@ -13,7 +13,7 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlin.math.ceil
 
-private const val MAX_REQUESTS_PER_SECOND = 10
+private const val MAX_REQUESTS_PER_SECOND = 10 // binance has 20 request per second limit. set 10 for sure
 
 class BinanceAPI(
         private val service: BinanceAPIService
