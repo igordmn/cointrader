@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.ceil
 
 private const val MAX_REQUESTS_PER_SECOND = 19
-private const val MAX_RETRY_COUNT = 10
 
 class BinanceAPI(
         private val service: BinanceAPIService
