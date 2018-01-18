@@ -24,7 +24,7 @@ class BinanceInfo {
         val fromCoinBinanceName = standardNameToBinance[fromCoin]?: fromCoin
         val toCoinBinanceName = standardNameToBinance[toCoin]?: toCoin
         return when {
-            fromCoin == "BTC" && toCoin in btcMarkets -> "{$toCoinBinanceName}BTC"
+            fromCoin == "BTC" && toCoin in btcMarkets -> "${toCoinBinanceName}BTC"
             toCoin == "BTC" && fromCoin in btcReversedMarkets -> "BTC$fromCoinBinanceName"
             else -> null
         }
