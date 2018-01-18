@@ -130,6 +130,7 @@ private class TestTrade(
     }
 
     suspend fun setTimeCloseToNextPeriod() {
+        // todo при ошибке, будет ddosить сервер каждые 100мс
         val distance = Duration.ofMillis(100)
         val currentTime = time.current()
         val nextPeriodTime = currentTime.truncatedTo(period) + period
