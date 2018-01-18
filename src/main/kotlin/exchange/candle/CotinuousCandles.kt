@@ -15,7 +15,7 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
     consumeEach { current ->
         if (previous == null) {
             send(TimedCandle(
-                    current.timeRange.start..Instant.MAX,
+                    current.timeRange.endInclusive..Instant.MAX,
                     Candle(
                             current.candle.close,
                             current.candle.close,
@@ -24,11 +24,11 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
                     )
             ))
         } else {
-            require(current.timeRange.start <= previous!!.timeRange.endInclusive)
+            require(current.timeRange.endInclusive <= previous!!.timeRange.start)
 
-            if (current.timeRange.start != previous!!.timeRange.endInclusive) {
+            if (current.timeRange.endInclusive != previous!!.timeRange.start) {
                 send(TimedCandle(
-                        current.timeRange.start..previous!!.timeRange.endInclusive,
+                        current.timeRange.endInclusive..previous!!.timeRange.start,
                         Candle(
                                 current.candle.close,
                                 current.candle.close,
@@ -46,7 +46,7 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
 
     if (previous != null) {
         send(TimedCandle(
-                Instant.MIN..previous!!.timeRange.endInclusive,
+                Instant.MIN..previous!!.timeRange.start,
                 Candle(
                         previous!!.candle.open,
                         previous!!.candle.open,
