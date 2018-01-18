@@ -1,7 +1,5 @@
 package exchange.binance
 
-import com.binance.api.client.BinanceApiClientFactory
-import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
@@ -33,7 +31,7 @@ class BinanceHistorySpec : StringSpec({
 
             val candles = history.candlesBefore(historyEndTime, count, period)
             val candlesStr = candles.joinToString("\n")
-            println("Candles before $historyEndTime:\n$candlesStr with period $period")
+            println("Candles before $historyEndTime with period $period:\n$candlesStr")
 
             candles.size shouldBe count
         }
