@@ -1,7 +1,5 @@
-package exchange.item
+package exchange.candle
 
-import exchange.candle.Candle
-import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce

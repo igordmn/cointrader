@@ -18,7 +18,7 @@ class PeriodicItemsSpec : FreeSpec({
     fun cutInside(range: IntRange, t1: Double, t2: Double): IntRange {
         require(t1 in 0.0..1.0)
         require(t2 in 0.0..1.0)
-        require(t1 < t2)
+        require(t1 <= t2)
 
         val start = range.start + (range.endInclusive - range.start) * t1
         val end = range.start + (range.endInclusive - range.start) * t1
@@ -28,7 +28,7 @@ class PeriodicItemsSpec : FreeSpec({
     val merger = object : RangeTimedMerger<IntRange> {
         override fun merge(a: RangeTimed<IntRange>, b: RangeTimed<IntRange>): RangeTimed<IntRange> {
             require(a.timeRange.endInclusive == b.timeRange.start)
-            return RangeTimed(b.timeRange.start..a.timeRange.endInclusive, b.item.start..a.item.endInclusive)
+            return RangeTimed(a.timeRange.start..b.timeRange.endInclusive, a.item.start..b.item.endInclusive)
         }
     }
 

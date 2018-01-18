@@ -1,6 +1,5 @@
 package exchange.candle
 
-import util.lang.InstantRange
 import util.lang.RangeTimed
 import util.lang.RangeTimedMerger
 import util.math.max

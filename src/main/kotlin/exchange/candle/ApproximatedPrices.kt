@@ -16,12 +16,17 @@ class LinearApproximatedPricesFactory(
 }
 
 interface ApproximatedPrices {
-    fun cutCandle(t1: Double, t2: Double) = Candle(
-            open = exactAt(t1),
-            close = exactAt(t2),
-            high = highBetween(t1, t2),
-            low = lowBetween(t1, t2)
-    )
+    fun cutCandle(t1: Double, t2: Double): Candle {
+        require(t1 in 0.0..1.0)
+        require(t2 in 0.0..1.0)
+        require(t1 <= t2)
+        return Candle(
+                open = exactAt(t1),
+                close = exactAt(t2),
+                high = highBetween(t1, t2),
+                low = lowBetween(t1, t2)
+        )
+    }
 
     fun exactAt(t: Double): BigDecimal
     fun highBetween(t1: Double, t2: Double): BigDecimal
