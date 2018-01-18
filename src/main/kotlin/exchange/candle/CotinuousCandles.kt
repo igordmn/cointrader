@@ -3,6 +3,9 @@ package exchange.candle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
+import util.lang.max
+import util.lang.min
+import util.lang.portion
 import java.time.Duration
 import java.time.Instant
 
@@ -12,8 +15,7 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
     consumeEach { current ->
         if (previous == null) {
             send(TimedCandle(
-                    current.closeTime,
-                    Instant.MAX,
+                    current.timeRange.start..Instant.MAX,
                     Candle(
                             current.candle.close,
                             current.candle.close,
@@ -22,12 +24,11 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
                     )
             ))
         } else {
-            require(current.closeTime <= previous!!.openTime)
+            require(current.timeRange.start <= previous!!.timeRange.endInclusive)
 
-            if (current.closeTime != previous!!.openTime) {
+            if (current.timeRange.start != previous!!.timeRange.endInclusive) {
                 send(TimedCandle(
-                        current.closeTime,
-                        previous!!.openTime,
+                        current.timeRange.start..previous!!.timeRange.endInclusive,
                         Candle(
                                 current.candle.close,
                                 current.candle.close,
@@ -45,8 +46,7 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
 
     if (previous != null) {
         send(TimedCandle(
-                Instant.MIN,
-                previous!!.openTime,
+                Instant.MIN..previous!!.timeRange.endInclusive,
                 Candle(
                         previous!!.candle.open,
                         previous!!.candle.open,
@@ -59,67 +59,62 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
     close()
 }
 
-class ContinuouslyCandles(
-        private val original: ReceiveChannel<TimedCandle>,
-        private val approximatedPricesFactory: ApproximatedPricesFactory,
-        private val period: Duration
+class TimedCandleCutter(
+        private val cutInsideCandle: (Candle, t1: Double, t2: Double) -> Candle
 ) {
-    suspend fun before(endTime: Instant): ReceiveChannel<TimedCandle> = produce {
-        var closeTime = endTime
-        var builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
-
-        for (candle in original) {
-            builder.addAndTryBuild(candle)?.let {
-                send(it)
-                closeTime -= period
-                builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
-                // todo при частичных candle, они пропускаются
-            }
+    fun cut(timedCandle: TimedCandle, timeRange: ClosedRange<Instant>): TimedCandle? = when {
+        timeRange.endInclusive <= timedCandle.timeRange.start -> null
+        timeRange.start >= timedCandle.timeRange.endInclusive -> null
+        else -> {
+            val start = max(timeRange.start, timedCandle.timeRange.start)
+            val end = min(timeRange.endInclusive, timedCandle.timeRange.endInclusive)
+            val t1 = timedCandle.timeRange.portion(start)
+            val t2 = timedCandle.timeRange.portion(end)
+            val candle = cutInsideCandle(timedCandle.candle, t1, t2)
+            TimedCandle(start..end, candle)
         }
     }
+}
 
-    private fun portion(time: Instant, timeRange: ClosedRange<Instant>): Double {
-        require(timeRange.endInclusive >= timeRange.start)
-        require(time in timeRange)
+class ContinuouslyCandles(
+        private val original: ReceiveChannel<TimedCandle>,
+        private val cutter: TimedCandleCutter,
+        private val period: Duration
+) {
+    suspend fun before(endTime: Instant): ReceiveChannel<TimedCandle> = produce<TimedCandle> {
+        var closeTime = endTime
+        var combinedCandle: TimedCandle? = null
 
-        return Duration.between(time, end) / Duration.between(start, end)
-    }
+        var remainder: TimedCandle? = null
+        val it = original.iterator()
+        while (remainder != null || it.hasNext()) {
+            val candle = remainder ?: it.next()
+            val timeRange = closeTime - period..closeTime
 
-    private inner class CombinedCandleReverseBuilder(
-            private val openTime: Instant,
-            private val closeTime: Instant
-    ) {
-        private val candles = ArrayList<TimedCandle>()
+            when {
+                candle.timeRange.endInclusive <= timeRange.start -> {
+                    closeTime -= period
+                    combinedCandle = null
+                    remainder = candle
+                }
+                candle.timeRange.start < timeRange.endInclusive -> {
+                    val leftCandle = cutter.cut(candle, Instant.MIN..timeRange.start)
+                    val insideCandle = cutter.cut(candle, timeRange)
 
-        fun addAndTryBuild(candle: TimedCandle): TimedCandle? {
-            require(candles.isEmpty() || candles.last().openTime == candle.closeTime)
-            require(candle.closeTime > openTime && candle.openTime < closeTime)
+                    if (insideCandle != null) {
+                        combinedCandle = combinedCandle.addBefore(insideCandle)
+                    }
 
-            if (candle.openTime < openTime || candle.closeTime > closeTime) {
-                val t1 = if (candle.openTime < openTime) portion(openTime, candle.openTime..candle.closeTime) else 0.0
-                val t2 = if (candle.closeTime > closeTime) portion(closeTime, candle.openTime..candle.closeTime) else 1.0
-                val approximatedPrices = approximatedPricesFactory.forCandle(candle.candle)
-                val cutCandle = TimedCandle(openTime, closeTime, approximatedPrices.cutCandle(t1, t2))
-                candles.add(cutCandle)
-            } else {
-                candles.add(candle)
-            }
+                    if (combinedCandle != null && combinedCandle.timeRange == timeRange) {
+                        if (combinedCandle.timeRange == timeRange) {
+                            send(combinedCandle)
+                            combinedCandle = null
+                            closeTime -= period
+                        }
+                    }
 
-            val isComplete = candles.size > 0 && openTime >= candles.last().openTime && closeTime <= candles.first().closeTime
-
-            return if (isComplete) {
-                TimedCandle(
-                        openTime,
-                        closeTime,
-                        Candle(
-                                open = candles.first().candle.open,
-                                close = candles.last().candle.close,
-                                high = candles.maxBy { it.candle.high }!!.candle.high,
-                                low = candles.minBy { it.candle.high }!!.candle.low
-                        )
-                )
-            } else {
-                null
+                    remainder = leftCandle
+                }
             }
         }
     }

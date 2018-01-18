@@ -6,6 +6,7 @@ import adviser.TradeAdviser
 import exchange.candle.Candle
 import util.math.DoubleMatrix4D
 import exchange.candle.CoinToCandles
+import util.lang.unsupportedOperation
 import util.math.DoubleMatrix2D
 import util.math.portions
 import java.math.BigDecimal
@@ -58,7 +59,7 @@ class NeuralTradeAdviser(
         0 -> close.toDouble()
         1 -> low.toDouble()
         2 -> high.toDouble()
-        else -> throw UnsupportedOperationException()
+        else -> unsupportedOperation()
     }
 
     private fun coinOf(index: Int): String = if (index == 0) mainCoin else altCoins[index - 1]

@@ -3,6 +3,7 @@ package util.lang
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
+import java.time.temporal.Temporal
 import java.time.temporal.UnsupportedTemporalTypeException
 
 const val HOURS_PER_DAY = 24
@@ -29,3 +30,18 @@ fun Instant.truncatedTo(duration: Duration): Instant {
 }
 
 operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multiplier.toLong())
+
+fun instantRangeOfMilli(startMilli: Long, endMilli: Long): ClosedRange<Instant> {
+    return Instant.ofEpochMilli(startMilli)..Instant.ofEpochMilli(endMilli)
+}
+
+infix fun ClosedRange<Instant>.intersects(other: ClosedRange<Instant>): Boolean {
+    return endInclusive > other.start || other.endInclusive > start
+}
+
+fun ClosedRange<Instant>.portion(time: Instant): Double {
+    require(timeRange.endInclusive >= timeRange.start)
+    require(time in timeRange)
+
+    return Duration.between(time, end) / Duration.between(start, end)
+}

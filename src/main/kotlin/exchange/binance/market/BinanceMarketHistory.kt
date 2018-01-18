@@ -7,8 +7,10 @@ import exchange.candle.Candle
 import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
+import util.lang.instantRangeOfMilli
 import util.lang.times
 import util.lang.truncatedTo
+import util.lang.unsupportedOperation
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -25,7 +27,7 @@ class BinanceMarketHistory(
             Duration.ofMinutes(15) -> "15m"
             Duration.ofMinutes(30) -> "30m"
             Duration.ofMinutes(60) -> "1h"
-            else -> throw UnsupportedOperationException()
+            else -> unsupportedOperation()
         }
 
         fun Candlestick.toLocalCandle() = Candle(
@@ -64,7 +66,7 @@ class BinanceMarketHistory2(
             chunk.forEach {
                 send(it)
             }
-            timeIt = chunk.last().openTime
+            timeIt = chunk.last().timeRange.start
         } while (chunk.isNotEmpty())
 
         close()
@@ -72,8 +74,7 @@ class BinanceMarketHistory2(
 
     private suspend fun candlesChunkByMinuteBefore(time: Instant): List<TimedCandle> {
         fun Candlestick.toLocalCandle() = TimedCandle(
-                Instant.ofEpochMilli(openTime),
-                Instant.ofEpochMilli(closeTime),
+                instantRangeOfMilli(openTime, closeTime),
                 Candle(
                         BigDecimal(open),
                         BigDecimal(close),
@@ -89,13 +90,13 @@ class BinanceMarketHistory2(
                 .await()
                 .asSequence()
                 .map(Candlestick::toLocalCandle)
-                .filter { it.closeTime <= end }
-                .filter { it.closeTime > it.openTime }
+                .filter { it.timeRange.endInclusive <= end }
+                .filter { it.timeRange.endInclusive > it.timeRange.start }
                 .toList()
                 .asReversed()
 
         result.zipWithNext().forEach { (current, next) ->
-            require(current.closeTime <= next.openTime)
+            require(current.timeRange.endInclusive <= next.timeRange.start)
         }
 
         return result

@@ -12,6 +12,7 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
 import util.lang.truncatedTo
+import util.lang.unsupportedOperation
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -44,7 +45,7 @@ class AdvisableTradeTest : StringSpec({
             fromCoin == "USDT" && toCoin == "BTC" -> BigDecimal("10000")
             fromCoin == "BTC" && toCoin == "LTC" -> BigDecimal("0.01")
             fromCoin == "BTC" && toCoin == "ETH" -> BigDecimal("0.1")
-            else -> throw UnsupportedOperationException()
+            else -> unsupportedOperation()
         }
     }
     
@@ -53,7 +54,7 @@ class AdvisableTradeTest : StringSpec({
             fromCoin == "USDT" && toCoin == "BTC" -> List(count) { candle(price.current()) }
             fromCoin == "BTC" && toCoin == "LTC" -> List(count) { candle(price.current()) }
             fromCoin == "BTC" && toCoin == "ETH" -> List(count) { candle(price.current()) }
-            else -> throw UnsupportedOperationException()
+            else -> unsupportedOperation()
         }
     }
     
