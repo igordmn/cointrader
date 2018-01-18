@@ -49,7 +49,7 @@ class NeuralTradeAdviser(
             1, indicators.count, altCoins.size, previousCount
     ) { _, indicatorIndex, altCoinIndex, candleIndex ->
         val coin = altCoins[altCoinIndex]
-        val candles = this[coin]!!
+        val candles = this[coin]!!.reversed()
         val candle = candles[candleIndex]
         candle.indicatorValue(indicatorIndex)
     }

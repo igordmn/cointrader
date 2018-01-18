@@ -39,7 +39,7 @@ class AdvisableTrade(
         listener.afterGetCandles(previousCandles)
 
         val prices = previousCandles.mapValues {
-            it.value.last().close
+            it.value.first().close
         }
 
         val brokers = markets.mapValues {

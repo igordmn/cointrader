@@ -129,9 +129,9 @@ private class TestTrade(
     override suspend fun perform(time: Instant) {
         val periodStart = (this.time.current + distanceBeforePeriodStart).truncatedTo(period)
         require(periodStart == this.time.current + distanceBeforePeriodStart)
+        this.time.current = periodStart + Duration.ofMillis(50)
         delay(50, TimeUnit.MILLISECONDS)
         original.perform(time)
-        this.time.current = periodStart
         setTimeCloseToNextPeriod()
     }
 
