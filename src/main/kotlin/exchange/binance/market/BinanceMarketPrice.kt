@@ -11,7 +11,7 @@ class BinanceMarketPrice(
         private val api: BinanceAPI
 ): MarketPrice {
     override suspend fun current(): BigDecimal {
-        val result = api.latestPrices.await()
+        val result = api.latestPrices()
         val ticket = result.find { it.symbol == name }!!
         return BigDecimal(ticket.price)
     }

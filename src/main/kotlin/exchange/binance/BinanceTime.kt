@@ -10,7 +10,7 @@ class BinanceTime(
         private val api: BinanceAPI
 ) : ExchangeTime {
     override suspend fun current(): Instant {
-        val serverTime = api.serverTime.await()
+        val serverTime = api.serverTime()
         return Instant.ofEpochMilli(serverTime.serverTime)
     }
 }

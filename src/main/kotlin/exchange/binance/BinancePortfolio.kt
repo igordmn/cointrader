@@ -13,7 +13,7 @@ class BinancePortfolio(
         private val api: BinanceAPI
 ) : Portfolio {
     override suspend fun amounts(): Map<String, BigDecimal> {
-        val result = api.getAccount(DEFAULT_RECEIVING_WINDOW, Instant.now().toEpochMilli()).await()
+        val result = api.getAccount(DEFAULT_RECEIVING_WINDOW, Instant.now().toEpochMilli())
         return result.balances.associate {
             val standardName = info.binanceNameToStandard[it.asset] ?: it.asset
             standardName to BigDecimal(it.free)

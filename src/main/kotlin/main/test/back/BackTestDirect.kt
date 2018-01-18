@@ -53,7 +53,7 @@ private suspend fun run(log: Logger) {
     val operationScale = 32
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
-    val exchangeInfo = api.exchangeInfo.await()
+    val exchangeInfo = api.exchangeInfo()
     val info = BinanceInfo()
     val portfolio = TestPortfolio(config.initialCoins)
     val time = TestTime(config.startTime)
