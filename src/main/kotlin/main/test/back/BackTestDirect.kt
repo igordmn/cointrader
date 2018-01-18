@@ -81,7 +81,7 @@ private suspend fun run(log: Logger) {
 
     val testTrade = TestTrade(trade, time, config.period)
     val bot = TradingBot(
-            config.period, time, trade,
+            config.period, time, testTrade,
             TradingBot.LogListener(logger(TradingBot::class))
     )
 
@@ -123,17 +123,21 @@ private class TestTrade(
         private val time: TestTime,
         private val period: Duration
 ) : Trade {
+    // todo при ошибке, будет ddosить сервер каждые 100мс
+    private val distanceBeforePeriodStart = Duration.ofMillis(100)
+
     override suspend fun perform(time: Instant) {
+        val periodStart = (this.time.current + distanceBeforePeriodStart).truncatedTo(period)
+        require(periodStart == this.time.current + distanceBeforePeriodStart)
         delay(50, TimeUnit.MILLISECONDS)
         original.perform(time)
+        this.time.current = periodStart
         setTimeCloseToNextPeriod()
     }
 
     suspend fun setTimeCloseToNextPeriod() {
-        // todo при ошибке, будет ddosить сервер каждые 100мс
-        val distance = Duration.ofMillis(100)
         val currentTime = time.current()
         val nextPeriodTime = currentTime.truncatedTo(period) + period
-        time.current = nextPeriodTime - distance
+        time.current = nextPeriodTime - distanceBeforePeriodStart
     }
 }

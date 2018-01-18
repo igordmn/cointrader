@@ -14,7 +14,7 @@ data class TestConfig(
         val initialCoins: Map<String, BigDecimal> = mapOf(
                 "BTC" to BigDecimal("0.002")
         ),
-        val period: Duration = Duration.ofMinutes(30),
+        val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
         val fee: BigDecimal = BigDecimal("0.0005"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE,
