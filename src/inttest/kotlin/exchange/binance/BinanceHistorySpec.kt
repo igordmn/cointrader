@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 class BinanceHistorySpec : StringSpec({
-    val operationScale = 32
+    val operationScale = 4
     val api = binanceAPI()
     val marketName = BinanceInfo().marketName("USDT", "BTC")!!
     val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
