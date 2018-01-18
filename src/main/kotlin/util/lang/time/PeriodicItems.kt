@@ -13,7 +13,7 @@ class PeriodicItems<out T>(
         private val merger: RangeTimedMerger<T>,
         private val period: Duration
 ) {
-    suspend fun before(endTime: Instant): ReceiveChannel<RangeTimed<T>> = produce<RangeTimed<T>> {
+    fun before(endTime: Instant): ReceiveChannel<RangeTimed<T>> = produce<RangeTimed<T>> {
         var closeTime = endTime
         var combined: RangeTimed<T>? = null
 
