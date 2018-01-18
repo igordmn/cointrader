@@ -130,7 +130,7 @@ private class TestTrade(
     }
 
     suspend fun setTimeCloseToNextPeriod() {
-        val distance = Duration.ofMillis(3000)
+        val distance = Duration.ofMillis(100)
         val currentTime = time.current()
         val nextPeriodTime = currentTime.truncatedTo(period) + period
         time.current = nextPeriodTime - distance
