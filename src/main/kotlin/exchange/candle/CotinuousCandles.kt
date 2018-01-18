@@ -61,17 +61,19 @@ suspend fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandl
 
 class ContinuouslyCandles(
         private val original: ReceiveChannel<TimedCandle>,
-        private val approximatedPricesFactory: ApproximatedPricesFactory
+        private val approximatedPricesFactory: ApproximatedPricesFactory,
+        private val period: Duration
 ) {
-    suspend fun before(endTime: Instant, period: Duration): ReceiveChannel<TimedCandle> = produce {
+    suspend fun before(endTime: Instant): ReceiveChannel<TimedCandle> = produce {
         var closeTime = endTime
         var builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
 
         for (candle in original) {
-            builder.build(candle)?.let {
+            builder.addAndTryBuild(candle)?.let {
                 send(it)
                 closeTime -= period
                 builder = CombinedCandleReverseBuilder(closeTime - period, closeTime)
+                // todo при частичных candle, они пропускаются
             }
         }
     }
@@ -89,7 +91,7 @@ class ContinuouslyCandles(
     ) {
         private val candles = ArrayList<TimedCandle>()
 
-        fun build(candle: TimedCandle): TimedCandle? {
+        fun addAndTryBuild(candle: TimedCandle): TimedCandle? {
             require(candles.isEmpty() || candles.last().openTime == candle.closeTime)
             require(candle.closeTime > openTime && candle.openTime < closeTime)
 
