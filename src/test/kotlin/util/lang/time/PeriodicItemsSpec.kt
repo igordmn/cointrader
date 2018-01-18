@@ -41,21 +41,21 @@ class PeriodicItemsSpec : FreeSpec({
             RangeTimed(instant(180)..instant(187), 1800..1870),
             RangeTimed(instant(176)..instant(180), 1760..1800),
             RangeTimed(instant(175)..instant(176), 1750..1760),
-            RangeTimed(Instant.MIN..instant(185), 1850..1850)
+            RangeTimed(Instant.MIN..instant(175), 1750..1750)
     )
 
     "periodic items from 210 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(210)).take(8).toList()
+            val periodicItems = continuouslyCandles.before(instant(210)).take(5).toList()
 
             with(periodicItems) {
                 size shouldBe 5
                 this[0] shouldBe RangeTimed(instant(200)..instant(210), 2000..2000)
                 this[1] shouldBe RangeTimed(instant(190)..instant(200), 1900..2000)
-                this[2] shouldBe RangeTimed(instant(180)..instant(190), 1850..1900)
-                this[3] shouldBe RangeTimed(instant(170)..instant(180), 1850..1850)
-                this[4] shouldBe RangeTimed(instant(160)..instant(170), 1850..1850)
+                this[2] shouldBe RangeTimed(instant(180)..instant(190), 1800..1900)
+                this[3] shouldBe RangeTimed(instant(170)..instant(180), 1750..1800)
+                this[4] shouldBe RangeTimed(instant(160)..instant(170), 1750..1750)
             }
         }
     }
@@ -63,15 +63,15 @@ class PeriodicItemsSpec : FreeSpec({
     "periodic items from 209 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(209)).take(8).toList()
+            val periodicItems = continuouslyCandles.before(instant(209)).take(5).toList()
 
             with(periodicItems) {
                 size shouldBe 5
                 this[0] shouldBe RangeTimed(instant(199)..instant(209), 1990..2000)
                 this[1] shouldBe RangeTimed(instant(189)..instant(199), 1890..1990)
-                this[2] shouldBe RangeTimed(instant(179)..instant(189), 1850..1890)
-                this[3] shouldBe RangeTimed(instant(169)..instant(179), 1850..1850)
-                this[4] shouldBe RangeTimed(instant(159)..instant(169), 1850..1850)
+                this[2] shouldBe RangeTimed(instant(179)..instant(189), 1790..1890)
+                this[3] shouldBe RangeTimed(instant(169)..instant(179), 1750..1790)
+                this[4] shouldBe RangeTimed(instant(159)..instant(169), 1750..1750)
             }
         }
     }
@@ -79,15 +79,15 @@ class PeriodicItemsSpec : FreeSpec({
     "periodic items from 211 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(210)).take(8).toList()
+            val periodicItems = continuouslyCandles.before(instant(210)).take(5).toList()
 
             with(periodicItems) {
                 size shouldBe 5
                 this[0] shouldBe RangeTimed(instant(201)..instant(211), 2000..2000)
                 this[1] shouldBe RangeTimed(instant(191)..instant(201), 1910..2000)
-                this[2] shouldBe RangeTimed(instant(181)..instant(191), 1850..1910)
-                this[3] shouldBe RangeTimed(instant(171)..instant(181), 1850..1850)
-                this[4] shouldBe RangeTimed(instant(161)..instant(171), 1850..1850)
+                this[2] shouldBe RangeTimed(instant(181)..instant(191), 1810..1910)
+                this[3] shouldBe RangeTimed(instant(171)..instant(181), 1750..1810)
+                this[4] shouldBe RangeTimed(instant(161)..instant(171), 1750..1750)
             }
         }
     }
@@ -95,15 +95,15 @@ class PeriodicItemsSpec : FreeSpec({
     "periodic items from 211 by 11" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(210)).take(8).toList()
+            val periodicItems = continuouslyCandles.before(instant(210)).take(5).toList()
 
             with(periodicItems) {
                 size shouldBe 5
                 this[0] shouldBe RangeTimed(instant(200)..instant(210), 2000..2000)
                 this[1] shouldBe RangeTimed(instant(190)..instant(201), 1900..2000)
-                this[2] shouldBe RangeTimed(instant(179)..instant(190), 1850..1900)
-                this[3] shouldBe RangeTimed(instant(168)..instant(179), 1850..1850)
-                this[4] shouldBe RangeTimed(instant(157)..instant(168), 1850..1850)
+                this[2] shouldBe RangeTimed(instant(179)..instant(190), 1800..1900)
+                this[3] shouldBe RangeTimed(instant(168)..instant(179), 1750..1800)
+                this[4] shouldBe RangeTimed(instant(157)..instant(168), 1750..1750)
             }
         }
     }
@@ -116,9 +116,9 @@ class PeriodicItemsSpec : FreeSpec({
             with(periodicItems) {
                 size shouldBe 4
                 this[0] shouldBe RangeTimed(instant(190)..instant(200), 1900..2000)
-                this[1] shouldBe RangeTimed(instant(180)..instant(190), 1850..1900)
-                this[2] shouldBe RangeTimed(instant(170)..instant(180), 1850..1850)
-                this[3] shouldBe RangeTimed(instant(160)..instant(170), 1850..1850)
+                this[1] shouldBe RangeTimed(instant(180)..instant(190), 1800..1900)
+                this[2] shouldBe RangeTimed(instant(170)..instant(180), 1750..1800)
+                this[3] shouldBe RangeTimed(instant(160)..instant(170), 1750..1750)
             }
         }
     }
@@ -138,47 +138,75 @@ class PeriodicItemsSpec : FreeSpec({
         }
     }
 
-    "periodic items from 186 by 10" {
+    "periodic items from 176 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(186)).take(4).toList()
+            val periodicItems = continuouslyCandles.before(instant(176)).take(4).toList()
 
             with(periodicItems) {
                 size shouldBe 4
-                this[0] shouldBe RangeTimed(instant(176)..instant(186), 1850..1860)
-                this[1] shouldBe RangeTimed(instant(166)..instant(176), 1850..1850)
-                this[2] shouldBe RangeTimed(instant(156)..instant(166), 1850..1850)
-                this[3] shouldBe RangeTimed(instant(146)..instant(176), 1850..1850)
+                this[0] shouldBe RangeTimed(instant(166)..instant(176), 1750..1760)
+                this[1] shouldBe RangeTimed(instant(156)..instant(166), 1750..1750)
+                this[2] shouldBe RangeTimed(instant(146)..instant(156), 1750..1750)
+                this[3] shouldBe RangeTimed(instant(136)..instant(146), 1750..1750)
             }
         }
     }
 
-    "periodic items from 185 by 10" {
+    "periodic items from 175 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(185)).take(4).toList()
+            val periodicItems = continuouslyCandles.before(instant(175)).take(4).toList()
 
             with(periodicItems) {
                 size shouldBe 4
-                this[0] shouldBe RangeTimed(instant(175)..instant(185), 1850..1850)
-                this[1] shouldBe RangeTimed(instant(165)..instant(175), 1850..1850)
-                this[2] shouldBe RangeTimed(instant(155)..instant(165), 1850..1850)
-                this[3] shouldBe RangeTimed(instant(145)..instant(175), 1850..1850)
+                this[0] shouldBe RangeTimed(instant(165)..instant(175), 1750..1750)
+                this[1] shouldBe RangeTimed(instant(155)..instant(165), 1750..1750)
+                this[2] shouldBe RangeTimed(instant(145)..instant(155), 1750..1750)
+                this[3] shouldBe RangeTimed(instant(135)..instant(145), 1750..1750)
             }
         }
     }
 
-    "periodic items from 184 by 10" {
+    "periodic items from 174 by 10" {
         runBlocking {
             val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
-            val periodicItems = continuouslyCandles.before(instant(184)).take(4).toList()
+            val periodicItems = continuouslyCandles.before(instant(174)).take(4).toList()
 
             with(periodicItems) {
                 size shouldBe 4
-                this[0] shouldBe RangeTimed(instant(174)..instant(184), 1850..1850)
-                this[1] shouldBe RangeTimed(instant(164)..instant(174), 1850..1850)
-                this[2] shouldBe RangeTimed(instant(154)..instant(164), 1850..1850)
-                this[3] shouldBe RangeTimed(instant(144)..instant(174), 1850..1850)
+                this[0] shouldBe RangeTimed(instant(164)..instant(174), 1750..1750)
+                this[1] shouldBe RangeTimed(instant(154)..instant(164), 1750..1750)
+                this[2] shouldBe RangeTimed(instant(144)..instant(154), 1750..1750)
+                this[3] shouldBe RangeTimed(instant(134)..instant(144), 1750..1750)
+            }
+        }
+    }
+
+    "periodic items from 210 by 20" {
+        runBlocking {
+            val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
+            val periodicItems = continuouslyCandles.before(instant(210)).take(4).toList()
+
+            with(periodicItems) {
+                size shouldBe 4
+                this[0] shouldBe RangeTimed(instant(190)..instant(210), 1900..2000)
+                this[1] shouldBe RangeTimed(instant(170)..instant(190), 1750..1900)
+                this[2] shouldBe RangeTimed(instant(150)..instant(170), 1750..1750)
+                this[3] shouldBe RangeTimed(instant(130)..instant(150), 1750..1750)
+            }
+        }
+    }
+
+    "periodic items from 210 by 100" {
+        runBlocking {
+            val continuouslyCandles = PeriodicItems(items.asReceiveChannel(), cutter, merger, period(10))
+            val periodicItems = continuouslyCandles.before(instant(210)).take(2).toList()
+
+            with(periodicItems) {
+                size shouldBe 4
+                this[0] shouldBe RangeTimed(instant(110)..instant(210), 1750..2000)
+                this[1] shouldBe RangeTimed(instant(10)..instant(110), 1750..1750)
             }
         }
     }
