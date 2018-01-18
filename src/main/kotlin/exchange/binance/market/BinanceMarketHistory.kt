@@ -65,7 +65,7 @@ class BinanceMarketHistory(
                 .asReversed()
 
         result.zipWithNext().forEach { (current, next) ->
-            require(current.timeRange.endInclusive <= next.timeRange.start)
+            require(next.timeRange.endInclusive <= current.timeRange.start)
         }
 
         return result
