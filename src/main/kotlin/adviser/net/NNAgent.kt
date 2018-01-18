@@ -16,7 +16,7 @@ class NNAgent(
     private val numpy = PyModule.importModule("numpy")
     private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, altCoinNumber, windowSize, restore_dir)
 
-    fun bestPortfolioPortions(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D {
+    fun bestPortfolioPortions(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
         require(currentPortions.n2 == altCoinNumber)
         require(history.n2 == indicatorNumber)
         require(history.n3 == altCoinNumber)
