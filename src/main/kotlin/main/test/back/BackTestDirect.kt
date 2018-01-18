@@ -9,6 +9,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketLimits
 import exchange.candle.LinearApproximatedPricesFactory
+import exchange.candle.approximateCandleNormalizer
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
@@ -100,8 +101,9 @@ private class TestMarkets(
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = info.marketName(fromCoin, toCoin)
         return if (name != null) {
-            val history = BinanceMarketHistory(name, api)
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
+            val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
+            val history = BinanceMarketHistory(name, api, normalizer)
             val prices = TestHistoricalMarketPrice(time, history, approximatedPricesFactory)
             val limits = BinanceMarketLimits(name, exchangeInfo)
             val broker = LoggableMarketBroker(

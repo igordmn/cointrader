@@ -12,6 +12,8 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketLimits
 import exchange.binance.market.BinanceMarketPrice
+import exchange.candle.LinearApproximatedPricesFactory
+import exchange.candle.approximateCandleNormalizer
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import kotlinx.coroutines.experimental.runBlocking
@@ -51,7 +53,7 @@ private suspend fun run(log: Logger) {
     val info = BinanceInfo()
     val portfolio = TestPortfolio(config.initialCoins)
     val time = BinanceTime(api)
-    val markets = TestMarkets(info, api, portfolio, config.fee, exchangeInfo)
+    val markets = TestMarkets(info, api, portfolio, config.fee, exchangeInfo, operationScale)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,
@@ -86,12 +88,15 @@ private class TestMarkets(
         private val api: BinanceAPI,
         private val portfolio: TestPortfolio,
         private val fee: BigDecimal,
-        private val exchangeInfo: ExchangeInfo
+        private val exchangeInfo: ExchangeInfo,
+        private val operationScale: Int
 ) : Markets {
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = info.marketName(fromCoin, toCoin)
         return if (name != null) {
-            val history = BinanceMarketHistory(name, api)
+            val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
+            val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
+            val history = BinanceMarketHistory(name, api, normalizer)
             val prices = BinanceMarketPrice(name, api)
             val limits = BinanceMarketLimits(name, exchangeInfo)
             val broker = LoggableMarketBroker(
