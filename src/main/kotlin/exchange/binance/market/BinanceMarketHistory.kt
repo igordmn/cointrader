@@ -30,13 +30,16 @@ class BinanceMarketHistory(
     private fun candlesByMinuteBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
 
-        do {
+        while(true) {
             val chunk = candlesChunkByMinuteBefore(timeIt)
+            if (chunk.isEmpty()) {
+                break
+            }
             chunk.forEach {
                 send(it)
             }
             timeIt = chunk.last().timeRange.start
-        } while (chunk.isNotEmpty())
+        }
 
         close()
     }
