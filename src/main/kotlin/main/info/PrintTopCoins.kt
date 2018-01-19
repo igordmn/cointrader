@@ -30,7 +30,7 @@ fun main(args: Array<String>) = runBlocking {
         val limits = allLimits[it]!!.get()
         val price = prices[it]!!
         val volumeMonth = volumesMonth[it]!!
-        val volumeWeek = volumesMonth[it]!!
+        val volumeWeek = volumesWeek[it]!!
         it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
     }.filter {
         it.second.amountStep <= BigDecimal(1.5)
