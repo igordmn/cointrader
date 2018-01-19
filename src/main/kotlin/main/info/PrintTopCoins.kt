@@ -21,8 +21,8 @@ fun main(args: Array<String>) = runBlocking {
     val volumesWeek = info.keys.associate { it to BigDecimal(lastCandle(api, it, "1w").quoteAssetVolume) / BigDecimal(7) }
     val volumesMonthList = volumesMonth.entries.sortedByDescending { it.value }
     val volumesWeekList = volumesWeek.entries.sortedByDescending { it.value }
-    val topCoinsMonth = volumesMonthList.map { it.key }.take(50)
-    val topCoinsWeek = volumesWeekList.map { it.key }.take(50)
+    val topCoinsMonth = volumesMonthList.map { it.key }.take(70)
+    val topCoinsWeek = volumesWeekList.map { it.key }.take(70)
 
     val topCoins = topCoinsWeek - (topCoinsWeek - topCoinsMonth)
 
@@ -32,9 +32,10 @@ fun main(args: Array<String>) = runBlocking {
         val volumeMonth = volumesMonth[it]!!
         val volumeWeek = volumesWeek[it]!!
         it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
-    }.filter {
-        it.second.amountStep <= BigDecimal(1.5)
     }
+//            .filter {
+//        it.second.amountStep <= BigDecimal(2)
+//    }
     infos.forEach(::println)
     println(infos.joinToString(", ") { it.first })
 }
@@ -45,4 +46,8 @@ private suspend fun lastCandle(client: BinanceAPI, coin: String, period: String)
 }
 
 // Prices in USDT
-private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal)
+private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal) {
+    override fun toString(): String {
+        return "$volumeMonth\t$volumeWeek\t$amountStep, \t$minTotalPrice"
+    }
+}
