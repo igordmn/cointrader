@@ -24,13 +24,15 @@ fun main(args: Array<String>) = runBlocking {
     val topCoinsMonth = volumesMonthList.map { it.key }.take(50)
     val topCoinsWeek = volumesWeekList.map { it.key }.take(50)
 
-    val topCoins = topCoinsMonth - (topCoinsMonth - topCoinsWeek)
+    val topCoins = topCoinsWeek - (topCoinsWeek - topCoinsMonth)
 
     val infos = topCoins.map {
         val limits = allLimits[it]!!.get()
         val price = prices[it]!!
         val volume = volumesMonth[it]!!
         it to CoinInfo(volume * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
+    }.filter {
+        it.second.amountStep <= BigDecimal.ONE
     }
     infos.forEach(::println)
     println(infos.joinToString(", ") { it.first })
