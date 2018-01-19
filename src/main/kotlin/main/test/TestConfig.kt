@@ -9,7 +9,7 @@ data class TestConfig(
         val mainCoin: String = "BTC",
         val altCoins: List<String> = listOf(
                 "USDT", "TRX", "ETH", "NEO", "XRP", "BCD", "ADA", "ICX", "CND", "XVG", "XLM", "WTC",
-                "NEBL", "INS", "HSR", "POE", "GAS", "ETC", "QTUM", "TRIG",
+                "NEBL", "HSR", "POE", "GAS", "ETC", "QTUM", "TRIG",
                 "TNB", "LEND", "QSP", "XMR", "BTS", "OMG", "STRAT", "LSK",
                 "FUN", "MANA", "FUEL", "AION", "ENJ", "MCO", "CDT"
         ),
