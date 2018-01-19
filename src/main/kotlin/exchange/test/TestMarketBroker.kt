@@ -87,20 +87,20 @@ class TestMarketBroker(
 
     class LogListener(private val log: Logger) : Listener {
         override fun beforeBuy(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
-            val amountR = amount.round(6)
-            val currentPriceR = currentPrice.round(6)
-            val roundedAmountR = roundedAmount.round(6)
-            val amountStepR = amountStep.round(6)
-            val minTotalPriceR = minTotalPrice.round(6)
+            val amountR = amount.round(10)
+            val currentPriceR = currentPrice.round(10)
+            val roundedAmountR = roundedAmount.round(10)
+            val amountStepR = amountStep.round(10)
+            val minTotalPriceR = minTotalPrice.round(10)
             log.debug("beforeBuy   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
         }
 
         override fun beforeSell(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
-            val amountR = amount.round(6)
-            val currentPriceR = currentPrice.round(6)
-            val roundedAmountR = roundedAmount.round(6)
-            val amountStepR = amountStep.round(6)
-            val minTotalPriceR = minTotalPrice.round(6)
+            val amountR = amount.round(10)
+            val currentPriceR = currentPrice.round(10)
+            val roundedAmountR = roundedAmount.round(10)
+            val amountStepR = amountStep.round(10)
+            val minTotalPriceR = minTotalPrice.round(10)
             log.debug("beforeSell   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
         }
     }

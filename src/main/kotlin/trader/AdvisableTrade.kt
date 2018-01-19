@@ -186,16 +186,16 @@ class AdvisableTrade(
             }.entries.joinToString("\n") {
                 val coin = it.key
                 val firstCandle = Candle(
-                        it.value.first.open.round(6),
-                        it.value.first.close.round(6),
-                        it.value.first.high.round(6),
-                        it.value.first.low.round(6)
+                        it.value.first.open.round(10),
+                        it.value.first.close.round(10),
+                        it.value.first.high.round(10),
+                        it.value.first.low.round(10)
                 )
                 val secondCandle = Candle(
-                        it.value.second.open.round(6),
-                        it.value.second.close.round(6),
-                        it.value.second.high.round(6),
-                        it.value.second.low.round(6)
+                        it.value.second.open.round(10),
+                        it.value.second.close.round(10),
+                        it.value.second.high.round(10),
+                        it.value.second.low.round(10)
                 )
                 "$coin   first $firstCandle   last $secondCandle"
             }
@@ -203,12 +203,12 @@ class AdvisableTrade(
         }
 
         override fun afterGetAmounts(amounts: Map<String, BigDecimal>) {
-            val amountsR = amounts.roundValues(6)
+            val amountsR = amounts.roundValues(10)
             log.debug("afterGetAmounts    $amountsR")
         }
 
         override fun afterGetCapitals(capitals: Map<String, BigDecimal>, portions: CoinPortions) {
-            val capitalsR = capitals.roundValues(6)
+            val capitalsR = capitals.roundValues(10)
             val portionsR = portions.roundValues(2)
             log.debug("afterGetCapitals\ncapitals $capitalsR\nportions $portionsR\n")
         }
@@ -219,18 +219,18 @@ class AdvisableTrade(
         }
 
         override fun afterBuyMainCoin(sellingCoin: String, mainAmount: BigDecimal) {
-            val mainAmountR = mainAmount.round(6)
+            val mainAmountR = mainAmount.round(10)
             log.debug("afterBuyMainCoin   sellingCoin $sellingCoin   mainAmount $mainAmountR")
         }
 
         override fun afterSellMainCoin(buyingCoin: String, mainAmount: BigDecimal) {
-            val mainAmountR = mainAmount.round(6)
+            val mainAmountR = mainAmount.round(10)
             log.debug("afterSellMainCoin   buyingCoin $buyingCoin   mainAmount $mainAmountR")
         }
 
         override fun afterTrade(totalCapital: BigDecimal, capitals: Map<String, BigDecimal>, portions: CoinPortions) {
-            val totalCapitalR = totalCapital.round(6)
-            val capitalsR = capitals.roundValues(6)
+            val totalCapitalR = totalCapital.round(10)
+            val capitalsR = capitals.roundValues(10)
             val portionsR = portions.roundValues(2)
             log.info("afterTrade   totalCapital $totalCapitalR\ncapitals $capitalsR\nportions $portionsR\n")
         }
