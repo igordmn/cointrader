@@ -8,6 +8,7 @@ import com.binance.api.client.domain.event.ListenKey
 import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
+import exchange.binance.api.model.NewOrderResponse
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.newSingleThreadContext
@@ -57,7 +58,7 @@ class BinanceAPI(
     }
 
     suspend fun newOrder(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String?, stopPrice: String?, icebergQty: String?, recvWindow: Long?, timestamp: Long?): NewOrderResponse = perform {
-        service.newOrder(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, recvWindow, timestamp)
+        service.newOrder(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, "FULL", recvWindow, timestamp)
     }
 
     suspend fun newOrderTest(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String, stopPrice: String, icebergQty: String, recvWindow: Long?, timestamp: Long?) = perform {

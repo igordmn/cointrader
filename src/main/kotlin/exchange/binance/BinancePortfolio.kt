@@ -1,12 +1,10 @@
 package exchange.binance
 
-import com.binance.api.client.BinanceApiAsyncRestClient
 import exchange.Portfolio
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.DEFAULT_RECEIVING_WINDOW
 import java.math.BigDecimal
 import java.time.Instant
-import kotlin.coroutines.experimental.suspendCoroutine
 
 class BinancePortfolio(
         private val info: BinanceInfo,

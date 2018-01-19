@@ -1,6 +1,5 @@
 package exchange.binance
 
-import com.binance.api.client.BinanceApiClientFactory
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketPrice
 import io.kotlintest.matchers.beLessThan

@@ -9,6 +9,7 @@ import com.binance.api.client.domain.event.ListenKey
 import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
+import exchange.binance.api.model.NewOrderResponse
 import kotlinx.coroutines.experimental.Deferred
 import retrofit2.http.*
 
@@ -52,6 +53,7 @@ interface BinanceAPIService {
     fun newOrder(@Query("symbol") symbol: String, @Query("side") side: OrderSide, @Query("type") type: OrderType,
                  @Query("timeInForce") timeInForce: TimeInForce, @Query("quantity") quantity: String, @Query("price") price: String?,
                  @Query("stopPrice") stopPrice: String?, @Query("icebergQty") icebergQty: String?,
+                 @Query("newOrderRespType") newOrderRespType: String?,
                  @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<NewOrderResponse>
 
     @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
