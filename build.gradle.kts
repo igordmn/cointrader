@@ -54,6 +54,9 @@ dependencies {
     compile("org.apache.commons:commons-lang3:3.6")
     compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-android:0.21")
+    compile("org.xerial:sqlite-jdbc:3.21.0.1")
+    compile("org.jetbrains.exposed:exposed:0.9.1")
+    compile("com.github.kittinunf.fuel:fuel:1.12.0")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
