@@ -3,6 +3,10 @@ package exchange.test
 import exchange.MarketBroker
 import exchange.MarketLimits
 import exchange.MarketPrice
+import org.slf4j.Logger
+import trader.AdvisableTrade
+import util.math.round
+import util.math.roundValues
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -12,7 +16,8 @@ class TestMarketBroker(
         private val portfolio: TestPortfolio,
         private val price: MarketPrice,
         private val fee: BigDecimal,
-        private val limits: MarketLimits
+        private val limits: MarketLimits,
+        private val listener: Listener
 ) : MarketBroker {
     override suspend fun buy(amount: BigDecimal) {
         val currentPrice = price.current()
@@ -22,6 +27,9 @@ class TestMarketBroker(
         } else {
             amount
         }
+
+        listener.beforeBuy(amount, currentPrice, roundedAmount, limits.amountStep, limits.minTotalPrice)
+
         if (roundedAmount * currentPrice >= limits.minTotalPrice) {
             buyToPortfolio(roundedAmount, currentPrice)
         }
@@ -49,6 +57,9 @@ class TestMarketBroker(
         } else {
             amount
         }
+
+        listener.beforeSell(amount, currentPrice, roundedAmount, limits.amountStep, limits.minTotalPrice)
+
         if (roundedAmount * currentPrice >= limits.minTotalPrice) {
             sellFromPortfolio(roundedAmount, currentPrice)
         }
@@ -64,6 +75,33 @@ class TestMarketBroker(
                 it[fromCoin] = it[fromCoin] + toAmount * currentPrice * (BigDecimal.ONE - fee)
                 it[toCoin] = BigDecimal.ZERO
             }
+        }
+    }
+
+    interface Listener {
+        fun beforeBuy(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) = Unit
+        fun beforeSell(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) = Unit
+    }
+
+    class EmptyListener : Listener
+
+    class LogListener(private val log: Logger) : Listener {
+        override fun beforeBuy(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
+            val amountR = amount.round(6)
+            val currentPriceR = currentPrice.round(6)
+            val roundedAmountR = roundedAmount.round(6)
+            val amountStepR = amountStep.round(6)
+            val minTotalPriceR = minTotalPrice.round(6)
+            log.debug("beforeBuy   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
+        }
+
+        override fun beforeSell(amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
+            val amountR = amount.round(6)
+            val currentPriceR = currentPrice.round(6)
+            val roundedAmountR = roundedAmount.round(6)
+            val amountStepR = amountStep.round(6)
+            val minTotalPriceR = minTotalPrice.round(6)
+            log.debug("beforeSell   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
         }
     }
 }

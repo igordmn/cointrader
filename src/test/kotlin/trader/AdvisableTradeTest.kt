@@ -61,7 +61,9 @@ class AdvisableTradeTest : StringSpec({
     fun market(portfolio: TestPortfolio, fromCoin: String, toCoin: String): Market {
         val price = price(fromCoin, toCoin)
         return Market(
-                TestMarketBroker(fromCoin, toCoin, portfolio, price, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO)),
+                TestMarketBroker(
+                        fromCoin, toCoin, portfolio, price, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
+                        TestMarketBroker.EmptyListener()),
                 history(price, fromCoin, toCoin),
                 price
         )

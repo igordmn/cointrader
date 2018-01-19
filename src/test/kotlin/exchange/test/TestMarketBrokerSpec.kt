@@ -17,8 +17,14 @@ class TestMarketBrokerSpec : FreeSpec({
                 "LTC" to BigDecimal("20.0"),
                 "ETH" to BigDecimal("25.0")
         ))
-        val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO))
-        val btcToEth = TestMarketBroker("BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO))
+        val btcToLtc = TestMarketBroker(
+                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
+                TestMarketBroker.EmptyListener()
+        )
+        val btcToEth = TestMarketBroker(
+                "BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
+                TestMarketBroker.EmptyListener()
+        )
 
         "buy LTC" {
             runBlocking {
@@ -77,7 +83,10 @@ class TestMarketBrokerSpec : FreeSpec({
                 "BTC" to BigDecimal("1.0"),
                 "LTC" to BigDecimal("20.0")
         ))
-        val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal("0.1"), TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO))
+        val btcToLtc = TestMarketBroker(
+                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal("0.1"), TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
+                TestMarketBroker.EmptyListener()
+        )
 
         "buy LTC" {
             runBlocking {
@@ -103,7 +112,10 @@ class TestMarketBrokerSpec : FreeSpec({
                 "BTC" to BigDecimal("1.0"),
                 "LTC" to BigDecimal("20.0")
         ))
-        val btcToLtc = TestMarketBroker("BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal("0.1"), BigDecimal("0.01")))
+        val btcToLtc = TestMarketBroker(
+                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal("0.1"), BigDecimal("0.01")),
+                TestMarketBroker.EmptyListener()
+        )
 
         "not buying any LTC if less than limit" {
             runBlocking {
