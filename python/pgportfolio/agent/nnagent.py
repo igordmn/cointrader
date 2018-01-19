@@ -209,28 +209,16 @@ class NNAgent:
         return results[:-1]
 
     def best_portfolio(self, history, previous_w):
-        with open('D:\\Development\\Projects\\cointrader2\\log\\p.log', 'a') as f:
-            print("-------------------------------------------1", file=f)
         session = self._session
         t = self._tensors
 
         tflearn.is_training(False, session)
-
-        with open('D:\\Development\\Projects\\cointrader2\\log\\p.log', 'a') as f:
-            print("-------------------------------------------2", file=f)
-            print(history, file=f)
-            print("-------------------------------------------3", file=f)
-            print(previous_w, file=f)
 
         result = session.run(t.predict_w, feed_dict={
             t.x: history,
             t.previous_w: previous_w,
             t.batch_size: history.shape[0]
         })
-
-        with open('D:\\Development\\Projects\\cointrader2\\log\\p.log', 'a') as f:
-            print("-------------------------------------------4", file=f)
-            print(result, file=f)
 
         return result
 
