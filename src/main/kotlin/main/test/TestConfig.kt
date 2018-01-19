@@ -12,7 +12,7 @@ data class TestConfig(
                 "STRAT", "XVG", "DASH", "ETC", "SNT", "TRX", "LTC", "XRP", "IOTA", "BCH"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("0.01")
+                "BTC" to BigDecimal("0.003")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
