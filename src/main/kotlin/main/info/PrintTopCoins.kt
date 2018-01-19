@@ -29,10 +29,11 @@ fun main(args: Array<String>) = runBlocking {
     val infos = topCoins.map {
         val limits = allLimits[it]!!.get()
         val price = prices[it]!!
-        val volume = volumesMonth[it]!!
-        it to CoinInfo(volume * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
+        val volumeMonth = volumesMonth[it]!!
+        val volumeWeek = volumesMonth[it]!!
+        it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
     }.filter {
-        it.second.amountStep <= BigDecimal.ONE
+        it.second.amountStep <= BigDecimal(1.5)
     }
     infos.forEach(::println)
     println(infos.joinToString(", ") { it.first })
@@ -44,4 +45,4 @@ private suspend fun lastCandle(client: BinanceAPI, coin: String, period: String)
 }
 
 // Prices in USDT
-private data class CoinInfo(val volume: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal)
+private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal)
