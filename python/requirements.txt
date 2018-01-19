@@ -1,0 +1,5 @@
+matplotlib
+tensorflow
+tflearn
+pandas
+numpy

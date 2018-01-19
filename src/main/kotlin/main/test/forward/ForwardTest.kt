@@ -59,7 +59,7 @@ private suspend fun run(log: Logger) {
             config.mainCoin,
             config.altCoins,
             config.historyCount,
-            Paths.get("D:/Development/Projects/coin_predict/train_package2/netfile"),
+            Paths.get("train_package"),
             config.fee,
             config.indicators
     )

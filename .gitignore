@@ -9,4 +9,5 @@ build/
 *.log
 *.log.zip
 *.tmp
-/captures/
+
+__pycache__/
