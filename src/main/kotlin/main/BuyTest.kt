@@ -14,8 +14,7 @@ fun main(args: Array<String>) {
     val secret = File("D:/binance/secret.txt").readText()
     val log = LoggerFactory.getLogger("main")
 
-//    val api = binanceAPI(apiKey, secret, log)
-    val api = binanceAPI(log = log)
+    val api = binanceAPI(apiKey, secret, log)
 
     val broker = BinanceMarketBroker("LTCBNB", api, log)
 

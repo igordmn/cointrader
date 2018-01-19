@@ -57,11 +57,11 @@ class BinanceAPI(
         service.get24HrPriceStatistics(symbol)
     }
 
-    suspend fun newOrder(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String?, stopPrice: String?, icebergQty: String?, recvWindow: Long?, timestamp: Long?): NewOrderResponse = perform {
+    suspend fun newOrder(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce?, quantity: String, price: String?, stopPrice: String?, icebergQty: String?, recvWindow: Long?, timestamp: Long?): NewOrderResponse = perform {
         service.newOrder(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, "FULL", recvWindow, timestamp)
     }
 
-    suspend fun newOrderTest(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce, quantity: String, price: String, stopPrice: String, icebergQty: String, recvWindow: Long?, timestamp: Long?) = perform {
+    suspend fun newOrderTest(symbol: String, side: OrderSide, type: OrderType, timeInForce: TimeInForce?, quantity: String, price: String, stopPrice: String, icebergQty: String, recvWindow: Long?, timestamp: Long?) = perform {
         service.newOrderTest(symbol, side, type, timeInForce, quantity, price, stopPrice, icebergQty, recvWindow, timestamp)
     }
 

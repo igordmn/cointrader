@@ -51,7 +51,7 @@ interface BinanceAPIService {
     @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v3/order")
     fun newOrder(@Query("symbol") symbol: String, @Query("side") side: OrderSide, @Query("type") type: OrderType,
-                 @Query("timeInForce") timeInForce: TimeInForce, @Query("quantity") quantity: String, @Query("price") price: String?,
+                 @Query("timeInForce") timeInForce: TimeInForce?, @Query("quantity") quantity: String, @Query("price") price: String?,
                  @Query("stopPrice") stopPrice: String?, @Query("icebergQty") icebergQty: String?,
                  @Query("newOrderRespType") newOrderRespType: String?,
                  @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<NewOrderResponse>
@@ -59,7 +59,7 @@ interface BinanceAPIService {
     @Headers(BinanceApiConstants.ENDPOINT_SECURITY_TYPE_SIGNED_HEADER)
     @POST("/api/v3/order/test")
     fun newOrderTest(@Query("symbol") symbol: String, @Query("side") side: OrderSide, @Query("type") type: OrderType,
-                     @Query("timeInForce") timeInForce: TimeInForce, @Query("quantity") quantity: String, @Query("price") price: String,
+                     @Query("timeInForce") timeInForce: TimeInForce?, @Query("quantity") quantity: String, @Query("price") price: String,
                      @Query("stopPrice") stopPrice: String, @Query("icebergQty") icebergQty: String,
                      @Query("recvWindow") recvWindow: Long?, @Query("timestamp") timestamp: Long?): Deferred<Void>
 
