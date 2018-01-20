@@ -25,7 +25,7 @@ fun main(args: Array<String>) = runBlocking {
     try {
         PythonUtils.startPython()
         run(log)
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         log.error("Error on running", e)
     } finally {
         PythonUtils.stopPython()
