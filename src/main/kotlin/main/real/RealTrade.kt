@@ -56,7 +56,7 @@ private suspend fun run(log: Logger) {
     val binancePortfolio = BinancePortfolio(info, api)
     val time = BinanceTime(api)
     val testMarkets = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
-    val testMarkets2 = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
+    val testMarkets2 = BinanceWithTestBrokerMarkets(info, api, testPortfolio2, config.fee, exchangeInfo, operationScale)
     val binanceMarkets = BinanceMarkets(info, api, operationScale)
 
     val adviser = NeuralTradeAdviser(

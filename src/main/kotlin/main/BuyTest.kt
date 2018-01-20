@@ -10,8 +10,8 @@ import java.math.BigDecimal
 fun main(args: Array<String>) {
     System.setProperty("log.name", "buyTest")
 
-    val apiKey = File("D:/binance/apiKey.txt").readText()
-    val secret = File("D:/binance/secret.txt").readText()
+    val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
+    val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
     val log = LoggerFactory.getLogger("main")
 
     val api = binanceAPI(apiKey, secret, log)
