@@ -43,7 +43,7 @@ def test_with_config(config):
 
 log = logging.getLogger('myapp')
 formatter = logging.Formatter('%(message)s')
-hdlr = logging.FileHandler('D:/Development/Projects/coin_predict/batch.log')
+hdlr = logging.FileHandler('batch.log')
 hdlr.setFormatter(formatter)
 log.addHandler(hdlr)
 log.setLevel(logging.INFO)
