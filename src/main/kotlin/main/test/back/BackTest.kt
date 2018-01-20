@@ -31,7 +31,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
-fun main(args: Array<String>) = runBlocking {
+fun backTest() = runBlocking {
     System.setProperty("log.name", "backTest")
 
     val log = LoggerFactory.getLogger("main")

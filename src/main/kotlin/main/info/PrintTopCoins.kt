@@ -8,7 +8,7 @@ import exchange.binance.market.BinanceMarketLimits
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
-fun main(args: Array<String>) = runBlocking {
+fun printTopCoins() = runBlocking {
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
     val allPrices = api.allPrices()

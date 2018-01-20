@@ -17,7 +17,7 @@ import util.log.logger
 import util.python.PythonUtils
 import java.nio.file.Paths
 
-fun main(args: Array<String>) = runBlocking {
+fun forwardTest() = runBlocking {
     System.setProperty("log.name", "forwardTest")
 
     val log = LoggerFactory.getLogger("main")

@@ -20,7 +20,7 @@ import util.log.logger
 import util.python.PythonUtils
 import java.nio.file.Paths
 
-fun main(args: Array<String>) = runBlocking {
+fun realTrade() = runBlocking {
     println("Run trading real money? enter 'yes' if yes")
     val answer = readLine()
     if (answer != "yes") {

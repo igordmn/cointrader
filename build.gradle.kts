@@ -14,15 +14,12 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-
-    dependencies {
-        classpath(kotlinModule("gradle-plugin", kotlinVersion))
-    }
 }
 
-apply {
-    plugin("java")
-    plugin("kotlin")
+plugins {
+    application
+    java
+    kotlin("jvm") version "1.2.0"
 }
 
 val kotlinVersion: String by extra
@@ -40,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    compile(kotlinModule("stdlib-jdk8", kotlinVersion))
+    compile(kotlin("stdlib-jdk8", kotlinVersion))
     compile(":jpy-0.9-SNAPSHOT:")
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("ch.qos.logback:logback-classic:1.2.3")
@@ -60,7 +57,7 @@ dependencies {
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     sourceSets["test"].java.srcDir(file("src/inttest/kotlin"))
 }
@@ -69,6 +66,17 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-configure<KotlinProjectExtension> {
+kotlin {
     experimental.coroutines = Coroutines.ENABLE
+}
+
+application {
+    mainClassName = "main.MainKt"
+}
+
+//
+//project.extensions.create("greeting", CreateStartScripts::class.java)
+//
+configure<org.gradle.jvm.application.tasks.CreateStartScripts> {
+//    optsEnvironmentVar="PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
 }
