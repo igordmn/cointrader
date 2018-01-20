@@ -21,10 +21,10 @@ interface BinanceAPIService {
     val exchangeInfo: Deferred<ExchangeInfo>
 
     @get:GET("/api/v1/ticker/allPrices")
-    val latestPrices: Deferred<List<TickerPrice>>
+    val allPrices: Deferred<List<TickerPrice>>
 
     @get:GET("/api/v1/ticker/allBookTickers")
-    val bookTickers: Deferred<List<BookTicker>>
+    val allBookTickers: Deferred<List<BookTicker>>
     // General endpoints
 
     @GET("/api/v1/ping")

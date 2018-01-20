@@ -52,9 +52,11 @@ private suspend fun run(log: Logger) {
     val exchangeInfo = api.exchangeInfo()
     val info = BinanceInfo()
     val testPortfolio = TestPortfolio(config.initialCoins)
+    val testPortfolio2 = TestPortfolio(config.initialCoins)
     val binancePortfolio = BinancePortfolio(info, api)
     val time = BinanceTime(api)
     val testMarkets = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
+    val testMarkets2 = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
     val binanceMarkets = BinanceMarkets(info, api, operationScale)
 
     val adviser = NeuralTradeAdviser(
@@ -76,6 +78,17 @@ private suspend fun run(log: Logger) {
             operationScale,
             AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
     )
+    val testTrade2 = AdvisableTrade(
+            config.mainCoin,
+            config.altCoins,
+            config.period,
+            config.historyCount,
+            adviser,
+            testMarkets2,
+            testPortfolio2,
+            operationScale,
+            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
+    )
     val binanceTrade = AdvisableTrade(
             config.mainCoin,
             config.altCoins,
@@ -87,7 +100,7 @@ private suspend fun run(log: Logger) {
             operationScale,
             AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " real"))
     )
-    val trade = MultipleTrade(listOf(testTrade, testTrade))
+    val trade = MultipleTrade(listOf(testTrade, testTrade2))
 
     val bot = TradingBot(
             config.period, time, trade,

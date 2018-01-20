@@ -11,7 +11,7 @@ import java.math.BigDecimal
 fun main(args: Array<String>) = runBlocking {
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
-    val allPrices = api.latestPrices()
+    val allPrices = api.allPrices()
 
     val oneBTCinUSDT = BigDecimal(allPrices.find { it.symbol == "BTCUSDT" }!!.price)
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }

@@ -29,12 +29,12 @@ class BinanceAPI(
         service.exchangeInfo
     }
     
-    suspend fun latestPrices(): List<TickerPrice> = perform {
-        service.latestPrices
+    suspend fun allPrices(): List<TickerPrice> = perform {
+        service.allPrices
     }
     
-    suspend fun bookTickers(): List<BookTicker> = perform {
-        service.bookTickers
+    suspend fun allBookTickers(): List<BookTicker> = perform {
+        service.allBookTickers
     }
 
     suspend fun ping() = perform {
