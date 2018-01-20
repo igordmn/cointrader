@@ -5,15 +5,18 @@ import org.jpy.PyModule;
 import org.jpy.PyObject;
 
 import java.lang.reflect.Array;
+import java.nio.file.Paths;
 
 public class PythonUtils {
     public static void startPython() {
-        System.setProperty("jpy.jpyLib", "D:/Development/Projects/cointrader/lib/native/jpy.cp36-win_amd64.pyd");
-        System.setProperty("jpy.pythonLib", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict/python36.dll");
-        System.setProperty("jpy.pythonPrefix", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict");
-        System.setProperty("jpy.pythonExecutable", "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict/python.exe");
+        String rootPath = Paths.get("").toAbsolutePath().toString();
+        String envPath = "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict"; // todo убрать хардкод
+        System.setProperty("jpy.jpyLib", rootPath + "/lib/native/jpy.cp36-win_amd64.pyd");
+        System.setProperty("jpy.pythonLib", envPath + "/python36.dll");
+        System.setProperty("jpy.pythonPrefix", envPath);
+        System.setProperty("jpy.pythonExecutable", envPath + "/python.exe");
         PyLib.startPython();
-        PyModule.extendSysPath("D:\\Development\\Projects\\coin_predict", true);
+        PyModule.extendSysPath(rootPath + "/python", true);
     }
 
     public static void stopPython() {
