@@ -1,7 +1,9 @@
-package main.test.forward
+package main.real
 
 import adviser.net.NeuralTradeAdviser
 import exchange.binance.BinanceInfo
+import exchange.binance.BinanceMarkets
+import exchange.binance.BinancePortfolio
 import exchange.binance.BinanceTime
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
@@ -12,13 +14,21 @@ import main.test.TestConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
+import trader.MultipleTrade
 import trader.TradingBot
 import util.log.logger
 import util.python.PythonUtils
 import java.nio.file.Paths
 
 fun main(args: Array<String>) = runBlocking {
-    System.setProperty("log.name", "forwardTest")
+    println("Run trading real money? enter 'yes' if yes")
+    val answer = readLine()
+    if (answer != "yes") {
+        println("Answer not 'yes', so exit")
+        return@runBlocking
+    }
+
+    System.setProperty("log.name", "realTest")
 
     val log = LoggerFactory.getLogger("main")
 
@@ -41,9 +51,11 @@ private suspend fun run(log: Logger) {
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val exchangeInfo = api.exchangeInfo()
     val info = BinanceInfo()
-    val portfolio = TestPortfolio(config.initialCoins)
+    val testPortfolio = TestPortfolio(config.initialCoins)
+    val binancePortfolio = BinancePortfolio(info, api)
     val time = BinanceTime(api)
-    val markets = BinanceWithTestBrokerMarkets(info, api, portfolio, config.fee, exchangeInfo, operationScale)
+    val testMarkets = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
+    val binanceMarkets = BinanceMarkets(info, api, operationScale)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,
@@ -53,17 +65,29 @@ private suspend fun run(log: Logger) {
             config.fee,
             config.indicators
     )
-    val trade = AdvisableTrade(
+    val testTrade = AdvisableTrade(
             config.mainCoin,
             config.altCoins,
             config.period,
             config.historyCount,
             adviser,
-            markets,
-            portfolio,
+            testMarkets,
+            testPortfolio,
             operationScale,
-            AdvisableTrade.LogListener(logger(AdvisableTrade::class))
+            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
     )
+    val binanceTrade = AdvisableTrade(
+            config.mainCoin,
+            config.altCoins,
+            config.period,
+            config.historyCount,
+            adviser,
+            binanceMarkets,
+            binancePortfolio,
+            operationScale,
+            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " real"))
+    )
+    val trade = MultipleTrade(listOf(testTrade, testTrade))
 
     val bot = TradingBot(
             config.period, time, trade,
