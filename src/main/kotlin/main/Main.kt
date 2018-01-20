@@ -6,12 +6,14 @@ import main.test.back.backTest
 import main.test.forward.forwardTest
 
 fun main(args: Array<String>) {
+    println(System.getenv("PATH"))
+
     val firstArg = if (args.isNotEmpty()) args[0] else null
 
     when (firstArg) {
-        "back_test" -> backTest()
-        "forward_test" -> forwardTest()
-        "real_trade" -> realTrade()
-        "print_top_coins" -> printTopCoins()
+        "backTest" -> backTest()
+        "forwardTest" -> forwardTest()
+        "realTrade" -> realTrade()
+        "printTopCoins" -> printTopCoins()
     }
 }

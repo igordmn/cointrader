@@ -4,6 +4,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.android.AndroidGradleWrapper.srcDir
 import java.io.Writer
 import java.io.StringWriter
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.plugins.JavaPluginConvention
+import com.sun.javafx.scene.CameraHelper.project
+import org.codehaus.groovy.vmplugin.VMPluginFactory.getPlugin
 
 group = "dmi"
 version = "1.0-SNAPSHOT"
@@ -92,3 +96,19 @@ startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
         destination.write(text)
     }
 }
+
+fun mainTask(name: String) = task(name, JavaExec::class) {
+    group = "application"
+    val javaPlugin = the<JavaPluginConvention>()
+    val applicationPlugin = the<ApplicationPluginConvention>()
+    classpath = javaPlugin.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).runtimeClasspath
+    main = applicationPlugin.mainClassName
+    jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList()
+    environment = environment + mapOf("PYTHONHOME" to "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict")
+    args = listOf(name)
+}
+
+mainTask("backTest")
+mainTask("forwardTest")
+mainTask("realTrade")
+mainTask("printTopCoins")
