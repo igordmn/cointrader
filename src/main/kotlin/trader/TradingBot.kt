@@ -5,6 +5,7 @@ import kotlinx.coroutines.experimental.NonCancellable.isActive
 import org.slf4j.Logger
 import util.concurrent.delay
 import util.lang.truncatedTo
+import java.awt.Toolkit
 import java.time.Duration
 import java.time.Instant
 
@@ -59,6 +60,7 @@ class TradingBot(
         }
 
         override fun afterException(exception: Exception) {
+            Toolkit.getDefaultToolkit().beep() // todo перенести отсюда
             log.error("afterException", exception)
         }
     }

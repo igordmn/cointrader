@@ -11,8 +11,6 @@ import exchange.binance.market.BinanceMarketLimits
 import exchange.binance.market.BinanceMarketPrice
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
-import exchange.test.TestMarketBroker
-import exchange.test.TestPortfolio
 import util.log.logger
 import java.math.BigDecimal
 

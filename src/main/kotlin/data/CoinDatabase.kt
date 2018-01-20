@@ -11,7 +11,7 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
-val COIN_DATABASE_FILE = "D:/1/coins.db"
+val COIN_DATABASE_FILE = "D:/Development/Projects/cointrader/db/coins.db"
 
 fun connectCoinDatabase() {
     Database.connect(

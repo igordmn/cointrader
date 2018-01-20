@@ -4,9 +4,7 @@ import exchange.MarketBroker
 import exchange.MarketLimits
 import exchange.MarketPrice
 import org.slf4j.Logger
-import trader.AdvisableTrade
 import util.math.round
-import util.math.roundValues
 import java.math.BigDecimal
 import java.math.RoundingMode
 

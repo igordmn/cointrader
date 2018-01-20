@@ -19,6 +19,6 @@ fun main(args: Array<String>) {
     val broker = BinanceMarketBroker("LTCBNB", api, log)
 
     runBlocking {
-        broker.sell(BigDecimal("0.00001"))
+        broker.buy(BigDecimal("0.2"))
     }
 }

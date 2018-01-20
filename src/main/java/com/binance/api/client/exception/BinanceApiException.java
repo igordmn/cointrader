@@ -67,7 +67,7 @@ public class BinanceApiException extends RuntimeException {
   @Override
   public String getMessage() {
     if (error != null) {
-      return error.getMsg();
+      return error.getMsg() + " (code: " + error.getCode() + ")";
     }
     return super.getMessage();
   }

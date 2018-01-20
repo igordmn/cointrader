@@ -2,10 +2,8 @@ package exchange.test
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
-import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class TestMarketBrokerSpec : FreeSpec({
     val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
