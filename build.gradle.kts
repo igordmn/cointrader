@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.android.AndroidGradleWrapper.srcDir
+import java.io.Writer
+import java.io.StringWriter
 
 group = "dmi"
 version = "1.0-SNAPSHOT"
@@ -38,6 +40,7 @@ repositories {
 
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))
+    compile(kotlin("reflect", kotlinVersion))
     compile(":jpy-0.9-SNAPSHOT:")
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("ch.qos.logback:logback-classic:1.2.3")
@@ -74,9 +77,18 @@ application {
     mainClassName = "main.MainKt"
 }
 
-//
-//project.extensions.create("greeting", CreateStartScripts::class.java)
-//
-configure<org.gradle.jvm.application.tasks.CreateStartScripts> {
-//    optsEnvironmentVar="PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
+
+val startScripts = (tasks["startScripts"] as CreateStartScripts)
+val original = startScripts.windowsStartScriptGenerator
+startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
+    override fun generateScript(details: JavaAppStartScriptGenerationDetails, destination: Writer) {
+        val header = "@if \"%DEBUG%\" == \"\" @echo off"
+        val additional = "PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
+
+        val midStr = StringWriter()
+        original.generateScript(details, midStr)
+        val text = midStr.toString().replace(header, header + "\n" + additional)
+
+        destination.write(text)
+    }
 }
