@@ -13,9 +13,9 @@ from pgportfolio.agent.datamatrices import DataMatrices
 
 print(os.getcwd())
 
-if os.path.exists("train_package"):
-    shutil.rmtree("train_package")
-os.makedirs("train_package")
+if os.path.exists("data/train_package"):
+    shutil.rmtree("data/train_package")
+os.makedirs("data/train_package")
 
 np.random.seed(0)
 

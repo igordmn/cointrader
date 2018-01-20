@@ -49,7 +49,7 @@ private suspend fun run(log: Logger) {
             config.mainCoin,
             config.altCoins,
             config.historyCount,
-            Paths.get("train_package/netfile"),
+            Paths.get("data/train_package/netfile"),
             config.fee,
             config.indicators
     )

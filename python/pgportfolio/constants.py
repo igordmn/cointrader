@@ -1,5 +1,5 @@
-DATABASE_DIR = "D:/Development/Projects/cointrader/db/coins.db"
-NET_FILE = "./train_package/netfile"
+DATABASE_DIR = "./data/coins.db"
+NET_FILE = "./data/train_package/netfile"
 
 
 # select coin, sum(volume)/30 total_volume from History where date >= 1512086400 and date < 1514678400 and exchange="binance" group by coin order by total_volume desc

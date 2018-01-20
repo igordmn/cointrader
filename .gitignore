@@ -3,6 +3,7 @@
 /.sign/
 /.idea/
 /out/
+/data/
 build/
 /local.properties
 /workspace.properties

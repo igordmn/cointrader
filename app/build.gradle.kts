@@ -93,6 +93,7 @@ fun mainTask(name: String) = task(name, JavaExec::class) {
     main = applicationPlugin.mainClassName
     jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList()
     environment = environment + mapOf("PYTHONHOME" to "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict")
+    workingDir = rootDir
     args = listOf(name)
 }
 

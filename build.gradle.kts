@@ -6,7 +6,7 @@ allprojects {
         mavenCentral()
         jcenter()
         flatDir {
-            dirs(File(rootProject.projectDir, "lib"))
+            dirs(File(rootDir, "lib"))
         }
         maven("https://dl.bintray.com/kotlin/exposed")
     }
