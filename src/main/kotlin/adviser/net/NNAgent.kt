@@ -10,11 +10,11 @@ class NNAgent(
         private val indicatorNumber: Int,
         private val altCoinNumber: Int,
         private val windowSize: Int,
-        restore_dir: String? = null
+        netPath: String? = null
 ) {
     private val agentModule = PyModule.importModule("pgportfolio.agent.nnagent")
     private val numpy = PyModule.importModule("numpy")
-    private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, altCoinNumber, windowSize, restore_dir)
+    private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, altCoinNumber, windowSize, netPath)
 
     fun bestPortfolioPortions(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
         require(currentPortions.n2 == altCoinNumber)

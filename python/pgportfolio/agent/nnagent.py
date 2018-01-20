@@ -128,7 +128,7 @@ class NNAgent:
     def __init__(
             self,
             fee, indicator_number, coin_number, window_size,
-            restore_dir=None,
+            restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
         x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, window_size])
@@ -169,8 +169,8 @@ class NNAgent:
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
-        if restore_dir:
-            self._saver.restore(self._session, restore_dir)
+        if restore_path:
+            self._saver.restore(self._session, restore_path)
         else:
             self._session.run(tf.global_variables_initializer())
 
