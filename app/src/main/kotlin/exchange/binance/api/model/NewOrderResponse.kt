@@ -50,7 +50,7 @@ class NewOrderResponse {
 
     var side: OrderSide? = null
 
-    var fills: List<OrderFill>? = null
+    lateinit var fills: List<OrderFill>
 
     override fun toString(): String {
         return "NewOrderResponse(symbol=$symbol, orderId=$orderId, clientOrderId=$clientOrderId, transactTime=$transactTime, price=$price, origQty=$origQty, executedQty=$executedQty, status=$status, timeInForce=$timeInForce, type=$type, side=$side, fills=$fills)"
