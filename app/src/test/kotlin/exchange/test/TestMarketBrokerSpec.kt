@@ -7,7 +7,6 @@ import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
-// todo Exception, если нет средств. Если меньше минимального, или не совпадает с шагом
 class TestMarketBrokerSpec : FreeSpec({
     val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
     val ethInBtcPrice = TestMarketPrice(BigDecimal("0.1"))
@@ -121,8 +120,9 @@ class TestMarketBrokerSpec : FreeSpec({
                 "BTC" to BigDecimal("1.0"),
                 "LTC" to BigDecimal("20.0")
         ))
+        val limits = TestMarketLimits(BigDecimal("0.1"), BigDecimal("0.02"))
         val btcToLtc = TestMarketBroker(
-                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal("0.1"), BigDecimal("0.02")),
+                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, limits,
                 TestMarketBroker.EmptyListener()
         )
 

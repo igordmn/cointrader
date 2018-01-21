@@ -44,7 +44,9 @@ class SafeMarketBroker(
     }
 
     private suspend fun limitAmount(amount: BigDecimal, action: suspend (newAmount: BigDecimal) -> Unit) {
-        require(amount >= BigDecimal.ZERO)
+        if (amount < BigDecimal.ZERO) {
+            throw MarketBroker.Error.WrongAmount()
+        }
 
         val limits = limits.get()
         val roundedAmount = if (limits.amountStep > BigDecimal.ZERO) {
