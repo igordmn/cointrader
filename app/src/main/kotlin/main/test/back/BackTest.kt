@@ -81,7 +81,10 @@ private suspend fun run(log: Logger) {
     val testTrade = TestTrade(trade, time, config.period)
     val bot = TradingBot(
             config.period, time, testTrade,
-            TradingBot.LogListener(logger(TradingBot::class))
+            TradingBot.LogListener(logger(TradingBot::class)),
+            {
+                info.refresh()
+            }
     )
 
     testTrade.setTimeCloseToNextPeriod()

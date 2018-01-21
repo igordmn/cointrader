@@ -106,7 +106,10 @@ private suspend fun run(log: Logger) {
 
     val bot = TradingBot(
             config.period, time, trade,
-            TradingBot.LogListener(logger(TradingBot::class))
+            TradingBot.LogListener(logger(TradingBot::class)),
+            {
+                info.refresh()
+            }
     )
 
     bot.run()

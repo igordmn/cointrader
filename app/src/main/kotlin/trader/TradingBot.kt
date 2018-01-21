@@ -14,12 +14,14 @@ class TradingBot(
         private val period: Duration,
         private val time: ExchangeTime,
         private val trade: Trade,
-        private val listener: Listener
+        private val listener: Listener,
+        private val refreshInfo: suspend () -> Unit
 ) {
     suspend fun run() {
         while (isActive) {
             try {
                 trade()
+                refreshInfo()
             } catch (e: Exception) {
                 listener.afterException(e)
             }
