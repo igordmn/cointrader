@@ -12,25 +12,25 @@ class SafeMarketBroker(
         private val log: Logger
 ) : MarketBroker {
     suspend override fun buy(amount: BigDecimal) {
-        processAmount(amount) { newAmount ->
+        processAmount(amount, "buy") { newAmount ->
             original.buy(newAmount)
         }
     }
 
     suspend override fun sell(amount: BigDecimal) {
-        processAmount(amount) { newAmount ->
+        processAmount(amount, "sell") { newAmount ->
             original.sell(newAmount)
         }
     }
 
-    private suspend fun processAmount(amount: BigDecimal, action: suspend (newAmount: BigDecimal) -> Unit) {
+    private suspend fun processAmount(amount: BigDecimal, logMethod: String, action: suspend (newAmount: BigDecimal) -> Unit) {
         var attempt = 0
         var currentAmount = amount
         while (true) {
             try {
                 limitAmount(currentAmount, action)
             } catch (e: MarketBroker.Error.InsufficientBalance) {
-                log.info("InsufficientBalance. Attempt $attempt   amount $currentAmount")
+                log.info("InsufficientBalance ($logMethod). Attempt $attempt   amount $currentAmount")
                 if (attempt == attemptCount - 1) {
                     throw e
                 } else {

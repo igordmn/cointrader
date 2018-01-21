@@ -4,6 +4,7 @@ import com.binance.api.client.domain.general.ExchangeInfo
 import exchange.LoggableMarketBroker
 import exchange.Market
 import exchange.Markets
+import exchange.SafeMarketBroker
 import exchange.binance.BinanceInfo
 import exchange.binance.api.BinanceAPI
 import exchange.binance.market.BinanceMarketHistory
@@ -30,11 +31,21 @@ class BinanceWithTestBrokerMarkets(
             val history = BinanceMarketHistory(name, api, normalizer)
             val prices = BinanceMarketPrice(name, api)
             val limits = BinanceMarketLimits(name, exchangeInfo)
+
+            val testBroker = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class)))
+            val safeBroker = SafeMarketBroker(
+                    testBroker,
+                    limits,
+                    attemptCount = 10,
+                    attemptAmountDecay = BigDecimal("0.99"),
+                    log = logger("" + SafeMarketBroker::class + " $name")
+            )
             val broker = LoggableMarketBroker(
-                    TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class))),
+                    safeBroker,
                     fromCoin, toCoin,
                     logger(TestMarketBroker::class)
             )
+
             Market(broker, history, prices)
         } else {
             null
