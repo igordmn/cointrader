@@ -2,6 +2,7 @@ package exchange.binance.market
 
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
+import com.binance.api.client.exception.BinanceApiException
 import exchange.MarketBroker
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.model.NewOrderResponse
@@ -17,17 +18,34 @@ class BinanceMarketBroker(
         private val log: Logger
 ) : MarketBroker {
     override suspend fun buy(amount: BigDecimal) {
-        // todo брать время с сервера
-        val result = api.newOrder(name, OrderSide.BUY, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, Instant.now().toEpochMilli())
+        val result = newMarketOrder(OrderSide.BUY, amount)
         val slippage = buySlippage(amount, result)
         log.info("Buy $amount $name:\n$result\nslippage $slippage")
     }
 
     override suspend fun sell(amount: BigDecimal) {
-        // todo брать время с сервера
-        val result = api.newOrder(name, OrderSide.SELL, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, Instant.now().toEpochMilli())
+        val result = newMarketOrder(OrderSide.SELL, amount)
         val slippage = sellSlippage(amount, result)
         log.info("Sell $amount $name:\n$result\nslippage $slippage")
+    }
+
+    private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal): NewOrderResponse {
+        if (amount < BigDecimal.ZERO) {
+            throw MarketBroker.Error.WrongAmount()
+        }
+        return  try {
+            // todo брать время с сервера
+            api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, Instant.now().toEpochMilli())
+        } catch (e: BinanceApiException) {
+            val msg = e.error.msg
+            val newException = when {
+                msg.startsWith("Invalid quantity") -> MarketBroker.Error.WrongAmount()
+                msg.startsWith("Filter failure: LOT_SIZE") -> MarketBroker.Error.WrongAmount()
+                msg.startsWith("Account has insufficient balance for requested action") -> MarketBroker.Error.InsufficientBalance()
+                else -> e
+            }
+            throw newException
+        }
     }
 
     private fun buySlippage(amount: BigDecimal, result: NewOrderResponse): BigDecimal {
