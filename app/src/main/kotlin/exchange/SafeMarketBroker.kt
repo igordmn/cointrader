@@ -1,11 +1,15 @@
 package exchange
 
+import org.slf4j.Logger
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class SafeMarketBroker(
         private val original: MarketBroker,
-        private val limits: MarketLimits
+        private val limits: MarketLimits,
+        private val attemptCount: Int,
+        private val attemptAmountDecay: BigDecimal,
+        private val log: Logger
 ) : MarketBroker {
     suspend override fun buy(amount: BigDecimal) {
         processAmount(amount) { newAmount ->
@@ -20,6 +24,26 @@ class SafeMarketBroker(
     }
 
     private suspend fun processAmount(amount: BigDecimal, action: suspend (newAmount: BigDecimal) -> Unit) {
+        var attempt = 0
+        var currentAmount = amount
+        while (true) {
+            try {
+                limitAmount(currentAmount, action)
+            } catch (e: MarketBroker.Error.InsufficientBalance) {
+                log.info("InsufficientBalance. Attempt $attempt   amount $currentAmount")
+                if (attempt == attemptCount - 1) {
+                    throw e
+                } else {
+                    attempt++
+                    currentAmount *= attemptAmountDecay
+                    continue
+                }
+            }
+            break
+        }
+    }
+
+    private suspend fun limitAmount(amount: BigDecimal, action: suspend (newAmount: BigDecimal) -> Unit) {
         require(amount >= BigDecimal.ZERO)
 
         val limits = limits.get()
