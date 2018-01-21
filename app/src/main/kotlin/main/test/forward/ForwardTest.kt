@@ -1,6 +1,7 @@
 package main.test.forward
 
 import adviser.net.NeuralTradeAdviser
+import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
 import exchange.binance.BinanceTime
 import exchange.binance.api.BinanceAPI
@@ -39,11 +40,11 @@ private suspend fun run(log: Logger) {
     val operationScale = 32
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
-    val exchangeInfo = api.exchangeInfo()
-    val info = BinanceInfo()
+    val constants = BinanceConstants()
     val portfolio = TestPortfolio(config.initialCoins)
     val time = BinanceTime(api)
-    val markets = BinanceWithTestBrokerMarkets(info, api, portfolio, config.fee, exchangeInfo, operationScale)
+    val info = BinanceInfo.load(api)
+    val markets = BinanceWithTestBrokerMarkets(constants, api, portfolio, config.fee, info, operationScale)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,

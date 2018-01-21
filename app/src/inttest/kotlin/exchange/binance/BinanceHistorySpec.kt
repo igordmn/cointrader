@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
 class BinanceHistorySpec : StringSpec({
     val operationScale = 4
     val api = binanceAPI()
-    val marketName = BinanceInfo().marketName("USDT", "BTC")!!
+    val marketName = BinanceConstants().marketName("USDT", "BTC")!!
     val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
     val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
     val history = BinanceMarketHistory(marketName, api, normalizer)

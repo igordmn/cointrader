@@ -19,7 +19,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class AdvisableTradeTest : StringSpec({
+class AdvisableTradeSpec : StringSpec({
     val period = Duration.ofMinutes(30)
     val tradeTime = ZonedDateTime.of(2018, 1, 10, 1, 1, 13, 12, ZoneOffset.UTC).toInstant().truncatedTo(period)
 

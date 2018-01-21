@@ -1,10 +1,7 @@
 package main.real
 
 import adviser.net.NeuralTradeAdviser
-import exchange.binance.BinanceInfo
-import exchange.binance.BinanceMarkets
-import exchange.binance.BinancePortfolio
-import exchange.binance.BinanceTime
+import exchange.binance.*
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.test.BinanceWithTestBrokerMarkets
@@ -54,15 +51,15 @@ private suspend fun run(log: Logger) {
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
 //    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java))
-    val exchangeInfo = api.exchangeInfo()
-    val info = BinanceInfo()
+    val constants = BinanceConstants()
     val testPortfolio = TestPortfolio(config.initialCoins)
     val testPortfolio2 = TestPortfolio(config.initialCoins)
-    val binancePortfolio = BinancePortfolio(info, api)
+    val binancePortfolio = BinancePortfolio(constants, api)
     val time = BinanceTime(api)
-    val testMarkets = BinanceWithTestBrokerMarkets(info, api, testPortfolio, config.fee, exchangeInfo, operationScale)
-    val testMarkets2 = BinanceWithTestBrokerMarkets(info, api, testPortfolio2, config.fee, exchangeInfo, operationScale)
-    val binanceMarkets = BinanceMarkets(info, api, operationScale)
+    val info = BinanceInfo.load(api)
+    val testMarkets = BinanceWithTestBrokerMarkets(constants, api, testPortfolio, config.fee, info, operationScale)
+    val testMarkets2 = BinanceWithTestBrokerMarkets(constants, api, testPortfolio2, config.fee, info, operationScale)
+    val binanceMarkets = BinanceMarkets(constants, api, info, operationScale)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,

@@ -13,7 +13,7 @@ import java.time.Duration
 
 class BinancePricesSpec : StringSpec({
     val api = binanceAPI()
-    val marketName = BinanceInfo().marketName("USDT", "BTC")!!
+    val marketName = BinanceConstants().marketName("USDT", "BTC")!!
     val prices = BinanceMarketPrice(marketName, api)
 
     "get current price multiple times" {
