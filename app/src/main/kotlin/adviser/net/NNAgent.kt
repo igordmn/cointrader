@@ -12,7 +12,7 @@ class NNAgent(
         private val windowSize: Int,
         netPath: String? = null
 ) {
-    private val agentModule = PyModule.importModule("pgportfolio.agent.nnagent")
+    private val agentModule = PyModule.importModule("cointrader.util.nnagent")
     private val numpy = PyModule.importModule("numpy")
     private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, altCoinNumber, windowSize, netPath)
 

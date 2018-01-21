@@ -16,7 +16,7 @@ public class PythonUtils {
         System.setProperty("jpy.pythonPrefix", envPath);
         System.setProperty("jpy.pythonExecutable", envPath + "/python.exe");
         PyLib.startPython();
-        PyModule.extendSysPath(rootPath + "/python", true);
+        PyModule.extendSysPath(rootPath + "/python/src", true);
     }
 
     public static void stopPython() {

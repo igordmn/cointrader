@@ -2,15 +2,14 @@ package exchange.binance
 
 class BinanceInfo {
     val btcMarkets = setOf(
-            "ETH", "XRP", "IOTA", "XVG", "BCH", "TRX", "LTC",
-            "NEO", "ADA", "EOS", "QTUM", "ETC", "DASH", "HSR", "VEN",
-            "BNB", "POWR", "POE", "MANA", "MCO", "QSP", "STRAT", "WTC",
-            "OMG", "SNT", "BTS", "XMR", "LSK", "ZEC", "SALT", "REQ",
-            "STORJ", "YOYO", "LINK", "CTR", "BTG", "ENG", "VIB",
-            "MTL", "TRX", "ETH", "NEO", "XRP", "BCD", "ADA", "ICX", "CND", "XVG", "XLM", "WTC",
-            "NEBL", "INS", "HSR", "POE", "GAS", "ETC", "QTUM", "TRIG",
-            "TNB", "LEND", "QSP", "XMR", "BTS", "OMG", "STRAT", "LSK",
-            "FUN", "MANA", "FUEL", "AION", "ENJ", "MCO", "CDT"
+            "TRX", "ETH", "NEO", "XRP", "BNB", "VEN", "EOS", "CND", "ICX",
+            "BCD", "ADA", "XVG", "WTC", "BCH", "ELF", "XLM", "LTC", "VIBE",
+            "INS", "NEBL", "POE", "APPC", "IOTA", "HSR", "ETC", "QTUM",
+            "ARN", "GAS", "BTG", "TNB", "TRIG", "XMR", "LEND", "BTS",
+            "SUB", "ZRX", "OMG", "QSP", "LRC", "GTO", "BRD", "WABI",
+            "STRAT", "FUN", "CDT", "KNC", "REQ", "LSK", "AION", "ENG",
+            "OST", "MANA", "LINK", "POWR", "BCPT", "FUEL", "ZEC", "BQX",
+            "DASH", "ENJ", "CTR", "BAT", "SALT", "MCO", "AST"
     )
 
     val btcReversedMarkets = setOf("USDT")
