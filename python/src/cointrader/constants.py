@@ -9,14 +9,12 @@ NET_FILE = "./data/train_package/netfile"
 
 ALL_COINS = {
     "binance": [
-        "USDT", "LTC", "TRX", "ETH", "NEO", "XRP", "BCD", "ADA", "ICX", "CND", "XVG", "XLM", "WTC",
-        "NEBL", "HSR", "POE", "GAS", "ETC", "QTUM", "TRIG",
-        "TNB", "LEND", "QSP", "XMR", "BTS", "OMG", "STRAT", "LSK",
-        "FUN", "MANA", "FUEL", "AION", "ENJ", "MCO", "CDT"
+        "USDT", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
+        "WTC", "XLM", "INS", "NEBL", "POE", "HSR", "ETC", "QTUM", "GAS", "TNB",
+        "TRIG", "XMR", "LEND", "BTS", "OMG", "QSP", "GTO", "STRAT", "FUN", "CDT",
+        "REQ", "LSK", "AION", "MANA", "FUEL", "ZEC", "ENJ", "SALT",
+        "MCO"
     ],
-    # "binance": [
-    #     "USDT", "ETH", "MCO", "NEO", "OMG", "QTUM", "STRAT", "XVG", "DASH", "ETC", "SNT", "TRX", "LTC", "XRP", "IOTA", "BCH"
-    # ],
     # "binance": [
     #         "USDT", "TRX", "ETH", "NEO", "XRP", "BNB", "BCD", "VEN", "ADA", "EOS",
     #         "ICX", "CND", "XVG", "BCH", "XLM", "WTC", "LTC", "NEBL", "ELF", "INS",

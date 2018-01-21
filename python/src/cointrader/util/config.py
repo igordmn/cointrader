@@ -11,17 +11,17 @@ def parse_time(time_string):
 
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
-    validation_portion: float = 0.0001
+    validation_portion: float = 0.00001
     test_portion: float = 0.0
-    fee: float = 0.001
+    fee: float = 0.0015
     window_size: int = 160
     batch_size: int = 109
-    coin_number: int = 34
+    coin_number: int = 39
     steps: int = 35000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/8/1 00:00:00")
-    end_time: int = parse_time("2018/1/19 12:00:00")
+    end_time: int = parse_time("2018/1/21 13:00:00")
     indicators: list = sorted(["close"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07

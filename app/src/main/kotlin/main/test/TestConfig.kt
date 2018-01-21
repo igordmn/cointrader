@@ -8,14 +8,14 @@ import java.time.Instant
 data class TestConfig(
         val mainCoin: String = "BTC",
         val altCoins: List<String> = listOf(
-                "USDT", "TRX", "ETH", "NEO", "XRP", "BCD", "ADA",
-                "ICX", "CND", "XVG", "XLM", "WTC", "NEBL", "HSR",
-                "POE", "GAS", "ETC", "QTUM", "TRIG",  "TNB", "LEND",
-                "QSP", "XMR", "BTS", "OMG", "STRAT", "LSK",
-                "FUN", "MANA", "FUEL", "AION", "ENJ", "MCO", "CDT"
+                "USDT", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
+                "WTC", "XLM", "INS", "NEBL", "POE", "HSR", "ETC", "QTUM", "GAS", "TNB",
+                "TRIG", "XMR", "LEND", "BTS", "OMG", "QSP", "GTO", "STRAT", "FUN", "CDT",
+                "REQ", "LSK", "AION", "MANA", "FUEL", "ZEC", "ENJ", "SALT",
+                "MCO"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("0.0044884122")
+                "BTC" to BigDecimal("0.003")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
