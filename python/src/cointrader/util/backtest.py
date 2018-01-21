@@ -1,6 +1,6 @@
 import numpy as np
 
-from pgportfolio.agent.indicators import compute_max_drawdown, sharpe, positive_count, negative_count
+from src.cointrader.util.indicators import compute_max_drawdown, sharpe, positive_count, negative_count
 
 
 def backtest(setname, agent, matrix, config, log):

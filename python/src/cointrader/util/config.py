@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from typing import NamedTuple
 
-from pgportfolio.constants import ALL_COINS
+from src.cointrader.constants import ALL_COINS
 
 
 def parse_time(time_string):

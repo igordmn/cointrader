@@ -1,17 +1,14 @@
-import os
-import shutil
-
 import gc
 import traceback
 
 import numpy as np
 
-from pgportfolio.agent.backtest import backtest
-from pgportfolio.agent.config import TrainConfig
-from pgportfolio.agent.train import train_net
-from pgportfolio.constants import *
-from pgportfolio.agent.nnagent import NNAgent
-from pgportfolio.agent.datamatrices import DataMatrices
+from src.cointrader.util.backtest import backtest
+from src.cointrader.util.config import TrainConfig
+from src.cointrader.util.train import train_net
+from src.cointrader.constants import *
+from src.cointrader.util.nnagent import NNAgent
+from src.cointrader.util.datamatrices import DataMatrices
 import logging
 import time
 
