@@ -11,8 +11,6 @@ from src.cointrader.constants import *
 from src.cointrader.util.nnagent import NNAgent
 from src.cointrader.util.datamatrices import DataMatrices
 
-print(os.getcwd())
-
 if os.path.exists("data/train_package"):
     shutil.rmtree("data/train_package")
 os.makedirs("data/train_package")
