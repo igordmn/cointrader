@@ -18,6 +18,7 @@ import trader.MultipleTrade
 import trader.TradingBot
 import util.log.logger
 import util.python.PythonUtils
+import java.io.File
 import java.nio.file.Paths
 
 fun realTrade() = runBlocking {
@@ -46,9 +47,13 @@ private suspend fun run(log: Logger) {
     val config = TestConfig()
     log.info("Config:\n$config")
 
+    val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
+    val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
+
     val operationScale = 32
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
+//    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java))
     val exchangeInfo = api.exchangeInfo()
     val info = BinanceInfo()
     val testPortfolio = TestPortfolio(config.initialCoins)
