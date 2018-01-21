@@ -11,8 +11,8 @@ def parse_time(time_string):
 
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
-    validation_portion: float = 0.0001
-    test_portion: float = 0.2
+    validation_portion: float = 0.00001
+    test_portion: float = 0.0
     fee: float = 0.0015
     window_size: int = 160
     batch_size: int = 109
