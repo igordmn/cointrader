@@ -17,7 +17,7 @@ class TrainConfig(NamedTuple):
     window_size: int = 160
     batch_size: int = 109
     coin_number: int = 39
-    steps: int = 40000
+    steps: int = 60000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/8/1 00:00:00")
