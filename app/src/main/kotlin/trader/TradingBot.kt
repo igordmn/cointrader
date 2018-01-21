@@ -9,6 +9,7 @@ import java.awt.Toolkit
 import java.time.Duration
 import java.time.Instant
 
+// todo refetch market limits each step
 class TradingBot(
         private val period: Duration,
         private val time: ExchangeTime,

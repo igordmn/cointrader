@@ -106,8 +106,10 @@ private class TestMarkets(
             val history = BinanceMarketHistory(name, api, normalizer)
             val prices = TestHistoricalMarketPrice(time, history, approximatedPricesFactory)
             val limits = BinanceMarketLimits(name, exchangeInfo)
+            val testBroker = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class)))
+            val safeBroker = SafeMarketBroker(testBroker, limits)
             val broker = LoggableMarketBroker(
-                    TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class))),
+                    safeBroker,
                     fromCoin, toCoin,
                     logger(TestMarketBroker::class)
             )
