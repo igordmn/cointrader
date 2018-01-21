@@ -2,8 +2,8 @@
 /.android-sdk/
 /.sign/
 /.idea/
-/out/
 /data/
+out/
 build/
 /local.properties
 /workspace.properties
