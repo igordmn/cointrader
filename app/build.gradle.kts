@@ -75,7 +75,7 @@ val original = startScripts.windowsStartScriptGenerator
 startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
     override fun generateScript(details: JavaAppStartScriptGenerationDetails, destination: Writer) {
         val header = "@if \"%DEBUG%\" == \"\" @echo off"
-        val additional = "PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
+        val additional = "set PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
 
         val midStr = StringWriter()
         original.generateScript(details, midStr)
