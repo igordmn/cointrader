@@ -12,10 +12,9 @@ class BinanceMarketLimits(
     override fun get(): MarketLimits.Value {
         val symbolInfo = exchangeInfo.symbols.find { it.symbol == name }!!
         val lotSizeFilter = symbolInfo.filters.find { it.filterType == FilterType.LOT_SIZE }!!
-        val notionalFilter = symbolInfo.filters.find { it.filterType == FilterType.MIN_NOTIONAL }!!
         return MarketLimits.Value(
-                amountStep = BigDecimal(lotSizeFilter.stepSize),
-                minTotalPrice = BigDecimal(notionalFilter.minNotional)
+                minAmount = BigDecimal(lotSizeFilter.minQty),
+                amountStep = BigDecimal(lotSizeFilter.stepSize)
         )
     }
 }

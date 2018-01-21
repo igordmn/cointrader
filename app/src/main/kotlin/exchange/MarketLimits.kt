@@ -6,7 +6,12 @@ interface MarketLimits {
     fun get(): Value
 
     data class Value(
-            val amountStep: BigDecimal,
-            val minTotalPrice: BigDecimal
-    )
+            val minAmount: BigDecimal,
+            val amountStep: BigDecimal
+    ) {
+        init {
+            require(minAmount >= BigDecimal.ZERO)
+            require(amountStep >= BigDecimal.ZERO)
+        }
+    }
 }

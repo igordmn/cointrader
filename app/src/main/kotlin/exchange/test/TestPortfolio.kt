@@ -26,15 +26,25 @@ class TestPortfolio(initialAmounts: Map<String, BigDecimal>) : Portfolio {
     suspend fun modify(perform: (Modifier) -> Unit) = suspendCoroutine<Unit> { continuation ->
         launch(threadContext) {
             delay(50, TimeUnit.MILLISECONDS)
+            var throwed: Throwable? = null
             synchronized(amounts) {
-                perform(Modifier())
+                try {
+                    perform(Modifier())
+                } catch (e: Throwable) {
+                    throwed = e
+                }
             }
-            continuation.resume(Unit)
+            if (throwed != null) {
+                continuation.resumeWithException(throwed!!)
+            } else {
+                continuation.resume(Unit)
+            }
         }
     }
 
     inner class Modifier {
         operator fun set(coin: String, amount: BigDecimal) {
+            require(amount >= BigDecimal.ZERO)
             amounts[coin] = amount
         }
 

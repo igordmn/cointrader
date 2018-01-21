@@ -18,3 +18,6 @@ fun max(vararg values: BigDecimal): BigDecimal = values.max()!!
 
 fun Map<String, BigDecimal>.roundValues(scale: Int): Map<String, BigDecimal> = mapValues { it.value.round(scale) }
 fun BigDecimal.round(scale: Int): BigDecimal = setScale(scale, RoundingMode.HALF_UP)
+
+infix fun BigDecimal.equalsWithoutScale(other: BigDecimal) = compareTo(other) == 0
+infix fun BigDecimal.notEqualsWithoutScale(other: BigDecimal) = compareTo(other) != 0

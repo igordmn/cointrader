@@ -31,7 +31,7 @@ fun printTopCoins() = runBlocking {
         val price = prices[it]!!
         val volumeMonth = volumesMonth[it]!!
         val volumeWeek = volumesWeek[it]!!
-        it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT, limits.minTotalPrice * oneBTCinUSDT)
+        it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT)
     }
 //            .filter {
 //        it.second.amountStep <= BigDecimal(2)
@@ -46,8 +46,8 @@ private suspend fun lastCandle(client: BinanceAPI, coin: String, period: String)
 }
 
 // Prices in USDT
-private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val amountStep: BigDecimal, val minTotalPrice: BigDecimal) {
+private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val amountStep: BigDecimal) {
     override fun toString(): String {
-        return "$volumeMonth\t$volumeWeek\t$amountStep, \t$minTotalPrice"
+        return "$volumeMonth\t$volumeWeek\t$amountStep"
     }
 }

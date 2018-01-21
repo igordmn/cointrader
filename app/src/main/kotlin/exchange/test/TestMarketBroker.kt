@@ -4,6 +4,8 @@ import exchange.MarketBroker
 import exchange.MarketLimits
 import exchange.MarketPrice
 import org.slf4j.Logger
+import util.math.equalsWithoutScale
+import util.math.notEqualsWithoutScale
 import util.math.round
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -18,22 +20,10 @@ class TestMarketBroker(
         private val listener: Listener
 ) : MarketBroker {
     override suspend fun buy(amount: BigDecimal) {
+        checkAmount(amount)
         val currentPrice = price.current()
-        val limits = limits.get()
-        val roundedAmount = if (limits.amountStep > BigDecimal.ZERO) {
-            amount.divide(limits.amountStep, 0, RoundingMode.FLOOR) * limits.amountStep
-        } else {
-            amount
-        }
+        listener.beforeBuy(fromCoin, toCoin, amount, currentPrice)
 
-        listener.beforeBuy(fromCoin, toCoin, amount, currentPrice, roundedAmount, limits.amountStep, limits.minTotalPrice)
-
-        if (roundedAmount * currentPrice >= limits.minTotalPrice) {
-            buyToPortfolio(roundedAmount, currentPrice)
-        }
-    }
-
-    private suspend fun buyToPortfolio(amount: BigDecimal, currentPrice: BigDecimal) {
         portfolio.modify {
             val fromAmount = it[fromCoin]
             val fromSellAmount = amount * currentPrice
@@ -41,65 +31,63 @@ class TestMarketBroker(
                 it[fromCoin] = it[fromCoin] - fromSellAmount
                 it[toCoin] = it[toCoin] + amount * (BigDecimal.ONE - fee)
             } else {
-                it[fromCoin] = BigDecimal.ZERO
-                it[toCoin] = it[toCoin] + fromAmount / currentPrice * (BigDecimal.ONE - fee)
+                throw MarketBroker.Error.InsufficientBalance()
             }
         }
     }
 
     override suspend fun sell(amount: BigDecimal) {
+        checkAmount(amount)
         val currentPrice = price.current()
-        val limits = limits.get()
-        val roundedAmount = if (limits.amountStep > BigDecimal.ZERO) {
-            amount.divide(limits.amountStep, 0, RoundingMode.FLOOR) * limits.amountStep
-        } else {
-            amount
-        }
+        listener.beforeSell(fromCoin, toCoin, amount, currentPrice)
 
-        listener.beforeSell(fromCoin, toCoin, amount, currentPrice, roundedAmount, limits.amountStep, limits.minTotalPrice)
-
-        if (roundedAmount * currentPrice >= limits.minTotalPrice) {
-            sellFromPortfolio(roundedAmount, currentPrice)
-        }
-    }
-
-    private suspend fun sellFromPortfolio(amount: BigDecimal, currentPrice: BigDecimal) {
         portfolio.modify {
             val toAmount = it[toCoin]
             if (amount <= toAmount) {
                 it[fromCoin] = it[fromCoin] + amount * currentPrice * (BigDecimal.ONE - fee)
                 it[toCoin] = it[toCoin] - amount
             } else {
-                it[fromCoin] = it[fromCoin] + toAmount * currentPrice * (BigDecimal.ONE - fee)
-                it[toCoin] = BigDecimal.ZERO
+                throw MarketBroker.Error.InsufficientBalance()
             }
         }
     }
 
+    private fun checkAmount(amount: BigDecimal) {
+        val limits = limits.get()
+        listener.beforeCheckAmount(fromCoin, toCoin, amount, limits)
+        val tooSmall = amount <= BigDecimal.ZERO || amount < limits.minAmount
+        val notMultiplyOfStep = limits.amountStep != BigDecimal.ZERO && (amount % limits.amountStep) notEqualsWithoutScale BigDecimal.ZERO
+        if (tooSmall || notMultiplyOfStep) {
+            throw MarketBroker.Error.WrongAmount()
+        }
+    }
+
     interface Listener {
-        fun beforeBuy(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) = Unit
-        fun beforeSell(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) = Unit
+        fun beforeCheckAmount(fromCoin: String, toCoin: String, amount: BigDecimal, limits: MarketLimits.Value) = Unit
+        fun beforeBuy(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal) = Unit
+        fun beforeSell(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal) = Unit
     }
 
     class EmptyListener : Listener
 
     class LogListener(private val log: Logger) : Listener {
-        override fun beforeBuy(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
+        override fun beforeCheckAmount(fromCoin: String, toCoin: String, amount: BigDecimal, limits: MarketLimits.Value) {
             val amountR = amount.round(10)
-            val currentPriceR = currentPrice.round(10)
-            val roundedAmountR = roundedAmount.round(10)
-            val amountStepR = amountStep.round(10)
-            val minTotalPriceR = minTotalPrice.round(10)
-            log.debug("beforeBuy   fromCoin $fromCoin   toCoin $toCoin   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
+            val minAmountR = limits.minAmount.round(10)
+            val amountStepR = limits.amountStep.round(10)
+            log.debug("beforeCheckAmount   fromCoin $fromCoin   toCoin $toCoin   amount $amountR   minAmount $minAmountR   amountStep $amountStepR")
         }
 
-        override fun beforeSell(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal, roundedAmount: BigDecimal, amountStep: BigDecimal, minTotalPrice: BigDecimal) {
+        override fun beforeBuy(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal) {
             val amountR = amount.round(10)
             val currentPriceR = currentPrice.round(10)
-            val roundedAmountR = roundedAmount.round(10)
-            val amountStepR = amountStep.round(10)
-            val minTotalPriceR = minTotalPrice.round(10)
-            log.debug("beforeSell   fromCoin $fromCoin   toCoin $toCoin   amount $amountR   currentPrice $currentPriceR   roundedAmount $roundedAmountR   amountStep $amountStepR   minTotalPrice $minTotalPriceR")
+            log.debug("beforeBuy   fromCoin $fromCoin   toCoin $toCoin   amount $amountR   currentPrice $currentPriceR")
+        }
+
+        override fun beforeSell(fromCoin: String, toCoin: String, amount: BigDecimal, currentPrice: BigDecimal) {
+            val amountR = amount.round(10)
+            val currentPriceR = currentPrice.round(10)
+            log.debug("beforeSell   fromCoin $fromCoin   toCoin $toCoin   amount $amountR   currentPrice $currentPriceR")
         }
     }
 }
