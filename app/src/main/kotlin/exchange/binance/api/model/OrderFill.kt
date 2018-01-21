@@ -1,25 +1,28 @@
 package exchange.binance.api.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 class OrderFill {
     /**
      * Price.
      */
-    private var price: String? = null
+    var price: String? = null
 
     /**
      * Quantity.
      */
-    private var qty: String? = null
+    var qty: String? = null
 
     /**
      * Commission.
      */
-    private var commission: String? = null
+    var commission: String? = null
 
     /**
      * Asset on which commission is taken
      */
-    private var commissionAsset: String? = null
+    var commissionAsset: String? = null
 
     override fun toString(): String {
         return "OrderFill(price=$price, qty=$qty, commission=$commission, commissionAsset=$commissionAsset)"
