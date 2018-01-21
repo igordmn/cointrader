@@ -8,7 +8,7 @@ import java.time.Instant
 data class TestConfig(
         val mainCoin: String = "BTC",
         val altCoins: List<String> = listOf(
-                "USDT", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
+                "USDT", "LTC", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
                 "WTC", "XLM", "NEBL", "POE", "HSR", "ETC", "QTUM", "GAS", "TNB",
                 "TRIG", "XMR", "LEND", "BTS", "OMG", "QSP", "GTO", "STRAT", "FUN", "CDT",
                 "REQ", "LSK", "AION", "MANA", "FUEL", "ZEC", "ENJ", "SALT",
