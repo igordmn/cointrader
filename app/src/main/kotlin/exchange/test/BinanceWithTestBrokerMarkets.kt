@@ -31,9 +31,7 @@ class BinanceWithTestBrokerMarkets(
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
             val history = BinanceMarketHistory(name, api, normalizer)
             val prices = BinanceMarketPrice(name, api)
-
             val limits = binanceInfo.limits(name)
-
             val testBroker = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class)))
             val safeBroker = SafeMarketBroker(
                     testBroker,
@@ -47,7 +45,6 @@ class BinanceWithTestBrokerMarkets(
                     fromCoin, toCoin,
                     logger(TestMarketBroker::class)
             )
-
             Market(broker, history, prices)
         } else {
             null
