@@ -49,8 +49,8 @@ private suspend fun run(log: Logger) {
 
     val operationScale = 32
 
-    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
-//    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java))
+//    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
+    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java))
     val constants = BinanceConstants()
     val binancePortfolio = BinancePortfolio(constants, api)
     val testPortfolio = TestPortfolio(config.initialCoins)
