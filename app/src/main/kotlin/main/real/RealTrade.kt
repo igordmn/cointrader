@@ -102,8 +102,8 @@ private suspend fun run(log: Logger) {
             operationScale,
             AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
     )
-    val trade = MultipleTrade(listOf(testTrade, testTrade2))
-//    val trade = MultipleTrade(listOf(binanceTrade, testTrade))
+//    val trade = MultipleTrade(listOf(testTrade, testTrade2))
+    val trade = MultipleTrade(listOf(binanceTrade, testTrade))
 
     val bot = TradingBot(
             config.period, time, trade,
