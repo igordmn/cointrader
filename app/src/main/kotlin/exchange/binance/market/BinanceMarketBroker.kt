@@ -51,12 +51,12 @@ class BinanceMarketBroker(
     private fun buySlippage(amount: BigDecimal, result: NewOrderResponse): BigDecimal {
         val desiredSellingAmount = BigDecimal(result.fills.first().price) * amount
         val factSellingAmount = result.fills.map { BigDecimal(it.qty) * BigDecimal(it.price) }.sum()
-        return desiredSellingAmount.divide(factSellingAmount, 30, RoundingMode.HALF_UP).setScale(8)
+        return desiredSellingAmount.divide(factSellingAmount, 30, RoundingMode.HALF_UP).setScale(10, RoundingMode.HALF_UP)
     }
 
     private fun sellSlippage(amount: BigDecimal, result: NewOrderResponse): BigDecimal {
         val desiredBuyingAmount = BigDecimal(result.fills.first().price) * amount
         val factBuyingAmount = result.fills.map { BigDecimal(it.qty) * BigDecimal(it.price) }.sum()
-        return factBuyingAmount.divide(desiredBuyingAmount, 30, RoundingMode.HALF_UP).setScale(8)
+        return factBuyingAmount.divide(desiredBuyingAmount, 30, RoundingMode.HALF_UP).setScale(10, RoundingMode.HALF_UP)
     }
 }
