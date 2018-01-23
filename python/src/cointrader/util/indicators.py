@@ -21,6 +21,10 @@ def sharpe(profits):
     return np.mean(log_profits) / np.std(log_profits)
 
 
+def standard_deviation(profits):
+    return np.std(np.log(profits))
+
+
 def moving_accumulate(profits, n=48):
     acc = np.cumprod(profits)
     acc[n:] = acc[n:] / acc[:-n]

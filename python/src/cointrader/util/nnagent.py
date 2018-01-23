@@ -82,7 +82,7 @@ def build_predict_w(
 
 
 def build_loss(log_mean, sharp_ratio, predict_w):
-    loss_tensor = -log_mean  # + 1.001 * tf.reduce_mean(tf.reduce_sum(-tf.log(1.000001 - predict_w), axis=[1]))
+    loss_tensor = -sharp_ratio  # + 1.001 * tf.reduce_mean(tf.reduce_sum(-tf.log(1.000001 - predict_w), axis=[1]))
     loss_tensor += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
     return loss_tensor
 
@@ -196,7 +196,7 @@ class NNAgent:
 
         tflearn.is_training(False, session)
         results = session.run(
-            [t.capital, t.geometric_mean_profit, t.log_mean_profit, t.sharp_ratio, t.loss, t.predict_w],
+            [t.capital, t.geometric_mean_profit, t.log_mean_profit, t.sharp_ratio, t.standard_profit_deviation, t.loss, t.predict_w],
             feed_dict={
                 t.x: x,
                 t.price_inc: price_inc,
