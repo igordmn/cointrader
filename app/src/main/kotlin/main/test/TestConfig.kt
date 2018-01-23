@@ -16,7 +16,9 @@ data class TestConfig(
                 "KNC", "REQ", "OST", "ENJ", "DASH"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("0.00332564")
+                "BTC" to BigDecimal("0.00332504"),
+                "LTC" to BigDecimal("0.00000323"),
+                "USDT" to BigDecimal("0.00583317")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
