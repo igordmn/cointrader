@@ -8,18 +8,19 @@ import java.time.Instant
 data class TestConfig(
         val mainCoin: String = "BTC",
         val altCoins: List<String> = listOf(
-                "USDT", "LTC", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
-                "WTC", "XLM", "NEBL", "POE", "HSR", "ETC", "QTUM", "GAS", "TNB",
-                "TRIG", "XMR", "LEND", "BTS", "OMG", "QSP", "GTO", "STRAT", "FUN", "CDT",
-                "REQ", "LSK", "AION", "MANA", "FUEL", "ZEC", "ENJ", "SALT",
-                "MCO"
+                "USDT", "ETH", "CND", "VEN", "TRX", "EOS", "XRP", "WTC", "TNT", "BNB",
+                "ICX", "NEO", "XLM", "ELF", "LEND", "ADA", "LTC", "XVG", "IOTA",
+                "HSR", "TNB", "BCH", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
+                "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
+                "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
+                "KNC", "REQ", "OST", "ENJ", "DASH"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
                 "BTC" to BigDecimal("0.00344362")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
-        val fee: BigDecimal = BigDecimal("0.001"),
+        val fee: BigDecimal = BigDecimal("0.0005"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE,
         val startTime: Instant = Instant.now() - Duration.ofDays(10)
 )
