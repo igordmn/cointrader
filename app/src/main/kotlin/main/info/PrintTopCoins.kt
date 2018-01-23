@@ -7,6 +7,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketLimits
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
+import util.math.sum
 
 fun printTopCoins() = runBlocking {
     val api = binanceAPI()
@@ -17,9 +18,10 @@ fun printTopCoins() = runBlocking {
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
     val prices: Map<String, BigDecimal> = allPrices.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to BigDecimal(it.price) }
     val allLimits: Map<String, BinanceMarketLimits> = prices.keys.associate { it to BinanceMarketLimits(it, exchangeInfo) }
-    val volumesMonth = info.keys.associate { it to BigDecimal(lastCandle(api, it, "1M").quoteAssetVolume) / BigDecimal(30) }
-    val volumesWeek = info.keys.associate { it to BigDecimal(lastCandle(api, it, "1w").quoteAssetVolume) / BigDecimal(7) }
-    val volumesDay = info.keys.associate { it to BigDecimal(lastCandle(api, it, "1d").quoteAssetVolume) }
+
+    val volumesMonth = info.keys.associate { it to volume(api, it, 20 * 24) / BigDecimal(20) }
+    val volumesWeek = info.keys.associate { it to  volume(api, it, 7 * 24) / BigDecimal(7) }
+    val volumesDay = info.keys.associate { it to  volume(api, it, 1 * 24) / BigDecimal(1) }
     val volumesMonthList = volumesMonth.entries.sortedByDescending { it.value }
     val volumesWeekList = volumesWeek.entries.sortedByDescending { it.value }
     val volumesDayList = volumesDay.entries.sortedByDescending { it.value }
@@ -27,7 +29,7 @@ fun printTopCoins() = runBlocking {
     val topCoinsWeek = volumesWeekList.map { it.key }.take(70)
     val topCoinsDay = volumesDayList.map { it.key }.take(70)
 
-    val topCoins = topCoinsMonth - (topCoinsMonth - topCoinsWeek)
+    val topCoins = topCoinsMonth - (topCoinsMonth - topCoinsWeek) - (topCoinsMonth - topCoinsDay)
 
     val infos = topCoins.map {
         val limits = allLimits[it]!!.get()
@@ -35,23 +37,20 @@ fun printTopCoins() = runBlocking {
         val volumeMonth = volumesMonth[it]!!
         val volumeWeek = volumesWeek[it]!!
         val volumeDay = volumesDay[it]!!
-        it to CoinInfo(volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, volumeDay * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT)
-    }
-    .filter {
-        it.second.amountStep <= BigDecimal(2)
+        CoinInfo(it, volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, volumeDay * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT)
     }
     infos.forEach(::println)
-    println(infos.joinToString(", ") { it.first })
 }
 
 
-private suspend fun lastCandle(client: BinanceAPI, coin: String, period: String): Candlestick {
-    return client.getCandlestickBars(coin, period, 1, null, null).last()
+private suspend fun volume(client: BinanceAPI, coin: String, hourCount: Int): BigDecimal {
+    require(hourCount <= 500)
+    return client.getCandlestickBars(coin, "1h", hourCount, null, null).map { BigDecimal(it.quoteAssetVolume) }.sum()
 }
 
 // Prices in USDT
-private data class CoinInfo(val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val volumeDay: BigDecimal, val amountStep: BigDecimal) {
+private data class CoinInfo(val name: String, val volumeMonth: BigDecimal, val volumeWeek: BigDecimal, val volumeDay: BigDecimal, val amountStep: BigDecimal) {
     override fun toString(): String {
-        return "$volumeMonth\t$volumeWeek\t$amountStep"
+        return "$name\t$volumeMonth\t$volumeWeek\t$volumeDay\t$amountStep"
     }
 }

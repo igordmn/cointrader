@@ -15,11 +15,11 @@ data class TestConfig(
                 "MCO"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("0.0028")
+                "BTC" to BigDecimal("0.00344362")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
-        val fee: BigDecimal = BigDecimal("0.0005"),
+        val fee: BigDecimal = BigDecimal("0.001"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE,
         val startTime: Instant = Instant.now() - Duration.ofDays(10)
 )

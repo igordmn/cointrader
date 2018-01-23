@@ -5,19 +5,40 @@ from typing import NamedTuple
 from src.cointrader.constants import ALL_COINS
 
 
+# select coin, sum(volume)/30 total_volume from History where date >= 1512086400 and date < 1514678400 and exchange="binance" group by coin order by total_volume desc
+# select coin, sum(volume)/30 total_volume from History where date >= 1495238400 and date < 1497916800 and exchange="bittrex" group by coin order by total_volume desc
+# select * from (select coin, min(date) as mn from History where exchange="binance" group by coin) where mn >= 1514764800
+
+
+
 def parse_time(time_string):
     return int(time.mktime(datetime.strptime(time_string, "%Y/%m/%d %H:%M:%S").timetuple()))
 
 
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
-    validation_portion: float = 0.00001
-    test_portion: float = 0.0
+    coins: list = [
+        "USDT", "LTC", "TRX", "ETH", "NEO", "XRP", "CND", "ICX", "BCD", "ADA", "XVG",
+        "WTC", "XLM", "NEBL", "POE", "HSR", "ETC", "QTUM", "GAS", "TNB",
+        "TRIG", "XMR", "LEND", "BTS", "OMG", "QSP", "GTO", "STRAT", "FUN", "CDT",
+        "REQ", "LSK", "AION", "MANA", "FUEL", "ZEC", "ENJ", "SALT",
+        "MCO"
+    ]
+    binanceNew: list = [
+        "USDT", "ETH", "CND", "VEN", "TRX", "EOS", "XRP", "WTC", "TNT", "BNB",
+        "ICX", "NEO", "XLM", "ELF", "LEND", "ADA", "LTC", "XVG", "IOTA",
+        "HSR", "TNB", "BCC", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
+        "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
+        "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
+        "KNC", "REQ", "OST", "ENJ", "DASH"
+    ]
+    coin_number: int = len(coins)
+    validation_portion: float = 0.0001
+    test_portion: float = 0.2
     fee: float = 0.0015
     window_size: int = 160
     batch_size: int = 109
-    coin_number: int = 39
-    steps: int = 60000
+    steps: int = 80000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/8/1 00:00:00")
@@ -26,5 +47,4 @@ class TrainConfig(NamedTuple):
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07
     use_geometric_sample: bool = True
-    coins: list = ALL_COINS[exchange][:coin_number]
     aproximate_buy_sell_price: bool = True
