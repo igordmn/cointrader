@@ -2,14 +2,13 @@ package exchange.binance
 
 class BinanceConstants {
     val btcMarkets = setOf(
-            "TRX", "ETH", "NEO", "XRP", "BNB", "VEN", "EOS", "CND", "ICX",
-            "BCD", "ADA", "XVG", "WTC", "BCH", "ELF", "XLM", "LTC", "VIBE",
-            "INS", "NEBL", "POE", "APPC", "IOTA", "HSR", "ETC", "QTUM",
-            "ARN", "GAS", "BTG", "TNB", "TRIG", "XMR", "LEND", "BTS",
-            "SUB", "ZRX", "OMG", "QSP", "LRC", "GTO", "BRD", "WABI",
-            "STRAT", "FUN", "CDT", "KNC", "REQ", "LSK", "AION", "ENG",
-            "OST", "MANA", "LINK", "POWR", "BCPT", "FUEL", "ZEC", "BQX",
-            "DASH", "ENJ", "CTR", "BAT", "SALT", "MCO", "AST"
+            "BCD", "POE", "NEO", "BTG", "FUN", "LRC", "TRX", "TRIG",
+            "APPC", "XVG", "GTO", "BCH", "BQX", "REQ", "CDT", "QSP", "QTUM",
+            "OST", "MDA", "ETC", "ADA", "XMR", "XRP", "VIBE", "DASH", "BTS",
+            "KNC", "ENJ", "SUB", "WABI", "LTC", "ZRX", "POWR", "ENG", "ETH",
+            "BNB", "AMB", "LSK", "BRD", "ICX", "OMG", "LINK", "ELF", "MCO",
+            "HSR", "IOTA", "EOS", "STRAT", "AION", "TNB", "XLM", "MANA", "WTC",
+            "VEN", "CTR", "CND", "LEND", "TNT"
     )
 
     val btcReversedMarkets = setOf("USDT")
