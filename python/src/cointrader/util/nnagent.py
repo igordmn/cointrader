@@ -115,7 +115,6 @@ class Tensors(NamedTuple):
     predict_w: tf.Tensor
 
     capital: tf.Tensor
-    mean_profit: tf.Tensor
     geometric_mean_profit: tf.Tensor
     log_mean_profit: tf.Tensor
     standard_profit_deviation: tf.Tensor
@@ -137,12 +136,12 @@ class NNAgent:
         predict_w = build_predict_w(batch_size, x, previous_w)
 
         profits = compute_profits(batch_size, predict_w, price_inc, fee)
+        log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
-        mean = tf.reduce_mean(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
-        log_mean = tf.reduce_mean(tf.log(profits))
-        standard_deviation = tf.sqrt(tf.reduce_mean((profits - mean) ** 2))
-        sharp_ratio = (mean - 1) / standard_deviation
+        log_mean = tf.reduce_mean(log_profits)
+        standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
+        sharp_ratio = (log_mean - 1) / standard_deviation
         loss = build_loss(log_mean, sharp_ratio, predict_w)
 
         train = build_train(loss)
@@ -155,7 +154,6 @@ class NNAgent:
             predict_w,
 
             capital,
-            mean,
             geometric_mean,
             log_mean,
             standard_deviation,
