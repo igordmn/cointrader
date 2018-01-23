@@ -17,7 +17,8 @@ def compute_max_drawdown(profits):
 
 
 def sharpe(profits):
-    return (np.mean(profits) - 1.0) / np.std(profits)
+    log_profits = np.log(profits)
+    return (np.mean(log_profits) - 1.0) / np.std(log_profits)
 
 
 def moving_accumulate(profits, n=48):
