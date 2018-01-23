@@ -141,7 +141,7 @@ class NNAgent:
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
         log_mean = tf.reduce_mean(log_profits)
         standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
-        sharp_ratio = (log_mean - 1) / standard_deviation
+        sharp_ratio = log_mean / standard_deviation
         loss = build_loss(log_mean, sharp_ratio, predict_w)
 
         train = build_train(loss)
