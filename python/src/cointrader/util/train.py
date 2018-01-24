@@ -17,13 +17,12 @@ def train_net(agent, matrix, config, log):
         total_train_profit *= train_geometric_mean_profit
         batch.setw(predict_w[:, 1:])
         if i % config.log_steps == 0 or i == config.steps - 1:
-            capital, geometric_mean_profit, log_mean_profit, max_drawdown, sharp_ratio, sortino_ratio, standard_profit_deviation, downside_profit_deviation, loss = agent.test(validation_x, validation_prices_inc, validation_w)
+            capital, geometric_mean_profit, log_mean_profit, sharp_ratio, sortino_ratio, standard_profit_deviation, downside_profit_deviation, loss = agent.test(validation_x, validation_prices_inc, validation_w)
             periods_per_day = int(24 * 60 * 60 / config.period)
             log('step %d' % i)
             # print('capital', capital)
             log('1 day profit (train)', (total_train_profit ** (1 / config.log_steps)) ** periods_per_day)
             log('1 day profit', geometric_mean_profit ** periods_per_day)
-            log('max_drawdown', max_drawdown)
             log('standard_deviation', standard_profit_deviation)
             log('downside_deviation', downside_profit_deviation)
             log('sharp_ratio', sharp_ratio)

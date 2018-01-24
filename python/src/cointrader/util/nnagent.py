@@ -112,7 +112,6 @@ class Tensors(NamedTuple):
     downside_profit_deviation: tf.Tensor
     sharp_ratio: tf.Tensor
     sortino_ratio: tf.Tensor
-    max_drawdown: tf.Tensor
 
     loss: tf.Tensor
     train: tf.Tensor
@@ -140,7 +139,6 @@ class NNAgent:
         downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits) ** 2))
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = log_mean / downside_deviation
-        max_drawdown = tf.reduce_max(log_profits)
 
         loss = -sortino_ratio
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
@@ -161,7 +159,6 @@ class NNAgent:
             downside_deviation,
             sharp_ratio,
             sortino_ratio,
-            max_drawdown,
 
             loss,
             train
@@ -201,7 +198,7 @@ class NNAgent:
 
         tflearn.is_training(False, session)
         results = session.run(
-            [t.capital, t.geometric_mean_profit, t.log_mean_profit, t.max_drawdown,
+            [t.capital, t.geometric_mean_profit, t.log_mean_profit,
              t.sharp_ratio, t.sortino_ratio,
              t.standard_profit_deviation, t.downside_profit_deviation,
              t.loss, t.predict_w],
