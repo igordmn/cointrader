@@ -135,7 +135,7 @@ class NNAgent:
         log_mean = tf.reduce_mean(log_profits)
 
         period = 300
-        min_day_profit = 1.05
+        min_day_profit = 1.2
         periods_per_day = int(24 * 60 * 60 / period)
         min_log_profit = tf.log(min_day_profit ** (1 / periods_per_day))
 
@@ -144,7 +144,7 @@ class NNAgent:
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = (log_mean - min_log_profit) / downside_deviation
 
-        loss = -log_mean
+        loss = -sortino_ratio
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         train = build_train(loss)
