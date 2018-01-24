@@ -140,7 +140,7 @@ class NNAgent:
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = log_mean / downside_deviation
 
-        loss = -sortino_ratio
+        loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         train = build_train(loss)
