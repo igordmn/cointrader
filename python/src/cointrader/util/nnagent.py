@@ -112,6 +112,8 @@ class Tensors(NamedTuple):
     downside_profit_deviation: tf.Tensor
     sharp_ratio: tf.Tensor
     sortino_ratio: tf.Tensor
+    max_drawdown: tf.Tensor
+
     loss: tf.Tensor
     train: tf.Tensor
 
@@ -134,15 +136,11 @@ class NNAgent:
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
         log_mean = tf.reduce_mean(log_profits)
 
-        period = 300
-        min_day_profit = 1.2
-        periods_per_day = int(24 * 60 * 60 / period)
-        min_log_profit = tf.log(min_day_profit ** (1 / periods_per_day))
-
         standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
-        downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits - min_log_profit) ** 2))
+        downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits) ** 2))
         sharp_ratio = log_mean / standard_deviation
-        sortino_ratio = (log_mean - min_log_profit) / downside_deviation
+        sortino_ratio = log_mean / downside_deviation
+        max_drawdown = tf.reduce_max(log_profits)
 
         loss = -sortino_ratio
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
@@ -163,6 +161,8 @@ class NNAgent:
             downside_deviation,
             sharp_ratio,
             sortino_ratio,
+            max_drawdown,
+
             loss,
             train
         )
@@ -201,7 +201,10 @@ class NNAgent:
 
         tflearn.is_training(False, session)
         results = session.run(
-            [t.capital, t.geometric_mean_profit, t.log_mean_profit, t.sharp_ratio, t.sortino_ratio, t.standard_profit_deviation, t.downside_profit_deviation, t.loss, t.predict_w],
+            [t.capital, t.geometric_mean_profit, t.log_mean_profit, t.max_drawdown,
+             t.sharp_ratio, t.sortino_ratio,
+             t.standard_profit_deviation, t.downside_profit_deviation,
+             t.loss, t.predict_w],
             feed_dict={
                 t.x: x,
                 t.price_inc: price_inc,

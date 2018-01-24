@@ -21,20 +21,18 @@ def sharpe_ratio(profits):
     return np.mean(log_profits) / np.std(log_profits)
 
 
-def sortino_ratio(profits, min_profit):
+def sortino_ratio(profits):
     log_profits = np.log(profits)
-    min_log_profit = np.log(min_profit)
-    return (np.mean(log_profits) - min_log_profit) / downside_deviation(profits, min_profit)
+    return np.mean(log_profits) / downside_deviation(profits)
 
 
 def standard_deviation(profits):
     return np.std(np.log(profits))
 
 
-def downside_deviation(profits, min_profit):
+def downside_deviation(profits):
     log_profits = np.log(profits)
-    min_log_profit = np.log(min_profit)
-    return np.sqrt(np.mean(np.minimum(0.0, log_profits - min_log_profit) ** 2))
+    return np.sqrt(np.mean(np.minimum(0.0, log_profits) ** 2))
 
 
 def moving_accumulate(profits, n=48):
