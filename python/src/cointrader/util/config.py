@@ -40,4 +40,4 @@ class TrainConfig(NamedTuple):
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07
     use_geometric_sample: bool = True
-    aproximate_buy_sell_price: bool = True
+    approximate_buy_sell_price: bool = True

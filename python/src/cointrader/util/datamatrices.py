@@ -94,7 +94,7 @@ def get_global_panel(database_dir, config):
                            " GROUP BY date_norm".format(
                                period=config.period, start=start, exchange=config.exchange, end=end, coin=coin))
                 elif indicator == "z_price":
-                    if config.aproximate_buy_sell_price:
+                    if config.approximate_buy_sell_price:
                         sql = ("SELECT closeTime-60-{period} AS date_norm, close FROM History WHERE"
                                " date>={start} and date<={end}"
                                " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
@@ -111,7 +111,7 @@ def get_global_panel(database_dir, config):
                 panel.loc[indicator, coin, serial_data.index] = serial_data.squeeze()
                 panel = panel_fillna(panel)
 
-            if config.aproximate_buy_sell_price:
+            if config.approximate_buy_sell_price:
                 sql = ("SELECT closeTime-60-{period} AS date_norm, open, close, high, low FROM History WHERE"
                        " date>={start} and date<={end}"
                        " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
