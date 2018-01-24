@@ -133,7 +133,12 @@ class NNAgent:
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
         log_mean = tf.reduce_mean(log_profits)
-        min_log_profit = np.log(1.05)
+
+        period = 300
+        min_day_profit = 1.05
+        periods_per_day = int(24 * 60 * 60 / period)
+        min_log_profit = tf.log(min_day_profit ** (1 / periods_per_day))
+
         standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
         downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits - min_log_profit) ** 2))
         sharp_ratio = log_mean / standard_deviation

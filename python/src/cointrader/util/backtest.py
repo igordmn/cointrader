@@ -56,11 +56,14 @@ def backtest(setname, agent, matrix, config, log):
         log("1 day profit", one_day_profit)
 
         profits = np.array([nxt / current for current, nxt in zip(capitals, capitals[1:])])
+
+        min_period_profit = config.min_day_profit ** (1 / periods_per_day)
+
         log("maximum drawdown", compute_max_drawdown(profits))
         log("sharpe_ratio", sharpe_ratio(profits))
-        log("sortino_ratio", sortino_ratio(profits, config.min_profit))
+        log("sortino_ratio", sortino_ratio(profits, min_period_profit))
         log("standard_deviation", standard_deviation(profits))
-        log("downside_deviation", downside_deviation(profits, config.min_profit))
+        log("downside_deviation", downside_deviation(profits, min_period_profit))
         log("positive_count", positive_count(profits))
         log("negative_count", negative_count(profits))
 

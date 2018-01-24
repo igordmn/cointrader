@@ -41,4 +41,4 @@ class TrainConfig(NamedTuple):
     geometric_bias: float = 5e-07
     use_geometric_sample: bool = True
     aproximate_buy_sell_price: bool = True
-    min_profit: float = 1.05
+    min_day_profit: float = 1.05
