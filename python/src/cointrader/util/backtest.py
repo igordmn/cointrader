@@ -1,6 +1,7 @@
 import numpy as np
 
-from src.cointrader.util.indicators import compute_max_drawdown, sharpe, positive_count, negative_count, standard_deviation
+from src.cointrader.util.indicators import compute_max_drawdown, sharpe_ratio, positive_count, negative_count, standard_deviation, \
+    sortino_ratio, downside_deviation
 
 
 def backtest(setname, agent, matrix, config, log):
@@ -56,8 +57,10 @@ def backtest(setname, agent, matrix, config, log):
 
         profits = np.array([nxt / current for current, nxt in zip(capitals, capitals[1:])])
         log("maximum drawdown", compute_max_drawdown(profits))
-        log("sharpe", sharpe(profits))
+        log("sharpe_ratio", sharpe_ratio(profits))
+        log("sortino_ratio", sortino_ratio(profits, config.min_profit))
         log("standard_deviation", standard_deviation(profits))
+        log("downside_deviation", downside_deviation(profits, config.min_profit))
         log("positive_count", positive_count(profits))
         log("negative_count", negative_count(profits))
 

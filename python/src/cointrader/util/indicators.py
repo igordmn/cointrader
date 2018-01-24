@@ -16,13 +16,25 @@ def compute_max_drawdown(profits):
     return max_drawdown
 
 
-def sharpe(profits):
+def sharpe_ratio(profits):
     log_profits = np.log(profits)
     return np.mean(log_profits) / np.std(log_profits)
 
 
+def sortino_ratio(profits, min_profit):
+    log_profits = np.log(profits)
+    min_log_profit = np.log(min_profit)
+    return (np.mean(log_profits) - min_log_profit) / downside_deviation(profits, min_profit)
+
+
 def standard_deviation(profits):
     return np.std(np.log(profits))
+
+
+def downside_deviation(profits, min_profit):
+    log_profits = np.log(profits)
+    min_log_profit = np.log(min_profit)
+    return np.sqrt(np.mean(np.minimum(0.0, log_profits - min_log_profit) ** 2))
 
 
 def moving_accumulate(profits, n=48):

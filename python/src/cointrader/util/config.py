@@ -26,18 +26,19 @@ class TrainConfig(NamedTuple):
         "KNC", "REQ", "OST", "ENJ", "DASH"
     ]
     coin_number: int = len(coins)
-    validation_portion: float = 0.1
-    test_portion: float = 0.1
+    validation_portion: float = 0.08
+    test_portion: float = 0.12
     fee: float = 0.0023
     window_size: int = 120
-    batch_size: int = 109
+    batch_size: int = 200
     steps: int = 32000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/10/1 00:00:00")
     end_time: int = parse_time("2018/1/23 17:55:00")
-    indicators: list = sorted(["close"])
+    indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07
     use_geometric_sample: bool = True
     aproximate_buy_sell_price: bool = True
+    min_profit: float = 1.05
