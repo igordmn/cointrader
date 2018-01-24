@@ -82,17 +82,13 @@ def build_predict_w(
 
 
 def build_loss(log_mean, sharp_ratio, predict_w):
-    loss_tensor = -sharp_ratio  # + 1.001 * tf.reduce_mean(tf.reduce_sum(-tf.log(1.000001 - predict_w), axis=[1]))
+    loss_tensor = -log_mean + 1.0001 * tf.reduce_mean(tf.reduce_sum(-tf.log(1.000001 - predict_w), axis=[1]))
     loss_tensor += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
     return loss_tensor
 
 
 def build_train(loss):
     return tf.train.AdamOptimizer(0.00028).minimize(loss)
-    # global_step = tf.Variable(0, trainable=False)
-    # learning_rate = tf.train.exponential_decay(0.0005, global_step, 5000, 0.75, staircase=True)
-    # return tf.train.RMSPropOptimizer(learning_rate).minimize(loss, global_step=global_step)
-
 
 def compute_profits(batch_size, predict_w, price_inc, fee):
     future_price = tf.concat([tf.ones([batch_size, 1]), price_inc], axis=1)
