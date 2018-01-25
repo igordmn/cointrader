@@ -81,10 +81,6 @@ def build_predict_w(
     return net
 
 
-def build_train(loss):
-    return tf.train.AdamOptimizer(0.00028).minimize(loss)
-
-
 def compute_profits(batch_size, predict_w, price_inc, fee):
     future_price = tf.concat([tf.ones([batch_size, 1]), price_inc], axis=1)
     future_portfolio = future_price * predict_w
@@ -142,8 +138,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-
-        train = build_train(loss)
+        train = tf.train.AdamOptimizer(0.00028).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
