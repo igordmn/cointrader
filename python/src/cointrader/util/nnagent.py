@@ -137,8 +137,8 @@ class NNAgent:
 
         standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
         downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits) ** 2))
-        sharp_ratio = log_mean / standard_deviation
-        sortino_ratio = log_mean / downside_deviation
+        sharp_ratio = log_mean / (standard_deviation + 0.00001)
+        sortino_ratio = log_mean / (downside_deviation + 0.00001)
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
