@@ -109,7 +109,6 @@ class Tensors(NamedTuple):
     sharp_ratio: tf.Tensor
     sortino_ratio: tf.Tensor
 
-    loss: tf.Tensor
     train: tf.Tensor
 
 
@@ -155,7 +154,6 @@ class NNAgent:
             sharp_ratio,
             sortino_ratio,
 
-            loss,
             train
         )
 
@@ -196,7 +194,7 @@ class NNAgent:
             [t.capital, t.geometric_mean_profit, t.log_mean_profit,
              t.sharp_ratio, t.sortino_ratio,
              t.standard_profit_deviation, t.downside_profit_deviation,
-             t.loss, t.predict_w],
+             t.predict_w],
             feed_dict={
                 t.x: x,
                 t.price_inc: price_inc,
