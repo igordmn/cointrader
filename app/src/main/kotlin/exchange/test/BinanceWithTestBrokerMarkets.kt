@@ -11,9 +11,12 @@ import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketPrice
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
+import exchange.history.CachedMarketHistory
 import exchange.history.NormalizedMarketHistory
+import org.mapdb.DBMaker
 import util.log.logger
 import java.math.BigDecimal
+import java.nio.file.Paths
 import java.time.Duration
 
 class BinanceWithTestBrokerMarkets(
@@ -30,7 +33,12 @@ class BinanceWithTestBrokerMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val history = NormalizedMarketHistory(BinanceMarketHistory(name, api), normalizer, period)
+            val binanceHistory = CachedMarketHistory(
+                    DBMaker.fileDB(Paths.get("data/cache/history/$name").toFile()),
+                    BinanceMarketHistory(name, api),
+                    Duration.ofMinutes(1)
+            )
+            val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val prices = BinanceMarketPrice(name, api)
             val limits = binanceInfo.limits(name)
             val testBroker = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class)))

@@ -9,6 +9,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
+import exchange.history.CachedMarketHistory
 import exchange.history.NormalizedMarketHistory
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
@@ -17,6 +18,7 @@ import exchange.test.TestTime
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
+import org.mapdb.DBMaker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
@@ -29,6 +31,7 @@ import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
+import java.time.Period
 import java.util.concurrent.TimeUnit
 
 fun backTest() = runBlocking {
@@ -106,7 +109,11 @@ private class TestMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val binanceHistory = BinanceMarketHistory(name, api)
+            val binanceHistory = CachedMarketHistory(
+                    DBMaker.fileDB(Paths.get("data/cache/history/$name").toFile()),
+                    BinanceMarketHistory(name, api),
+                    Duration.ofMinutes(1)
+            )
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val oneMinuteHistory = NormalizedMarketHistory(binanceHistory, normalizer, Duration.ofMinutes(1))
             val prices = TestHistoricalMarketPrice(time, oneMinuteHistory, approximatedPricesFactory)
