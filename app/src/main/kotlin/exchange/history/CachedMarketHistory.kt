@@ -15,11 +15,11 @@ class CachedMarketHistory(
         private val dbMaker: DBMaker.Maker,
         private val original: MarketHistory,
         private val originalPeriod: Duration
-): MarketHistory {
+) : MarketHistory {
     override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
-        dbMaker.make().use {
+        dbMaker.transactionEnable().make().use {
             val map = map(it)
-            fillBefore(map, time)
+            fillBefore(it, map, time)
             map.headMap(time, true)
                     .descendingMap()
                     .values
@@ -29,14 +29,15 @@ class CachedMarketHistory(
         }
     }
 
-    private suspend fun fillBefore(map: BTreeMap<Instant, TimedCandle>, time: Instant) {
+    private suspend fun fillBefore(db: DB, map: BTreeMap<Instant, TimedCandle>, time: Instant) {
         val lastCloseTime = map.lastKey2() ?: Instant.MIN
         if (time >= lastCloseTime.plus(originalPeriod)) {
             original.candlesBefore(time).takeWhile {
                 it.timeRange.start >= lastCloseTime
             }.consumeEach {
-                map.put(it.timeRange.endInclusive, it)
+                map[it.timeRange.endInclusive] = it
             }
+            db.commit()
         }
     }
 
