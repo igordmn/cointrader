@@ -1,4 +1,4 @@
-package data
+package dataOld
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.Statement
@@ -15,7 +15,7 @@ val COIN_DATABASE_FILE = "data/coins.db"
 
 fun connectCoinDatabase() {
     Database.connect(
-            "jdbc:sqlite:$COIN_DATABASE_FILE",
+            "jdbc:sqlite:${COIN_DATABASE_FILE}",
             driver = "org.sqlite.JDBC",
             manager = { ThreadLocalTransactionManager(it, Connection.TRANSACTION_SERIALIZABLE) }
     )
@@ -67,15 +67,15 @@ fun deleteHistories(exchange: String, coin: String) {
 
 fun insertHistory(history: History) {
     Histories.insert {
-        it[Histories.exchange] = history.exchange
-        it[Histories.coin] = history.coin
-        it[Histories.openTime] = history.openTime
-        it[Histories.closeTime] = history.closeTime
-        it[Histories.open] = history.open
-        it[Histories.close] = history.close
-        it[Histories.high] = history.high
-        it[Histories.low] = history.low
-        it[Histories.volume] = history.volume
+        it[exchange] = history.exchange
+        it[coin] = history.coin
+        it[openTime] = history.openTime
+        it[closeTime] = history.closeTime
+        it[open] = history.open
+        it[close] = history.close
+        it[high] = history.high
+        it[low] = history.low
+        it[volume] = history.volume
     }
 }
 

@@ -1,4 +1,4 @@
-package data
+package dataOld
 
 import com.github.kittinunf.fuel.Fuel
 import com.squareup.moshi.*

@@ -1,7 +1,6 @@
 package dataOld
 
 import com.binance.api.client.domain.market.Candlestick
-import data.*
 import exchange.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
 import org.jetbrains.exposed.sql.transactions.transaction
