@@ -9,6 +9,7 @@ import exchange.binance.BinanceInfo
 import exchange.binance.api.BinanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.BinanceMarketPrice
+import exchange.binance.market.binanceCachePath
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
 import exchange.history.CachedMarketHistory
@@ -34,7 +35,7 @@ class BinanceWithTestBrokerMarkets(
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
             val binanceHistory = CachedMarketHistory(
-                    DBMaker.fileDB(Paths.get("data/cache/history/$name").toFile()),
+                    DBMaker.fileDB(binanceCachePath(name).toFile()),
                     BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
                     Duration.ofMinutes(1)
             )

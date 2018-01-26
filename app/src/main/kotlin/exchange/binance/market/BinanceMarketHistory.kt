@@ -10,6 +10,8 @@ import kotlinx.coroutines.experimental.channels.*
 import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
 import java.math.BigDecimal
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -74,3 +76,6 @@ class BinanceMarketHistory(
         return result
     }
 }
+
+val binanceCachePath: Path = Paths.get("data/cache//binance/history/")
+fun binanceCachePath(name: String): Path = binanceCachePath.resolve(name)
