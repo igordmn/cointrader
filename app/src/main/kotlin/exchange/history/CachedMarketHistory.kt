@@ -1,13 +1,12 @@
 package exchange.history
 
+import exchange.candle.Candle
 import exchange.candle.TimedCandle
-import exchange.candle.timedCandleSerializer
 import kotlinx.coroutines.experimental.channels.*
-import org.mapdb.BTreeMap
-import org.mapdb.DB
-import org.mapdb.DBMaker
+import org.mapdb.*
+import org.mapdb.serializer.GroupSerializerObjectArray
+import org.mapdb.serializer.SerializerBigDecimal
 import util.ext.mapdb.InstantSerializer
-import util.ext.mapdb.kotlinSerializer
 import java.time.Duration
 import java.time.Instant
 
@@ -44,6 +43,30 @@ class CachedMarketHistory(
     private fun map(it: DB) = it.treeMap(
             "map",
             InstantSerializer,
-            kotlinSerializer<TimedCandle>(timedCandleSerializer)
+            TimedCandleSerializer
     ).createOrOpen()
+
+    private object TimedCandleSerializer : GroupSerializerObjectArray<TimedCandle>() {
+        private val instantSerializer = InstantSerializer
+        private val bigDecimalSerializer = SerializerBigDecimal()
+
+        override fun serialize(out: DataOutput2, value: TimedCandle) {
+            instantSerializer.serialize(out, value.timeRange.start)
+            instantSerializer.serialize(out, value.timeRange.endInclusive)
+            bigDecimalSerializer.serialize(out, value.item.open)
+            bigDecimalSerializer.serialize(out, value.item.close)
+            bigDecimalSerializer.serialize(out, value.item.high)
+            bigDecimalSerializer.serialize(out, value.item.low)
+        }
+
+        override fun deserialize(input: DataInput2, available: Int): TimedCandle {
+            val start = instantSerializer.deserialize(input, available)
+            val endInclusive = instantSerializer.deserialize(input, available)
+            val open = bigDecimalSerializer.deserialize(input, available)
+            val close = bigDecimalSerializer.deserialize(input, available)
+            val high = bigDecimalSerializer.deserialize(input, available)
+            val low = bigDecimalSerializer.deserialize(input, available)
+            return TimedCandle(start..endInclusive, Candle(open, close, high, low))
+        }
+    }
 }

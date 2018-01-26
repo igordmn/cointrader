@@ -1,7 +1,6 @@
 package exchange.candle
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import util.lang.RangeTimed
 import util.lang.RangeTimedMerger
 import util.math.max
@@ -27,8 +26,6 @@ data class Candle(
 }
 
 typealias TimedCandle = RangeTimed<Candle>
-
-val timedCandleSerializer: KSerializer<TimedCandle> = RangeTimed.serializer(Candle.serializer())
 
 class TimedCandleMerger : RangeTimedMerger<Candle> {
     override fun merge(a: TimedCandle, b: TimedCandle): TimedCandle {

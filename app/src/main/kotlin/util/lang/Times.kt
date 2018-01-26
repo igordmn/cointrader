@@ -46,7 +46,6 @@ fun InstantRange.portion(time: Instant): Double {
     return Duration.between(start, time).toNanosDouble() / Duration.between(start, endInclusive).toNanosDouble()
 }
 
-@Serializable
 data class RangeTimed<out T>(val timeRange: InstantRange, val item: T) {
     init {
         require(timeRange.endInclusive > timeRange.start)
