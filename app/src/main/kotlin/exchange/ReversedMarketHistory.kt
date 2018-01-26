@@ -21,6 +21,6 @@ class ReversedMarketHistory(
                 high = BigDecimal.ONE.divide(low, operationScale, RoundingMode.HALF_UP)
         )
 
-        return original.candlesBefore(time).map { it.reverse() }
+        return original.candlesBefore(time).map { TimedCandle(it.timeRange, it.item.reverse()) }
     }
 }
