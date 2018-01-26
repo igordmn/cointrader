@@ -11,7 +11,7 @@ class NormalizedMarketHistory(
         private val normalizer: CandleNormalizer,
         private val period: Duration
 ) : MarketHistory {
-    override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
+    override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
         val candles = original.candlesBefore(time)
         return normalizer.normalizeBefore(candles, time, period)
     }

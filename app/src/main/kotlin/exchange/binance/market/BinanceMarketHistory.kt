@@ -17,7 +17,7 @@ class BinanceMarketHistory(
         private val name: String,
         private val api: BinanceAPI
 ) : MarketHistory {
-    override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
+    override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
 
         while(true) {

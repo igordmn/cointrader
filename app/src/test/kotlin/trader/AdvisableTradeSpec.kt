@@ -14,6 +14,7 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.runBlocking
 import util.lang.truncatedTo
 import util.lang.unsupportedOperation
@@ -57,14 +58,13 @@ class AdvisableTradeSpec : StringSpec({
     }
     
     fun history(price: MarketPrice, fromCoin: String, toCoin: String) = object : MarketHistory {
-        override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
-            val candle = when {
+        override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
+            send(when {
                 fromCoin == "USDT" && toCoin == "BTC" -> candle(price.current())
                 fromCoin == "BTC" && toCoin == "LTC" -> candle(price.current())
                 fromCoin == "BTC" && toCoin == "ETH" -> candle(price.current())
                 else -> unsupportedOperation()
-            }
-            return generateSequence { candle }.asReceiveChannel()
+            })
         }
     }
     

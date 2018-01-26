@@ -13,7 +13,7 @@ class ReversedMarketHistory(
         private val original: MarketHistory,
         private val operationScale: Int
 ) : MarketHistory {
-    override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
+    override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
         fun Candle.reverse() = Candle(
                 close = BigDecimal.ONE.divide(close, operationScale, RoundingMode.HALF_UP),
                 open = BigDecimal.ONE.divide(open, operationScale, RoundingMode.HALF_UP),

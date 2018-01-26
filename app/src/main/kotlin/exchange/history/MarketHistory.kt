@@ -7,5 +7,5 @@ import java.time.Duration
 import java.time.Instant
 
 interface MarketHistory {
-    suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle>
+    fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle>
 }

@@ -12,7 +12,7 @@ import java.time.Duration
 import java.time.Instant
 
 
-class HistoryCache(
+class CachedMarketHistory(
         private val path: Path,
         private val loadCandlesByMinuteBefore: (time: Instant) -> ReceiveChannel<TimedCandle>
 ) {
