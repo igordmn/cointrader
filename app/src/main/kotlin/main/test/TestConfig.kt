@@ -16,7 +16,7 @@ data class TestConfig(
                 "KNC", "REQ", "OST", "ENJ", "DASH"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("0.00332504"),
+                "BTC" to BigDecimal("3.00332504"),
                 "LTC" to BigDecimal("0.00000323"),
                 "USDT" to BigDecimal("0.00583317")
         ),
@@ -24,5 +24,5 @@ data class TestConfig(
         val historyCount: Int = 160,
         val fee: BigDecimal = BigDecimal("0.0010"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
-        val startTime: Instant = Instant.now() - Duration.ofDays(1)
+        val startTime: Instant = Instant.now() - Duration.ofHours(12)
 )

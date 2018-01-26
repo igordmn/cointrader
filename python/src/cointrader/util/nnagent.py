@@ -191,10 +191,12 @@ class NNAgent:
 
         tflearn.is_training(False, session)
         results = session.run(
-            [t.capital, t.geometric_mean_profit, t.log_mean_profit,
-             t.sharp_ratio, t.sortino_ratio,
-             t.standard_profit_deviation, t.downside_profit_deviation,
-             t.predict_w],
+            [
+                t.capital, t.geometric_mean_profit, t.log_mean_profit,
+                t.sharp_ratio, t.sortino_ratio,
+                t.standard_profit_deviation, t.downside_profit_deviation,
+                t.predict_w
+            ],
             feed_dict={
                 t.x: x,
                 t.price_inc: price_inc,
