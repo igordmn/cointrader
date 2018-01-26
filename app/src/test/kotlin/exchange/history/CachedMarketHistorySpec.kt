@@ -30,16 +30,16 @@ class CachedMarketHistorySpec : FreeSpec({
             candle("56", "77", "888", "7")
     )
 
+    val candle0 = timedCandle(70..79)
     val candle1 = timedCandle(60..69)
     val candle2 = timedCandle(50..60)
     val candle3 = timedCandle(40..45)
-    val candle4 = timedCandle(70..79)
 
     class TestHistory : MarketHistory {
-        val candles = arrayListOf(candle1, candle2, candle3)
+        var candles = listOf(candle1, candle2, candle3)
 
         override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
-            return candles.asReceiveChannel()
+            return candles.filter { it.timeRange.endInclusive <= time }.asReceiveChannel()
         }
     }
 
@@ -67,19 +67,19 @@ class CachedMarketHistorySpec : FreeSpec({
 
         "get candles before end minus 1" {
             runBlocking {
-                history.candlesBefore(instant(68)).toList() shouldBe listOf(candle1, candle2)
+                history.candlesBefore(instant(68)).toList() shouldBe listOf(candle2, candle3)
             }
         }
 
         "get candles before first end" {
             runBlocking {
-                history.candlesBefore(instant(60)).toList() shouldBe listOf(candle1, candle2)
+                history.candlesBefore(instant(60)).toList() shouldBe listOf(candle2, candle3)
             }
         }
 
         "get candles before first end minus 1" {
             runBlocking {
-                history.candlesBefore(instant(59)).toList() shouldBe listOf(candle1)
+                history.candlesBefore(instant(59)).toList() shouldBe listOf(candle3)
             }
         }
 
@@ -100,22 +100,22 @@ class CachedMarketHistorySpec : FreeSpec({
 
         "get first candle then all candles" {
             runBlocking {
-                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle1)
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
                 history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
             }
         }
 
         "get first candle then first and second candles" {
             runBlocking {
-                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle1)
-                history.candlesBefore(instant(65)).toList() shouldBe listOf(candle1, candle2)
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
+                history.candlesBefore(instant(65)).toList() shouldBe listOf(candle2, candle3)
             }
         }
 
         "get all candles then first candle" {
             runBlocking {
                 history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle1)
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
             }
         }
     }
@@ -124,23 +124,23 @@ class CachedMarketHistorySpec : FreeSpec({
         "get all candles, add new candle, get before big time" {
             runBlocking {
                 history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                testHistory.candles.add(candle4)
-                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3, candle4)
+                testHistory.candles = listOf(candle0) + testHistory.candles
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
             }
         }
 
         "get all candles, add new candle, get before small time" {
             runBlocking {
                 history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3)
-                testHistory.candles.add(candle4)
-                history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3, candle4)
+                testHistory.candles = listOf(candle0) + testHistory.candles
+                history.candlesBefore(instant(79)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
             }
         }
 
         "get all candles, add new candle, get before very small time" {
             runBlocking {
                 history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
-                testHistory.candles.add(candle4)
+                testHistory.candles = listOf(candle0) + testHistory.candles
                 history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
             }
         }
