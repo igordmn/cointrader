@@ -96,7 +96,6 @@ class AdvisableTradeSpec : StringSpec({
     val trade = AdvisableTrade(
             mainCoin = "BTC",
             altCoins = listOf("USDT", "LTC", "ETH"),
-            period = period,
             historyCount = 120,
             adviser = adviser,
             markets = markets,

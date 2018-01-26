@@ -1,10 +1,14 @@
 package exchange.binance
 
 import exchange.binance.api.binanceAPI
-import exchange.history.BinanceMarketHistory
+import exchange.binance.market.BinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
+import exchange.history.NormalizedMarketHistory
+import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
+import kotlinx.coroutines.experimental.channels.take
+import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
 import java.time.Duration
 import java.time.ZoneOffset
@@ -17,7 +21,8 @@ class BinanceHistorySpec : StringSpec({
     val marketName = BinanceConstants().marketName("USDT", "BTC")!!
     val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
     val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-    val history = BinanceMarketHistory(marketName, api, normalizer)
+    val period = Duration.ofMinutes(5)
+    val history = NormalizedMarketHistory(BinanceMarketHistory(marketName, api), normalizer, period)
 
     "get candles" {
         runBlocking {
@@ -26,9 +31,8 @@ class BinanceHistorySpec : StringSpec({
                     .toInstant()
                     .truncatedTo(ChronoUnit.MINUTES)
             val count = 10
-            val period = Duration.ofMinutes(5)
 
-            val candles = history.candlesBefore(historyEndTime, count, period)
+            val candles = history.candlesBefore(historyEndTime).take(count).toList()
             val candlesStr = candles.joinToString("\n")
             println("Candles before $historyEndTime with period $period:\n$candlesStr")
 
