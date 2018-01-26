@@ -111,7 +111,7 @@ private class TestMarkets(
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
             val binanceHistory = CachedMarketHistory(
                     DBMaker.fileDB(Paths.get("data/cache/history/$name").toFile()),
-                    BinanceMarketHistory(name, api),
+                    BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
                     Duration.ofMinutes(1)
             )
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)

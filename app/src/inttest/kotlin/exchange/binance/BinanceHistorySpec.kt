@@ -10,6 +10,8 @@ import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
+import org.slf4j.LoggerFactory
+import org.slf4j.helpers.NOPLogger
 import java.time.Duration
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -22,7 +24,7 @@ class BinanceHistorySpec : StringSpec({
     val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
     val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
     val period = Duration.ofMinutes(5)
-    val history = NormalizedMarketHistory(BinanceMarketHistory(marketName, api), normalizer, period)
+    val history = NormalizedMarketHistory(BinanceMarketHistory(marketName, api, NOPLogger.NOP_LOGGER), normalizer, period)
 
     "get candles" {
         runBlocking {

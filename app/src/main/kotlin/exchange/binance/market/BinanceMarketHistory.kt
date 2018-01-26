@@ -7,6 +7,7 @@ import exchange.candle.Candle
 import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.*
+import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
 import java.math.BigDecimal
 import java.time.Duration
@@ -15,7 +16,8 @@ import java.time.temporal.ChronoUnit
 
 class BinanceMarketHistory(
         private val name: String,
-        private val api: BinanceAPI
+        private val api: BinanceAPI,
+        private val log: Logger
 ) : MarketHistory {
     override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
@@ -35,6 +37,7 @@ class BinanceMarketHistory(
     }
 
     private suspend fun candlesChunkByMinuteBefore(time: Instant): List<TimedCandle> {
+        log.info("Load candles for $name before $time")
         fun Candlestick.toLocalCandle() = TimedCandle(
                 instantRangeOfMilli(openTime, closeTime),
                 Candle(
