@@ -1,6 +1,6 @@
 package util.lang
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
@@ -46,7 +46,8 @@ fun InstantRange.portion(time: Instant): Double {
     return Duration.between(start, time).toNanosDouble() / Duration.between(start, endInclusive).toNanosDouble()
 }
 
-data class RangeTimed<out T>(val timeRange: InstantRange, val item: T) : Serializable {
+@Serializable
+data class RangeTimed<out T>(val timeRange: InstantRange, val item: T) {
     init {
         require(timeRange.endInclusive > timeRange.start)
     }

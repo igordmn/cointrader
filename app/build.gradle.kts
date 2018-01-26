@@ -8,15 +8,23 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.plugins.JavaPluginConvention
 import com.sun.javafx.scene.CameraHelper.project
 import org.codehaus.groovy.vmplugin.VMPluginFactory.getPlugin
+import java.net.URI
 
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.0"
+    kotlinVersion = "1.2.21"
+    var serializationVersion: String by extra
+    serializationVersion = "0.4"
 
     repositories {
         mavenCentral()
         jcenter()
+        maven("https://kotlin.bintray.com/kotlinx")
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serializationVersion")
     }
 }
 
@@ -26,9 +34,12 @@ plugins {
     kotlin("jvm") version "1.2.0"
 }
 
-val kotlinVersion: String by extra
+apply {
+    plugin("kotlinx-serialization")
+}
 
-fun RepositoryHandler.maven(uri: String) = maven { setUrl(uri) }
+val kotlinVersion: String by extra
+val serializationVersion: String by extra
 
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))
@@ -50,6 +61,7 @@ dependencies {
     compile("org.jetbrains.exposed:exposed:0.9.1")
     compile("com.github.kittinunf.fuel:fuel:1.12.0")
     compile("org.mapdb:mapdb:3.0.5")
+    compile("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 

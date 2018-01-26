@@ -1,20 +1,22 @@
 package exchange.candle
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import util.lang.RangeTimed
 import util.lang.RangeTimedMerger
 import util.math.max
 import util.math.min
-import java.io.Serializable
 import java.math.BigDecimal
 
 typealias CoinToCandles = Map<String, List<Candle>>
 
+@Serializable
 data class Candle(
         val open: BigDecimal,
         val close: BigDecimal,
         val high: BigDecimal,
         val low: BigDecimal
-) : Serializable {
+)  {
     init {
         require(high >= open)
         require(high >= close)
@@ -25,6 +27,8 @@ data class Candle(
 }
 
 typealias TimedCandle = RangeTimed<Candle>
+
+val timedCandleSerializer: KSerializer<TimedCandle> = RangeTimed.serializer(Candle.serializer())
 
 class TimedCandleMerger : RangeTimedMerger<Candle> {
     override fun merge(a: TimedCandle, b: TimedCandle): TimedCandle {
