@@ -5,7 +5,11 @@ import adviser.TradeAdviser
 import exchange.*
 import exchange.candle.Candle
 import exchange.candle.CoinToCandles
+import exchange.history.MarketHistory
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.take
+import kotlinx.coroutines.experimental.channels.toList
 import org.slf4j.Logger
 import util.lang.truncatedTo
 import util.lang.zipValues
@@ -20,7 +24,6 @@ import java.time.Instant
 class AdvisableTrade(
         private val mainCoin: String,
         private val altCoins: List<String>,
-        private val period: Duration,
         private val historyCount: Int,
         private val adviser: TradeAdviser,
         private val markets: Markets,
@@ -29,8 +32,6 @@ class AdvisableTrade(
         private val listener: Listener
 ) : Trade {
     override suspend fun perform(time: Instant) {
-        require(time.truncatedTo(period) == time)
-
         fun withMainMarket(coin: String) = coin to findMainMarket(coin)
 
         val markets = altCoins.associate(::withMainMarket)
@@ -66,7 +67,7 @@ class AdvisableTrade(
     private suspend fun previousCandles(markets: Map<String, MainMarket>, time: Instant): CoinToCandles {
         return markets.mapValues {
             async {
-                it.value.candlesBefore(time, historyCount, period)
+                it.value.candlesBefore(time, historyCount)
             }
         }.mapValues {
             it.value.await()
@@ -148,8 +149,8 @@ class AdvisableTrade(
             private val isReversed: Boolean,
             private val operationScale: Int
     ) {
-        suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
-            return history().candlesBefore(time, count, period)
+        suspend fun candlesBefore(time: Instant, count: Int): List<Candle> {
+            return history().candlesBefore(time).take(count).map { it.item }.toList()
         }
 
         /**

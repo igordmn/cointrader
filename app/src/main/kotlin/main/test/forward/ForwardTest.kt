@@ -44,7 +44,7 @@ private suspend fun run(log: Logger) {
     val portfolio = TestPortfolio(config.initialCoins)
     val time = BinanceTime(api)
     val info = BinanceInfo.load(api)
-    val markets = BinanceWithTestBrokerMarkets(constants, api, portfolio, config.fee, info, operationScale)
+    val markets = BinanceWithTestBrokerMarkets(constants, api, portfolio, config.fee, info, operationScale, config.period)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,
@@ -57,7 +57,6 @@ private suspend fun run(log: Logger) {
     val trade = AdvisableTrade(
             config.mainCoin,
             config.altCoins,
-            config.period,
             config.historyCount,
             adviser,
             markets,

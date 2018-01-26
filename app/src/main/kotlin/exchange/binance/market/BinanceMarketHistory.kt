@@ -1,16 +1,13 @@
 package exchange.binance.market
 
 import com.binance.api.client.domain.market.Candlestick
-import exchange.MarketHistory
+import exchange.history.MarketHistory
 import exchange.binance.api.BinanceAPI
 import exchange.candle.Candle
 import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.*
 import util.lang.instantRangeOfMilli
-import util.lang.times
-import util.lang.truncatedTo
-import util.lang.unsupportedOperation
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -18,16 +15,9 @@ import java.time.temporal.ChronoUnit
 
 class BinanceMarketHistory(
         private val name: String,
-        private val api: BinanceAPI,
-        private val normalizer: CandleNormalizer
+        private val api: BinanceAPI
 ) : MarketHistory {
-    override suspend fun candlesBefore(time: Instant, count: Int, period: Duration): List<Candle> {
-        val candles = candlesByMinuteBefore(time)
-        val normalized = normalizer.normalizeBefore(candles, time, period)
-        return normalized.map { it.item }.take(count).toList()
-    }
-
-    private fun candlesByMinuteBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
+    override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
 
         while(true) {
@@ -54,6 +44,13 @@ class BinanceMarketHistory(
                         BigDecimal(low)
                 )
         )
+        fun List<TimedCandle>.dropIncompleteCandle(end: Instant): List<TimedCandle> {
+            return if (isNotEmpty() && first().timeRange.endInclusive != end) {
+                drop(1)
+            } else {
+                this
+            }
+        }
 
         val maxBinanceCount = 500
         val end = time.truncatedTo(ChronoUnit.MINUTES) - Duration.ofMillis(1)
@@ -65,6 +62,7 @@ class BinanceMarketHistory(
                 .filter { it.timeRange.endInclusive > it.timeRange.start }
                 .toList()
                 .asReversed()
+                .dropIncompleteCandle(end)
 
         result.zipWithNext().forEach { (current, next) ->
             require(next.timeRange.endInclusive <= current.timeRange.start)

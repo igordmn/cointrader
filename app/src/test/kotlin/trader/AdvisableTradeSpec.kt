@@ -5,11 +5,15 @@ import adviser.TradeAdviser
 import exchange.*
 import exchange.candle.Candle
 import exchange.candle.CoinToCandles
+import exchange.candle.TimedCandle
+import exchange.history.MarketHistory
 import exchange.test.TestMarketBroker
 import exchange.test.TestMarketLimits
 import exchange.test.TestPortfolio
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.runBlocking
 import util.lang.truncatedTo
 import util.lang.unsupportedOperation
@@ -38,7 +42,10 @@ class AdvisableTradeSpec : StringSpec({
         }
     }
 
-    fun candle(closePrice: BigDecimal) = Candle(closePrice, closePrice, closePrice, closePrice)
+    fun candle(closePrice: BigDecimal) = TimedCandle(
+            Instant.ofEpochMilli(0)..Instant.ofEpochMilli(1),
+            Candle(closePrice, closePrice, closePrice, closePrice)
+    )
 
     fun price(fromCoin: String, toCoin: String) = object : MarketPrice {
         override suspend fun current(): BigDecimal = when {
@@ -50,11 +57,14 @@ class AdvisableTradeSpec : StringSpec({
     }
     
     fun history(price: MarketPrice, fromCoin: String, toCoin: String) = object : MarketHistory {
-        override suspend fun candlesBefore(time: Instant, count: Int, period: Duration) = when {
-            fromCoin == "USDT" && toCoin == "BTC" -> List(count) { candle(price.current()) }
-            fromCoin == "BTC" && toCoin == "LTC" -> List(count) { candle(price.current()) }
-            fromCoin == "BTC" && toCoin == "ETH" -> List(count) { candle(price.current()) }
-            else -> unsupportedOperation()
+        override suspend fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> {
+            val candle = when {
+                fromCoin == "USDT" && toCoin == "BTC" -> candle(price.current())
+                fromCoin == "BTC" && toCoin == "LTC" -> candle(price.current())
+                fromCoin == "BTC" && toCoin == "ETH" -> candle(price.current())
+                else -> unsupportedOperation()
+            }
+            return generateSequence { candle }.asReceiveChannel()
         }
     }
     

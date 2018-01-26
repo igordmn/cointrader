@@ -1,10 +1,9 @@
 package exchange.binance
 
 import exchange.binance.api.binanceAPI
-import exchange.binance.market.BinanceMarketHistory
+import exchange.history.BinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
-import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.time.Duration

@@ -9,6 +9,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
+import exchange.history.NormalizedMarketHistory
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
@@ -56,7 +57,7 @@ private suspend fun run(log: Logger) {
     val portfolio = TestPortfolio(config.initialCoins)
     val time = TestTime(config.startTime)
     val info = BinanceInfo.load(api)
-    val markets = TestMarkets(constants, api, time, portfolio, config.fee, info, operationScale)
+    val markets = TestMarkets(constants, api, time, portfolio, config.fee, info, operationScale, config.period)
 
     val adviser = NeuralTradeAdviser(
             config.mainCoin,
@@ -69,7 +70,6 @@ private suspend fun run(log: Logger) {
     val trade = AdvisableTrade(
             config.mainCoin,
             config.altCoins,
-            config.period,
             config.historyCount,
             adviser,
             markets,
@@ -98,15 +98,18 @@ private class TestMarkets(
         private val portfolio: TestPortfolio,
         private val fee: BigDecimal,
         private val binanceInfo: BinanceInfo,
-        private val operationScale: Int
+        private val operationScale: Int,
+        private val period: Duration
 ) : Markets {
     override fun of(fromCoin: String, toCoin: String): Market? {
         val name = constants.marketName(fromCoin, toCoin)
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val history = BinanceMarketHistory(name, api, normalizer)
-            val prices = TestHistoricalMarketPrice(time, history, approximatedPricesFactory)
+            val binanceHistory = BinanceMarketHistory(name, api)
+            val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
+            val oneMinuteHistory = NormalizedMarketHistory(binanceHistory, normalizer, Duration.ofMinutes(1))
+            val prices = TestHistoricalMarketPrice(time, oneMinuteHistory, approximatedPricesFactory)
             val limits = binanceInfo.limits(name)
             val testBroker = TestMarketBroker(fromCoin, toCoin, portfolio, prices, fee, limits, TestMarketBroker.LogListener(logger(TestMarketBroker::class)))
             val safeBroker = SafeMarketBroker(

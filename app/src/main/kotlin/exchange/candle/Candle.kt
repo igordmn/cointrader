@@ -4,6 +4,7 @@ import util.lang.RangeTimed
 import util.lang.RangeTimedMerger
 import util.math.max
 import util.math.min
+import java.io.Serializable
 import java.math.BigDecimal
 
 typealias CoinToCandles = Map<String, List<Candle>>
@@ -13,7 +14,7 @@ data class Candle(
         val close: BigDecimal,
         val high: BigDecimal,
         val low: BigDecimal
-) {
+) : Serializable {
     init {
         require(high >= open)
         require(high >= close)

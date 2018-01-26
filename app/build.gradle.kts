@@ -49,6 +49,7 @@ dependencies {
     compile("org.xerial:sqlite-jdbc:3.21.0.1")
     compile("org.jetbrains.exposed:exposed:0.9.1")
     compile("com.github.kittinunf.fuel:fuel:1.12.0")
+    compile("org.mapdb:mapdb:3.0.5")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 

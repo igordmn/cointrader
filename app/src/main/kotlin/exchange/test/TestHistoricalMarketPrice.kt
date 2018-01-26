@@ -3,6 +3,9 @@ package exchange.test
 import exchange.*
 import exchange.candle.ApproximatedPricesFactory
 import exchange.candle.Candle
+import exchange.history.MarketHistory
+import kotlinx.coroutines.experimental.channels.first
+import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.delay
 import java.math.BigDecimal
 import java.time.Duration
@@ -11,13 +14,13 @@ import java.util.concurrent.TimeUnit
 
 class TestHistoricalMarketPrice(
         private val time: ExchangeTime,
-        private val history: MarketHistory,
+        private val oneMinuteHistory: MarketHistory,
         private val approximatedPricesFactory: ApproximatedPricesFactory
 ) : MarketPrice {
     override suspend fun current(): BigDecimal {
         delay(10, TimeUnit.MILLISECONDS)
         val nextMinute = time.current().truncatedTo(ChronoUnit.MINUTES) + Duration.ofMinutes(1)
-        val candle = history.candlesBefore(nextMinute, 1, Duration.ofMinutes(1)).first()
+        val candle = oneMinuteHistory.candlesBefore(nextMinute).take(1).first().item
         return randomPriceIn(candle)
     }
 
