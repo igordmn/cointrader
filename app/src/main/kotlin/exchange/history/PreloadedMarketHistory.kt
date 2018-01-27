@@ -21,9 +21,10 @@ class PreloadedMarketHistory(
         map(db).use { map ->
             val lastCloseTime = map.lastKey2() ?: Instant.MIN
             if (time >= lastCloseTime.plus(originalPeriod)) {
-                original.candlesBefore(time).takeWhile {
-                    it.timeRange.start >= lastCloseTime
-                }.consumeEach {
+                original.candlesBefore(time)
+                        .takeWhile {
+                            it.timeRange.start >= lastCloseTime
+                        }.consumeEach {
                             map[it.timeRange.endInclusive] = it
                         }
                 db.commit()
