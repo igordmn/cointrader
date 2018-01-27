@@ -9,6 +9,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 import util.math.sum
 
+// todo https://api.coinmarketcap.com/v1/ticker/?limit=100
 fun printTopCoins() = runBlocking {
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()

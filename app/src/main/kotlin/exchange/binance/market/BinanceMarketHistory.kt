@@ -109,11 +109,13 @@ class PreloadedBinanceMarketHistories(
     private val db = makeBinanceCacheDB()
     private val map = ConcurrentHashMap<String, PreloadedMarketHistory>()
 
-    operator fun get(name: String): PreloadedMarketHistory = map[name]!!
+    operator fun get(name: String): PreloadedMarketHistory {
+        return map[name]!!
+    }
 
     suspend fun preloadBefore(time: Instant) {
         altCoins
-                .mapNotNull { constants.marketName(mainCoin, it) }
+                .mapNotNull { constants.marketName(mainCoin, it) ?: constants.marketName(it, mainCoin) }
                 .map { name ->
                     async {
                         preloadBefore(name, time)

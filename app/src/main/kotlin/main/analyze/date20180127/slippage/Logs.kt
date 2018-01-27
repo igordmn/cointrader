@@ -1,5 +1,6 @@
-package main.analyze
+package main.analyze.date20180127.slippage
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -11,7 +12,7 @@ private val folders = listOf(
 
 private val realTradePrefixes = listOf("realTrade", "realTest")
 
-fun realTradeMessages(): Sequence<String> = allFiles()
+fun realTradeLines(): Sequence<String> = allFiles()
         .filter {
             isRealTradeLog(it)
         }
@@ -23,10 +24,10 @@ fun realTradeMessages(): Sequence<String> = allFiles()
 
 
 private fun allFiles(): List<Path> = folders
-        .map { Paths.get(it) }
+        .map { Files.newDirectoryStream(Paths.get(it)).toList() }
         .flatten()
 
-private fun isRealTradeLog(path: Path) = realTradePrefixes.any { path.startsWith(it) }
+private fun isRealTradeLog(path: Path) = realTradePrefixes.any { path.fileName.toString().startsWith(it) }
 
 fun readLog(zipPath: Path): List<String> {
     ZipFile(zipPath.toFile()).use { zip ->
