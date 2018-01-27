@@ -50,10 +50,9 @@ fun main(args: Array<String>) = runBlocking {
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
             .toList()
 
-    val totalCommission = comissions.reduce { acc, item -> acc * item }
-    val meanCommission = Math.sqrt(Math.pow(totalCommission.toDouble(), 1.0 / comissions.size))
+    val meanCommission =  Math.sqrt(comissions.geoMean())
 
-    println("fact comission $meanCommission")
+    println("fact commission $meanCommission")
 
 
 
@@ -78,13 +77,22 @@ fun main(args: Array<String>) = runBlocking {
             }
         }
 
-        trades.asReceiveChannel().map {
+        val approximatedCommissions =  trades.asReceiveChannel().map {
             val (fromCoinClose, fromCoinApproximated) = funs.closePriceAndApproximatedPrice(it.fromCoin, it.time)
             val (toCoinClose, toCoinApproximated) = funs.closePriceAndApproximatedPrice(it.toCoin, it.time)
+            val fromCommission = fromCoinApproximated / fromCoinClose
+            val toCommission = toCoinClose / toCoinApproximated
+            fromCommission * toCommission
+        }.toList()
 
-        }
+        val meanApproximatedCommission = Math.sqrt(approximatedCommissions.geoMean())
+        println("approximated commission $meanApproximatedCommission")
     }
+}
 
+private fun List<BigDecimal>.geoMean(): Double {
+    val total = reduce { acc, item -> acc * item }
+    return Math.pow(total.toDouble(), 1.0 / size)
 }
 
 private fun parseLine(line: String): Line = when {
