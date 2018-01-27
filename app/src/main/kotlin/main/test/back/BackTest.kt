@@ -6,12 +6,9 @@ import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
-import exchange.binance.market.BinanceMarketHistory
-import exchange.binance.market.binanceCachePath
-import exchange.binance.market.preloadedBinanceMarketHistory
+import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
-import exchange.history.PreloadedMarketHistory
 import exchange.history.NormalizedMarketHistory
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
@@ -20,7 +17,6 @@ import exchange.test.TestTime
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
-import org.mapdb.DBMaker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import trader.AdvisableTrade
@@ -37,6 +33,7 @@ import java.util.concurrent.TimeUnit
 
 fun backTest() = runBlocking {
     System.setProperty("log.name", "backTest")
+    System.setProperty("log.level", "DEBUG")
 
     val log = LoggerFactory.getLogger("main")
 
@@ -61,46 +58,50 @@ private suspend fun run(log: Logger) {
     val portfolio = TestPortfolio(config.initialCoins)
     val time = TestTime(config.startTime)
     val info = BinanceInfo.load(api)
-    val markets = TestMarkets(constants, api, time, portfolio, config.fee, info, operationScale, config.period)
+    PreloadedBinanceMarketHistories(constants, api, config.mainCoin, config.altCoins).use { preloadedHistories ->
+        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+        preloadedHistories.preloadBefore(serverTime)
+        val markets = TestMarkets(preloadedHistories, constants, time, portfolio, config.fee, info, operationScale, config.period)
 
-    val adviser = NeuralTradeAdviser(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            Paths.get("data/train_package/netfile"),
-            config.fee,
-            config.indicators
-    )
-    val trade = AdvisableTrade(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            adviser,
-            markets,
-            portfolio,
-            operationScale,
-            AdvisableTrade.LogListener(logger(AdvisableTrade::class))
-    )
+        val adviser = NeuralTradeAdviser(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                Paths.get("data/train_package/netfile"),
+                config.fee,
+                config.indicators
+        )
+        val trade = AdvisableTrade(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                adviser,
+                markets,
+                portfolio,
+                operationScale,
+                AdvisableTrade.LogListener(logger(AdvisableTrade::class))
+        )
 
-    val testTrade = TestTrade(trade, time, config.period)
-    val bot = TradingBot(
-            config.period, time, testTrade,
-            TradingBot.LogListener(logger(TradingBot::class)),
-            { time ->
+        val testTrade = TestTrade(trade, time, config.period)
+        val bot = TradingBot(
+                config.period, time, testTrade,
+                TradingBot.LogListener(logger(TradingBot::class)),
+                { time ->
+                    preloadedHistories.preloadBefore(time)
+                },
+                {
+                    info.refresh()
+                }
+        )
 
-            },
-            {
-                info.refresh()
-            }
-    )
-
-    testTrade.setTimeCloseToNextPeriod()
-    bot.run()
+        testTrade.setTimeCloseToNextPeriod()
+        bot.run()
+    }
 }
 
 private class TestMarkets(
+        private val preloadedBinanceMarketHistories: PreloadedBinanceMarketHistories,
         private val constants: BinanceConstants,
-        private val api: BinanceAPI,
         private val time: ExchangeTime,
         private val portfolio: TestPortfolio,
         private val fee: BigDecimal,
@@ -113,7 +114,7 @@ private class TestMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val binanceHistory = preloadedBinanceMarketHistory(api, name)
+            val binanceHistory = preloadedBinanceMarketHistories[name]
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val oneMinuteHistory = NormalizedMarketHistory(binanceHistory, normalizer, Duration.ofMinutes(1))
             val prices = TestHistoricalMarketPrice(time, oneMinuteHistory, approximatedPricesFactory)

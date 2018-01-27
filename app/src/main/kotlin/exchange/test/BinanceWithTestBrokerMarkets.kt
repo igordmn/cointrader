@@ -7,10 +7,7 @@ import exchange.SafeMarketBroker
 import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
 import exchange.binance.api.BinanceAPI
-import exchange.binance.market.BinanceMarketHistory
-import exchange.binance.market.BinanceMarketPrice
-import exchange.binance.market.binanceCachePath
-import exchange.binance.market.preloadedBinanceMarketHistory
+import exchange.binance.market.*
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
 import exchange.history.PreloadedMarketHistory
@@ -21,6 +18,7 @@ import java.math.BigDecimal
 import java.time.Duration
 
 class BinanceWithTestBrokerMarkets(
+        private val preloadedBinanceMarketHistories: PreloadedBinanceMarketHistories,
         private val constants: BinanceConstants,
         private val api: BinanceAPI,
         private val portfolio: TestPortfolio,
@@ -34,7 +32,7 @@ class BinanceWithTestBrokerMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val binanceHistory = preloadedBinanceMarketHistory(api, name)
+            val binanceHistory = preloadedBinanceMarketHistories[name]
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val prices = BinanceMarketPrice(name, api)
             val limits = binanceInfo.limits(name)

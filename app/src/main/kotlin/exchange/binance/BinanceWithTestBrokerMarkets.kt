@@ -16,6 +16,7 @@ import java.math.BigDecimal
 import java.time.Duration
 
 class BinanceMarkets(
+        private val preloadedBinanceMarketHistories: PreloadedBinanceMarketHistories,
         private val constants: BinanceConstants,
         private val api: BinanceAPI,
         private val binanceInfo: BinanceInfo,
@@ -27,7 +28,7 @@ class BinanceMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val binanceHistory = preloadedBinanceMarketHistory(api, name)
+            val binanceHistory = preloadedBinanceMarketHistories[name]
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val prices = BinanceMarketPrice(name, api)
             val limits = binanceInfo.limits(name)

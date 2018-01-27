@@ -1,6 +1,8 @@
 package exchange.binance.market
 
+import com.binance.api.client.constant.BinanceApiConstants
 import com.binance.api.client.domain.market.Candlestick
+import exchange.binance.BinanceConstants
 import exchange.history.MarketHistory
 import exchange.binance.api.BinanceAPI
 import exchange.candle.Candle
@@ -8,11 +10,13 @@ import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
 import exchange.history.PreloadedMarketHistory
 import kotlinx.coroutines.experimental.channels.*
+import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
 import util.log.logger
 import java.math.BigDecimal
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
@@ -80,12 +84,41 @@ class BinanceMarketHistory(
     }
 }
 
-val binanceCachePath: Path = Paths.get("data/cache//binance/history/")
-fun binanceCachePath(name: String): Path = binanceCachePath.resolve(name)
+fun makeBinanceCacheDB(): DB {
+    val folder: Path = Paths.get("data/cache/binance/")
+    Files.createDirectories(folder)
+    val file = folder.resolve("history").toFile()
+    return DBMaker.fileDB(file).transactionEnable().make()
+}
 
-fun preloadedBinanceMarketHistory(api: BinanceAPI, name: String) = PreloadedMarketHistory(
-        DBMaker.fileDB(binanceCachePath(name).toFile()).transactionEnable().make(),
+fun preloadedBinanceMarketHistory(db: DB, api: BinanceAPI, name: String) = PreloadedMarketHistory(
+        db,
         name,
         BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
         Duration.ofMinutes(1)
 )
+
+class PreloadedBinanceMarketHistories(
+        private val constants: BinanceConstants,
+        private val api: BinanceAPI,
+        private val mainCoin: String,
+        private val altCoins: List<String>
+): AutoCloseable {
+    private val db = makeBinanceCacheDB()
+    private val map = HashMap<String, PreloadedMarketHistory>()
+
+    operator fun get(name: String): PreloadedMarketHistory = map[name]!!
+
+    suspend fun preloadBefore(time: Instant) {
+        altCoins
+                .mapNotNull { constants.marketName(mainCoin, it) }
+                .forEach { preloadBefore(it, time) }
+    }
+
+    private suspend fun preloadBefore(name: String, time: Instant) {
+        val history = map.getOrPut(name) { preloadedBinanceMarketHistory(db, api, name) }
+        history.preloadBefore(time)
+    }
+
+    override fun close() = db.close()
+}

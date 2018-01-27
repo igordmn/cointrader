@@ -4,6 +4,7 @@ import adviser.net.NeuralTradeAdviser
 import exchange.binance.*
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
+import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.test.BinanceWithTestBrokerMarkets
 import exchange.test.TestPortfolio
 import kotlinx.coroutines.experimental.runBlocking
@@ -17,6 +18,7 @@ import util.log.logger
 import util.python.PythonUtils
 import java.io.File
 import java.nio.file.Paths
+import java.time.Instant
 
 fun realTrade() = runBlocking {
     println("Run trading real money? enter 'yes' if yes")
@@ -27,6 +29,7 @@ fun realTrade() = runBlocking {
     }
 
     System.setProperty("log.name", "realTest")
+    System.setProperty("log.level", "TRACE")
 
     val log = LoggerFactory.getLogger("main")
 
@@ -57,58 +60,66 @@ private suspend fun run(log: Logger) {
     val testPortfolio2 = TestPortfolio(config.initialCoins)
     val time = BinanceTime(api)
     val info = BinanceInfo.load(api)
-    val binanceMarkets = BinanceMarkets(constants, api, info, operationScale, config.period)
-    val testMarkets = BinanceWithTestBrokerMarkets(constants, api, testPortfolio, config.fee, info, operationScale, config.period)
-    val testMarkets2 = BinanceWithTestBrokerMarkets(constants, api, testPortfolio2, config.fee, info, operationScale, config.period)
+    PreloadedBinanceMarketHistories(constants, api, config.mainCoin, config.altCoins).use { preloadedHistories ->
+        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+        preloadedHistories.preloadBefore(serverTime)
 
-    val adviser = NeuralTradeAdviser(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            Paths.get("data/train_package/netfile"),
-            config.fee,
-            config.indicators
-    )
-    val binanceTrade = AdvisableTrade(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            adviser,
-            binanceMarkets,
-            binancePortfolio,
-            operationScale,
-            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " real"))
-    )
-    val testTrade = AdvisableTrade(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            adviser,
-            testMarkets,
-            testPortfolio,
-            operationScale,
-            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
-    )
-    val testTrade2 = AdvisableTrade(
-            config.mainCoin,
-            config.altCoins,
-            config.historyCount,
-            adviser,
-            testMarkets2,
-            testPortfolio2,
-            operationScale,
-            AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
-    )
+        val binanceMarkets = BinanceMarkets(preloadedHistories, constants, api, info, operationScale, config.period)
+        val testMarkets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, testPortfolio, config.fee, info, operationScale, config.period)
+        val testMarkets2 = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, testPortfolio2, config.fee, info, operationScale, config.period)
+
+        val adviser = NeuralTradeAdviser(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                Paths.get("data/train_package/netfile"),
+                config.fee,
+                config.indicators
+        )
+        val binanceTrade = AdvisableTrade(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                adviser,
+                binanceMarkets,
+                binancePortfolio,
+                operationScale,
+                AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " real"))
+        )
+        val testTrade = AdvisableTrade(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                adviser,
+                testMarkets,
+                testPortfolio,
+                operationScale,
+                AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
+        )
+        val testTrade2 = AdvisableTrade(
+                config.mainCoin,
+                config.altCoins,
+                config.historyCount,
+                adviser,
+                testMarkets2,
+                testPortfolio2,
+                operationScale,
+                AdvisableTrade.LogListener(logger(AdvisableTrade::class.qualifiedName + " test"))
+        )
 //    val trade = MultipleTrade(listOf(testTrade, testTrade2))
-    val trade = MultipleTrade(listOf(binanceTrade, testTrade))
+        val trade = MultipleTrade(listOf(binanceTrade, testTrade))
 
-    val bot = TradingBot(
-            config.period, time, trade,
-            TradingBot.LogListener(logger(TradingBot::class)),
-            {
-                info.refresh()
-            }
-    )
+        val bot = TradingBot(
+                config.period, time, trade,
+                TradingBot.LogListener(logger(TradingBot::class)),
+                { time ->
+                    preloadedHistories.preloadBefore(time)
+                },
+                {
+                    info.refresh()
+                }
+        )
 
-    bot.run()
+        bot.run()
+    }
 }
