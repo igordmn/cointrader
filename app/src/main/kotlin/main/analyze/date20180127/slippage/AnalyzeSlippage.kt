@@ -1,14 +1,43 @@
 package main.analyze.date20180127.slippage
 
+import exchange.binance.BinanceConstants
+import exchange.binance.api.BinanceAPI
+import exchange.binance.api.binanceAPI
+import exchange.binance.market.PreloadedBinanceMarketHistories
+import exchange.candle.LinearApproximatedPricesFactory
+import exchange.candle.approximateCandleNormalizer
+import exchange.history.NormalizedMarketHistory
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.toList
+import kotlinx.coroutines.experimental.runBlocking
+import main.test.TestConfig
+import org.slf4j.LoggerFactory
+import util.lang.truncatedTo
 import util.math.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-fun main(args: Array<String>) {
+fun main(args: Array<String>) = runBlocking {
+    // config for trained net
+    val mainCoin = "BTC"
+    val altCoins = listOf(
+            "USDT", "ETH", "CND", "VEN", "TRX", "EOS", "XRP", "WTC", "TNT", "BNB",
+            "ICX", "NEO", "XLM", "ELF", "LEND", "ADA", "LTC", "XVG", "IOTA",
+            "HSR", "TNB", "BCH", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
+            "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
+            "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
+            "KNC", "REQ", "OST", "ENJ", "DASH"
+    )
+    val period = Duration.ofMinutes(5)
+    val fee = 0.0023
+
+
     val tradeBuilder = TradeBuilder()
 
     val trades = realTradeLines()
@@ -22,9 +51,40 @@ fun main(args: Array<String>) {
             .toList()
 
     val totalCommission = comissions.reduce { acc, item -> acc * item }
-    val meanCommission = Math.pow(totalCommission.toDouble(), 1.0 / comissions.size)
+    val meanCommission = Math.sqrt(Math.pow(totalCommission.toDouble(), 1.0 / comissions.size))
 
-    println(meanCommission)
+    println("fact comission $meanCommission")
+
+
+
+    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
+    val constants = BinanceConstants()
+    PreloadedBinanceMarketHistories(constants, api, mainCoin, altCoins).use { preloadedHistories ->
+        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+        preloadedHistories.preloadBefore(serverTime)
+
+        val funs = object {
+            suspend fun closePriceAndApproximatedPrice(coin: String, time: Instant): Pair<BigDecimal, BigDecimal> {
+                val marketName = constants.marketName(mainCoin, coin) ?: constants.marketName(coin, mainCoin)
+                val approximatedPricesFactory = LinearApproximatedPricesFactory(30)
+                val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
+                val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, period)
+                val nextMinute = time.truncatedTo(Duration.ofMinutes(1)) + Duration.ofMinutes(1)
+                val candle0 = history.candlesBefore(nextMinute).toList()[0]
+                val candle1 = history.candlesBefore(nextMinute).toList()[1]
+                val approximatedPrice = approximatedPricesFactory.forCandle(candle0.item).exactAt(Math.random())
+                val closePrice = candle1.item.close
+                return Pair(closePrice, approximatedPrice)
+            }
+        }
+
+        trades.asReceiveChannel().map {
+            val (fromCoinClose, fromCoinApproximated) = funs.closePriceAndApproximatedPrice(it.fromCoin, it.time)
+            val (toCoinClose, toCoinApproximated) = funs.closePriceAndApproximatedPrice(it.toCoin, it.time)
+
+        }
+    }
+
 }
 
 private fun parseLine(line: String): Line = when {

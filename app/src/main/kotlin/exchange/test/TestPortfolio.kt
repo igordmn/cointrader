@@ -16,7 +16,6 @@ class TestPortfolio(initialAmounts: Map<String, BigDecimal>) : Portfolio {
 
     override suspend fun amounts(): Map<String, BigDecimal> = suspendCoroutine { continuation ->
         launch(threadContext) {
-            delay(10, TimeUnit.MILLISECONDS)
             synchronized(amounts) {
                 continuation.resume(HashMap(amounts))
             }
@@ -25,7 +24,6 @@ class TestPortfolio(initialAmounts: Map<String, BigDecimal>) : Portfolio {
 
     suspend fun modify(perform: (Modifier) -> Unit) = suspendCoroutine<Unit> { continuation ->
         launch(threadContext) {
-            delay(10, TimeUnit.MILLISECONDS)
             var throwed: Throwable? = null
             synchronized(amounts) {
                 try {

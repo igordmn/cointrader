@@ -11,7 +11,6 @@ class TestMarketPrice(
 ) : MarketPrice {
     override suspend fun current(): BigDecimal = suspendCoroutine { continuation ->
         launch {
-            delay(10)
             continuation.resume(current)
         }
     }

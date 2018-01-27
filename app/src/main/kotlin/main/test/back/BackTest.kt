@@ -150,7 +150,6 @@ private class TestTrade(
         val periodStart = (this.time.current + distanceBeforePeriodStart).truncatedTo(period)
         require(periodStart == this.time.current + distanceBeforePeriodStart)
         this.time.current = periodStart + Duration.ofMillis(10)
-        delay(10, TimeUnit.MILLISECONDS)
         original.perform(time)
         setTimeCloseToNextPeriod()
     }
