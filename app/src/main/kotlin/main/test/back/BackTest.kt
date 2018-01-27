@@ -144,14 +144,13 @@ private class TestTrade(
         private val time: TestTime,
         private val period: Duration
 ) : Trade {
-    // todo при ошибке, будет ddosить сервер каждые 100мс
-    private val distanceBeforePeriodStart = Duration.ofMillis(100)
+    private val distanceBeforePeriodStart = Duration.ofMillis(10)
 
     override suspend fun perform(time: Instant) {
         val periodStart = (this.time.current + distanceBeforePeriodStart).truncatedTo(period)
         require(periodStart == this.time.current + distanceBeforePeriodStart)
-        this.time.current = periodStart + Duration.ofMillis(50)
-        delay(50, TimeUnit.MILLISECONDS)
+        this.time.current = periodStart + Duration.ofMillis(10)
+        delay(10, TimeUnit.MILLISECONDS)
         original.perform(time)
         setTimeCloseToNextPeriod()
     }

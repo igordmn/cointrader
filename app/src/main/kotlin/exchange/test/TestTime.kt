@@ -12,7 +12,7 @@ class TestTime(
 ) : ExchangeTime {
     override suspend fun current(): Instant = suspendCoroutine { continuation ->
         launch {
-            delay(50, TimeUnit.MILLISECONDS)
+            delay(10, TimeUnit.MILLISECONDS)
             continuation.resume(current)
         }
     }
