@@ -8,7 +8,7 @@ interface Trade {
 }
 
 class MultipleTrade(private val trade: List<Trade>): Trade {
-    suspend override fun perform(time: Instant) {
+    override suspend fun perform(time: Instant) {
         trade.forEach {
             it.perform(time)
         }

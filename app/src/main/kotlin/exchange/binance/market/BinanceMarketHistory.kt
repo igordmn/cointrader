@@ -6,9 +6,12 @@ import exchange.binance.api.BinanceAPI
 import exchange.candle.Candle
 import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
+import exchange.history.PreloadedMarketHistory
 import kotlinx.coroutines.experimental.channels.*
+import org.mapdb.DBMaker
 import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
+import util.log.logger
 import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -79,3 +82,9 @@ class BinanceMarketHistory(
 
 val binanceCachePath: Path = Paths.get("data/cache//binance/history/")
 fun binanceCachePath(name: String): Path = binanceCachePath.resolve(name)
+
+fun preloadedBinanceMarketHistory(api: BinanceAPI, name: String) = PreloadedMarketHistory(
+        DBMaker.fileDB(binanceCachePath(name).toFile()).transactionEnable().make(),
+        BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
+        Duration.ofMinutes(1)
+)

@@ -11,33 +11,33 @@ import java.time.Duration
 import java.time.Instant
 
 
-class CachedMarketHistory(
-        private val dbMaker: DBMaker.Maker,
+class PreloadedMarketHistory(
+        private val db: DB,
         private val original: MarketHistory,
         private val originalPeriod: Duration
 ) : MarketHistory {
+    suspend fun preloadBefore(time: Instant) {
+        map(db).use { map ->
+            val lastCloseTime = map.lastKey2() ?: Instant.MIN
+            if (time >= lastCloseTime.plus(originalPeriod)) {
+                original.candlesBefore(time).takeWhile {
+                    it.timeRange.start >= lastCloseTime
+                }.consumeEach {
+                            map[it.timeRange.endInclusive] = it
+                        }
+                db.commit()
+            }
+        }
+    }
+
     override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
-        dbMaker.transactionEnable().make().use {
-            val map = map(it)
-            fillBefore(it, map, time)
+        map(db).use { map ->
             map.headMap(time, true)
                     .descendingMap()
                     .values
                     .forEach {
                         send(it)
                     }
-        }
-    }
-
-    private suspend fun fillBefore(db: DB, map: BTreeMap<Instant, TimedCandle>, time: Instant) {
-        val lastCloseTime = map.lastKey2() ?: Instant.MIN
-        if (time >= lastCloseTime.plus(originalPeriod)) {
-            original.candlesBefore(time).takeWhile {
-                it.timeRange.start >= lastCloseTime
-            }.consumeEach {
-                map[it.timeRange.endInclusive] = it
-            }
-            db.commit()
         }
     }
 

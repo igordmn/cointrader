@@ -15,13 +15,14 @@ class TradingBot(
         private val time: ExchangeTime,
         private val trade: Trade,
         private val listener: Listener,
-        private val refreshInfo: suspend () -> Unit
+        private val preloadInfo: suspend (Instant) -> Unit,
+        private val postloadInfo: suspend () -> Unit
 ) {
     suspend fun run() {
         while (isActive) {
             try {
                 trade()
-                refreshInfo()
+                postloadInfo()
             } catch (e: Exception) {
                 listener.afterException(e)
             }
@@ -38,6 +39,7 @@ class TradingBot(
         delay(timeForStart)
 
         listener.beforePerform()
+        preloadInfo(nextStart)
         trade.perform(nextStart)
         listener.afterPerform(time.current())
     }

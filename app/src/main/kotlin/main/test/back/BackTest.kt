@@ -8,9 +8,10 @@ import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketHistory
 import exchange.binance.market.binanceCachePath
+import exchange.binance.market.preloadedBinanceMarketHistory
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
-import exchange.history.CachedMarketHistory
+import exchange.history.PreloadedMarketHistory
 import exchange.history.NormalizedMarketHistory
 import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
@@ -32,7 +33,6 @@ import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.time.Period
 import java.util.concurrent.TimeUnit
 
 fun backTest() = runBlocking {
@@ -86,6 +86,9 @@ private suspend fun run(log: Logger) {
     val bot = TradingBot(
             config.period, time, testTrade,
             TradingBot.LogListener(logger(TradingBot::class)),
+            { time ->
+
+            },
             {
                 info.refresh()
             }
@@ -110,11 +113,7 @@ private class TestMarkets(
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
             val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-            val binanceHistory = CachedMarketHistory(
-                    DBMaker.fileDB(binanceCachePath(name).toFile()),
-                    BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
-                    Duration.ofMinutes(1)
-            )
+            val binanceHistory = preloadedBinanceMarketHistory(api, name)
             val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
             val oneMinuteHistory = NormalizedMarketHistory(binanceHistory, normalizer, Duration.ofMinutes(1))
             val prices = TestHistoricalMarketPrice(time, oneMinuteHistory, approximatedPricesFactory)
