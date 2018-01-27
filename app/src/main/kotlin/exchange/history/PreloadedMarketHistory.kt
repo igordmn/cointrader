@@ -7,59 +7,67 @@ import org.mapdb.*
 import org.mapdb.serializer.GroupSerializerObjectArray
 import org.mapdb.serializer.SerializerBigDecimal
 import util.ext.mapdb.InstantSerializer
+import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 
 
 class PreloadedMarketHistory(
-        private val db: DB,
+        private val path: Path,
         private val table: String,
         private val original: MarketHistory,
         private val originalPeriod: Duration
 ) : MarketHistory {
     suspend fun preloadBefore(time: Instant) {
-        map(db).use { map ->
-            val lastCloseTime = map.lastKey2() ?: Instant.MIN
-            if (time >= lastCloseTime.plus(originalPeriod)) {
-                modifyDb {
-                    original.candlesBefore(time)
-                            .takeWhile {
-                                it.timeRange.start >= lastCloseTime
-                            }.consumeEach {
-                                map[it.timeRange.endInclusive] = it
-                            }
+        db().use { db->
+            db.historyMap().use { map ->
+                val lastCloseTime = map.lastKey2() ?: Instant.MIN
+                if (time >= lastCloseTime.plus(originalPeriod)) {
+                    db.transaction {
+                        original.candlesBefore(time)
+                                .takeWhile {
+                                    it.timeRange.start >= lastCloseTime
+                                }.consumeEach {
+                                    map[it.timeRange.endInclusive] = it
+                                }
+                    }
                 }
             }
         }
     }
 
     override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
-        map(db).use { map ->
-            map.headMap(time, true)
-                    .descendingMap()
-                    .values
-                    .forEach {
-                        send(it)
-                    }
+        db().use { db ->
+            db.historyMap().use { map ->
+                map.headMap(time, true)
+                        .descendingMap()
+                        .values
+                        .forEach {
+                            send(it)
+                        }
+            }
         }
     }
 
-    private fun map(it: DB) = it.treeMap(
-            table,
-            InstantSerializer,
-            TimedCandleSerializer
-    ).createOrOpen()
+    private fun DB.historyMap(): BTreeMap<Instant, TimedCandle> {
+        return treeMap(
+                table,
+                InstantSerializer,
+                TimedCandleSerializer
+        ).createOrOpen()
+    }
 
-    private suspend fun modifyDb(action: suspend () -> Unit) {
+    private suspend fun DB.transaction(action: suspend () -> Unit) {
         try {
             action()
         } catch (e: Throwable) {
-            db.rollback()
+            rollback()
             throw e
         }
-        db.commit()
+        commit()
     }
+
+    private fun db() = DBMaker.fileDB(path.toFile()).transactionEnable().make()
 
     private object TimedCandleSerializer : GroupSerializerObjectArray<TimedCandle>() {
         private val instantSerializer = InstantSerializer

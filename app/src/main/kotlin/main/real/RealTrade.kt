@@ -28,7 +28,7 @@ fun realTrade() = runBlocking {
         return@runBlocking
     }
 
-    System.setProperty("log.name", "realTest")
+    System.setProperty("log.name", "realTrade")
     System.setProperty("log.level", "TRACE")
 
     val log = LoggerFactory.getLogger("main")

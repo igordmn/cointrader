@@ -10,6 +10,9 @@ import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
 import org.mapdb.DBMaker
 import java.math.BigDecimal
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -44,8 +47,19 @@ class PreloadedMarketHistorySpec : FreeSpec({
     }
 
     val testHistory = TestHistory()
-    DBMaker.memoryDB().transactionEnable().make().use {
-        val history = PreloadedMarketHistory(it, "table", testHistory, Duration.ofMillis(10))
+
+    fun useDb(action: (Path) -> Unit) {
+        val tempFile = Files.createTempFile("test", ".tmp")
+        try {
+            action(tempFile)
+        } finally {
+            Files.delete(tempFile)
+        }
+    }
+
+
+    useDb { file ->
+        val history = PreloadedMarketHistory(file, "table", testHistory, Duration.ofMillis(10))
 
         "get candles by one call" - {
             "get candles before big time" {
