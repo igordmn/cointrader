@@ -2,13 +2,17 @@ package exchange.binance
 
 class BinanceConstants {
     val btcMarkets = setOf(
-            "BCD", "POE", "NEO", "BTG", "FUN", "LRC", "TRX", "TRIG",
-            "APPC", "XVG", "GTO", "BCH", "BQX", "REQ", "CDT", "QSP", "QTUM",
-            "OST", "MDA", "ETC", "ADA", "XMR", "XRP", "VIBE", "DASH", "BTS",
-            "KNC", "ENJ", "SUB", "WABI", "LTC", "ZRX", "POWR", "ENG", "ETH",
-            "BNB", "AMB", "LSK", "BRD", "ICX", "OMG", "LINK", "ELF", "MCO",
-            "HSR", "IOTA", "EOS", "STRAT", "AION", "TNB", "XLM", "MANA", "WTC",
-            "VEN", "CTR", "CND", "LEND", "TNT"
+            "ETH", "LTC", "BNB", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM",
+            "YOYO", "OMG", "ZRX", "STRAT", "SNGLS", "BQX", "KNC", "FUN", "SNM", "IOTA",
+            "LINK", "XVG", "CTR", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC",
+            "MTH", "ENG", "DNT", "ZEC", "BNT", "AST", "DASH", "OAX", "ICN",
+            "BTG", "EVX", "REQ", "VIB", "TRX", "POWR", "ARK", "XRP", "MOD",
+            "ENJ", "STORJ", "VEN", "KMD", "RCN", "NULS", "RDN", "XMR", "DLT",
+            "AMB", "BAT", "BCPT", "ARN", "GVT", "CDT", "GXS", "POE", "QSP",
+            "BTS", "XZC", "LSK", "TNT", "FUEL", "MANA", "BCD", "DGD", "ADX",
+            "ADA", "PPT", "CMT", "XLM", "CND", "LEND", "WABI", "TNB", "WAVES",
+            "GTO", "ICX", "OST", "ELF", "AION", "NEBL", "BRD", "EDO", "WINGS",
+            "NAV", "LUN", "TRIG", "APPC", "VIBE", "RLC", "INS", "PIVX", "IOST"
     )
 
     val btcReversedMarkets = setOf("USDT")

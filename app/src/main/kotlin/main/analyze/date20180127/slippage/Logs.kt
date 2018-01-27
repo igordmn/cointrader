@@ -6,7 +6,7 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 private val folders = listOf(
-//        "D:/Development/Projects/cointrader/archive/0003/app/bin/log/archive",
+//        "D:/Development/Projects/cointrader/archive/0003/app/bin/log/archive"
         "D:/Development/Projects/cointrader/archive/0004/app/bin/log/archive"
 )
 

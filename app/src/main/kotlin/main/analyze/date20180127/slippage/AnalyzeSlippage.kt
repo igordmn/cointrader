@@ -9,6 +9,7 @@ import exchange.candle.approximateCandleNormalizer
 import exchange.history.NormalizedMarketHistory
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
@@ -32,10 +33,8 @@ fun main(args: Array<String>) = runBlocking {
             "HSR", "TNB", "BCH", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
             "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
             "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
-            "KNC", "REQ", "OST", "ENJ", "DASH"
+            "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
     )
-    val period = Duration.ofMinutes(5)
-    val fee = 0.0023
 
 
     val tradeBuilder = TradeBuilder()
@@ -54,8 +53,6 @@ fun main(args: Array<String>) = runBlocking {
 
     println("fact commission $meanCommission")
 
-
-
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val constants = BinanceConstants()
     PreloadedBinanceMarketHistories(constants, api, mainCoin, altCoins).use { preloadedHistories ->
@@ -63,14 +60,16 @@ fun main(args: Array<String>) = runBlocking {
         preloadedHistories.preloadBefore(serverTime)
 
         val funs = object {
-            suspend fun closePriceAndApproximatedPrice(coin: String, time: Instant): Pair<BigDecimal, BigDecimal> {
+            suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {
+                val coin = coinWithBtc.removeSuffix("BTC").removePrefix("BTC")
                 val marketName = constants.marketName(mainCoin, coin) ?: constants.marketName(coin, mainCoin)
                 val approximatedPricesFactory = LinearApproximatedPricesFactory(30)
                 val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-                val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, period)
+                val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, Duration.ofMinutes(1))
                 val nextMinute = time.truncatedTo(Duration.ofMinutes(1)) + Duration.ofMinutes(1)
-                val candle0 = history.candlesBefore(nextMinute).toList()[0]
-                val candle1 = history.candlesBefore(nextMinute).toList()[1]
+                val candles = history.candlesBefore(nextMinute).take(2).toList()
+                val candle0 = candles[0]
+                val candle1 = candles[1]
                 val approximatedPrice = approximatedPricesFactory.forCandle(candle0.item).exactAt(Math.random())
                 val closePrice = candle1.item.close
                 return Pair(closePrice, approximatedPrice)
