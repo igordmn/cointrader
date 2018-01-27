@@ -22,9 +22,9 @@ data class TestConfig(
                 "LTC" to BigDecimal("0.00000323"),
                 "USDT" to BigDecimal("0.00583317")
         ),
-        val period: Duration = Duration.ofMinutes(15),
+        val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
-        val fee: BigDecimal = BigDecimal("0.0010"),
+        val fee: BigDecimal = BigDecimal("0.0015"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
         val startTime: Instant = Instant.now() - Duration.ofDays(10)
 )
