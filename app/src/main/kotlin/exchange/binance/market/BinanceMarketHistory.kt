@@ -9,6 +9,7 @@ import exchange.candle.Candle
 import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
 import exchange.history.PreloadedMarketHistory
+import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.*
 import org.mapdb.DB
 import org.mapdb.DBMaker
@@ -112,7 +113,13 @@ class PreloadedBinanceMarketHistories(
     suspend fun preloadBefore(time: Instant) {
         altCoins
                 .mapNotNull { constants.marketName(mainCoin, it) }
-                .forEach { preloadBefore(it, time) }
+                .map { name ->
+                    async {
+                        preloadBefore(name, time)
+                    }
+                }.forEach {
+                    it.await()
+                }
     }
 
     private suspend fun preloadBefore(name: String, time: Instant) {
