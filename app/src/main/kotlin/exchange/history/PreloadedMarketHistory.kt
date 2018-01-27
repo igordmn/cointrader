@@ -9,6 +9,7 @@ import org.mapdb.serializer.SerializerBigDecimal
 import util.ext.mapdb.InstantSerializer
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 
 class PreloadedMarketHistory(
@@ -21,13 +22,14 @@ class PreloadedMarketHistory(
         map(db).use { map ->
             val lastCloseTime = map.lastKey2() ?: Instant.MIN
             if (time >= lastCloseTime.plus(originalPeriod)) {
-                original.candlesBefore(time)
-                        .takeWhile {
-                            it.timeRange.start >= lastCloseTime
-                        }.consumeEach {
-                            map[it.timeRange.endInclusive] = it
-                        }
-                db.commit()
+                modifyDb {
+                    original.candlesBefore(time)
+                            .takeWhile {
+                                it.timeRange.start >= lastCloseTime
+                            }.consumeEach {
+                                map[it.timeRange.endInclusive] = it
+                            }
+                }
             }
         }
     }
@@ -48,6 +50,16 @@ class PreloadedMarketHistory(
             InstantSerializer,
             TimedCandleSerializer
     ).createOrOpen()
+
+    private suspend fun modifyDb(action: suspend () -> Unit) {
+        try {
+            action()
+        } catch (e: Throwable) {
+            db.rollback()
+            throw e
+        }
+        db.commit()
+    }
 
     private object TimedCandleSerializer : GroupSerializerObjectArray<TimedCandle>() {
         private val instantSerializer = InstantSerializer
