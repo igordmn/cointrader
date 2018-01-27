@@ -13,6 +13,7 @@ import java.time.Instant
 
 class PreloadedMarketHistory(
         private val db: DB,
+        private val table: String,
         private val original: MarketHistory,
         private val originalPeriod: Duration
 ) : MarketHistory {
@@ -42,7 +43,7 @@ class PreloadedMarketHistory(
     }
 
     private fun map(it: DB) = it.treeMap(
-            "map",
+            table,
             InstantSerializer,
             TimedCandleSerializer
     ).createOrOpen()

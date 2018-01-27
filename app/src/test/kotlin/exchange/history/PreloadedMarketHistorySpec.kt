@@ -45,7 +45,7 @@ class PreloadedMarketHistorySpec : FreeSpec({
 
     val testHistory = TestHistory()
     DBMaker.memoryDB().transactionEnable().make().use {
-        val history = PreloadedMarketHistory(it, testHistory, Duration.ofMillis(10))
+        val history = PreloadedMarketHistory(it, "table", testHistory, Duration.ofMillis(10))
 
         "get candles by one call" - {
             "get candles before big time" {

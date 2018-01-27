@@ -85,6 +85,7 @@ fun binanceCachePath(name: String): Path = binanceCachePath.resolve(name)
 
 fun preloadedBinanceMarketHistory(api: BinanceAPI, name: String) = PreloadedMarketHistory(
         DBMaker.fileDB(binanceCachePath(name).toFile()).transactionEnable().make(),
+        name,
         BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
         Duration.ofMinutes(1)
 )
