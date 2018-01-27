@@ -4,6 +4,8 @@ import adviser.AdviseIndicators
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 data class TestConfig(
         val mainCoin: String = "BTC",

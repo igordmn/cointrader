@@ -86,8 +86,15 @@ class BinanceMarketHistory(
     }
 }
 
-fun preloadedBinanceMarketHistory(path: Path, api: BinanceAPI, name: String) = PreloadedMarketHistory(
-        path,
+fun makeBinanceCacheDB(): DB {
+    val folder: Path = Paths.get("data/cache/binance/")
+    Files.createDirectories(folder)
+    val file = folder.resolve("history").toFile()
+    return DBMaker.fileDB(file).transactionEnable().make()
+}
+
+fun preloadedBinanceMarketHistory(db: DB, api: BinanceAPI, name: String) = PreloadedMarketHistory(
+        db,
         name,
         BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
         Duration.ofMinutes(1)
@@ -99,6 +106,7 @@ class PreloadedBinanceMarketHistories(
         private val mainCoin: String,
         private val altCoins: List<String>
 ): AutoCloseable {
+    private val db = makeBinanceCacheDB()
     private val map = ConcurrentHashMap<String, PreloadedMarketHistory>()
 
     operator fun get(name: String): PreloadedMarketHistory = map[name]!!
@@ -116,15 +124,9 @@ class PreloadedBinanceMarketHistories(
     }
 
     private suspend fun preloadBefore(name: String, time: Instant) {
-        val history = map.getOrPut(name) { preloadedBinanceMarketHistory(path(), api, name) }
+        val history = map.getOrPut(name) { preloadedBinanceMarketHistory(db, api, name) }
         history.preloadBefore(time)
     }
 
-    private fun path(): Path {
-        val folder: Path = Paths.get("data/cache/binance/")
-        Files.createDirectories(folder)
-        return folder.resolve("history.db")
-    }
-
-    override fun close() = Unit
+    override fun close() = db.close()
 }

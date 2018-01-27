@@ -10,9 +10,6 @@ import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
 import org.mapdb.DBMaker
 import java.math.BigDecimal
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -47,138 +44,126 @@ class PreloadedMarketHistorySpec : FreeSpec({
     }
 
     val testHistory = TestHistory()
+    val db = DBMaker.memoryDB().transactionEnable().make()
+    val history = PreloadedMarketHistory(db, "table", testHistory, Duration.ofMillis(10))
 
-    fun useDb(action: (Path) -> Unit) {
-        val tempFile = Files.createTempFile("test", ".tmp")
-        try {
-            action(tempFile)
-        } finally {
-            Files.delete(tempFile)
+    "get candles by one call" - {
+        "get candles before big time" {
+            runBlocking {
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
+            }
+        }
+
+        "get candles before end plus period" {
+            runBlocking {
+                history.preloadBefore(instant(79))
+                history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3)
+            }
+        }
+
+        "get candles before end" {
+            runBlocking {
+                history.preloadBefore(instant(69))
+                history.candlesBefore(instant(69)).toList() shouldBe listOf(candle1, candle2, candle3)
+            }
+        }
+
+        "get candles before end minus 1" {
+            runBlocking {
+                history.preloadBefore(instant(68))
+                history.candlesBefore(instant(68)).toList() shouldBe listOf(candle2, candle3)
+            }
+        }
+
+        "get candles before first end" {
+            runBlocking {
+                history.preloadBefore(instant(60))
+                history.candlesBefore(instant(60)).toList() shouldBe listOf(candle2, candle3)
+            }
+        }
+
+        "get candles before first end minus 1" {
+            runBlocking {
+                history.preloadBefore(instant(59))
+                history.candlesBefore(instant(59)).toList() shouldBe listOf(candle3)
+            }
+        }
+
+        "get candles before last end minus 1" {
+            runBlocking {
+                history.preloadBefore(instant(44))
+                history.candlesBefore(instant(44)).toList() shouldBe emptyList<TimedCandle>()
+            }
         }
     }
 
-
-    useDb { file ->
-        val history = PreloadedMarketHistory(file, "table", testHistory, Duration.ofMillis(10))
-
-        "get candles by one call" - {
-            "get candles before big time" {
-                runBlocking {
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
-            }
-
-            "get candles before end plus period" {
-                runBlocking {
-                    history.preloadBefore(instant(79))
-                    history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
-            }
-
-            "get candles before end" {
-                runBlocking {
-                    history.preloadBefore(instant(69))
-                    history.candlesBefore(instant(69)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
-            }
-
-            "get candles before end minus 1" {
-                runBlocking {
-                    history.preloadBefore(instant(68))
-                    history.candlesBefore(instant(68)).toList() shouldBe listOf(candle2, candle3)
-                }
-            }
-
-            "get candles before first end" {
-                runBlocking {
-                    history.preloadBefore(instant(60))
-                    history.candlesBefore(instant(60)).toList() shouldBe listOf(candle2, candle3)
-                }
-            }
-
-            "get candles before first end minus 1" {
-                runBlocking {
-                    history.preloadBefore(instant(59))
-                    history.candlesBefore(instant(59)).toList() shouldBe listOf(candle3)
-                }
-            }
-
-            "get candles before last end minus 1" {
-                runBlocking {
-                    history.preloadBefore(instant(44))
-                    history.candlesBefore(instant(44)).toList() shouldBe emptyList<TimedCandle>()
-                }
+    "get candles by multiple calls" - {
+        "get empty candles then all candles" {
+            runBlocking {
+                history.preloadBefore(instant(44))
+                history.candlesBefore(instant(44)).toList() shouldBe emptyList<TimedCandle>()
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
             }
         }
 
-        "get candles by multiple calls" - {
-            "get empty candles then all candles" {
-                runBlocking {
-                    history.preloadBefore(instant(44))
-                    history.candlesBefore(instant(44)).toList() shouldBe emptyList<TimedCandle>()
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
-            }
-
-            "get first candle then all candles" {
-                runBlocking {
-                    history.preloadBefore(instant(45))
-                    history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
-            }
-
-            "get first candle then first and second candles" {
-                runBlocking {
-                    history.preloadBefore(instant(45))
-                    history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
-                    history.preloadBefore(instant(65))
-                    history.candlesBefore(instant(65)).toList() shouldBe listOf(candle2, candle3)
-                }
-            }
-
-            "get all candles then first candle" {
-                runBlocking {
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                    history.preloadBefore(instant(45))
-                    history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
-                }
+        "get first candle then all candles" {
+            runBlocking {
+                history.preloadBefore(instant(45))
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
             }
         }
 
-        "get candles with adding new" - {
-            "get all candles, add new candle, get before big time" {
-                runBlocking {
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
-                    testHistory.candles = listOf(candle0) + testHistory.candles
-                    history.preloadBefore(instant(100))
-                    history.candlesBefore(instant(100)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
-                }
+        "get first candle then first and second candles" {
+            runBlocking {
+                history.preloadBefore(instant(45))
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
+                history.preloadBefore(instant(65))
+                history.candlesBefore(instant(65)).toList() shouldBe listOf(candle2, candle3)
             }
+        }
 
-            "get all candles, add new candle, get before small time" {
-                runBlocking {
-                    history.preloadBefore(instant(79))
-                    history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3)
-                    testHistory.candles = listOf(candle0) + testHistory.candles
-                    history.preloadBefore(instant(79))
-                    history.candlesBefore(instant(79)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
-                }
+        "get all candles then first candle" {
+            runBlocking {
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
+                history.preloadBefore(instant(45))
+                history.candlesBefore(instant(45)).toList() shouldBe listOf(candle3)
             }
+        }
+    }
 
-            "get all candles, add new candle, get before very small time" {
-                runBlocking {
-                    history.preloadBefore(instant(78))
-                    history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
-                    testHistory.candles = listOf(candle0) + testHistory.candles
-                    history.preloadBefore(instant(78))
-                    history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
-                }
+    "get candles with adding new" - {
+        "get all candles, add new candle, get before big time" {
+            runBlocking {
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle1, candle2, candle3)
+                testHistory.candles = listOf(candle0) + testHistory.candles
+                history.preloadBefore(instant(100))
+                history.candlesBefore(instant(100)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
+            }
+        }
+
+        "get all candles, add new candle, get before small time" {
+            runBlocking {
+                history.preloadBefore(instant(79))
+                history.candlesBefore(instant(79)).toList() shouldBe listOf(candle1, candle2, candle3)
+                testHistory.candles = listOf(candle0) + testHistory.candles
+                history.preloadBefore(instant(79))
+                history.candlesBefore(instant(79)).toList() shouldBe listOf(candle0, candle1, candle2, candle3)
+            }
+        }
+
+        "get all candles, add new candle, get before very small time" {
+            runBlocking {
+                history.preloadBefore(instant(78))
+                history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
+                testHistory.candles = listOf(candle0) + testHistory.candles
+                history.preloadBefore(instant(78))
+                history.candlesBefore(instant(78)).toList() shouldBe listOf(candle1, candle2, candle3)
             }
         }
     }
