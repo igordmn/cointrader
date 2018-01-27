@@ -2,7 +2,7 @@ package exchange.binance
 
 class BinanceConstants {
     val btcMarkets = setOf(
-            "ETH", "LTC", "BNB", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM",
+            "ETH", "LTC", "BNB", "NEO", "BCH", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM",
             "YOYO", "OMG", "ZRX", "STRAT", "SNGLS", "BQX", "KNC", "FUN", "SNM", "IOTA",
             "LINK", "XVG", "CTR", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC",
             "MTH", "ENG", "DNT", "ZEC", "BNT", "AST", "DASH", "OAX", "ICN",
