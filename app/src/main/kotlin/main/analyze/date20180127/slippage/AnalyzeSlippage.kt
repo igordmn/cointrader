@@ -17,7 +17,6 @@ fun main(args: Array<String>) {
             .map(tradeBuilder::buildNext)
             .filterNotNull()
 
-
     val comissions = trades
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
             .toList()
