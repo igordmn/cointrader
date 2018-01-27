@@ -12,13 +12,13 @@ import kotlin.math.roundToLong
 private val exchange = "binance"
 
 private val COINS = listOf(
-        "USDT", "BCD", "POE", "NEO", "BTG", "FUN", "LRC", "TRX", "TRIG",
-        "APPC", "XVG", "GTO", "BCH", "BQX", "REQ", "CDT", "QSP", "QTUM",
-        "OST", "MDA", "ETC", "ADA", "XMR", "XRP", "VIBE", "DASH", "BTS",
-        "KNC", "ENJ", "SUB", "WABI", "LTC", "ZRX", "POWR", "ENG", "ETH",
-        "BNB", "AMB", "LSK", "BRD", "ICX", "OMG", "LINK", "ELF", "MCO",
-        "HSR", "IOTA", "EOS", "STRAT", "AION", "TNB", "XLM", "MANA", "WTC",
-        "VEN", "CTR", "CND", "LEND", "TNT"
+        "USDT", "ETH", "TRX", "VEN", "CND", "ELF", "EOS", "WTC",
+        "ICX", "XRP", "XLM", "NEO", "HSR", "ADA", "TNT", "XVG", "LTC",
+        "TNB", "IOTA", "BCH", "LEND", "POE", "BRD", "OMG", "ZRX",
+        "QTUM", "BTS", "AMB", "SUB", "ETC", "ENJ", "GTO", "LINK",
+        "OST", "STRAT", "AION", "CDT", "LSK", "MDA", "WABI",
+        "LRC", "AST", "XMR", "CTR", "BAT", "FUN", "ENG", "KNC", "DASH", "SALT"
+
 )
 
 private const val REVERSED_COINS = "USDT"

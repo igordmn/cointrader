@@ -18,15 +18,16 @@ def parse_time(time_string):
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = [
-        "USDT", "ETH", "CND", "VEN", "TRX", "EOS", "XRP", "WTC", "TNT", "BNB",
-        "ICX", "NEO", "XLM", "ELF", "LEND", "ADA", "LTC", "XVG", "IOTA",
-        "HSR", "TNB", "BCH", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
-        "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
-        "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
-        "KNC", "REQ", "OST", "ENJ", "DASH"
+        "USDT", "ETH", "TRX", "VEN", "CND", "ELF", "EOS",
+        "WTC", "ICX", "XRP", "XLM", "NEO", "HSR", "ADA", "TNT",
+        "XVG", "LTC", "TNB", "IOTA", "BCH", "LEND", "POE", "BRD",
+        "OMG", "ZRX", "QTUM", "BTS", "AMB", "SUB", "ETC", "ENJ",
+        "GTO", "LINK", "OST", "STRAT", "AION", "CDT", "LSK", "MDA",
+        "WABI", "LRC", "AST", "XMR", "CTR", "BAT", "FUN", "ENG",
+        "KNC", "DASH", "SALT"
     ]
     coin_number: int = len(coins)
-    validation_portion: float = 0.06
+    validation_portion: float = 0.1
     test_portion: float = 0.00
     fee: float = 0.0015
     window_size: int = 160
@@ -34,7 +35,7 @@ class TrainConfig(NamedTuple):
     steps: int = 80000
     log_steps: int = 1000
     period: int = 300
-    start_time: int = parse_time("2017/8/1 00:00:00")
+    start_time: int = parse_time("2017/10/1 00:00:00")
     end_time: int = parse_time("2018/1/27 18:40:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
