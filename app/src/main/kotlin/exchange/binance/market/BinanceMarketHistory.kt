@@ -23,6 +23,7 @@ import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 
 class BinanceMarketHistory(
         private val name: String,
@@ -106,7 +107,7 @@ class PreloadedBinanceMarketHistories(
         private val altCoins: List<String>
 ): AutoCloseable {
     private val db = makeBinanceCacheDB()
-    private val map = HashMap<String, PreloadedMarketHistory>()
+    private val map = ConcurrentHashMap<String, PreloadedMarketHistory>()
 
     operator fun get(name: String): PreloadedMarketHistory = map[name]!!
 
