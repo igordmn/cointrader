@@ -11,6 +11,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Instant
 import java.sql.Timestamp
+import kotlin.system.measureTimeMillis
 
 
 class HistoryCache private constructor(private val connection: Connection) : AutoCloseable {
@@ -78,19 +79,21 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             startTime: Instant,
             endTime: Instant
     ) {
-        candles.windowedWithPartial(size = 1000).consumeEach { candlesBatch ->
+        candles.windowedWithPartial(size = 5000).consumeEach { candlesBatch ->
             connection.prepareStatement("INSERT INTO HistoryCandle VALUES (?,?,?,?,?,?,?)").use {
-                for (candle in candlesBatch) {
-                    it.setString(1, market)
-                    it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
-                    it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
-                    it.setBigDecimal(4, candle.item.open)
-                    it.setBigDecimal(5, candle.item.close)
-                    it.setBigDecimal(6, candle.item.high)
-                    it.setBigDecimal(7, candle.item.low)
-                    it.addBatch()
-                }
-                it.executeBatch()
+                println("GGGG " + measureTimeMillis {
+                    for (candle in candlesBatch) {
+                        it.setString(1, market)
+                        it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
+                        it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
+                        it.setBigDecimal(4, candle.item.open)
+                        it.setBigDecimal(5, candle.item.close)
+                        it.setBigDecimal(6, candle.item.high)
+                        it.setBigDecimal(7, candle.item.low)
+                        it.addBatch()
+                    }
+                    it.executeBatch()
+                })
             }
         }
         setFilled(market, startTime, endTime)

@@ -2,6 +2,7 @@ package main.info
 
 import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.Candlestick
+import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketLimits
@@ -19,6 +20,7 @@ fun printTopCoins() = runBlocking {
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
     val allPrices = api.allPrices()
+    val constants = BinanceConstants()
 
     val oneBTCinUSDT = BigDecimal(allPrices.find { it.symbol == "BTCUSDT" }!!.price)
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
@@ -38,15 +40,20 @@ fun printTopCoins() = runBlocking {
 
     val topCoins = (topCoinsMonth - (topCoinsMonth - topCoinsWeek) - (topCoinsMonth - topCoinsDay)).filter { exist[it] == true }
 
-    val infos = topCoins.map {
-        val limits = allLimits[it]!!.get()
-        val price = prices[it]!!
-        val volumeMonth = volumesMonth[it]!!
-        val volumeWeek = volumesWeek[it]!!
-        val volumeDay = volumesDay[it]!!
-        CoinInfo(it, volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, volumeDay * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT)
-    }
+    val infos = topCoins
+            .map {
+                constants.binanceNameToStandard[it] ?: it
+            }
+            .map {
+                val limits = allLimits[it]!!.get()
+                val price = prices[it]!!
+                val volumeMonth = volumesMonth[it]!!
+                val volumeWeek = volumesWeek[it]!!
+                val volumeDay = volumesDay[it]!!
+                CoinInfo(it, volumeMonth * oneBTCinUSDT, volumeWeek * oneBTCinUSDT, volumeDay * oneBTCinUSDT, limits.amountStep * price * oneBTCinUSDT)
+            }
     infos.forEach(::println)
+}
 }
 
 
