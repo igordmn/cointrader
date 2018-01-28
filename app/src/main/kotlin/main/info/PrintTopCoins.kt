@@ -54,8 +54,6 @@ fun printTopCoins() = runBlocking {
             }
     infos.forEach(::println)
 }
-}
-
 
 private suspend fun volume(client: BinanceAPI, coin: String, hourCount: Int): BigDecimal {
     require(hourCount <= 500)
