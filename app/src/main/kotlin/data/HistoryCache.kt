@@ -41,13 +41,13 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
         it.createStatement().use {
             it.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS HistoryCandle(
-                    market VARCHAR(20),
-                    openTime TIMESTAMP,
-                    closeTime TIMESTAMP,
-                    open DECIMAL(40,20),
-                    close DECIMAL(40,20),
-                    high DECIMAL(40,20),
-                    low DECIMAL(40,20),
+                    market VARCHAR(20) NOT NULL,
+                    openTime TIMESTAMP NOT NULL,
+                    closeTime TIMESTAMP NOT NULL,
+                    open DECIMAL(40,20) NOT NULL,
+                    close DECIMAL(40,20) NOT NULL,
+                    high DECIMAL(40,20) NOT NULL,
+                    low DECIMAL(40,20) NOT NULL,
                     PRIMARY KEY (market, closeTime)
                 )
             """.trimIndent()
@@ -81,7 +81,8 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
             it.executeQuery().use { rs ->
                 val hasRows = rs.next()
                 return if (hasRows) {
-                    rs.getTimestamp(1).toInstant()
+                    val timestamp = rs.getTimestamp(1)
+                    timestamp?.toInstant() ?: Instant.MIN
                 } else {
                     Instant.MIN
                 }
