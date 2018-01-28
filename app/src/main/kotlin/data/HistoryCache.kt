@@ -7,27 +7,43 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import java.nio.file.Path
 import java.sql.Connection
-import java.sql.DriverManager
 import java.time.Instant
+import org.h2.jdbcx.JdbcConnectionPool
+import java.sql.Timestamp
 
-class HistoryCache private constructor(private val connection: Connection) : AutoCloseable {
+
+class HistoryCache private constructor(path: Path) : AutoCloseable {
+    private val connectionPool = JdbcConnectionPool.create(jdbcPath(path), "", "").apply {
+        maxConnections = 100
+    }
+
+    private fun jdbcPath(path: Path) = "jdbc:h2:${path.toAbsolutePath()}"
+
     private suspend fun modify(action: suspend (connection: Connection) -> Unit) {
-        try {
-            action(connection)
-        } catch (e: Throwable) {
-            connection.rollback()
-            throw e
+        connect().use {
+            try {
+                action(it)
+            } catch (e: Throwable) {
+                it.rollback()
+                throw e
+            }
+            it.commit()
         }
-        connection.commit()
+    }
+
+    private fun connect(): Connection {
+        val connection = connectionPool.connection
+        connection.autoCommit = false
+        return connection
     }
 
     private suspend fun update() = modify {
         it.createStatement().use {
             it.executeUpdate("""
                 CREATE TABLE IF NOT EXISTS HistoryCandle(
-                    market varchar(20),
-                    openTime INTEGER,
-                    closeTime INTEGER,
+                    market VARCHAR(20),
+                    openTime TIMESTAMP,
+                    closeTime TIMESTAMP,
                     open DECIMAL(40,20),
                     close DECIMAL(40,20),
                     high DECIMAL(40,20),
@@ -46,8 +62,8 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
         candles.consumeEach { candle ->
             it.prepareStatement("INSERT INTO HistoryCandle VALUES (?,?,?,?,?,?,?)").use {
                 it.setString(1, market)
-                it.setLong(2, candle.timeRange.start.toEpochMilli())
-                it.setLong(3, candle.timeRange.endInclusive.toEpochMilli())
+                it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
+                it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
                 it.setBigDecimal(4, candle.item.open)
                 it.setBigDecimal(5, candle.item.close)
                 it.setBigDecimal(6, candle.item.high)
@@ -59,8 +75,8 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
 
     fun lastCloseTime(
             market: String
-    ): Instant {
-        connection.prepareStatement("SELECT max(closeTime) FROM HistoryCandle WHERE market=?").use {
+    ): Instant = connect().use {
+        it.prepareStatement("SELECT max(closeTime) FROM HistoryCandle WHERE market=?").use {
             it.setString(1, market)
             it.executeQuery().use { rs ->
                 val hasRows = rs.next()
@@ -78,43 +94,41 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             market: String,
             time: Instant
     ): ReceiveChannel<TimedCandle> = produce {
-        connection.prepareStatement("""
+        connect().use {
+            it.prepareStatement(
+                    """
                         SELECT openTime, closeTime, open, close, high, low
                         FROM HistoryCandle
                         WHERE market=? and closeTime<=?
                         ORDER BY closeTime DESC
                     """.trimIndent()
-        ).use {
-            it.setString(1, market)
-            it.setLong(2, time.toEpochMilli())
-            it.executeQuery().use { rs ->
-                while (rs.next()) {
-                    val openTimeMillis = rs.getLong(1)
-                    val closeTimeMillis = rs.getLong(2)
-                    val open = rs.getBigDecimal(3)
-                    val close = rs.getBigDecimal(4)
-                    val high = rs.getBigDecimal(5)
-                    val low = rs.getBigDecimal(6)
-                    send(TimedCandle(
-                            Instant.ofEpochMilli(openTimeMillis)..Instant.ofEpochMilli(closeTimeMillis),
-                            Candle(open, close, high, low)
-                    ))
+            ).use {
+                it.setString(1, market)
+                it.setLong(2, time.toEpochMilli())
+                it.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val openTime = rs.getTimestamp(1).toInstant()
+                        val closeTime = rs.getTimestamp(2).toInstant()
+                        val open = rs.getBigDecimal(3)
+                        val close = rs.getBigDecimal(4)
+                        val high = rs.getBigDecimal(5)
+                        val low = rs.getBigDecimal(6)
+                        send(TimedCandle(
+                                openTime..closeTime,
+                                Candle(open, close, high, low)
+                        ))
+                    }
                 }
             }
         }
     }
 
-    override fun close() = connection.close()
+    override fun close() = Unit
 
     companion object {
-        suspend fun create(path: Path): HistoryCache {
-            Class.forName("org.sqlite.JDBC")
-            val connection = DriverManager.getConnection("jdbc:sqlite:$path")
-            connection.autoCommit = false
-
-            return HistoryCache(connection).apply {
-                update()
-            }
+        suspend fun create(path: Path) = HistoryCache(path).apply {
+            Class.forName("org.h2.Driver").newInstance()
+            update()
         }
     }
 }
