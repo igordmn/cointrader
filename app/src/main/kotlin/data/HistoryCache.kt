@@ -10,24 +10,15 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Instant
 
-class HistoryCache private constructor(private val path: Path) {
+class HistoryCache private constructor(private val connection: Connection) : AutoCloseable {
     private suspend fun modify(action: suspend (connection: Connection) -> Unit) {
-        connect().use {
-            try {
-                action(it)
-            } catch (e: Throwable) {
-                it.rollback()
-                throw e
-            }
-            it.commit()
+        try {
+            action(connection)
+        } catch (e: Throwable) {
+            connection.rollback()
+            throw e
         }
-    }
-
-    private fun connect(): Connection {
-        Class.forName("org.sqlite.JDBC")
-        val connection = DriverManager.getConnection("jdbc:sqlite:$path")
-        connection.autoCommit = false
-        return connection
+        connection.commit()
     }
 
     private suspend fun update() = modify {
@@ -68,8 +59,8 @@ class HistoryCache private constructor(private val path: Path) {
 
     fun lastCloseTime(
             market: String
-    ): Instant = connect().use {
-        it.prepareStatement("SELECT max(closeTime) FROM HistoryCandle WHERE market=?").use {
+    ): Instant {
+        connection.prepareStatement("SELECT max(closeTime) FROM HistoryCandle WHERE market=?").use {
             it.setString(1, market)
             it.executeQuery().use { rs ->
                 val hasRows = rs.next()
@@ -87,38 +78,44 @@ class HistoryCache private constructor(private val path: Path) {
             market: String,
             time: Instant
     ): ReceiveChannel<TimedCandle> = produce {
-        connect().use {
-            it.prepareStatement(
-                    """
+        connection.prepareStatement(
+                """
                         SELECT openTime, closeTime, open, close, high, low
                         FROM HistoryCandle
                         WHERE market=? and closeTime<=?
                         ORDER BY closeTime DESC
                     """.trimIndent()
-            ).use {
-                it.setString(1, market)
-                it.setLong(2, time.toEpochMilli())
-                it.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        val openTimeMillis = rs.getLong(1)
-                        val closeTimeMillis = rs.getLong(2)
-                        val open = rs.getBigDecimal(3)
-                        val close = rs.getBigDecimal(4)
-                        val high = rs.getBigDecimal(5)
-                        val low = rs.getBigDecimal(6)
-                        send(TimedCandle(
-                                Instant.ofEpochMilli(openTimeMillis)..Instant.ofEpochMilli(closeTimeMillis),
-                                Candle(open, close, high, low)
-                        ))
-                    }
+        ).use {
+            it.setString(1, market)
+            it.setLong(2, time.toEpochMilli())
+            it.executeQuery().use { rs ->
+                while (rs.next()) {
+                    val openTimeMillis = rs.getLong(1)
+                    val closeTimeMillis = rs.getLong(2)
+                    val open = rs.getBigDecimal(3)
+                    val close = rs.getBigDecimal(4)
+                    val high = rs.getBigDecimal(5)
+                    val low = rs.getBigDecimal(6)
+                    send(TimedCandle(
+                            Instant.ofEpochMilli(openTimeMillis)..Instant.ofEpochMilli(closeTimeMillis),
+                            Candle(open, close, high, low)
+                    ))
                 }
             }
         }
     }
 
+    override fun close() = connection.close()
+
     companion object {
-        suspend fun create(path: Path) = HistoryCache(path).apply {
-            update()
+        suspend fun create(path: Path): HistoryCache {
+            Class.forName("org.sqlite.JDBC")
+            val connection = DriverManager.getConnection("jdbc:sqlite:$path")
+            connection.autoCommit = false
+
+            return HistoryCache(connection).apply {
+                update()
+            }
         }
     }
 }
