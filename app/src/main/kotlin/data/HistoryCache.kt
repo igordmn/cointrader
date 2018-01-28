@@ -2,6 +2,7 @@ package data
 
 import exchange.candle.Candle
 import exchange.candle.TimedCandle
+import kotlinx.coroutines.experimental.channels.ProducerScope
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
@@ -94,26 +95,39 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
             market: String,
             time: Instant
     ): ReceiveChannel<TimedCandle> = produce {
+        var chunk = candlesChunkBefore(market, time)
+        while (chunk.isNotEmpty()) {
+            chunk.forEach {
+                send(it)
+            }
+            chunk = candlesChunkBefore(market, chunk.last().timeRange.start)
+        }
+    }
+
+    private fun candlesChunkBefore(market: String, time: Instant): List<TimedCandle> {
+        val result = ArrayList<TimedCandle>()
+        val chunkSize = 1000
         connect().use {
             it.prepareStatement(
                     """
-                        SELECT openTime, closeTime, open, close, high, low
-                        FROM HistoryCandle
-                        WHERE market=? and closeTime<=?
-                        ORDER BY closeTime DESC
-                    """.trimIndent()
+                            SELECT openTime, closeTime, open, close, high, low
+                            FROM HistoryCandle
+                            WHERE market=? and closeTime<=?
+                            ORDER BY closeTime DESC
+                        """.trimIndent()
             ).use {
+                it.fetchSize = chunkSize
                 it.setString(1, market)
                 it.setTimestamp(2, Timestamp.from(time))
                 it.executeQuery().use { rs ->
-                    while (rs.next()) {
+                    while (rs.next() && result.size < chunkSize) {
                         val openTime = rs.getTimestamp(1).toInstant()
                         val closeTime = rs.getTimestamp(2).toInstant()
                         val open = rs.getBigDecimal(3)
                         val close = rs.getBigDecimal(4)
                         val high = rs.getBigDecimal(5)
                         val low = rs.getBigDecimal(6)
-                        send(TimedCandle(
+                        result.add(TimedCandle(
                                 openTime..closeTime,
                                 Candle(open, close, high, low)
                         ))
@@ -121,6 +135,7 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
                 }
             }
         }
+        return result
     }
 
     override fun close() = Unit
