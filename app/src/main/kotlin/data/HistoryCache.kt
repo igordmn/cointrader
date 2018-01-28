@@ -78,8 +78,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             market: String,
             time: Instant
     ): ReceiveChannel<TimedCandle> = produce {
-        connection.prepareStatement(
-                """
+        connection.prepareStatement("""
                         SELECT openTime, closeTime, open, close, high, low
                         FROM HistoryCandle
                         WHERE market=? and closeTime<=?
