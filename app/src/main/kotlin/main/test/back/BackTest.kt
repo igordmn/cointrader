@@ -15,7 +15,6 @@ import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
 import org.slf4j.Logger
@@ -30,7 +29,6 @@ import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.TimeUnit
 
 fun backTest() = runBlocking {
     System.setProperty("log.name", "backTest")
@@ -57,12 +55,12 @@ private suspend fun run(log: Logger) {
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val constants = BinanceConstants()
     val portfolio = TestPortfolio(config.initialCoins)
-    val time = TestTime(config.startTime)
+    val time = TestTime(config.backTestStartTime)
     val info = BinanceInfo.load(api)
     makeBinanceCacheDB().use { cache ->
         val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, config.mainCoin, config.altCoins)
         val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preloadBefore(serverTime)
+        preloadedHistories.preload(config.preloadStartTime, serverTime)
         val markets = TestMarkets(preloadedHistories, constants, time, portfolio, config.fee, info, operationScale, config.period)
 
         val adviser = NeuralTradeAdviser(
@@ -89,7 +87,7 @@ private suspend fun run(log: Logger) {
                 config.period, time, testTrade,
                 TradingBot.LogListener(logger(TradingBot::class)),
                 { time ->
-                    preloadedHistories.preloadBefore(time)
+                    preloadedHistories.preload(config.preloadStartTime, time)
                 },
                 {
                     info.refresh()

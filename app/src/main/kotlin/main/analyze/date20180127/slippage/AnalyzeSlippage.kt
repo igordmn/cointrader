@@ -13,16 +13,12 @@ import kotlinx.coroutines.experimental.channels.map
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
-import main.test.TestConfig
 import org.slf4j.LoggerFactory
 import util.lang.truncatedTo
 import util.math.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) = runBlocking {
@@ -36,7 +32,7 @@ fun main(args: Array<String>) = runBlocking {
             "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
             "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
     )
-
+    val preloadStartTime: Instant = ZonedDateTime.of(2017, 6, 30, 0, 0, 0, 0, ZoneId.systemDefault()).toInstant()
 
     val tradeBuilder = TradeBuilder()
 
@@ -59,7 +55,7 @@ fun main(args: Array<String>) = runBlocking {
     makeBinanceCacheDB().use { cache ->
         val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, mainCoin, altCoins)
         val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preloadBefore(serverTime)
+        preloadedHistories.preload(preloadStartTime, serverTime)
 
         val funs = object {
             suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {

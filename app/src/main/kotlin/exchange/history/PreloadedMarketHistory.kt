@@ -13,13 +13,20 @@ class PreloadedMarketHistory(
         private val original: MarketHistory,
         private val originalPeriod: Duration
 ) : MarketHistory {
-    suspend fun preloadBefore(time: Instant) {
-        val lastCloseTime = cache.lastCloseTime(market)
-        if (time >= lastCloseTime.plus(originalPeriod)) {
-            val candles = original.candlesBefore(time).takeWhile {
-                it.timeRange.start >= lastCloseTime
+    suspend fun preload(startTime: Instant, endTime: Instant) {
+        val previousStartTime = cache.startTimeOf(market)
+        val previousEndTime = cache.endTimeOf(market)
+        if (endTime >= previousEndTime.plus(originalPeriod)) {
+            val candles = original.candlesBefore(endTime).takeWhile {
+                it.timeRange.start >= previousEndTime
             }
-            cache.insertCandles(market, candles)
+            cache.insertCandles(market, candles, previousStartTime, endTime)
+        }
+        if (startTime < previousStartTime) {
+            val candles = original.candlesBefore(previousStartTime).takeWhile {
+                it.timeRange.start >= startTime
+            }
+            cache.insertCandles(market, candles, startTime, endTime)
         }
     }
 

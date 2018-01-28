@@ -58,7 +58,6 @@ dependencies {
     compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-android:0.21")
     compile("org.xerial:sqlite-jdbc:3.21.0.1")
-    compile("com.h2database:h2:1.4.195")
     compile("org.jetbrains.exposed:exposed:0.9.1")
     compile("com.github.kittinunf.fuel:fuel:1.12.0")
     compile("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")

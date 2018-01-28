@@ -83,7 +83,7 @@ class BinanceMarketHistory(
 }
 
 suspend fun makeBinanceCacheDB(): HistoryCache {
-    val path = Paths.get("data/cache/binance")
+    val path = Paths.get("data/cache/binance.db")
     Files.createDirectories(path.parent)
     return HistoryCache.create(path)
 }
@@ -108,20 +108,20 @@ class PreloadedBinanceMarketHistories(
         return map[name]!!
     }
 
-    suspend fun preloadBefore(time: Instant) {
+    suspend fun preload(startTime: Instant, endTime: Instant) {
         altCoins
                 .mapNotNull { constants.marketName(mainCoin, it) ?: constants.marketName(it, mainCoin) }
                 .map { name ->
                     async {
-                        preloadBefore(name, time)
+                        preload(name, startTime, endTime)
                     }
                 }.forEach {
                     it.await()
                 }
     }
 
-    private suspend fun preloadBefore(name: String, time: Instant) {
+    private suspend fun preload(name: String, startTime: Instant, endTime: Instant) {
         val history = map.getOrPut(name) { preloadedBinanceMarketHistory(cache, api, name) }
-        history.preloadBefore(time)
+        history.preload(startTime, endTime)
     }
 }

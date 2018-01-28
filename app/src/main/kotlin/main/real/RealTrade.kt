@@ -64,7 +64,7 @@ private suspend fun run(log: Logger) {
     makeBinanceCacheDB().use { cache ->
         val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, config.mainCoin, config.altCoins)
         val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preloadBefore(serverTime)
+        preloadedHistories.preload(config.preloadStartTime, serverTime)
 
         val binanceMarkets = BinanceMarkets(preloadedHistories, constants, api, info, operationScale, config.period)
         val testMarkets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, testPortfolio, config.fee, info, operationScale, config.period)
@@ -115,7 +115,7 @@ private suspend fun run(log: Logger) {
                 config.period, time, trade,
                 TradingBot.LogListener(logger(TradingBot::class)),
                 { time ->
-                    preloadedHistories.preloadBefore(time)
+                    preloadedHistories.preload(config.preloadStartTime, time)
                 },
                 {
                     info.refresh()

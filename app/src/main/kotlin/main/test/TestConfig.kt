@@ -25,5 +25,6 @@ data class TestConfig(
         val historyCount: Int = 160,
         val fee: BigDecimal = BigDecimal("0.0015"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
-        val startTime: Instant = Instant.now() - Duration.ofDays(10)
+        val preloadStartTime: Instant = ZonedDateTime.of(2017, 6, 30, 0, 0, 0, 0, ZoneId.systemDefault()).toInstant(),
+        val backTestStartTime: Instant = Instant.now() - Duration.ofDays(10)
 )
