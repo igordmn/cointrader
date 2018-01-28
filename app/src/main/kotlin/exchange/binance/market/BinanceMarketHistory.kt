@@ -67,9 +67,9 @@ class BinanceMarketHistory(
         val result = api
                 .getCandlestickBars(name, "1m", maxBinanceCount, null, end.toEpochMilli())
                 .asSequence()
+                .filter { Instant.ofEpochMilli(it.closeTime) <= end }
+                .filter { it.closeTime > it.openTime }
                 .map(Candlestick::toLocalCandle)
-                .filter { it.timeRange.endInclusive <= end }
-                .filter { it.timeRange.endInclusive > it.timeRange.start }
                 .toList()
                 .asReversed()
                 .dropIncompleteCandle(end)

@@ -81,8 +81,7 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
             it.executeQuery().use { rs ->
                 val hasRows = rs.next()
                 return if (hasRows) {
-                    val millis = rs.getLong(1)
-                    Instant.ofEpochMilli(millis)
+                    rs.getTimestamp(1).toInstant()
                 } else {
                     Instant.MIN
                 }
