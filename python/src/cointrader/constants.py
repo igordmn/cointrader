@@ -1,4 +1,4 @@
-DATABASE_DIR = "./data/coins.db"
+DATABASE_DIR = "./../coins.db"
 NET_FILE = "./data/train_package/netfile"
 
 

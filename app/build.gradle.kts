@@ -96,6 +96,15 @@ startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
         destination.write(text)
     }
 }
+println("$projectDir/python/src")
+configure<ApplicationPluginConvention> {
+    applicationDistribution
+            .from("$rootDir")
+            .include("data/**")
+            .include("python/src/**")
+            .include("lib/native/**")
+            .into("bin")
+}
 
 fun mainTask(name: String) = task(name, JavaExec::class) {
     group = "application"
