@@ -1,24 +1,20 @@
 package exchange.binance.market
 
-import com.binance.api.client.constant.BinanceApiConstants
 import com.binance.api.client.domain.market.Candlestick
+import data.HistoryCache
 import exchange.binance.BinanceConstants
-import exchange.history.MarketHistory
 import exchange.binance.api.BinanceAPI
 import exchange.candle.Candle
-import exchange.candle.CandleNormalizer
 import exchange.candle.TimedCandle
+import exchange.history.MarketHistory
 import exchange.history.PreloadedMarketHistory
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.channels.*
-import org.mapdb.DB
-import org.mapdb.DBMaker
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.produce
 import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
 import util.log.logger
 import java.math.BigDecimal
-import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -33,7 +29,7 @@ class BinanceMarketHistory(
     override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = produce {
         var timeIt = time
 
-        while(true) {
+        while (true) {
             val chunk = candlesChunkByMinuteBefore(timeIt)
             if (chunk.isEmpty()) {
                 break
@@ -43,8 +39,6 @@ class BinanceMarketHistory(
             }
             timeIt = chunk.last().timeRange.start
         }
-
-        close()
     }
 
     private suspend fun candlesChunkByMinuteBefore(time: Instant): List<TimedCandle> {
@@ -58,6 +52,7 @@ class BinanceMarketHistory(
                         BigDecimal(low)
                 )
         )
+
         fun List<TimedCandle>.dropIncompleteCandle(end: Instant): List<TimedCandle> {
             return if (isNotEmpty() && first().timeRange.endInclusive != end) {
                 drop(1)
@@ -86,27 +81,22 @@ class BinanceMarketHistory(
     }
 }
 
-fun makeBinanceCacheDB(): DB {
-    val folder: Path = Paths.get("data/cache/binance/")
-    Files.createDirectories(folder)
-    val file = folder.resolve("history").toFile()
-    return DBMaker.fileDB(file).transactionEnable().make()
-}
+suspend fun makeBinanceCacheDB() = HistoryCache.create(Paths.get("data/cache/binance.db"))
 
-fun preloadedBinanceMarketHistory(db: DB, api: BinanceAPI, name: String) = PreloadedMarketHistory(
-        db,
+fun preloadedBinanceMarketHistory(cache: HistoryCache, api: BinanceAPI, name: String) = PreloadedMarketHistory(
+        cache,
         name,
         BinanceMarketHistory(name, api, logger(BinanceMarketHistory::class)),
         Duration.ofMinutes(1)
 )
 
 class PreloadedBinanceMarketHistories(
+        private val cache: HistoryCache,
         private val constants: BinanceConstants,
         private val api: BinanceAPI,
         private val mainCoin: String,
         private val altCoins: List<String>
-): AutoCloseable {
-    private val db = makeBinanceCacheDB()
+) {
     private val map = ConcurrentHashMap<String, PreloadedMarketHistory>()
 
     operator fun get(name: String): PreloadedMarketHistory {
@@ -126,9 +116,7 @@ class PreloadedBinanceMarketHistories(
     }
 
     private suspend fun preloadBefore(name: String, time: Instant) {
-        val history = map.getOrPut(name) { preloadedBinanceMarketHistory(db, api, name) }
+        val history = map.getOrPut(name) { preloadedBinanceMarketHistory(cache, api, name) }
         history.preloadBefore(time)
     }
-
-    override fun close() = db.close()
 }

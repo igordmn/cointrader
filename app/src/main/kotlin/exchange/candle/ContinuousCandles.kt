@@ -51,6 +51,4 @@ fun ReceiveChannel<TimedCandle>.fillSkipped(): ReceiveChannel<TimedCandle> = pro
                 )
         ))
     }
-
-    close()
 }

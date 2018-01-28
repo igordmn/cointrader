@@ -7,6 +7,7 @@ import exchange.binance.BinanceTime
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.PreloadedBinanceMarketHistories
+import exchange.binance.market.makeBinanceCacheDB
 import exchange.test.BinanceWithTestBrokerMarkets
 import exchange.test.TestPortfolio
 import kotlinx.coroutines.experimental.runBlocking
@@ -47,41 +48,42 @@ private suspend fun run(log: Logger) {
     val portfolio = TestPortfolio(config.initialCoins)
     val time = BinanceTime(api)
     val info = BinanceInfo.load(api)
-    PreloadedBinanceMarketHistories(constants, api, config.mainCoin, config.altCoins).use { preloadedHistories ->
-        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preloadBefore(serverTime)
-        val markets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, portfolio, config.fee, info, operationScale, config.period)
 
-        val adviser = NeuralTradeAdviser(
-                config.mainCoin,
-                config.altCoins,
-                config.historyCount,
-                Paths.get("data/train_package/netfile"),
-                config.fee,
-                config.indicators
-        )
-        val trade = AdvisableTrade(
-                config.mainCoin,
-                config.altCoins,
-                config.historyCount,
-                adviser,
-                markets,
-                portfolio,
-                operationScale,
-                AdvisableTrade.LogListener(logger(AdvisableTrade::class))
-        )
+    val cache = makeBinanceCacheDB()
+    val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, config.mainCoin, config.altCoins)
+    val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+    preloadedHistories.preloadBefore(serverTime)
+    val markets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, portfolio, config.fee, info, operationScale, config.period)
 
-        val bot = TradingBot(
-                config.period, time, trade,
-                TradingBot.LogListener(logger(TradingBot::class)),
-                { time ->
-                    preloadedHistories.preloadBefore(time)
-                },
-                {
-                    info.refresh()
-                }
-        )
+    val adviser = NeuralTradeAdviser(
+            config.mainCoin,
+            config.altCoins,
+            config.historyCount,
+            Paths.get("data/train_package/netfile"),
+            config.fee,
+            config.indicators
+    )
+    val trade = AdvisableTrade(
+            config.mainCoin,
+            config.altCoins,
+            config.historyCount,
+            adviser,
+            markets,
+            portfolio,
+            operationScale,
+            AdvisableTrade.LogListener(logger(AdvisableTrade::class))
+    )
 
-        bot.run()
-    }
+    val bot = TradingBot(
+            config.period, time, trade,
+            TradingBot.LogListener(logger(TradingBot::class)),
+            { time ->
+                preloadedHistories.preloadBefore(time)
+            },
+            {
+                info.refresh()
+            }
+    )
+
+    bot.run()
 }

@@ -4,6 +4,7 @@ import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.PreloadedBinanceMarketHistories
+import exchange.binance.market.makeBinanceCacheDB
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
 import exchange.history.NormalizedMarketHistory
@@ -55,38 +56,38 @@ fun main(args: Array<String>) = runBlocking {
 
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val constants = BinanceConstants()
-    PreloadedBinanceMarketHistories(constants, api, mainCoin, altCoins).use { preloadedHistories ->
-        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preloadBefore(serverTime)
+    val cache = makeBinanceCacheDB()
+    val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, mainCoin, altCoins)
+    val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+    preloadedHistories.preloadBefore(serverTime)
 
-        val funs = object {
-            suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {
-                val coin = coinWithBtc.removeSuffix("BTC").removePrefix("BTC")
-                val marketName = constants.marketName(mainCoin, coin) ?: constants.marketName(coin, mainCoin)
-                val approximatedPricesFactory = LinearApproximatedPricesFactory(30)
-                val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-                val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, Duration.ofMinutes(1))
-                val nextMinute = time.truncatedTo(Duration.ofMinutes(1)) + Duration.ofMinutes(1)
-                val candles = history.candlesBefore(nextMinute).take(2).toList()
-                val candle0 = candles[0]
-                val candle1 = candles[1]
-                val approximatedPrice = approximatedPricesFactory.forCandle(candle0.item).exactAt(Math.random())
-                val closePrice = candle1.item.close
-                return Pair(closePrice, approximatedPrice)
-            }
+    val funs = object {
+        suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {
+            val coin = coinWithBtc.removeSuffix("BTC").removePrefix("BTC")
+            val marketName = constants.marketName(mainCoin, coin) ?: constants.marketName(coin, mainCoin)
+            val approximatedPricesFactory = LinearApproximatedPricesFactory(30)
+            val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
+            val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, Duration.ofMinutes(1))
+            val nextMinute = time.truncatedTo(Duration.ofMinutes(1)) + Duration.ofMinutes(1)
+            val candles = history.candlesBefore(nextMinute).take(2).toList()
+            val candle0 = candles[0]
+            val candle1 = candles[1]
+            val approximatedPrice = approximatedPricesFactory.forCandle(candle0.item).exactAt(Math.random())
+            val closePrice = candle1.item.close
+            return Pair(closePrice, approximatedPrice)
         }
-
-        val approximatedCommissions =  trades.asReceiveChannel().map {
-            val (fromCoinClose, fromCoinApproximated) = funs.closePriceAndApproximatedPrice(it.fromCoin, it.time)
-            val (toCoinClose, toCoinApproximated) = funs.closePriceAndApproximatedPrice(it.toCoin, it.time)
-            val fromCommission = fromCoinApproximated / fromCoinClose
-            val toCommission = toCoinClose / toCoinApproximated
-            fromCommission * toCommission
-        }.toList()
-
-        val meanApproximatedCommission = Math.sqrt(approximatedCommissions.geoMean())
-        println("approximated commission $meanApproximatedCommission")
     }
+
+    val approximatedCommissions =  trades.asReceiveChannel().map {
+        val (fromCoinClose, fromCoinApproximated) = funs.closePriceAndApproximatedPrice(it.fromCoin, it.time)
+        val (toCoinClose, toCoinApproximated) = funs.closePriceAndApproximatedPrice(it.toCoin, it.time)
+        val fromCommission = fromCoinApproximated / fromCoinClose
+        val toCommission = toCoinClose / toCoinApproximated
+        fromCommission * toCommission
+    }.toList()
+
+    val meanApproximatedCommission = Math.sqrt(approximatedCommissions.geoMean())
+    println("approximated commission $meanApproximatedCommission")
 }
 
 private fun List<BigDecimal>.geoMean(): Double {
