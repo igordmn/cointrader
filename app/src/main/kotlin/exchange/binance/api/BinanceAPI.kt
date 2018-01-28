@@ -19,7 +19,7 @@ private const val MAX_REQUESTS_PER_SECOND = 6 // binance has 20 request per seco
 class BinanceAPI(
         private val service: BinanceAPIService
 ) {
-    private val binanceThread = newSingleThreadContext("binance")
+    private val thread = newSingleThreadContext("binanceApi")
 
     suspend fun serverTime(): ServerTime = perform {
         service.serverTime
@@ -118,7 +118,7 @@ class BinanceAPI(
     }
 
     private suspend fun <T> perform(action: suspend () -> Deferred<T>): T {
-        return async(binanceThread) {
+        return async(thread) {
             Thread.sleep(ceil(1000.0 / MAX_REQUESTS_PER_SECOND).toLong())  // don't use delay here. binanceThread need to sleep
             action().await()
         }.await()
