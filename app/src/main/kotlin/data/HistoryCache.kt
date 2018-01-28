@@ -5,6 +5,7 @@ import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
+import util.concurrent.windowedWithPartial
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
@@ -77,16 +78,19 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             startTime: Instant,
             endTime: Instant
     ) {
-        candles.consumeEach { candle ->
+        candles.windowedWithPartial(size = 1000).consumeEach { candlesBatch ->
             connection.prepareStatement("INSERT INTO HistoryCandle VALUES (?,?,?,?,?,?,?)").use {
-                it.setString(1, market)
-                it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
-                it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
-                it.setBigDecimal(4, candle.item.open)
-                it.setBigDecimal(5, candle.item.close)
-                it.setBigDecimal(6, candle.item.high)
-                it.setBigDecimal(7, candle.item.low)
-                it.executeUpdate()
+                for (candle in candlesBatch) {
+                    it.setString(1, market)
+                    it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
+                    it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
+                    it.setBigDecimal(4, candle.item.open)
+                    it.setBigDecimal(5, candle.item.close)
+                    it.setBigDecimal(6, candle.item.high)
+                    it.setBigDecimal(7, candle.item.low)
+                    it.addBatch()
+                }
+                it.executeBatch()
             }
         }
         setFilled(market, startTime, endTime)
