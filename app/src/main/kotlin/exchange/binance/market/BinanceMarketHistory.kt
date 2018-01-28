@@ -15,6 +15,7 @@ import org.slf4j.Logger
 import util.lang.instantRangeOfMilli
 import util.log.logger
 import java.math.BigDecimal
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -81,7 +82,11 @@ class BinanceMarketHistory(
     }
 }
 
-suspend fun makeBinanceCacheDB() = HistoryCache.create(Paths.get("data/cache/binance.db"))
+suspend fun makeBinanceCacheDB(): HistoryCache {
+    val path = Paths.get("data/cache/binance.db")
+    Files.createDirectories(path.parent)
+    return HistoryCache.create(path)
+}
 
 fun preloadedBinanceMarketHistory(cache: HistoryCache, api: BinanceAPI, name: String) = PreloadedMarketHistory(
         cache,
