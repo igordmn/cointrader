@@ -104,7 +104,7 @@ class HistoryCache private constructor(path: Path) : AutoCloseable {
                     """.trimIndent()
             ).use {
                 it.setString(1, market)
-                it.setLong(2, time.toEpochMilli())
+                it.setTimestamp(2, Timestamp.from(time))
                 it.executeQuery().use { rs ->
                     while (rs.next()) {
                         val openTime = rs.getTimestamp(1).toInstant()

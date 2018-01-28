@@ -83,7 +83,7 @@ class BinanceMarketHistory(
 }
 
 suspend fun makeBinanceCacheDB(): HistoryCache {
-    val path = Paths.get("data/cache/binance.db")
+    val path = Paths.get("data/cache/binance")
     Files.createDirectories(path.parent)
     return HistoryCache.create(path)
 }
