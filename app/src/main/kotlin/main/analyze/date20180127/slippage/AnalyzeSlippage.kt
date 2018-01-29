@@ -32,7 +32,6 @@ fun main(args: Array<String>) = runBlocking {
             "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
             "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
     )
-    val preloadStartTime: Instant = ZonedDateTime.of(2017, 6, 30, 0, 0, 0, 0, ZoneId.systemDefault()).toInstant()
 
     val tradeBuilder = TradeBuilder()
 
@@ -55,7 +54,7 @@ fun main(args: Array<String>) = runBlocking {
     makeBinanceCacheDB().use { cache ->
         val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, mainCoin, altCoins)
         val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-        preloadedHistories.preload(preloadStartTime, serverTime)
+        preloadedHistories.preload(serverTime)
 
         val funs = object {
             suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {

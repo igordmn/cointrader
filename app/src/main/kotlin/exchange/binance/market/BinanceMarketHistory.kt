@@ -108,20 +108,20 @@ class PreloadedBinanceMarketHistories(
         return map[name]!!
     }
 
-    suspend fun preload(startTime: Instant, endTime: Instant) {
+    suspend fun preload( endTime: Instant) {
         altCoins
                 .mapNotNull { constants.marketName(mainCoin, it) ?: constants.marketName(it, mainCoin) }
                 .map { name ->
                     async {
-                        preload(name, startTime, endTime)
+                        preload(name, endTime)
                     }
                 }.forEach {
                     it.await()
                 }
     }
 
-    private suspend fun preload(name: String, startTime: Instant, endTime: Instant) {
+    private suspend fun preload(name: String, endTime: Instant) {
         val history = map.getOrPut(name) { preloadedBinanceMarketHistory(cache, api, name) }
-        history.preload(startTime..endTime)
+        history.preload(endTime)
     }
 }
