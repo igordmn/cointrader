@@ -181,7 +181,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
         }
     }
 
-    override fun close() = Unit
+    override fun close() = connection.close()
 
     companion object {
         suspend fun create(path: Path): HistoryCache {
