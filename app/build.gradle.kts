@@ -77,8 +77,11 @@ kotlin {
     experimental.coroutines = Coroutines.ENABLE
 }
 
+val libraryPath = "D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64"
+
 application {
     mainClassName = "main.MainKt"
+    applicationDefaultJvmArgs = listOf("-Djava.library.path=$libraryPath")
 }
 
 
@@ -113,7 +116,7 @@ fun mainTask(name: String) = task(name, JavaExec::class) {
     classpath = javaPlugin.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).runtimeClasspath
     main = applicationPlugin.mainClassName
     jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList() +
-            listOf("-Djava.library.path=D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64")
+            listOf("-Djava.library.path=$libraryPath")
 
     environment = environment + mapOf("PYTHONHOME" to "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict")
     workingDir = rootDir
