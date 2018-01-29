@@ -10,15 +10,14 @@ import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.binance.market.makeBinanceCacheDB
 import exchange.test.BinanceWithTestBrokerMarkets
 import exchange.test.TestPortfolio
-import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import python.jep
 import trader.AdvisableTrade
 import trader.TradingBot
 import util.log.logger
+import util.python.PythonUtils
 import java.nio.file.Paths
 import java.time.Instant
 
@@ -29,13 +28,16 @@ fun forwardTest() = runBlocking {
     val log = LoggerFactory.getLogger("main")
 
     try {
+        PythonUtils.startPython()
         run(log)
     } catch (e: Throwable) {
         log.error("Error on running", e)
+    } finally {
+        PythonUtils.stopPython()
     }
 }
 
-private suspend fun run(log: Logger) = jep().use { jep ->
+private suspend fun run(log: Logger) {
     val config = TestConfig()
     log.info("Config:\n$config")
 
@@ -54,7 +56,6 @@ private suspend fun run(log: Logger) = jep().use { jep ->
         val markets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, portfolio, config.fee, info, operationScale, config.period)
 
         val adviser = NeuralTradeAdviser(
-                jep,
                 config.mainCoin,
                 config.altCoins,
                 config.historyCount,

@@ -15,21 +15,22 @@ import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
-import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.TestConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import python.jep
 import trader.AdvisableTrade
 import trader.Trade
 import trader.TradingBot
 import util.lang.truncatedTo
 import util.log.logger
+import util.python.PythonUtils
 import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 fun backTest() = runBlocking {
     System.setProperty("log.name", "backTest")
@@ -38,13 +39,16 @@ fun backTest() = runBlocking {
     val log = LoggerFactory.getLogger("main")
 
     try {
+        PythonUtils.startPython()
         run(log)
     } catch (e: Throwable) {
         log.error("Error on running", e)
+    } finally {
+        PythonUtils.stopPython()
     }
 }
 
-private suspend fun run(log: Logger) = jep().use { jep ->
+private suspend fun run(log: Logger) {
     val config = TestConfig()
     log.info("Config:\n$config")
 
@@ -63,7 +67,6 @@ private suspend fun run(log: Logger) = jep().use { jep ->
         val markets = TestMarkets(preloadedHistories, constants, time, portfolio, config.fee, info, operationScale, config.period)
 
         val adviser = NeuralTradeAdviser(
-                jep,
                 config.mainCoin,
                 config.altCoins,
                 config.historyCount,
