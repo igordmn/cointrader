@@ -68,6 +68,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
         }
     }
 
+    // todo при вставке, база блокируется, пока все свечи не будет добавлены в базу. но в тоже время в candles записываются новые свечи из сети, и все они хранятся в памяти
     suspend fun insertCandles(
             market: String,
             candles: ReceiveChannel<TimedCandle>
