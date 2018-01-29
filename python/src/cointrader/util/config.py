@@ -18,13 +18,15 @@ def parse_time(time_string):
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = [
-        "USDT", "ETH", "TRX", "VEN", "CND", "ELF", "EOS",
-        "WTC", "ICX", "XRP", "XLM", "NEO", "HSR", "ADA", "TNT",
-        "XVG", "LTC", "TNB", "IOTA", "BCH", "LEND", "POE", "BRD",
-        "OMG", "ZRX", "QTUM", "BTS", "AMB", "SUB", "ETC", "ENJ",
-        "GTO", "LINK", "OST", "STRAT", "AION", "CDT", "LSK", "MDA",
-        "WABI", "LRC", "AST", "XMR", "CTR", "BAT", "FUN", "ENG",
-        "KNC", "DASH", "SALT"
+        "USDT", "TRX", "ETH", "XRP", "VEN", "NEO",
+        "EOS", "BCD", "ICX", "WTC", "ELF", "CND",
+        "ADA", "XLM", "BCH", "XVG", "LTC", "HSR",
+        "NEBL", "IOTA", "ETC", "QTUM", "POE", "BTG",
+        "TNB", "ZRX", "LRC", "TNT", "LEND", "GTO",
+        "OMG", "BRD", "SUB", "BTS", "WABI", "XMR",
+        "OST", "AION", "ENJ", "STRAT", "ENG", "AMB",
+        "LSK", "AST", "CDT", "MDA", "LINK", "DASH",
+        "KNC", "MTL"
     ]
     coin_number: int = len(coins)
     validation_portion: float = 0.00001
@@ -39,6 +41,6 @@ class TrainConfig(NamedTuple):
     end_time: int = parse_time("2018/1/27 18:40:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
-    geometric_bias: float = 5e-07
+    geometric_bias: float = 5e-06
     use_geometric_sample: bool = True
     approximate_buy_sell_price: bool = True

@@ -13,6 +13,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Instant
 import java.sql.Timestamp
+import kotlin.system.measureTimeMillis
 
 class HistoryCache private constructor(private val connection: Connection) : AutoCloseable {
     private val thread = newSingleThreadContext("historyCache")

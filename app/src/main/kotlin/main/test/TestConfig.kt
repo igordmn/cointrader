@@ -10,13 +10,15 @@ import java.time.ZonedDateTime
 data class TestConfig(
         val mainCoin: String = "BTC",
         val altCoins: List<String> = listOf(
-                "USDT", "ETH", "TRX", "VEN", "CND", "ELF", "EOS",
-                "WTC", "ICX", "XRP", "XLM", "NEO", "HSR", "ADA", "TNT",
-                "XVG", "LTC", "TNB", "IOTA", "BCH", "LEND", "POE", "BRD",
-                "OMG", "ZRX", "QTUM", "BTS", "AMB", "SUB", "ETC", "ENJ",
-                "GTO", "LINK", "OST", "STRAT", "AION", "CDT", "LSK", "MDA",
-                "WABI", "LRC", "AST", "XMR", "CTR", "BAT", "FUN", "ENG",
-                "KNC", "DASH", "SALT"
+                "USDT", "TRX", "ETH", "XRP", "VEN", "NEO",
+                "EOS", "BCD", "ICX", "WTC", "ELF", "CND",
+                "ADA", "XLM", "BCH", "XVG", "LTC", "HSR",
+                "NEBL", "IOTA", "ETC", "QTUM", "POE", "BTG",
+                "TNB", "ZRX", "LRC", "TNT", "LEND", "GTO",
+                "OMG", "BRD", "SUB", "BTS", "WABI", "XMR",
+                "OST", "AION", "ENJ", "STRAT", "ENG", "AMB",
+                "LSK", "AST", "CDT", "MDA", "LINK", "DASH",
+                "KNC", "MTL"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
                 "BTC" to BigDecimal("3.00")
