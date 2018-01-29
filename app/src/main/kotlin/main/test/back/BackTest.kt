@@ -89,9 +89,7 @@ private suspend fun run(log: Logger) {
                 { time ->
                     preloadedHistories.preload(config.preloadStartTime, time)
                 },
-                {
-                    info.refresh()
-                }
+                {}
         )
 
         testTrade.setTimeCloseToNextPeriod()
