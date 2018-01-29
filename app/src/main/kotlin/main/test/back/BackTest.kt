@@ -57,6 +57,7 @@ private suspend fun run(log: Logger) {
     val portfolio = TestPortfolio(config.initialCoins)
     val time = TestTime(config.backTestStartTime)
     val info = BinanceInfo.load(api)
+
     makeBinanceCacheDB().use { cache ->
         val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, config.mainCoin, config.altCoins)
         val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
