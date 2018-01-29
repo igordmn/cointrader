@@ -7,6 +7,7 @@ import kotlinx.coroutines.experimental.channels.takeWhile
 import util.lang.InstantRange
 import util.lang.max
 import util.lang.min
+import util.lang.truncatedTo
 import java.time.Duration
 import java.time.Instant
 
@@ -50,5 +51,5 @@ class PreloadedMarketHistory(
         cache.insertCandles(market, candles, newAllFilledRange)
     }
 
-    override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = cache.candlesBefore(market, time)
+    override fun candlesBefore(time: Instant): ReceiveChannel<TimedCandle> = cache.candlesBefore(market, time.truncatedTo(originalPeriod))
 }

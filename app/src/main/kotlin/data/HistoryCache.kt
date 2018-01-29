@@ -127,8 +127,8 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
                 connection.prepareStatement("INSERT INTO HistoryCandle VALUES (?,?,?,?,?,?,?)").use {
                     for (candle in candlesBatch) {
                         it.setString(1, market)
-                        it.setTimestamp(2, Timestamp.from(candle.timeRange.start))
-                        it.setTimestamp(3, Timestamp.from(candle.timeRange.endInclusive))
+                        it.setTimestamp(2, candle.timeRange.start.toSqliteTimestamp())
+                        it.setTimestamp(3, candle.timeRange.endInclusive.toSqliteTimestamp())
                         it.setBigDecimal(4, candle.item.open)
                         it.setBigDecimal(5, candle.item.close)
                         it.setBigDecimal(6, candle.item.high)
@@ -146,8 +146,8 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
     private suspend fun setFilled(market: String, timeRange: InstantRange) = modify {
         connection.prepareStatement("INSERT OR REPLACE INTO HistoryCandleMeta VALUES (?,?,?)").use {
             it.setString(1, market)
-            it.setTimestamp(2, Timestamp.from(timeRange.start))
-            it.setTimestamp(3, Timestamp.from(timeRange.endInclusive))
+            it.setTimestamp(2, timeRange.start.toSqliteTimestamp())
+            it.setTimestamp(3, timeRange.endInclusive.toSqliteTimestamp())
             it.executeUpdate()
         }
     }
@@ -180,7 +180,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             ).use {
                 it.fetchSize = chunkSize
                 it.setString(1, market)
-                it.setTimestamp(2, Timestamp.from(time))
+                it.setTimestamp(2, time.toSqliteTimestamp())
                 it.executeQuery().use { rs ->
                     while (rs.next() && result.size < chunkSize) {
                         val openTime = rs.getTimestamp(1).toInstant()
@@ -198,6 +198,11 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             }
             result
         }
+    }
+
+    private fun Instant.toSqliteTimestamp(): Timestamp {
+        toEpochMilli() // check if can convert to millis
+        return Timestamp.from(this)
     }
 
     override fun close() = connection.close()
