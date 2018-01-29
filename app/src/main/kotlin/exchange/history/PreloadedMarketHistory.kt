@@ -5,6 +5,7 @@ import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.dropWhile
 import kotlinx.coroutines.experimental.channels.takeWhile
+import util.lang.min
 import java.time.Duration
 import java.time.Instant
 
@@ -24,7 +25,7 @@ class PreloadedMarketHistory(
             cache.insertCandles(market, candles, previousStartTime, endTime)
         }
         if (startTime < previousStartTime) {
-            val candles = original.candlesBefore(previousStartTime)
+            val candles = original.candlesBefore(min(previousStartTime, endTime))
             cache.insertCandles(market, candles, startTime, endTime)
         }
     }
