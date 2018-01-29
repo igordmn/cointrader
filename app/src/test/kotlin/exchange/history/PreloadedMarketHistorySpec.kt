@@ -305,5 +305,50 @@ class PreloadedMarketHistorySpec : FreeSpec({
         }
     }
 
+    "loadup after preload" - {
+        "loadup at end" {
+            usePreloadedHistory {
+                it.preload(instantRange(17880..18000))
+                it.preload(instantRange(17880..18060))
+                it.candlesBefore(instant(9999999)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18060)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18059)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18000)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(17999)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17940)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17939)).toList() shouldBe emptyList<TimedCandle>()
+                it.candlesBefore(instant(99)).toList() shouldBe emptyList<TimedCandle>()
+            }
+        }
 
+        "loadup at start" {
+            usePreloadedHistory {
+                it.preload(instantRange(18000..18060))
+                it.preload(instantRange(17880..18060))
+                it.candlesBefore(instant(9999999)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18060)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18059)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18000)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(17999)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17940)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17939)).toList() shouldBe emptyList<TimedCandle>()
+                it.candlesBefore(instant(99)).toList() shouldBe emptyList<TimedCandle>()
+            }
+        }
+
+        "loadup at start and end" {
+            usePreloadedHistory {
+                it.preload(instantRange(17940..18000))
+                it.preload(instantRange(17880..18060))
+                it.candlesBefore(instant(9999999)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18060)).toList() shouldBe listOf(candle(18000..18059), candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18059)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(18000)).toList() shouldBe listOf(candle(17940..17999), candle(17880..17939))
+                it.candlesBefore(instant(17999)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17940)).toList() shouldBe listOf(candle(17880..17939))
+                it.candlesBefore(instant(17939)).toList() shouldBe emptyList<TimedCandle>()
+                it.candlesBefore(instant(99)).toList() shouldBe emptyList<TimedCandle>()
+            }
+        }
+    }
 })
