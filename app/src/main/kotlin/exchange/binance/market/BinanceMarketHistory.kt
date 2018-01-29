@@ -122,6 +122,6 @@ class PreloadedBinanceMarketHistories(
 
     private suspend fun preload(name: String, startTime: Instant, endTime: Instant) {
         val history = map.getOrPut(name) { preloadedBinanceMarketHistory(cache, api, name) }
-        history.preload(startTime, endTime)
+        history.preload(startTime..endTime)
     }
 }

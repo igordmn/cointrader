@@ -8,12 +8,12 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import util.concurrent.windowedWithPartial
+import util.lang.InstantRange
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Instant
 import java.sql.Timestamp
-import kotlin.system.measureTimeMillis
 
 class HistoryCache private constructor(private val connection: Connection) : AutoCloseable {
     private val thread = newSingleThreadContext("historyCache")
@@ -61,16 +61,36 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
         }
     }
 
-    suspend fun startTimeOf(market: String): Instant = metaStartTimeOf(market) ?: minTimeOf(market) ?: Instant.MAX
-    suspend fun endTimeOf(market: String): Instant = metaEndTimeOf(market) ?: maxTimeOf(market) ?: Instant.MIN
+    suspend fun filledRange(market: String): InstantRange? {
+        val meta = metaFilledRange(market)
+        return if (meta != null) {
+            meta
+        } else {
+            val min = minTimeOf(market)
+            val max = maxTimeOf(market)
+            if (min != null && max != null) {
+                min..max
+            } else {
+                null
+            }
+        }
+    }
 
-    private suspend fun metaStartTimeOf(market: String): Instant? = selectSingleInstant(market,
-            "SELECT startTime FROM HistoryCandleMeta WHERE market=?"
-    )
-
-    private suspend fun metaEndTimeOf(market: String): Instant? = selectSingleInstant(market,
-            "SELECT endTime FROM HistoryCandleMeta WHERE market=?"
-    )
+    private fun metaFilledRange(market: String): InstantRange? {
+        return connection.prepareStatement("SELECT startTime, endTime FROM HistoryCandleMeta WHERE market=?").use {
+            it.setString(1, market)
+            it.executeQuery().use { rs ->
+                val hasRows = rs.next()
+                if (hasRows) {
+                    val startTime = rs.getTimestamp(1)
+                    val endTime = rs.getTimestamp(2)
+                    startTime.toInstant()..endTime.toInstant()
+                } else {
+                    null
+                }
+            }
+        }
+    }
 
     private suspend fun minTimeOf(market: String): Instant? = selectSingleInstant(market,
             "SELECT min(openTime) FROM HistoryCandle WHERE market=?"
@@ -100,8 +120,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
     suspend fun insertCandles(
             market: String,
             candles: ReceiveChannel<TimedCandle>,
-            startTime: Instant,
-            endTime: Instant
+            allFilledRange: InstantRange
     ) {
         candles.windowedWithPartial(size = 1000).consumeEach { candlesBatch ->
             modify {
@@ -121,14 +140,14 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
             }
         }
 
-        setFilled(market, startTime, endTime)
+        setFilled(market, allFilledRange)
     }
 
-    private suspend fun setFilled(market: String, startTime: Instant, endTime: Instant) = modify {
+    private suspend fun setFilled(market: String, timeRange: InstantRange) = modify {
         connection.prepareStatement("INSERT OR REPLACE INTO HistoryCandleMeta VALUES (?,?,?)").use {
             it.setString(1, market)
-            it.setTimestamp(2, Timestamp.from(startTime))
-            it.setTimestamp(3, Timestamp.from(endTime))
+            it.setTimestamp(2, Timestamp.from(timeRange.start))
+            it.setTimestamp(3, Timestamp.from(timeRange.endInclusive))
             it.executeUpdate()
         }
     }
