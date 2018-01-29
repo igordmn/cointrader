@@ -1,35 +1,46 @@
 package adviser.net
 
-import org.jpy.PyModule
+import jep.Jep
+import jep.NDArray
 import util.math.DoubleMatrix2D
 import util.math.DoubleMatrix4D
-import util.python.PythonUtils
 
 class NNAgent(
+        private val jep: Jep,
         fee: Double,
         private val indicatorNumber: Int,
         private val altCoinNumber: Int,
         private val windowSize: Int,
         netPath: String? = null
 ) {
-    private val agentModule = PyModule.importModule("cointrader.util.nnagent")
-    private val numpy = PyModule.importModule("numpy")
-    private val agent = agentModule.callMethod("NNAgent", fee, indicatorNumber, altCoinNumber, windowSize, netPath)
+    init {
+        jep.eval("from cointrader.util.nnagent import NNAgent")
+        jep.eval("agent = None")
+        jep.eval("""
+                def createAgent(fee, indicatorNumber, altCoinNumber, windowSize, netPath):
+                    global agent
+                    agent = NNAgent(fee, indicatorNumber, altCoinNumber, windowSize, netPath)
+            """.trimIndent())
+        jep.eval("""
+                def best_portfolio(history, previous_w):
+                    return agent.best_portfolio(history, previous_w)
+            """.trimIndent())
+        jep.invoke("createAgent", fee, indicatorNumber, altCoinNumber, windowSize, netPath)
+    }
 
+    @Suppress("UNCHECKED_CAST")
     fun bestPortfolioPortions(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
         require(currentPortions.n2 == altCoinNumber)
         require(history.n2 == indicatorNumber)
         require(history.n3 == altCoinNumber)
         require(history.n4 == windowSize)
 
-        val nphistory = numpy.callMethod("array", history.data)
-                .callMethod("reshape", intArrayOf(history.n1, history.n2, history.n3, history.n4))
-        val npportions = numpy.callMethod("array", currentPortions.data)
-                .callMethod("reshape", intArrayOf(currentPortions.n1, currentPortions.n2))
+        val nphistory = NDArray(history.data, history.n1, history.n2, history.n3, history.n4)
+        val npportions = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
 
-        val result = agent.callMethod("best_portfolio", nphistory, npportions).callMethod("flatten").callMethod("tolist")
-        val data = PythonUtils.getDoubleArrayValue(result)
+        val result = jep.invoke("best_portfolio", nphistory, npportions) as NDArray<FloatArray>
 
-        return DoubleMatrix2D(history.n1, altCoinNumber + 1, data)
+        val dataDouble = result.data.map { it.toDouble() }.toDoubleArray()
+        return DoubleMatrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
     }
 }

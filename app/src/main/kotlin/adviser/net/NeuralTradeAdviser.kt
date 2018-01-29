@@ -6,6 +6,7 @@ import adviser.TradeAdviser
 import exchange.candle.Candle
 import util.math.DoubleMatrix4D
 import exchange.candle.CoinToCandles
+import jep.Jep
 import util.lang.unsupportedOperation
 import util.math.DoubleMatrix2D
 import util.math.portions
@@ -13,6 +14,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 
 class NeuralTradeAdviser(
+        jep: Jep,
         private val mainCoin: String,
         private val altCoins: List<String>,
         private val previousCount: Int,
@@ -21,7 +23,7 @@ class NeuralTradeAdviser(
         private val indicators: AdviseIndicators
 
 ) : TradeAdviser {
-    private val net = NNAgent(fee.toDouble(), indicators.count, altCoins.size, previousCount, netPath.toAbsolutePath().toString())
+    private val net = NNAgent(jep, fee.toDouble(), indicators.count, altCoins.size, previousCount, netPath.toAbsolutePath().toString())
 
     override suspend fun bestPortfolioPortions(currentPortions: CoinPortions, previousCandles: CoinToCandles): CoinPortions {
         val scale = currentPortions[mainCoin]!!.scale()

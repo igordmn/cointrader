@@ -44,7 +44,7 @@ val serializationVersion: String by extra
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))
     compile(kotlin("reflect", kotlinVersion))
-    compile(":jpy-0.9-SNAPSHOT:")
+    compile(":jep-3.7.1:")
     compile("org.slf4j:slf4j-api:1.7.25")
     compile("ch.qos.logback:logback-classic:1.2.3")
     compile("com.squareup.moshi:moshi:1.5.0")
@@ -112,7 +112,9 @@ fun mainTask(name: String) = task(name, JavaExec::class) {
     val applicationPlugin = the<ApplicationPluginConvention>()
     classpath = javaPlugin.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).runtimeClasspath
     main = applicationPlugin.mainClassName
-    jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList()
+    jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList() +
+            listOf("-Djava.library.path=D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64")
+
     environment = environment + mapOf("PYTHONHOME" to "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict")
     workingDir = rootDir
     args = listOf(name)
