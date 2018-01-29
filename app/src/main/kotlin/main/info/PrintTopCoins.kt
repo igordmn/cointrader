@@ -36,23 +36,19 @@ fun printTopCoins() = runBlocking {
     val volumesDay1 = info.keys.associate { it to volume(api, it, 1 * 24) / BigDecimal(1) }
     val volumesDay2 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(1)) / BigDecimal(1) }
     val volumesDay3 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(2)) / BigDecimal(1) }
-    val volumesMonthList = volumesMonth.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesWeekList = volumesWeek.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay1List = volumesDay1.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay2List = volumesDay2.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay3List = volumesDay3.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesMonthList = volumesMonth.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesWeekList = volumesWeek.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay1List = volumesDay1.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay2List = volumesDay2.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay3List = volumesDay3.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
     val topCoinsMonth = volumesMonthList.map { it.key }.take(topCount)
     val topCoinsWeek = volumesWeekList.map { it.key }.take(topCount)
     val topCoinsDay1 = volumesDay1List.map { it.key }.take(topCount)
     val topCoinsDay2 = volumesDay2List.map { it.key }.take(topCount)
     val topCoinsDay3 = volumesDay3List.map { it.key }.take(topCount)
-    val topCoins = (topCoinsMonth intersect topCoinsWeek intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3)
-//    val topCoins = (topCoinsMonth - (topCoinsMonth - topCoinsWeek) - (topCoinsMonth - topCoinsDay1 - topCoinsDay2 - topCoinsDay3)).filter { exist[it] == true }
+    val topCoins = topCoinsMonth intersect topCoinsWeek intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3
 
     val infos = topCoins
-            .map {
-                constants.binanceNameToStandard[it] ?: it
-            }
             .map {
                 val limits = allLimits[it]!!.get()
                 val price = prices[it]!!
@@ -61,8 +57,10 @@ fun printTopCoins() = runBlocking {
                 val volumeDay1 = volumesDay1[it]!!
                 val volumeDay2 = volumesDay2[it]!!
                 val volumeDay3 = volumesDay3[it]!!
+
+                val name = it.removeSuffix("BTC")
                 CoinInfo(
-                        it,
+                        constants.binanceNameToStandard[name] ?: name,
                         volumeMonth * oneBTCinUSDT,
                         volumeWeek * oneBTCinUSDT,
                         volumeDay1 * oneBTCinUSDT,
