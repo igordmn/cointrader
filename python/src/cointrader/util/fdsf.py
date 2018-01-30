@@ -1,6 +1,6 @@
 import numpy as np
 
-
+print(np.array([6,-7,9]).clip(min=0))
 
 batch_size = 4
 fee = 0.1

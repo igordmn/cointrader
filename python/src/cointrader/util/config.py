@@ -29,15 +29,15 @@ class TrainConfig(NamedTuple):
         "KNC", "MTL"
     ]
     coin_number: int = len(coins)
-    validation_portion: float = 0.03
-    test_portion: float = 0.00
+    validation_portion: float = 0.10
+    test_portion: float = 0.0
     fee: float = 0.0005
     window_size: int = 160
     batch_size: int = 109
     steps: int = 80000
     log_steps: int = 1000
     period: int = 300
-    start_time: int = parse_time("2017/10/1 00:00:00")
+    start_time: int = parse_time("2017/12/1 00:00:00")
     end_time: int = parse_time("2018/1/29 10:00:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
