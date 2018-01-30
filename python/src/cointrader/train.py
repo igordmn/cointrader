@@ -15,7 +15,7 @@ if os.path.exists("data/train_package"):
     shutil.rmtree("data/train_package")
 os.makedirs("data/train_package")
 
-np.random.seed(-22876554112299)
+np.random.seed(-22876554112293)
 
 config = TrainConfig()
 
