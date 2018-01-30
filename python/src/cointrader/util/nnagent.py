@@ -94,15 +94,16 @@ def build_predict_w(
 
 
 def compute_profits(batch_size, predict_w, price_inc, fee): #buy_cost, sell_cost):
-    future_capitals = price_inc * predict_w
-    future_capital = tf.reduce_sum(future_capitals, axis=1)
-    future_w = future_capitals / future_capital[:, None]
+    pure_profits = price_inc * predict_w
+    pure_profit = tf.reduce_sum(pure_profits, axis=1)
+    future_w = pure_profits / pure_profit[:, None]
 
     w0 = future_w[:batch_size - 1]
     w1 = predict_w[1:batch_size]
-    future_commission = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
+    costs = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee
+    costs = tf.concat([tf.ones(1), costs], axis=0)
 
-    return future_capital * tf.concat([tf.ones(1), future_commission], axis=0)
+    return pure_profit * costs
 
 
 class Tensors(NamedTuple):
