@@ -187,8 +187,7 @@ class NNAgent:
             [
                 t.capital, t.geometric_mean_profit, t.log_mean_profit,
                 t.sharp_ratio, t.sortino_ratio,
-                t.standard_profit_deviation, t.downside_profit_deviation,
-                t.predict_w
+                t.standard_profit_deviation, t.downside_profit_deviation
             ],
             feed_dict={
                 t.x: x,
@@ -197,7 +196,7 @@ class NNAgent:
                 t.batch_size: x.shape[0]
             }
         )
-        return results[:-1]
+        return results
 
     def best_portfolio(self, history, previous_w):
         session = self._session
