@@ -20,7 +20,7 @@ def eiie_lstm(net, coin_number):
 
     resultlist = []
     for i in range(coin_number):
-        result = tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=dropout, reuse=i > 0)
+        result = tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=dropout, scope="eiie_lstm", reuse=i > 0)
         resultlist.append(result)
 
     net = tf.stack(resultlist)
@@ -58,7 +58,7 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
 
 
 def build_predict_w(
-        batch_size, x, previous_w
+        batch_size, coin_number, x, previous_w
 ):
     net = tf.transpose(x, [0, 2, 3, 1])
     net = net / net[:, :, -1, 0, None, None]
@@ -79,6 +79,8 @@ def build_predict_w(
         regularizer="L2",
         weight_decay=5e-9,
     )
+
+    # net = eiie_lstm(net, coin_number)
 
     net = eiie_output_withw(
         net,
@@ -130,7 +132,7 @@ class NNAgent:
         x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, window_size])
         price_inc = tf.placeholder(tf.float32, shape=[None, coin_number])
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
-        predict_w = build_predict_w(batch_size, x, previous_w)
+        predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
         profits = compute_profits(batch_size, predict_w, price_inc, fee)
         log_profits = tf.log(profits)

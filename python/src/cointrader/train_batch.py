@@ -61,7 +61,6 @@ def print_default_config():
 def print_config(c, result):
     log_info(
         "v", c.validation_portion, "t", c.test_portion,
-        "ap", c.approximate_buy_sell_price,
         "s", c.steps, "p", c.period,
         "b", c.batch_size, "w", c.window_size, "i", c.indicator_number,
         "geom", c.use_geometric_sample, "geom_bias", c.geometric_bias,

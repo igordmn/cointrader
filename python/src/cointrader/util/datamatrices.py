@@ -94,16 +94,10 @@ def get_global_panel(database_dir, config):
                            " GROUP BY date_norm".format(
                                period=config.period, start=start, exchange=config.exchange, end=end, coin=coin))
                 elif indicator == "z_price":
-                    if config.approximate_buy_sell_price:
-                        sql = ("SELECT closeTime-60-{period} AS date_norm, close FROM History WHERE"
-                               " date>={start} and date<={end}"
-                               " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                            start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
-                    else:
-                        sql = ("SELECT closeTime-{period} AS date_norm, close FROM History WHERE"
-                               " date>={start} and date<={end}"
-                               " and closeTime%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                            start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
+                    sql = ("SELECT closeTime-60-{period} AS date_norm, close FROM History WHERE"
+                           " date>={start} and date<={end}"
+                           " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
+                        start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
                 else:
                     raise ValueError("The indicator %s is not supported" % indicator)
 
@@ -111,24 +105,15 @@ def get_global_panel(database_dir, config):
                 panel.loc[indicator, coin, serial_data.index] = serial_data.squeeze()
                 panel = panel_fillna(panel)
 
-            if config.approximate_buy_sell_price:
-                sql = ("SELECT closeTime-60-{period} AS date_norm, open, close, high, low FROM History WHERE"
-                       " date>={start} and date<={end}"
-                       " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                    start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
+            sql = ("SELECT closeTime-60-{period} AS date_norm, open, close, high, low FROM History WHERE"
+                   " date>={start} and date<={end}"
+                   " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
+                start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
 
-                serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-                serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
-                serial_data = serial_data.drop(columns=['open', 'close', 'high', 'low'])
-                panel.loc["z_price", coin, serial_data.index] = serial_data.squeeze()
-            else:
-                sql = ("SELECT closeTime-{period} AS date_norm, close FROM History WHERE"
-                       " date>={start} and date<={end}"
-                       " and closeTime%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                    start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
-
-                serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-                panel.loc["z_price", coin, serial_data.index] = serial_data.squeeze()
+            serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
+            serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
+            serial_data = serial_data.drop(columns=['open', 'close', 'high', 'low'])
+            panel.loc["z_price", coin, serial_data.index] = serial_data.squeeze()
 
             panel = panel_fillna(panel)
     finally:

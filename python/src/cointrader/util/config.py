@@ -19,19 +19,19 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = [
         "USDT", "TRX", "ETH", "XRP", "VEN", "NEO",
-        "EOS", "BCD", "ICX", "WTC", "ELF", "CND",
-        "ADA", "XLM", "BCH", "XVG", "LTC", "HSR",
-        "NEBL", "IOTA", "ETC", "QTUM", "POE", "BTG",
-        "TNB", "ZRX", "LRC", "TNT", "LEND", "GTO",
-        "OMG", "BRD", "SUB", "BTS", "WABI", "XMR",
-        "OST", "AION", "ENJ", "STRAT", "ENG", "AMB",
-        "LSK", "AST", "CDT", "MDA", "LINK", "DASH",
-        "KNC", "MTL"
+        # "EOS", "BCD", "ICX", "WTC", "ELF", "CND",
+        # "ADA", "XLM", "BCH", "XVG", "LTC", "HSR",
+        # "NEBL", "IOTA", "ETC", "QTUM", "POE", "BTG",
+        # "TNB", "ZRX", "LRC", "TNT", "LEND", "GTO",
+        # "OMG", "BRD", "SUB", "BTS", "WABI", "XMR",
+        # "OST", "AION", "ENJ", "STRAT", "ENG", "AMB",
+        # "LSK", "AST", "CDT", "MDA", "LINK", "DASH",
+        # "KNC", "MTL"
     ]
     coin_number: int = len(coins)
     validation_portion: float = 0.03
     test_portion: float = 0.00
-    fee: float = 0.0025
+    fee: float = 0.0015
     window_size: int = 160
     batch_size: int = 109
     steps: int = 80000
