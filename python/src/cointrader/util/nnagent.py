@@ -13,7 +13,22 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
     )
 
 
-def eiie_output(net, batch_size, regularizer, weight_decay):
+def eiie_lstm(net, coin_number):
+    neuron_number = 256
+    dropout = 0.2
+    net = tf.transpose(net, [0, 2, 3, 1])
+
+    resultlist = []
+    for i in range(coin_number):
+        result = tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=dropout, reuse=i > 0)
+        resultlist.append(result)
+
+    net = tf.stack(resultlist)
+    net = tf.transpose(net, [1, 0, 2])
+    return tf.reshape(net, [-1, coin_number, 1, neuron_number])
+
+
+def eiie_output(net, regularizer, weight_decay):
     width = net.get_shape()[2]
     net = tflearn.layers.conv_2d(
         net, 1, [1, width],
