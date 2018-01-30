@@ -1,10 +1,5 @@
-import numpy as np
-
-
 def train_net(agent, matrix, config, log):
     validation_x, validation_prices_inc, validation_prices, validation_w = matrix.get_validation_set()
-
-    np.random.seed(0)
 
     total_train_profit = 1
 
