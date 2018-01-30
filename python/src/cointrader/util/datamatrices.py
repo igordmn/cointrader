@@ -43,6 +43,14 @@ def random_price(open, close, high, low):
     return aproximate_price(open, close, high, low, t)
 
 
+def sell_fee(standard_fee, price, high, low):
+    return 1 - low / price * (1 - standard_fee)
+
+
+def buy_fee(standard_fee, price, high, low):
+    return 1 - price / high * (1 - standard_fee)
+
+
 def get_global_panel(database_dir, config):
     def panel_fillna(panel):
         frames = {}
@@ -57,6 +65,8 @@ def get_global_panel(database_dir, config):
     time_index = range(start - config.period, end + 1, config.period)
     panel_indicators = config.indicators.copy()
     panel_indicators.append("z_price")
+    panel_indicators.append("zz_buy_fee")
+    panel_indicators.append("zzz_sell_fee")
 
     panel = pd.Panel(items=panel_indicators, major_axis=config.coins, minor_axis=time_index, dtype=np.float32)
 
@@ -112,20 +122,33 @@ def get_global_panel(database_dir, config):
 
             serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
             serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
-            serial_data = serial_data.drop(columns=['open', 'close', 'high', 'low'])
-            panel.loc["z_price", coin, serial_data.index] = serial_data.squeeze()
+            serial_data['zz_buy_fee'] = serial_data.apply(
+                lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+            serial_data['zzz_sell_fee'] = serial_data.apply(
+                lambda row: sell_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+
+            panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
+                columns=['open', 'close', 'high', 'low', 'zz_buy_fee', 'zzz_sell_fee']).squeeze()
+            panel.loc["zz_buy_fee", coin, serial_data.index] = serial_data.drop(
+                columns=['open', 'close', 'high', 'low', 'z_price', 'zzz_sell_fee']).squeeze()
+            panel.loc["zzz_sell_fee", coin, serial_data.index] = serial_data.drop(
+                columns=['open', 'close', 'high', 'low', 'z_price', 'zz_buy_fee']).squeeze()
 
             panel = panel_fillna(panel)
+
     finally:
         connection.commit()
         connection.close()
+
     return panel
 
 
 class DataBatch:
-    def __init__(self, x, price_inc, prices, previous_w, setw):
+    def __init__(self, x, price_inc, prices, buy_fees, sell_fees, previous_w, setw):
         self.x = x
         self.price_inc = price_inc
+        self.buy_fees = buy_fees
+        self.sell_fees = sell_fees
         self.prices = prices
         self.previous_w = previous_w
         self.setw = setw
@@ -140,16 +163,16 @@ class DataMatrices:
         self.__divide_data(config.validation_portion, config.test_portion)
 
     def get_train_set(self):
-        x, price_inc, prices, last_w, indexes = self.__pack_samples(self._train_ind)
-        return x, price_inc, prices, last_w
+        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._train_ind)
+        return x, price_inc, prices, buy_fees, sell_fees, last_w
 
     def get_validation_set(self):
-        x, price_inc, prices, last_w, indexes = self.__pack_samples(self._validation_ind)
-        return x, price_inc, prices, last_w
+        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._validation_ind)
+        return x, price_inc, prices, buy_fees, sell_fees, last_w
 
     def get_test_set(self):
-        x, price_inc, prices, last_w, indexes = self.__pack_samples(self._test_ind)
-        return x, price_inc, prices, last_w
+        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._test_ind)
+        return x, price_inc, prices, buy_fees, sell_fees, last_w
 
     def next_batch(self):
         def next_experience_batch():
@@ -160,12 +183,13 @@ class DataMatrices:
             batch_start = geometricSample(0, end, self.config.geometric_bias) if self.config.use_geometric_sample else randomSample(0, end)
             return experiences[batch_start:batch_start + self.config.batch_size]
 
-        x, price_inc, prices, last_w, indexes = self.__pack_samples([state_index for state_index in next_experience_batch()])
+        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(
+            [state_index for state_index in next_experience_batch()])
 
         def setw(w):
             self.__PVM.iloc[indexes, :] = w
 
-        return DataBatch(x, price_inc, prices, last_w, setw)
+        return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
 
     def __pack_samples(self, indexes):
         indexes = np.array(indexes)
@@ -176,12 +200,16 @@ class DataMatrices:
 
         M = [get_submatrix(index) for index in indexes]
         M = np.array(M)
-        bitcoin_prices = np.ones((M.shape[0], M.shape[1], 1, M.shape[3]))
-        M = np.concatenate((bitcoin_prices, M), axis=2)
-        x = M[:, :-1, :, :-1]
-        prices = M[:, -1, :, -2]  # last indicator (second index) should be "z_price"
-        price_inc = M[:, -1, :, -1] / M[:, -1, :, -2]
-        return x, price_inc, prices, last_w, indexes
+        bitcoin_M_prices = np.ones((M.shape[0], M.shape[1] - 2, 1, M.shape[3]))
+        bitcoin_M_fees = np.ones((M.shape[0], 2, 1, M.shape[3]))
+        bitcoin_M = np.concatenate((bitcoin_M_prices, bitcoin_M_fees), axis=1)
+        M = np.concatenate((bitcoin_M, M), axis=2)
+        x = M[:, :-3, :, :-1]
+        prices = M[:, -3, :, -2]  # -3 indicator (second index) should be "z_price"
+        price_inc = M[:, -3, :, -1] / M[:, -3, :, -2]
+        buy_fees = M[:, -2, :, -2]  # -2 indicator (second index) should be "zz_buy_fee"
+        sell_fees = M[:, -1, :, -2]  # -1 indicator (second index) should be "zzz_sell_fee"
+        return x, price_inc, prices, buy_fees, sell_fees, last_w, indexes
 
     def __divide_data(self, validation_portion, test_portion):
         train_portion = 1 - validation_portion - test_portion

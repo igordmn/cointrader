@@ -23,7 +23,7 @@ class NeuralTradeAdviser(
         private val indicators: AdviseIndicators
 
 ) : TradeAdviser {
-    private val net = NNAgent(jep, fee.toDouble(), indicators.count, altCoins.size, previousCount, netPath.toAbsolutePath().toString())
+    private val net = NNAgent(jep, indicators.count, altCoins.size, previousCount, netPath.toAbsolutePath().toString())
 
     override suspend fun bestPortfolioPortions(currentPortions: CoinPortions, previousCandles: CoinToCandles): CoinPortions {
         val scale = currentPortions[mainCoin]!!.scale()

@@ -20,7 +20,7 @@ np.random.seed(284112293)
 config = TrainConfig()
 
 agent = NNAgent(
-    config.fee, config.indicator_number, 1 + config.coin_number, config.window_size
+    config.indicator_number, 1 + config.coin_number, config.window_size
 )
 matrix = DataMatrices(DATABASE_DIR, config)
 

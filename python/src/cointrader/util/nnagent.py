@@ -93,21 +93,26 @@ def build_predict_w(
     return net
 
 
-def compute_profits(batch_size, predict_w, price_inc, fee): #buy_cost, sell_cost):
-    pure_profits = price_inc * predict_w
+def compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees):
+    pure_profits = price_incs * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
 
     future_w = pure_profits / pure_profit[:, None]
     previous_w = tf.concat([predict_w[0, None], future_w[:batch_size - 1]], axis=0)  # for first step assume portfolio equals predicted value
-    cost = 1 - tf.reduce_sum(tf.abs(predict_w - previous_w), axis=1) * fee
+    diffs = predict_w - previous_w
+    buys = tf.nn.relu(diffs)
+    sells = tf.nn.relu(-diffs)
+    total_fee = tf.reduce_sum(buys * buy_fees, axis=1) + tf.reduce_sum(sells * sell_fees, axis=1)
 
-    return pure_profit * cost
+    return pure_profit * (1 - total_fee)
 
 
 class Tensors(NamedTuple):
     batch_size: tf.Tensor
     x: tf.Tensor
-    price_inc: tf.Tensor
+    price_incs: tf.Tensor
+    buy_fees: tf.Tensor
+    sell_fees: tf.Tensor
     previous_w: tf.Tensor
     predict_w: tf.Tensor
 
@@ -125,16 +130,18 @@ class Tensors(NamedTuple):
 class NNAgent:
     def __init__(
             self,
-            fee, indicator_number, coin_number, window_size,
+            indicator_number, coin_number, window_size,
             restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
         x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, window_size])
-        price_inc = tf.placeholder(tf.float32, shape=[None, coin_number])
+        price_incs = tf.placeholder(tf.float32, shape=[None, coin_number])
+        buy_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
+        sell_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
         predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
-        profits = compute_profits(batch_size, predict_w, price_inc, fee)
+        profits = compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
@@ -152,7 +159,9 @@ class NNAgent:
         self._tensors = Tensors(
             batch_size,
             x,
-            price_inc,
+            price_incs,
+            buy_fees,
+            sell_fees,
             previous_w,
             predict_w,
 
@@ -181,21 +190,23 @@ class NNAgent:
         tf.reset_default_graph()
         self._session.close()
 
-    def train(self, x, price_inc, previous_w):
+    def train(self, x, price_incs, buy_fees, sell_fees, previous_w):
         session = self._session
         t = self._tensors
 
         tflearn.is_training(True, session)
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
             t.x: x,
-            t.price_inc: price_inc,
+            t.price_incs: price_incs,
+            t.buy_fees: buy_fees,
+            t.sell_fees: sell_fees,
             t.previous_w: previous_w,
             t.batch_size: x.shape[0]
         })
 
         return results[1:]
 
-    def test(self, x, price_inc, previous_w):
+    def test(self, x, price_incs, buy_fees, sell_fees, previous_w):
         session = self._session
         t = self._tensors
 
@@ -208,7 +219,9 @@ class NNAgent:
             ],
             feed_dict={
                 t.x: x,
-                t.price_inc: price_inc,
+                t.price_incs: price_incs,
+                t.buy_fees: buy_fees,
+                t.sell_fees: sell_fees,
                 t.previous_w: previous_w,
                 t.batch_size: x.shape[0]
             }

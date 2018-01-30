@@ -1,5 +1,5 @@
 def train_net(agent, matrix, config, log):
-    validation_x, validation_prices_inc, validation_prices, validation_w = matrix.get_validation_set()
+    validation_x, validation_prices_incs, validation_prices, validation_buy_fees, validation_sell_fees, validation_w = matrix.get_validation_set()
 
     total_train_profit = 1
 
@@ -7,12 +7,14 @@ def train_net(agent, matrix, config, log):
         batch = matrix.next_batch()
         x = batch.x
         price_inc = batch.price_inc
+        buy_fees = batch.buy_fees
+        sell_fees = batch.sell_fees
         previous_w = batch.previous_w
-        predict_w, train_geometric_mean_profit = agent.train(x, price_inc, previous_w)
+        predict_w, train_geometric_mean_profit = agent.train(x, price_inc, buy_fees, sell_fees, previous_w)
         total_train_profit *= train_geometric_mean_profit
         batch.setw(predict_w)
         if i % config.log_steps == 0 or i == config.steps - 1:
-            capital, geometric_mean_profit, log_mean_profit, sharp_ratio, sortino_ratio, standard_profit_deviation, downside_profit_deviation = agent.test(validation_x, validation_prices_inc, validation_w)
+            capital, geometric_mean_profit, log_mean_profit, sharp_ratio, sortino_ratio, standard_profit_deviation, downside_profit_deviation = agent.test(validation_x, validation_prices_incs, validation_buy_fees, validation_sell_fees, validation_w)
             periods_per_day = int(24 * 60 * 60 / config.period)
             log('step %d' % i)
             # print('capital', capital)

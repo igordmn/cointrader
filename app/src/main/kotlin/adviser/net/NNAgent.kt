@@ -7,7 +7,6 @@ import util.math.DoubleMatrix4D
 
 class NNAgent(
         private val jep: Jep,
-        fee: Double,
         private val indicatorNumber: Int,
         private val altCoinNumber: Int,
         private val windowSize: Int,
@@ -17,15 +16,15 @@ class NNAgent(
         jep.eval("from cointrader.util.nnagent import NNAgent")
         jep.eval("agent = None")
         jep.eval("""
-                def createAgent(fee, indicatorNumber, altCoinNumber, windowSize, netPath):
+                def createAgent(indicatorNumber, altCoinNumber, windowSize, netPath):
                     global agent
-                    agent = NNAgent(fee, indicatorNumber, altCoinNumber, windowSize, netPath)
+                    agent = NNAgent(indicatorNumber, altCoinNumber, windowSize, netPath)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(history, previous_w):
                     return agent.best_portfolio(history, previous_w)
             """.trimIndent())
-        jep.invoke("createAgent", fee, indicatorNumber, altCoinNumber, windowSize, netPath)
+        jep.invoke("createAgent", indicatorNumber, altCoinNumber, windowSize, netPath)
     }
 
     @Suppress("UNCHECKED_CAST")
