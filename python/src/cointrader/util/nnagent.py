@@ -96,14 +96,12 @@ def build_predict_w(
 def compute_profits(batch_size, predict_w, price_inc, fee): #buy_cost, sell_cost):
     pure_profits = price_inc * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
+
     future_w = pure_profits / pure_profit[:, None]
+    previous_w = tf.concat([predict_w[0, None], future_w[:batch_size - 1]], axis=0)  # for first step assume portfolio equals predicted value
+    cost = 1 - tf.reduce_sum(tf.abs(predict_w - previous_w), axis=1) * fee
 
-    w0 = future_w[:batch_size - 1]
-    w1 = predict_w[1:batch_size]
-    costs = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee
-    costs = tf.concat([tf.ones(1), costs], axis=0)
-
-    return pure_profit * costs
+    return pure_profit * cost
 
 
 class Tensors(NamedTuple):
