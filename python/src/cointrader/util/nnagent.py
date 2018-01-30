@@ -93,7 +93,7 @@ def build_predict_w(
     return net
 
 
-def compute_profits(batch_size, predict_w, price_inc, fee):
+def compute_profits(batch_size, predict_w, price_inc, fee):  # , buy_fee, sell_fee):
     future_portfolio = price_inc * predict_w
     future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
 
