@@ -17,7 +17,7 @@ def backtest(setname, agent, matrix, config, log):
         diffs = desired_portfolio - portfolio
         buys = diffs.clip(min=0)
         sells = (-diffs).clip(min=0)
-        total_fee = np.sum(buys * buy_fees[step], axis=1) + np.sum(sells * sell_fees[step], axis=1)
+        total_fee = np.sum(buys * buy_fees[step]) + np.sum(sells * sell_fees[step])
         capital_after_fee = capital * (1 - total_fee)
         return capital_after_fee * new_portfolio_percents
 
