@@ -11,13 +11,13 @@ def backtest(setname, agent, matrix, config, log):
     def normalize_portfolio(portfolio):
         return portfolio / np.sum(portfolio)
 
-    def rebalance(portfolio, new_portfolio_percents):
+    def rebalance(step, portfolio, new_portfolio_percents):
         capital = np.sum(portfolio)
         desired_portfolio = capital * new_portfolio_percents
         diffs = desired_portfolio - portfolio
         buys = diffs.clip(min=0)
         sells = (-diffs).clip(min=0)
-        total_fee = np.sum(buys * buy_fees, axis=1) + np.sum(sells * sell_fees, axis=1)
+        total_fee = np.sum(buys * buy_fees[step], axis=1) + np.sum(sells * sell_fees[step], axis=1)
         capital_after_fee = capital * (1 - total_fee)
         return capital_after_fee * new_portfolio_percents
 
@@ -32,7 +32,7 @@ def backtest(setname, agent, matrix, config, log):
         new_portfolio_percents = normalize_portfolio(result)
         log("portfolio", ", ".join("%.2f" % f for f in new_portfolio_percents))
 
-        portfolio_btc = rebalance(portfolio_btc, new_portfolio_percents)
+        portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
         return portfolio_btc / prices
 
     def compute_capital(step, portfolio):
