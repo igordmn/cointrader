@@ -201,7 +201,7 @@ class DataMatrices:
         M = [get_submatrix(index) for index in indexes]
         M = np.array(M)
         bitcoin_M_prices = np.ones((M.shape[0], M.shape[1] - 2, 1, M.shape[3]))
-        bitcoin_M_fees = np.ones((M.shape[0], 2, 1, M.shape[3]))
+        bitcoin_M_fees = np.zeros((M.shape[0], 2, 1, M.shape[3]))
         bitcoin_M = np.concatenate((bitcoin_M_prices, bitcoin_M_fees), axis=1)
         M = np.concatenate((bitcoin_M, M), axis=2)
         x = M[:, :-3, :, :-1]
