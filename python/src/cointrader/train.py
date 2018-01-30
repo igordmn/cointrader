@@ -21,7 +21,7 @@ config = TrainConfig()
 
 matrix = DataMatrices(DATABASE_DIR, config)
 agent = NNAgent(
-    config.fee, config.indicator_number, config.coin_number, config.window_size
+    config.fee, config.indicator_number, 1 + config.coin_number, config.window_size
 )
 
 try:

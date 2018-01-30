@@ -21,11 +21,11 @@ def backtest(setname, agent, matrix, config, log):
     def trade_single(step, portfolio):
         history = x[step][np.newaxis, :, :, :]
 
-        prices = np.concatenate((np.ones(1), all_prices[step]))
+        prices = all_prices[step]
 
         portfolio_btc = portfolio * prices
         portfolio_percents = normalize_portfolio(portfolio_btc)
-        result = np.squeeze(agent.best_portfolio(history, portfolio_percents[np.newaxis, 1:]))
+        result = np.squeeze(agent.best_portfolio(history, portfolio_percents))
         new_portfolio_percents = normalize_portfolio(result)
         log("portfolio", ", ".join("%.2f" % f for f in new_portfolio_percents))
 
@@ -33,7 +33,7 @@ def backtest(setname, agent, matrix, config, log):
         return portfolio_btc / prices
 
     def compute_capital(step, portfolio):
-        current_prices = np.concatenate((np.ones(1), all_prices[step]))
+        current_prices = all_prices[step]
         sum = 0.0
         for i in range(0, len(portfolio)):
             sum += portfolio[i] * current_prices[i]

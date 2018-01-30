@@ -150,8 +150,8 @@ class DataMatrices:
     def __init__(self, database_dir, config):
         self.config = config
         self.__global_data = get_global_panel(database_dir, config)
-        self.__PVM = pd.DataFrame(index=self.__global_data.minor_axis, columns=self.__global_data.major_axis)
-        self.__PVM = self.__PVM.fillna(1.0 / config.coin_number)
+        self.__PVM = pd.DataFrame(index=self.__global_data.minor_axis, columns=["BTC"] + config.coins)
+        self.__PVM = self.__PVM.fillna(1.0 / (1 + config.coin_number))
         self.__divide_data(config.validation_portion, config.test_portion)
 
     def get_train_set(self):
@@ -191,6 +191,8 @@ class DataMatrices:
 
         M = [get_submatrix(index) for index in indexes]
         M = np.array(M)
+        bitcoin_prices = np.ones((M.shape[0], M.shape[1], 1, M.shape[3]))
+        M = np.concatenate((bitcoin_prices, M), axis=2)
         x = M[:, :-1, :, :-1]
         prices = M[:, -1, :, -2]  # last indicator (second index) should be "z_price"
         price_inc = M[:, -1, :, -1] / M[:, -1, :, -2]

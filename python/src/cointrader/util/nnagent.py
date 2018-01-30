@@ -22,8 +22,6 @@ def eiie_output(net, batch_size, regularizer, weight_decay):
         weight_decay=weight_decay
     )
     net = net[:, :, 0, 0]
-    btc_bias = tf.ones((batch_size, 1))
-    net = tf.concat([btc_bias, net], 1)
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
@@ -41,9 +39,6 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
         weight_decay=weight_decay
     )
     net = net[:, :, 0, 0]
-    btc_bias = tf.get_variable("btc_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
-    btc_bias = tf.tile(btc_bias, [batch_size, 1])
-    net = tf.concat([btc_bias, net], 1)
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
@@ -82,16 +77,14 @@ def build_predict_w(
 
 
 def compute_profits(batch_size, predict_w, price_inc, fee):
-    future_price = tf.concat([tf.ones([batch_size, 1]), price_inc], axis=1)
-    future_portfolio = future_price * predict_w
+    future_portfolio = price_inc * predict_w
     future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
 
-    w0 = future_w[:batch_size - 1][:, 1:]
-    w1 = predict_w[1:batch_size][:, 1:]
+    w0 = future_w[:batch_size - 1]
+    w1 = predict_w[1:batch_size]
     future_commission = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
-    commission = tf.concat([tf.ones(1), future_commission], axis=0)
 
-    return tf.reduce_sum(future_portfolio, axis=[1]) * commission
+    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), future_commission], axis=0)
 
 
 class Tensors(NamedTuple):
@@ -158,7 +151,7 @@ class NNAgent:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.2
+        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.4
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
