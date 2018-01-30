@@ -25,7 +25,7 @@ def backtest(setname, agent, matrix, config, log):
 
         portfolio_btc = portfolio * prices
         portfolio_percents = normalize_portfolio(portfolio_btc)
-        result = np.squeeze(agent.best_portfolio(history, portfolio_percents))
+        result = np.squeeze(agent.best_portfolio(history, portfolio_percents[np.newaxis, :]))
         new_portfolio_percents = normalize_portfolio(result)
         log("portfolio", ", ".join("%.2f" % f for f in new_portfolio_percents))
 
@@ -40,7 +40,7 @@ def backtest(setname, agent, matrix, config, log):
         return sum
 
     def trade_all():
-        portfolio = np.zeros((config.coin_number + 1))
+        portfolio = np.zeros((1 + config.coin_number))
         portfolio[0] = 1.0
         capitals = []
 
