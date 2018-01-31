@@ -2,9 +2,6 @@ import time
 from datetime import datetime
 from typing import NamedTuple
 
-from src.cointrader.constants import ALL_COINS
-
-
 # select coin, sum(volume)/30 total_volume from History where date >= 1512086400 and date < 1514678400 and exchange="binance" group by coin order by total_volume desc
 # select coin, sum(volume)/30 total_volume from History where date >= 1495238400 and date < 1497916800 and exchange="bittrex" group by coin order by total_volume desc
 # select * from (select coin, min(date) as mn from History where exchange="binance" group by coin) where mn >= 1514764800
@@ -29,16 +26,16 @@ class TrainConfig(NamedTuple):
         "KNC", "MTL"
     ]
     coin_number: int = len(coins)
-    validation_portion: float = 0.10
-    test_portion: float = 0.0
-    fee: float = 0.0005
+    validation_portion: float = 0.0001
+    test_portion: float = 0.2
+    fee: float = 0.0022
     window_size: int = 160
     batch_size: int = 109
     steps: int = 80000
     log_steps: int = 1000
     period: int = 300
-    start_time: int = parse_time("2017/12/1 00:00:00")
-    end_time: int = parse_time("2018/1/29 10:00:00")
+    start_time: int = parse_time("2017/8/1 00:00:00")
+    end_time: int = parse_time("2018/1/31 18:00:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07

@@ -2,6 +2,7 @@ import sqlite3
 
 import numpy as np
 import pandas as pd
+import gc
 
 
 def geometricSample(start, end, bias):
@@ -44,11 +45,11 @@ def random_price(open, close, high, low):
 
 
 def sell_fee(standard_fee, price, high, low):
-    return 1 - low / price * (1 - standard_fee)
+    return standard_fee #1 - low / price * (1 - standard_fee)
 
 
 def buy_fee(standard_fee, price, high, low):
-    return 1 - price / high * (1 - standard_fee)
+    return standard_fee #1 - price / high * (1 - standard_fee)
 
 
 def get_global_panel(database_dir, config):
@@ -120,8 +121,11 @@ def get_global_panel(database_dir, config):
                    " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
                 start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
 
+            gc.collect()
+
             serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-            serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
+            serial_data['z_price'] = serial_data.apply(lambda row: row['low'], axis=1)
+            # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
             serial_data['zz_buy_fee'] = serial_data.apply(
                 lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
             serial_data['zzz_sell_fee'] = serial_data.apply(
