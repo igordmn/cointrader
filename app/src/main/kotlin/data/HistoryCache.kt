@@ -23,6 +23,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
                 connection.commit()
             } catch (e: Exception) {
                 connection.rollback()
+                throw e
             }
         }.await()
     }
@@ -46,8 +47,7 @@ class HistoryCache private constructor(private val connection: Connection) : Aut
                     low DECIMAL(40,20) NOT NULL,
                     PRIMARY KEY (market, openTime, closeTime)
                 );
-                CREATE UNIQUE INDEX IF NOT EXISTS HistoryCandle_market_closeTime ON HistoryCandle(market, closeTime);
-                CREATE UNIQUE INDEX IF NOT EXISTS HistoryCandle_market_openTime ON HistoryCandle(market, openTime);
+                CREATE UNIQUE INDEX IF NOT EXISTS HistoryCandle_market_closeTime_desc ON HistoryCandle(market, closeTime DESC);
             """.trimIndent()
             )
         }
