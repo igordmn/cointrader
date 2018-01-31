@@ -26,7 +26,7 @@ class TrainConfig(NamedTuple):
         "KNC", "MTL"
     ]
     coin_number: int = len(coins)
-    validation_portion: float = 0.0001
+    validation_portion: float = 0.01
     test_portion: float = 0.2
     fee: float = 0.0022
     window_size: int = 160
