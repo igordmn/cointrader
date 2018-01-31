@@ -14,11 +14,13 @@ def backtest(setname, agent, matrix, config, log):
     def rebalance(step, portfolio, new_portfolio_percents):
         capital = np.sum(portfolio)
         desired_portfolio = capital * new_portfolio_percents
+
         diffs = desired_portfolio - portfolio
         buys = diffs.clip(min=0)
         sells = (-diffs).clip(min=0)
         total_fee = np.sum(buys * buy_fees[step]) + np.sum(sells * sell_fees[step])
-        capital_after_fee = capital * (1 - total_fee)
+        capital_after_fee = capital - total_fee
+
         return capital_after_fee * new_portfolio_percents
 
     def trade_single(step, portfolio):
