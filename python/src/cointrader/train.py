@@ -11,9 +11,9 @@ from src.cointrader.constants import *
 from src.cointrader.util.nnagent import NNAgent
 from src.cointrader.util.datamatrices import DataMatrices
 
-if os.path.exists("data/train_package"):
-    shutil.rmtree("data/train_package")
-os.makedirs("data/train_package")
+if os.path.exists("data/train_package2"):
+    shutil.rmtree("data/train_package2")
+os.makedirs("data/train_package2")
 
 np.random.seed(284112293)
 
@@ -27,7 +27,7 @@ matrix = DataMatrices(DATABASE_DIR, config)
 try:
     train_net(agent, matrix, config, print)
     agent.save(NET_FILE)
-    one_day_profit, capitals = backtest("validation", agent, matrix, config, print)
+    one_day_profit, capitals = backtest("test", agent, matrix, config, print)
     plot_log(capitals, config)
 finally:
     agent.recycle()

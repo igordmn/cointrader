@@ -3,6 +3,7 @@ from typing import NamedTuple
 import tflearn
 import tensorflow as tf
 import numpy as np
+import numpy
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
@@ -82,6 +83,12 @@ def build_predict_w(
 
     # net = eiie_lstm(net, coin_number)
 
+    # net = eiie_output(
+    #     net,
+    #     regularizer="L2",
+    #     weight_decay=5e-8,
+    # )
+
     net = eiie_output_withw(
         net,
         batch_size,
@@ -98,7 +105,8 @@ def compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees):
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
 
     future_w = pure_profits / pure_profit[:, None]
-    previous_w = tf.concat([predict_w[0, None], future_w[:batch_size - 1]], axis=0)  # for first step assume portfolio equals predicted value
+    previous_w = tf.concat([predict_w[0, None], future_w[:batch_size - 1]],
+                           axis=0)  # for first step assume portfolio equals predicted value
     diffs = predict_w - previous_w
     buys = tf.nn.relu(diffs)
     sells = tf.nn.relu(-diffs)
@@ -191,8 +199,16 @@ class NNAgent:
         self._session.close()
 
     def train(self, x, price_incs, buy_fees, sell_fees, previous_w):
+    # def train(self, x_old, price_incs_old, buy_fees_old, sell_fees_old, previous_w_old):
         session = self._session
         t = self._tensors
+
+        # indices = np.random.permutation(x_old.shape[2])
+        # x = np.take(x_old, indices, axis=2)
+        # price_incs = np.take(price_incs_old, indices, axis=1)
+        # buy_fees = np.take(buy_fees_old, indices, axis=1)
+        # sell_fees = np.take(sell_fees_old, indices, axis=1)
+        # previous_w = np.take(previous_w_old, indices, axis=1)
 
         tflearn.is_training(True, session)
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
