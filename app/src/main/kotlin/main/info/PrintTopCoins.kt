@@ -19,6 +19,7 @@ fun printTopCoins() = runBlocking {
     val beforeTime = LocalDateTime.of(2018, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
     val minVolume = BigDecimal(2_000_000)
     val topCount = 70
+    val excludedCoins = setOf("BNB")
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
@@ -41,11 +42,11 @@ fun printTopCoins() = runBlocking {
     val volumesDay1List = volumesDay1.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
     val volumesDay2List = volumesDay2.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
     val volumesDay3List = volumesDay3.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val topCoinsMonth = volumesMonthList.map { it.key }.take(topCount)
-    val topCoinsWeek = volumesWeekList.map { it.key }.take(topCount)
-    val topCoinsDay1 = volumesDay1List.map { it.key }.take(topCount)
-    val topCoinsDay2 = volumesDay2List.map { it.key }.take(topCount)
-    val topCoinsDay3 = volumesDay3List.map { it.key }.take(topCount)
+    val topCoinsMonth = volumesMonthList.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
+    val topCoinsWeek = volumesWeekList.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
+    val topCoinsDay1 = volumesDay1List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
+    val topCoinsDay2 = volumesDay2List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
+    val topCoinsDay3 = volumesDay3List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoins = topCoinsMonth intersect topCoinsWeek intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3
 
     val infos = topCoins
