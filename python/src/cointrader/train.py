@@ -2,6 +2,7 @@ import os
 import shutil
 
 import numpy as np
+from os.path import dirname, abspath
 
 from src.cointrader.util.backtest import backtest
 from src.cointrader.util.config import TrainConfig
@@ -11,9 +12,11 @@ from src.cointrader.constants import *
 from src.cointrader.util.nnagent import NNAgent
 from src.cointrader.util.datamatrices import DataMatrices
 
-if os.path.exists("data/train_package2"):
-    shutil.rmtree("data/train_package2")
-os.makedirs("data/train_package2")
+dir = dirname(abspath(NET_FILE))
+
+if os.path.exists(dir):
+    shutil.rmtree(dir)
+os.makedirs(dir)
 
 np.random.seed(284112293)
 
