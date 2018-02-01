@@ -15,28 +15,26 @@ def parse_time(time_string):
 class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = [
-        "USDT", "TRX", "ETH", "XRP", "VEN", "NEO",
-        "EOS", "BCD", "ICX", "WTC", "ELF", "CND",
-        "ADA", "XLM", "BCH", "XVG", "LTC", "HSR",
-        "NEBL", "IOTA", "ETC", "QTUM", "POE", "BTG",
-        "TNB", "ZRX", "LRC", "TNT", "LEND", "GTO",
-        "OMG", "BRD", "SUB", "BTS", "WABI", "XMR",
-        "OST", "AION", "ENJ", "STRAT", "ENG", "AMB",
-        "LSK", "AST", "CDT", "MDA", "LINK", "DASH",
-        "KNC", "MTL"
+        "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS",
+        "ELF", "WTC", "CND", "ADA", "XLM", "XVG", "HSR", "LTC",
+        "BCH", "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK",
+        "GAS", "VIB", "ZRX", "OMG", "LEND", "BRD", "GTO", "BTS",
+        "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP",
+        "WABI", "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC",
+        "WINGS"
     ]
     coin_number: int = len(coins)
     validation_portion: float = 0.01
     test_portion: float = 0.05
-    fee: float = 0.0015
+    fee: float = 0.0019
     window_size: int = 160
     batch_size: int = 109
-    steps: int = 120000
+    steps: int = 80000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/8/1 00:00:00")
-    end_time: int = parse_time("2018/1/31 18:00:00")
+    end_time: int = parse_time("2018/2/1 19:00:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
-    geometric_bias: float = 5e-07
+    geometric_bias: float = 5e-06
     use_geometric_sample: bool = True
