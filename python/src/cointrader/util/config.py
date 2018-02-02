@@ -11,24 +11,35 @@ from typing import NamedTuple
 def parse_time(time_string):
     return int(time.mktime(datetime.strptime(time_string, "%Y/%m/%d %H:%M:%S").timetuple()))
 
+binance_coins = [
+    # "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS",
+    # "ELF", "WTC", "CND", "ADA", "XLM", "XVG", "HSR", "LTC",
+    # "BCH", "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK",
+    # "GAS", "VIB", "ZRX", "OMG", "LEND", "BRD", "GTO", "BTS",
+    # "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP",
+    # "WABI", "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC",
+    # "WINGS"
+
+    # "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "EOS", "WTC", "ADA",
+    # "XVG", "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG",
+    # "TNT", "QTUM", "LSK", "GAS", "VIB", "ZRX", "OMG", "BTS",
+    # "SUB", "XMR", "LRC", "STRAT", "MDA", "ENJ", "KNC", "REQ",
+    # "AST", "ENG", "ZEC", "DGD", "ADX", "BQX", "SALT",
+
+    "USDT", "ETH", "NEO", "WTC", "HSR", "LTC", "BCH", "IOTA", "QTUM", "ZRX"
+]
+
+poloniex_coins = [
+    "XRP", "USDT", "ETH", "BCH", "LTC", "XLM", "XMR", "NXT",
+    "XEM", "DASH", "DGB", "ETC", "DOGE", "EMC2", "SC", "LSK",
+    "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "VTC",
+    "BCN", "BURST", "MAID", "STEEM", "SYS", "POT", "NAV",
+    "DCR", "LBC", "FLDC", "GAME"
+]
 
 class TrainConfig(NamedTuple):
-    exchange: str = "binance"
-    coins: list = [
-        # "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS",
-        # "ELF", "WTC", "CND", "ADA", "XLM", "XVG", "HSR", "LTC",
-        # "BCH", "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK",
-        # "GAS", "VIB", "ZRX", "OMG", "LEND", "BRD", "GTO", "BTS",
-        # "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP",
-        # "WABI", "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC",
-        # "WINGS"
-
-        "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "EOS", "WTC", "ADA",
-        "XVG", "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG",
-        "TNT", "QTUM", "LSK", "GAS", "VIB", "ZRX", "OMG", "BTS",
-        "SUB", "XMR", "LRC", "STRAT", "MDA", "ENJ", "KNC", "REQ",
-        "AST", "ENG", "ZEC", "DGD", "ADX", "BQX", "SALT"
-    ]
+    exchange: str = "poloniex"
+    coins: list = poloniex_coins
     coin_number: int = len(coins)
     validation_portion: float = 0.01
     test_portion: float = 0.05
