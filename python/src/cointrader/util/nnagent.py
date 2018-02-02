@@ -65,17 +65,40 @@ def build_predict_w(
     net = net / net[:, :, -1, 0, None, None]
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=3,
+        nb_filter=4,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
-        weight_decay=0,
+        regularizer="L2",
+        weight_decay=5e-10,
     )
+    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=16,
+        filter_size=[1, 2],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer="L2",
+        weight_decay=5e-10,
+    )
+    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=32,
+        filter_size=[1, 2],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer="L2",
+        weight_decay=5e-10,
+    )
+    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=10,
+        filter_number=120,
         activation_function="relu",
         regularizer="L2",
         weight_decay=5e-9,

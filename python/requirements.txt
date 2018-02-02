@@ -3,3 +3,4 @@ tensorflow
 tflearn
 pandas
 numpy
+jep
