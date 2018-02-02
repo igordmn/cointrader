@@ -66,8 +66,8 @@ def get_global_panel(database_dir, config):
     time_index = range(start - config.period, end + 1, config.period)
     panel_indicators = config.indicators.copy()
     panel_indicators.append("z_price")
-    panel_indicators.append("zz_buy_fee")
-    panel_indicators.append("zzz_sell_fee")
+    # panel_indicators.append("zz_buy_fee")
+    # panel_indicators.append("zzz_sell_fee")
 
     panel = pd.Panel(items=panel_indicators, major_axis=config.coins, minor_axis=time_index, dtype=np.float32)
 
@@ -126,17 +126,19 @@ def get_global_panel(database_dir, config):
             serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
             serial_data['z_price'] = serial_data.apply(lambda row: row['low'], axis=1)
             # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
-            serial_data['zz_buy_fee'] = serial_data.apply(
-                lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
-            serial_data['zzz_sell_fee'] = serial_data.apply(
-                lambda row: sell_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+            # serial_data['zz_buy_fee'] = serial_data.apply(
+            #     lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+            # serial_data['zzz_sell_fee'] = serial_data.apply(
+            #     lambda row: sell_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
 
             panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
-                columns=['open', 'close', 'high', 'low', 'zz_buy_fee', 'zzz_sell_fee']).squeeze()
-            panel.loc["zz_buy_fee", coin, serial_data.index] = serial_data.drop(
-                columns=['open', 'close', 'high', 'low', 'z_price', 'zzz_sell_fee']).squeeze()
-            panel.loc["zzz_sell_fee", coin, serial_data.index] = serial_data.drop(
-                columns=['open', 'close', 'high', 'low', 'z_price', 'zz_buy_fee']).squeeze()
+                columns=['open', 'close', 'high', 'low']).squeeze()
+            # panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
+            #     columns=['open', 'close', 'high', 'low', 'zz_buy_fee', 'zzz_sell_fee']).squeeze()
+            # panel.loc["zz_buy_fee", coin, serial_data.index] = serial_data.drop(
+            #     columns=['open', 'close', 'high', 'low', 'z_price', 'zzz_sell_fee']).squeeze()
+            # panel.loc["zzz_sell_fee", coin, serial_data.index] = serial_data.drop(
+            #     columns=['open', 'close', 'high', 'low', 'z_price', 'zz_buy_fee']).squeeze()
 
             panel = panel_fillna(panel)
 
@@ -204,16 +206,20 @@ class DataMatrices:
 
         M = [get_submatrix(index) for index in indexes]
         M = np.array(M)
-        bitcoin_M_prices = np.ones((M.shape[0], M.shape[1] - 2, 1, M.shape[3]))
-        bitcoin_M_fees = np.zeros((M.shape[0], 2, 1, M.shape[3]))
-        bitcoin_M = np.concatenate((bitcoin_M_prices, bitcoin_M_fees), axis=1)
+        bitcoin_M = np.ones((M.shape[0], M.shape[1], 1, M.shape[3]))
+        # bitcoin_M_prices = np.ones((M.shape[0], M.shape[1] - 2, 1, M.shape[3]))
+        # bitcoin_M_fees = np.zeros((M.shape[0], 2, 1, M.shape[3]))
+        # bitcoin_M = np.concatenate((bitcoin_M_prices, bitcoin_M_fees), axis=1)
         M = np.concatenate((bitcoin_M, M), axis=2)
-        x = M[:, :-3, :, :-1]
-        prices = M[:, -3, :, -2]  # -3 indicator (second index) should be "z_price"
-        price_inc = M[:, -3, :, -1] / M[:, -3, :, -2]
-        buy_fees = M[:, -2, :, -2]  # -2 indicator (second index) should be "zz_buy_fee"
-        sell_fees = M[:, -1, :, -2]  # -1 indicator (second index) should be "zzz_sell_fee"
-        return x, price_inc, prices, buy_fees, sell_fees, last_w, indexes
+        x = M[:, :-1, :, :-1]
+        prices = M[:, -1, :, -2]  # -3 indicator (second index) should be "z_price"
+        price_inc = M[:, -1, :, -1] / M[:, -1, :, -2]
+        # x = M[:, :-3, :, :-1]
+        # prices = M[:, -3, :, -2]  # -3 indicator (second index) should be "z_price"
+        # price_inc = M[:, -3, :, -1] / M[:, -3, :, -2]
+        # buy_fees = M[:, -2, :, -2]  # -2 indicator (second index) should be "zz_buy_fee"
+        # sell_fees = M[:, -1, :, -2]  # -1 indicator (second index) should be "zzz_sell_fee"
+        return x, price_inc, prices, None, None, last_w, indexes
 
     def __divide_data(self, validation_portion, test_portion):
         train_portion = 1 - validation_portion - test_portion

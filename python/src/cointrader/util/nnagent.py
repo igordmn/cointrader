@@ -100,7 +100,7 @@ def build_predict_w(
     return net
 
 
-def compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees):
+def compute_profits2(batch_size, predict_w, price_incs, buy_fees, sell_fees):
     pure_profits = price_incs * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
 
@@ -113,6 +113,18 @@ def compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees):
     total_fee = tf.reduce_sum(buys * buy_fees, axis=1) + tf.reduce_sum(sells * sell_fees, axis=1)
 
     return pure_profit * (1 - total_fee)
+
+
+def compute_profits(batch_size, predict_w, price_inc, fee):
+    future_portfolio = price_inc * predict_w
+    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
+
+    w0 = future_w[:batch_size - 1]
+    w1 = predict_w[1:batch_size]
+    future_commission = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
+
+    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), future_commission], axis=0)
+
 
 
 class Tensors(NamedTuple):
@@ -149,7 +161,8 @@ class NNAgent:
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
         predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
-        profits = compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees)
+        # profits = compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees)
+        profits = compute_profits(batch_size, predict_w, price_incs, 0.0019)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
@@ -214,8 +227,8 @@ class NNAgent:
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
             t.x: x,
             t.price_incs: price_incs,
-            t.buy_fees: buy_fees,
-            t.sell_fees: sell_fees,
+            # t.buy_fees: buy_fees,
+            # t.sell_fees: sell_fees,
             t.previous_w: previous_w,
             t.batch_size: x.shape[0]
         })
@@ -236,8 +249,8 @@ class NNAgent:
             feed_dict={
                 t.x: x,
                 t.price_incs: price_incs,
-                t.buy_fees: buy_fees,
-                t.sell_fees: sell_fees,
+                # t.buy_fees: buy_fees,
+                # t.sell_fees: sell_fees,
                 t.previous_w: previous_w,
                 t.batch_size: x.shape[0]
             }
