@@ -106,19 +106,19 @@ def build_predict_w(
 
     # net = eiie_lstm(net, coin_number)
 
-    # net = eiie_output(
-    #     net,
-    #     regularizer="L2",
-    #     weight_decay=5e-8,
-    # )
-
-    net = eiie_output_withw(
+    net = eiie_output(
         net,
-        batch_size,
-        previous_w,
         regularizer="L2",
         weight_decay=5e-8,
     )
+
+    # net = eiie_output_withw(
+    #     net,
+    #     batch_size,
+    #     previous_w,
+    #     regularizer="L2",
+    #     weight_decay=5e-8,
+    # )
 
     return net
 

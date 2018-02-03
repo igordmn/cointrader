@@ -193,6 +193,9 @@ class DataMatrices:
 
         return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
 
+    def batch_sequential_count(self):
+        return self._train_ind[-1] - self.config.batch_size
+
     def next_batch_sequential(self):
         def next_experience_batch():
             start_index = self._train_ind[0]
