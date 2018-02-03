@@ -30,7 +30,7 @@ binance_coins = [
 ]
 
 poloniex_coins = [
-    "XRP", "USDT", "ETH", "BCH", "LTC", "XLM", "XMR", "NXT",
+    "XRP", "USDT", "ETH", "LTC", "XLM", "XMR", "NXT",
     "XEM", "DASH", "DGB", "ETC", "DOGE", "EMC2", "SC", "LSK",
     "BTS", "ZEC", "STRAT", "FCT", "REP", "ARDR", "VTC",
     "BCN", "BURST", "MAID", "STEEM", "SYS", "POT", "NAV",
@@ -41,17 +41,17 @@ class TrainConfig(NamedTuple):
     exchange: str = "poloniex"
     coins: list = poloniex_coins
     coin_number: int = len(coins)
-    validation_portion: float = 0.001
+    validation_portion: float = 0.01
     test_portion: float = 0.2
-    fee: float = 0.0019
+    fee: float = 0.0035
     window_size: int = 160
     batch_size: int = 109
-    steps: int = 20000
+    steps: int = 300000
     log_steps: int = 1000
     period: int = 300
-    start_time: int = parse_time("2017/9/1 00:00:00")
-    end_time: int = parse_time("2018/2/2 23:00:00")
+    start_time: int = parse_time("2017/8/1 00:00:00")
+    end_time: int = parse_time("2018/2/1 23:00:00")
     indicators: list = sorted(["close"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07
-    use_geometric_sample: bool = False
+    use_geometric_sample: bool = True

@@ -173,6 +173,7 @@ class Tensors(NamedTuple):
 class NNAgent:
     def __init__(
             self,
+            fee,
             indicator_number, coin_number, window_size,
             restore_path=None,
     ):
@@ -185,7 +186,7 @@ class NNAgent:
         predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
         # profits = compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees)
-        profits = compute_profits(batch_size, predict_w, price_incs, 0.0019)
+        profits = compute_profits(batch_size, predict_w, price_incs, fee)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
@@ -198,7 +199,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        train = tf.train.AdamOptimizer(0.00028*6).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,

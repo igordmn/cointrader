@@ -162,6 +162,7 @@ class DataMatrices:
         self.__PVM = pd.DataFrame(index=self.__global_data.minor_axis, columns=["BTC"] + config.coins)
         self.__PVM = self.__PVM.fillna(1.0 / (1 + config.coin_number))
         self.__divide_data(config.validation_portion, config.test_portion)
+        self.s = 0
 
     def get_train_set(self):
         x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._train_ind)
@@ -191,6 +192,27 @@ class DataMatrices:
             self.__PVM.iloc[indexes, :] = w
 
         return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
+
+    def next_batch_sequential(self):
+        def next_experience_batch():
+            start_index = self._train_ind[0]
+            end_index = self._train_ind[-1]
+            experiences = [i for i in range(start_index, end_index)]
+            batch_start = self.s
+            self.s += 1
+            return experiences[batch_start:batch_start + self.config.batch_size] if batch_start + self.config.batch_size < len(experiences) else None
+        batch = next_experience_batch()
+
+        if batch is not None:
+            x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(
+                [state_index for state_index in batch])
+
+            def setw(w):
+                self.__PVM.iloc[indexes, :] = w
+
+            return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
+        else:
+            return None
 
     def __pack_samples(self, indexes):
         indexes = np.array(indexes)

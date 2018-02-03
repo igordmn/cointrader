@@ -25,6 +25,7 @@ def empty_print(*_):
 def test_with_config(config):
     matrix = DataMatrices(DATABASE_DIR, config)
     agent = NNAgent(
+        config.fee,
         config.indicator_number, 1 + config.coin_number, config.window_size
     )
     try:
