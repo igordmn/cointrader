@@ -119,7 +119,7 @@ def get_global_panel(database_dir, config):
             gc.collect()
 
             serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-            serial_data['z_price'] = serial_data.apply(lambda row: row['close'], axis=1)
+            serial_data['z_price'] = serial_data.apply(lambda row: row['low'], axis=1)
             # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
             # serial_data['zz_buy_fee'] = serial_data.apply(
             #     lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)

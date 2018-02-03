@@ -199,7 +199,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028*3).minimize(loss)
+        train = tf.train.AdamOptimizer(0.00028*8).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
