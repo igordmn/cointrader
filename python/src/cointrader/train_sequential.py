@@ -50,7 +50,7 @@ def train_net_sequential(agent, matrix, config, log):
         total_test_profit = 1
 
     for i in range(0, 100000000):
-        batch = matrix.next_batch()
+        batch = matrix.next_batch_sequential()
         if batch is None:
             print_result()
             break
@@ -70,8 +70,8 @@ def train_net_sequential(agent, matrix, config, log):
             commission = 1 - np.sum(np.abs(new_portfolio - portfolio)) * config.fee
             profit = np.sum(test_price_inc * new_portfolio) * commission
             portfolio = new_portfolio
-
             total_test_profit *= profit
+
 
             if i % log_steps == 0:
                 print_result()
