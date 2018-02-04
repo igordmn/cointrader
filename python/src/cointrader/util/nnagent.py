@@ -106,19 +106,19 @@ def build_predict_w(
 
     # net = eiie_lstm(net, coin_number)
 
-    net = eiie_output(
-        net,
-        regularizer="L2",
-        weight_decay=5e-8,
-    )
-
-    # net = eiie_output_withw(
+    # net = eiie_output(
     #     net,
-    #     batch_size,
-    #     previous_w,
     #     regularizer="L2",
     #     weight_decay=5e-8,
     # )
+
+    net = eiie_output_withw(
+        net,
+        batch_size,
+        previous_w,
+        regularizer="L2",
+        weight_decay=5e-8,
+    )
 
     return net
 
@@ -199,7 +199,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028*8).minimize(loss)
+        train = tf.train.AdamOptimizer(0.00028*3).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
