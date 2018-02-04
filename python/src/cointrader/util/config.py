@@ -44,12 +44,12 @@ class TrainConfig(NamedTuple):
     validation_portion: float = 0.001
     test_portion: float = 0.001
     fee: float = 0.0040
-    window_size: int = 160
-    batch_size: int = 109
+    window_size: int = 120
+    batch_size: int = 80
     steps: int = 30000
     log_steps: int = 1000
-    period: int = 300
-    start_time: int = parse_time("2017/3/1 00:00:00")
+    period: int = 900
+    start_time: int = parse_time("2017/8/1 00:00:00")
     end_time: int = parse_time("2018/2/3 10:00:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)

@@ -15,8 +15,8 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
 
 
 def eiie_lstm(net, coin_number):
-    neuron_number = 256
-    dropout = 0.2
+    neuron_number = 128
+    dropout = 0.1
     net = tf.transpose(net, [0, 2, 3, 1])
 
     resultlist = []
@@ -70,7 +70,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -81,7 +81,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -92,7 +92,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -100,25 +100,25 @@ def build_predict_w(
         net,
         filter_number=120,
         activation_function="relu",
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-9,
     )
 
-    # net = eiie_lstm(net, coin_number)
+    net = eiie_lstm(net, coin_number)
 
-    # net = eiie_output(
-    #     net,
-    #     regularizer="L2",
-    #     weight_decay=5e-8,
-    # )
-
-    net = eiie_output_withw(
+    net = eiie_output(
         net,
-        batch_size,
-        previous_w,
         regularizer="L2",
         weight_decay=5e-8,
     )
+
+    # net = eiie_output_withw(
+    #     net,
+    #     batch_size,
+    #     previous_w,
+    #     regularizer=None,
+    #     weight_decay=5e-8,
+    # )
 
     return net
 
@@ -198,8 +198,8 @@ class NNAgent:
         sortino_ratio = log_mean / downside_deviation
 
         loss = -log_mean
-        loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028*3).minimize(loss)
+        # loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+        train = tf.train.AdamOptimizer(0.00028*8).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
