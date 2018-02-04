@@ -96,15 +96,26 @@ def build_predict_w(
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=64,
+        filter_size=[1, 2],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer=None,
+        weight_decay=5e-10,
+    )
+    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=120,
+        filter_number=256,
         activation_function="relu",
         regularizer=None,
         weight_decay=5e-9,
     )
 
-    net = eiie_lstm(net, coin_number)
+    # net = eiie_lstm(net, coin_number)
 
     net = eiie_output(
         net,
