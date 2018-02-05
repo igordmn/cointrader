@@ -62,7 +62,6 @@ def build_predict_w(
         batch_size, coin_number, x, previous_w
 ):
     net = tf.transpose(x, [0, 2, 3, 1])
-    # net = net / net[:, :, -1, 0, None, None]
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
