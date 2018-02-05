@@ -38,19 +38,19 @@ poloniex_coins = [
 ]
 
 class TrainConfig(NamedTuple):
-    exchange: str = "poloniex"
-    coins: list = poloniex_coins
+    exchange: str = "binance"
+    coins: list = binance_coins
     coin_number: int = len(coins)
-    validation_portion: float = 0.001
-    test_portion: float = 0.001
-    fee: float = 0.0040
-    window_size: int = 120
+    validation_portion: float = 0.05
+    test_portion: float = 0.1
+    fee: float = 0.0019
+    window_size: int = 160
     batch_size: int = 80
-    steps: int = 30000
+    steps: int = 40000
     log_steps: int = 1000
-    period: int = 900
-    start_time: int = parse_time("2017/8/1 00:00:00")
-    end_time: int = parse_time("2018/2/3 10:00:00")
+    period: int = 300
+    start_time: int = parse_time("2017/10/1 00:00:00")
+    end_time: int = parse_time("2018/2/5 12:00:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 5e-07

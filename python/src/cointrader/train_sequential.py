@@ -61,8 +61,10 @@ def train_net_sequential(agent, matrix, config, log):
             sell_fees = batch.sell_fees
             previous_w = batch.previous_w
             train_geometric_mean_profit = 1
-            for j in range(0, 10):
+            max_profit = np.prod(np.maximum.reduce(price_inc, 1)) * ((1 - 2 * config.fee) ** config.batch_size)
+            for j in range(0, 1000):
                 predict_w, train_geometric_mean_profit = agent.train(x, price_inc, buy_fees, sell_fees, previous_w)
+                train_profit = train_geometric_mean_profit ** config.batch_size
                 previous_w = predict_w
             total_train_profit *= train_geometric_mean_profit
 

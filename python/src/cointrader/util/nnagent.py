@@ -65,12 +65,12 @@ def build_predict_w(
     net = net / net[:, :, -1, 0, None, None]
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=4,
+        nb_filter=3,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -81,7 +81,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -92,7 +92,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -103,7 +103,7 @@ def build_predict_w(
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-10,
     )
     net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -111,7 +111,7 @@ def build_predict_w(
         net,
         filter_number=256,
         activation_function="relu",
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-9,
     )
 
@@ -119,7 +119,7 @@ def build_predict_w(
 
     # net = eiie_output(
     #     net,
-    #     regularizer="L2",
+    #     regularizer=None,
     #     weight_decay=5e-8,
     # )
 
@@ -127,7 +127,7 @@ def build_predict_w(
         net,
         batch_size,
         previous_w,
-        regularizer=None,
+        regularizer="L2",
         weight_decay=5e-8,
     )
 
@@ -208,9 +208,12 @@ class NNAgent:
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = log_mean / downside_deviation
 
+        # loss = -tf.reduce_mean(tf.log(tf.reduce_sum(predict_w[:] * price_incs, reduction_indices=[1])
+        #                               -tf.reduce_sum(tf.abs(predict_w - previous_w)
+        #                                              * fee, reduction_indices=[1])))
         loss = -log_mean
-        # loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028*8).minimize(loss)
+        loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+        train = tf.train.AdamOptimizer(0.00028).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
@@ -233,7 +236,7 @@ class NNAgent:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.6
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
