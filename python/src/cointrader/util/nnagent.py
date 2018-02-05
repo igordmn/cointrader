@@ -232,9 +232,6 @@ class NNAgent:
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = log_mean / downside_deviation
 
-        # loss = -tf.reduce_mean(tf.log(tf.reduce_sum(predict_w[:] * price_incs, axis=[1])
-        #                               -tf.reduce_sum(tf.abs(predict_w - previous_w)
-        #                                              * fee, axis=[1])))
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
         train = tf.train.AdamOptimizer(0.00028).minimize(loss)
