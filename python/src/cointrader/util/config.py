@@ -45,7 +45,7 @@ class TrainConfig(NamedTuple):
     test_portion: float = 0.1
     fee: float = 0.0019
     window_size: int = 160
-    batch_size: int = 80
+    batch_size: int = 109
     steps: int = 40000
     log_steps: int = 1000
     period: int = 300

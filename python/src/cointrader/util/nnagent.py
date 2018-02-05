@@ -62,7 +62,8 @@ def build_predict_w(
         batch_size, coin_number, x, previous_w
 ):
     net = tf.transpose(x, [0, 2, 3, 1])
-    net = net / net[:, :, -1, 0, None, None]
+    # net = net / net[:, :, -1, 0, None, None]
+    net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
         nb_filter=3,
@@ -73,43 +74,43 @@ def build_predict_w(
         regularizer="L2",
         weight_decay=5e-10,
     )
-    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    net = tflearn.layers.conv_2d(
-        net,
-        nb_filter=16,
-        filter_size=[1, 2],
-        strides=[1, 1],
-        padding="valid",
-        activation="relu",
-        regularizer="L2",
-        weight_decay=5e-10,
-    )
-    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    net = tflearn.layers.conv_2d(
-        net,
-        nb_filter=32,
-        filter_size=[1, 2],
-        strides=[1, 1],
-        padding="valid",
-        activation="relu",
-        regularizer="L2",
-        weight_decay=5e-10,
-    )
-    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    net = tflearn.layers.conv_2d(
-        net,
-        nb_filter=64,
-        filter_size=[1, 2],
-        strides=[1, 1],
-        padding="valid",
-        activation="relu",
-        regularizer="L2",
-        weight_decay=5e-10,
-    )
-    net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=16,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer="L2",
+    #     weight_decay=5e-10,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=32,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer="L2",
+    #     weight_decay=5e-10,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=64,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer="L2",
+    #     weight_decay=5e-10,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=256,
+        filter_number=10,
         activation_function="relu",
         regularizer="L2",
         weight_decay=5e-9,
@@ -134,7 +135,7 @@ def build_predict_w(
     return net
 
 
-def compute_profits2(batch_size, predict_w, price_incs, buy_fees, sell_fees):
+def compute_profits2(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees):
     pure_profits = price_incs * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
 
@@ -149,7 +150,7 @@ def compute_profits2(batch_size, predict_w, price_incs, buy_fees, sell_fees):
     return pure_profit * (1 - total_fee)
 
 
-def compute_profits(batch_size, predict_w, price_inc, fee):
+def compute_profits(batch_size, previous_w, predict_w, price_inc, fee):
     future_portfolio = price_inc * predict_w
     future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
 
@@ -158,6 +159,28 @@ def compute_profits(batch_size, predict_w, price_inc, fee):
     future_commission = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
 
     return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), future_commission], axis=0)
+
+
+def compute_profits3(batch_size, previous_w, predict_w, price_inc, fee):
+    future_portfolio = price_inc * predict_w
+    future_commission = 1 - tf.reduce_sum(tf.abs(previous_w - predict_w), axis=1) * fee
+    return tf.reduce_sum(future_portfolio, axis=[1]) * future_commission
+
+
+def compute_profits_fix(batch_size, previous_w, predict_w, price_inc, fee):
+    future_portfolio = price_inc * predict_w
+    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
+
+    w0 = future_w[:batch_size - 1]
+    w1 = predict_w[1:batch_size]
+    future_commission = tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
+
+    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.concat([tf.ones(0), future_commission], axis=0)
+
+
+def compute_profits3_fix(batch_size, previous_w, predict_w, price_inc, fee):
+    future_portfolio = price_inc * predict_w
+    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.reduce_sum(tf.abs(previous_w - predict_w), axis=1) * fee
 
 
 
@@ -196,8 +219,9 @@ class NNAgent:
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
         predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
-        # profits = compute_profits(batch_size, predict_w, price_incs, buy_fees, sell_fees)
-        profits = compute_profits(batch_size, predict_w, price_incs, fee)
+        # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees)
+        profits = compute_profits3_fix(batch_size, previous_w, predict_w, price_incs, fee)
+        # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, fee)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
@@ -208,9 +232,9 @@ class NNAgent:
         sharp_ratio = log_mean / standard_deviation
         sortino_ratio = log_mean / downside_deviation
 
-        # loss = -tf.reduce_mean(tf.log(tf.reduce_sum(predict_w[:] * price_incs, reduction_indices=[1])
+        # loss = -tf.reduce_mean(tf.log(tf.reduce_sum(predict_w[:] * price_incs, axis=[1])
         #                               -tf.reduce_sum(tf.abs(predict_w - previous_w)
-        #                                              * fee, reduction_indices=[1])))
+        #                                              * fee, axis=[1])))
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
         train = tf.train.AdamOptimizer(0.00028).minimize(loss)
