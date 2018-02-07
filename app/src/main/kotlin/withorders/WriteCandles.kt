@@ -60,10 +60,14 @@ fun main(args: Array<String>) {
             val close = trades.last().price.setScale(2)
             val high = trades.map { it.price.setScale(2) }.max()!!
             val low = trades.map { it.price.setScale(2) }.min()!!
+            require(high >= low)
+            require(high >= close)
+            require(low <= close)
             "$open,$close,$high,$low"
         }
 
         to.toFile().bufferedWriter().use { writer ->
+            writer.write("open,close,high,low\n")
             candleLines.consumeEach {
                 writer.write(it + "\n")
             }

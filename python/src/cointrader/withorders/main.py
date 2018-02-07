@@ -38,7 +38,7 @@ def submatrix(start, end, columns):
 
 
 def batch(start, end):
-    history = [submatrix(i - history_size, i, ["close", "high", "low"]) for i in range(start, end)]
+    history = [submatrix(i - history_size + 1, i + 1, ["close", "high", "low"]) for i in range(start, end)]
     close_prices = submatrix(start, end, ["close"])
     next_high_prices = submatrix(start + 1, end + 1, ["high"])
     next_low_prices = submatrix(start + 1, end + 1, ["low"])

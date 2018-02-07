@@ -41,7 +41,7 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = binance_coins
     coin_number: int = len(coins)
-    test_days: float = 5
+    test_days: float = 3
     fee: float = 0.0019
     window_size: int = 320
     batch_size: int = 109
