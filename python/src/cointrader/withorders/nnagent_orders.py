@@ -39,7 +39,7 @@ def compute_best_prices(history):
         regularizer="L2",
         weight_decay=5e-8
     )
-    return net[:, :, 0]
+    return net[:, 0]
 
 
 def compute_capital_increase(buy_sell_high_low_prices):
@@ -52,18 +52,18 @@ def compute_capital_increase(buy_sell_high_low_prices):
         need_buy = capital[0] > 0
 
         def capital_after_buy():
-            return tf.constant([0, capital[0] / buy])
+            return tf.convert_to_tensor([tf.constant(0.0), capital[0] / buy])
 
         def capital_after_sell():
-            return tf.constant([capital[1] * sell, 0])
+            return tf.convert_to_tensor([capital[1] * sell, tf.constant(0.0)])
 
         def capital_after_buy_if_can():
-            can_buy = low <= buy <= high
+            can_buy = tf.logical_and(low <= buy, buy <= high)
             return tf.cond(can_buy, lambda: capital_after_buy(), lambda: capital)
 
         def capital_after_sell_if_can():
-            can_sell = low <= sell <= high
-            return tf.constant(can_sell, lambda: capital_after_sell(), lambda: capital)
+            can_sell = tf.logical_and(low <= sell, sell <= high)
+            return tf.cond(can_sell, lambda: capital_after_sell(), lambda: capital)
 
         return tf.cond(need_buy, lambda: capital_after_buy_if_can(), lambda: capital_after_sell_if_can())
 
@@ -72,8 +72,9 @@ def compute_capital_increase(buy_sell_high_low_prices):
         low = buy_sell_high_low_price[3]
         return tf.cond(is_dollars, lambda: capital[0], lambda: capital[1] * low)
 
-    initial_dollars = 10
-    initial_capital = tf.constant([initial_dollars, 0])
+    initial_dollars = tf.constant(10.0)
+    initial_bitcoins = tf.constant(0.0)
+    initial_capital = tf.convert_to_tensor([initial_dollars, initial_bitcoins])
     end_capital = tf.foldl(lambda c, x: next_capital(c, x), buy_sell_high_low_prices, initializer=initial_capital)
     end_dollars = capital_to_dollars(end_capital, buy_sell_high_low_prices[-1])
     return end_dollars / initial_dollars
