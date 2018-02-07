@@ -168,10 +168,6 @@ class DataMatrices:
         x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._train_ind)
         return x, price_inc, prices, buy_fees, sell_fees, last_w
 
-    def get_validation_set(self):
-        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._validation_ind)
-        return x, price_inc, prices, buy_fees, sell_fees, last_w
-
     def get_test_set(self):
         x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._test_ind)
         return x, price_inc, prices, buy_fees, sell_fees, last_w
@@ -246,4 +242,4 @@ class DataMatrices:
         test_periods = int(periods_per_day * test_days)
         num_periods = len(self.__global_data.minor_axis) - self.config.window_size - 1
         indices = np.arange(num_periods)
-        self._train_ind, self._validation_ind, self._test_ind = np.split(indices, num_periods - test_periods)
+        self._train_ind, self._test_ind = np.split(indices, num_periods - test_periods)
