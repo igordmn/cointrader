@@ -65,13 +65,13 @@ def build_predict_w(
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=16,
+        nb_filter=8,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
         activation="relu",
         regularizer="L2",
-        weight_decay=5e-8,
+        weight_decay=5e-4,
     )
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
@@ -109,17 +109,17 @@ def build_predict_w(
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=128,
+        filter_number=32,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-8,
+        weight_decay=5e-4,
     )
     net = eiie_dense(
         net,
-        filter_number=128,
+        filter_number=32,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-8,
+        weight_decay=5e-4,
     )
 
     # net = eiie_lstm(net, coin_number)
@@ -135,7 +135,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-8,
+        weight_decay=5e-4,
     )
 
     return net
@@ -180,8 +180,7 @@ def compute_profits_fix(batch_size, previous_w, predict_w, price_inc, fee):
     w0 = future_w[:batch_size - 1]
     w1 = predict_w[1:batch_size]
     future_commission = tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
-
-    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.concat([tf.ones(0), future_commission], axis=0)
+    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.concat([tf.zeros(1), future_commission], axis=0)
 
 
 def compute_profits3_fix(batch_size, previous_w, predict_w, price_inc, fee):
@@ -226,7 +225,7 @@ class NNAgent:
         predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
 
         # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees)
-        profits = compute_profits3_fix(batch_size, previous_w, predict_w, price_incs, fee)
+        profits = compute_profits_fix(batch_size, previous_w, predict_w, price_incs, fee)
         # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, fee)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
