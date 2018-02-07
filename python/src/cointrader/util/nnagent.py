@@ -65,7 +65,7 @@ def build_predict_w(
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=3,
+        nb_filter=32,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
@@ -109,7 +109,7 @@ def build_predict_w(
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=10,
+        filter_number=128,
         activation_function="relu",
         regularizer="L2",
         weight_decay=5e-9,
@@ -233,7 +233,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        train = tf.train.AdamOptimizer(0.00028*6).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,

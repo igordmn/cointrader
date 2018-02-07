@@ -161,7 +161,7 @@ class DataMatrices:
         self.__global_data = get_global_panel(database_dir, config)
         self.__PVM = pd.DataFrame(index=self.__global_data.minor_axis, columns=["BTC"] + config.coins)
         self.__PVM = self.__PVM.fillna(1.0 / (1 + config.coin_number))
-        self.__divide_data(config.validation_portion, config.test_portion)
+        self.__divide_data(config.test_days, config.period)
         self.s = 0
 
     def get_train_set(self):
@@ -241,11 +241,9 @@ class DataMatrices:
         # sell_fees = M[:, -1, :, -2]  # -1 indicator (second index) should be "zzz_sell_fee"
         return x, price_inc, prices, None, None, last_w, indexes
 
-    def __divide_data(self, validation_portion, test_portion):
-        train_portion = 1 - validation_portion - test_portion
-
+    def __divide_data(self, test_days, period):
+        periods_per_day = 24 * 60 * 60 / period
+        test_periods = int(periods_per_day * test_days)
         num_periods = len(self.__global_data.minor_axis) - self.config.window_size - 1
-        portions = np.array([train_portion, train_portion + validation_portion])
-        portion_split = (portions * num_periods).astype(int)
         indices = np.arange(num_periods)
-        self._train_ind, self._validation_ind, self._test_ind = np.split(indices, portion_split)
+        self._train_ind, self._validation_ind, self._test_ind = np.split(indices, num_periods - test_periods)

@@ -30,7 +30,7 @@ def test_with_config(config):
     )
     try:
         train_net(agent, matrix, config, empty_print)
-        one_day_profit, capitals = backtest("validation", agent, matrix, config, empty_print)
+        one_day_profit, capitals = backtest(agent, matrix, config, empty_print)
         return one_day_profit
     except Exception:
         print(traceback.format_exc())
@@ -61,7 +61,7 @@ def print_default_config():
 
 def print_config(c, result):
     log_info(
-        "v", c.validation_portion, "t", c.test_portion,
+        "t", c.test_days,
         "s", c.steps, "p", c.period,
         "b", c.batch_size, "w", c.window_size, "i", c.indicator_number,
         "geom", c.use_geometric_sample, "geom_bias", c.geometric_bias,

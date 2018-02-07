@@ -41,12 +41,11 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     coins: list = binance_coins
     coin_number: int = len(coins)
-    validation_portion: float = 0.001
-    test_portion: float = 0.0
+    test_days: float = 0.9
     fee: float = 0.0019
-    window_size: int = 240
-    batch_size: int = 109
-    steps: int = 30000
+    window_size: int = 320
+    batch_size: int = 60
+    steps: int = 20000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2018/1/22 00:00:00")

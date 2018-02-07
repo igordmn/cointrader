@@ -31,7 +31,7 @@ matrix = DataMatrices(DATABASE_DIR, config)
 try:
     train_net(agent, matrix, config, print)
     agent.save(NET_FILE)
-    one_day_profit, capitals = backtest("test", agent, matrix, config, print)
+    one_day_profit, capitals = backtest(agent, matrix, config, print)
     plot_log(capitals, config)
 finally:
     agent.recycle()

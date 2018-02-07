@@ -1,16 +1,13 @@
 import os
 import shutil
-
-import numpy as np
 from os.path import dirname, abspath
 
-from src.cointrader.util.backtest import backtest
-from src.cointrader.util.config import TrainConfig
-from src.cointrader.util.plot import plot_log
-from src.cointrader.util.train import train_net
+import numpy as np
+
 from src.cointrader.constants import *
-from src.cointrader.util.nnagent import NNAgent
+from src.cointrader.util.config import TrainConfig
 from src.cointrader.util.datamatrices import DataMatrices
+from src.cointrader.util.nnagent import NNAgent
 
 dir = dirname(abspath(NET_FILE))
 

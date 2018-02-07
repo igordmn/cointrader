@@ -17,7 +17,7 @@ if len(sys.argv) > 1:
         NET_FILE
     )
     try:
-        one_day_profit, capitals = backtest(sys.argv[1], agent, matrix, config, print)
+        one_day_profit, capitals = backtest(agent, matrix, config, print)
         plot_log(capitals, config)
     finally:
         agent.recycle()
