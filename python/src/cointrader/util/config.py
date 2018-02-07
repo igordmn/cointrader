@@ -52,5 +52,5 @@ class TrainConfig(NamedTuple):
     end_time: int = parse_time("2018/2/7 17:30:00")
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
-    geometric_bias: float = 5e-04
+    geometric_bias: float = 3e-05
     use_geometric_sample: bool = True
