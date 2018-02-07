@@ -57,7 +57,7 @@ total_capital_increase_per_day = 1
 for i in range(steps):
     train_batch = random_batch(train_start, train_end)
     log_capital_increase = agent.train(train_batch.history, train_batch.close_prices, train_batch.next_high_prices,
-                                       train_batch.next_low_prices)
+                                       train_batch.next_low_prices)[0]
     capital_increase = np.exp(log_capital_increase)
     capital_increase_per_period = capital_increase ** (1 / batch_size)
     capital_increase_per_day = capital_increase_per_period ** periods_per_day
@@ -65,7 +65,7 @@ for i in range(steps):
     if i % log_steps == 0 or i == steps - 1:
         test_batch = random_batch(test_start, test_end)
         test_log_capital_increase = agent.test(test_batch.history, test_batch.close_prices, test_batch.next_high_prices,
-                                               test_batch.next_low_prices)
+                                               test_batch.next_low_prices)[0]
         test_capital_increase_per_period = test_log_capital_increase ** (1 / batch_size)
         test_capital_increase_per_day = test_capital_increase_per_period ** periods_per_day
         print('step %d' % i)

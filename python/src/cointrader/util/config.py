@@ -45,7 +45,7 @@ class TrainConfig(NamedTuple):
     fee: float = 0.0019
     window_size: int = 320
     batch_size: int = 109
-    steps: int = 30000
+    steps: int = 60000
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2018/1/1 00:00:00")
