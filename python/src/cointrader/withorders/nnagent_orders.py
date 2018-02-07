@@ -99,7 +99,7 @@ class NNAgentOrders:
             restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
-        history = tf.placeholder(tf.float32, shape=[None, indicator_number, history_size])
+        history = tf.placeholder(tf.float32, shape=[None, history_size, indicator_number])
         close_prices = tf.placeholder(tf.float32, shape=[None])
         next_high_prices = tf.placeholder(tf.float32, shape=[None])
         next_low_prices = tf.placeholder(tf.float32, shape=[None])
@@ -129,7 +129,7 @@ class NNAgentOrders:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.6
+        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.4
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
