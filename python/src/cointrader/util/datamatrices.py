@@ -242,4 +242,4 @@ class DataMatrices:
         test_periods = int(periods_per_day * test_days)
         num_periods = len(self.__global_data.minor_axis) - self.config.window_size - 1
         indices = np.arange(num_periods)
-        self._train_ind, self._test_ind = np.split(indices, num_periods - test_periods)
+        self._train_ind, self._test_ind = np.split(indices, [num_periods - test_periods])
