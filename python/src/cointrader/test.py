@@ -9,15 +9,14 @@ from src.cointrader.util.datamatrices import DataMatrices
 
 config = TrainConfig()
 
-if len(sys.argv) > 1:
-    matrix = DataMatrices(DATABASE_DIR, config)
-    agent = NNAgent(
-        config.fee,
-        config.indicator_number, 1 + config.coin_number, config.window_size,
-        NET_FILE
-    )
-    try:
-        one_day_profit, capitals = backtest(agent, matrix, config, print)
-        plot_log(capitals, config)
-    finally:
-        agent.recycle()
+matrix = DataMatrices(DATABASE_DIR, config)
+agent = NNAgent(
+    config.fee,
+    config.indicator_number, 1 + config.coin_number, config.window_size,
+    NET_FILE
+)
+try:
+    one_day_profit, capitals = backtest(agent, matrix, config, print)
+    plot_log(capitals, config)
+finally:
+    agent.recycle()
