@@ -65,13 +65,13 @@ def build_predict_w(
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=32,
+        nb_filter=16,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
         activation="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-8,
     )
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
@@ -82,7 +82,7 @@ def build_predict_w(
     #     padding="valid",
     #     activation="relu",
     #     regularizer="L2",
-    #     weight_decay=5e-10,
+    #     weight_decay=5e-8,
     # )
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
@@ -93,7 +93,7 @@ def build_predict_w(
     #     padding="valid",
     #     activation="relu",
     #     regularizer="L2",
-    #     weight_decay=5e-10,
+    #     weight_decay=5e-8,
     # )
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
@@ -104,7 +104,7 @@ def build_predict_w(
     #     padding="valid",
     #     activation="relu",
     #     regularizer="L2",
-    #     weight_decay=5e-10,
+    #     weight_decay=5e-8,
     # )
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
@@ -112,7 +112,14 @@ def build_predict_w(
         filter_number=128,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-8,
+    )
+    net = eiie_dense(
+        net,
+        filter_number=128,
+        activation_function="relu",
+        regularizer="L2",
+        weight_decay=5e-8,
     )
 
     # net = eiie_lstm(net, coin_number)
@@ -128,7 +135,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-8,
     )
 
     return net
