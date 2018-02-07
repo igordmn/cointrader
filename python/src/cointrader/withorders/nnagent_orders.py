@@ -136,7 +136,7 @@ class NNAgentOrders:
 
         loss = -log_capital_increase
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028 * 6).minimize(loss)
+        train = tf.train.RMSPropOptimizer(0.00010).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
