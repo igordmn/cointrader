@@ -9,7 +9,7 @@ from src.cointrader.withorders.nnagent_orders import NNAgentOrders
 batch_size = 200
 history_size = 320
 steps = 20000
-log_steps = 1000
+log_steps = 10
 period = 60
 periods_per_day = int(24 * 60 * 60 / period)
 data = pd.read_csv("D:/Development/Projects/cointrader/gdaxBTCUSD.csv")
@@ -56,8 +56,8 @@ total_capital_increase_per_day = 1
 
 for i in range(steps):
     train_batch = random_batch(train_start, train_end)
-    log_capital_increase = agent.train(train_batch.history, train_batch.close_prices, train_batch.next_high_prices,
-                                       train_batch.next_low_prices)[0]
+    log_capital_increase, best_buy_prices = agent.train(train_batch.history, train_batch.close_prices, train_batch.next_high_prices,
+                                       train_batch.next_low_prices)
     capital_increase = np.exp(log_capital_increase)
     capital_increase_per_period = capital_increase ** (1 / batch_size)
     capital_increase_per_day = capital_increase_per_period ** periods_per_day

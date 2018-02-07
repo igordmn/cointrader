@@ -43,34 +43,56 @@ def compute_best_prices(history):
 
 
 def compute_capital_increase(buy_sell_high_low_prices):
+    # def next_capital2(capital, buy_sell_high_low_price):
+    #     buy = buy_sell_high_low_price[0]
+    #     sell = buy_sell_high_low_price[1]
+    #     high = buy_sell_high_low_price[2]
+    #     low = buy_sell_high_low_price[3]
+    #
+    #     need_buy = capital[0] > 0
+    #
+    #     def capital_after_buy():
+    #         return tf.convert_to_tensor([tf.constant(0.0), capital[0] / buy])
+    #
+    #     def capital_after_sell():
+    #         return tf.convert_to_tensor([capital[1] * sell, tf.constant(0.0)])
+    #
+    #     def capital_after_buy_if_can():
+    #         can_buy = tf.logical_and(low <= buy, buy <= high)
+    #         return tf.cond(can_buy, lambda: capital_after_buy(), lambda: capital)
+    #
+    #     def capital_after_sell_if_can():
+    #         can_sell = tf.logical_and(low <= sell, sell <= high)
+    #         return tf.cond(can_sell, lambda: capital_after_sell(), lambda: capital)
+    #
+    #     return tf.cond(need_buy, lambda: capital_after_buy_if_can(), lambda: capital_after_sell_if_can())
+    #
+    # def capital_to_dollars2(capital, buy_sell_high_low_price):
+    #     is_dollars = capital[0] > 0
+    #     low = buy_sell_high_low_price[3]
+    #     return tf.cond(is_dollars, lambda: capital[0], lambda: capital[1] * low)
+
     def next_capital(capital, buy_sell_high_low_price):
         buy = buy_sell_high_low_price[0]
         sell = buy_sell_high_low_price[1]
         high = buy_sell_high_low_price[2]
         low = buy_sell_high_low_price[3]
 
-        need_buy = capital[0] > 0
+        need_buy = tf.maximum(0.0, tf.sign(capital[0]))
+        can_buy = tf.maximum(0.0, tf.sign(buy - low) * tf.sign(high - buy))
+        can_sell = tf.maximum(0.0, tf.sign(sell - low) * tf.sign(high - sell))
 
-        def capital_after_buy():
-            return tf.convert_to_tensor([tf.constant(0.0), capital[0] / buy])
+        capital_after_buy = tf.convert_to_tensor([tf.constant(0.0), capital[0] / buy])
+        capital_after_sell = tf.convert_to_tensor([capital[1] * sell, tf.constant(0.0)])
+        capital_after_buy_if_can = can_buy * capital_after_buy + (1 - can_buy) * capital
+        capital_after_sell_if_can = can_sell * capital_after_sell + (1 - can_sell) * capital
 
-        def capital_after_sell():
-            return tf.convert_to_tensor([capital[1] * sell, tf.constant(0.0)])
-
-        def capital_after_buy_if_can():
-            can_buy = tf.logical_and(low <= buy, buy <= high)
-            return tf.cond(can_buy, lambda: capital_after_buy(), lambda: capital)
-
-        def capital_after_sell_if_can():
-            can_sell = tf.logical_and(low <= sell, sell <= high)
-            return tf.cond(can_sell, lambda: capital_after_sell(), lambda: capital)
-
-        return tf.cond(need_buy, lambda: capital_after_buy_if_can(), lambda: capital_after_sell_if_can())
+        return need_buy * capital_after_buy_if_can + (1 - need_buy) * capital_after_sell_if_can
 
     def capital_to_dollars(capital, buy_sell_high_low_price):
-        is_dollars = capital[0] > 0
+        is_dollars = tf.maximum(0.0, tf.sign(capital[0]))
         low = buy_sell_high_low_price[3]
-        return tf.cond(is_dollars, lambda: capital[0], lambda: capital[1] * low)
+        return is_dollars * capital[0] + (1 - is_dollars) * capital[1] * low
 
     initial_dollars = tf.constant(10.0)
     initial_bitcoins = tf.constant(0.0)
@@ -122,7 +144,7 @@ class NNAgentOrders:
             close_prices,
             next_high_prices,
             next_low_prices,
-            best_buy_prices,
+            best_buy_log_inc_prices,
             best_sell_prices,
             log_capital_increase,
             train
@@ -147,7 +169,7 @@ class NNAgentOrders:
         t = self._tensors
 
         tflearn.is_training(True, session)
-        results = session.run([t.train, t.log_capital_increase], feed_dict={
+        results = session.run([t.train, t.log_capital_increase, t.best_buy_prices], feed_dict={
             t.history: history,
             t.close_prices: close_prices,
             t.next_high_prices: next_high_prices,
