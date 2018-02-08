@@ -32,7 +32,6 @@ private val ALT_NAMES = mapOf(
 )
 
 private const val START_DATE = 1420243200L * 1000  // 03.01.2015
-//private const val END_DATE = 1514937600L * 1000    // 03.01.2018
 private val PERIOD_TYPE = "1m"
 private val PERIOD_MS = 60 * 1000
 
@@ -45,27 +44,26 @@ fun main(args: Array<String>) {
         return if (isReversed) "BTC$final_name" else "${final_name}BTC"
     }
 
-    fun chartDataItems(pair: String, startDate: Long, endDate: Long, periodType: String): List<Candlestick> {
+    fun chartDataItems(pair: String, startDate: Long, endDate: Long): List<Candlestick> {
         val all = ArrayList<Candlestick>()
-        var it = startDate
-        val end = endDate
-        while (it <= end) {
+        var it = endDate
+        while (it >= startDate) {
             val res = runBlocking {
-                api.getCandlestickBars(pair, periodType, 500, it, end)
+                api.getCandlestickBars(pair, PERIOD_TYPE, 500, null, it)
             }
-            if (res.size > 0) {
-                all.addAll(res)
+            if (res.isNotEmpty()) {
+                all.addAll(res.filter { it.openTime >= startDate }.reversed())
 
                 val openTime = Date(res.first().openTime)
-                val closeTime = Date(res.first().closeTime)
+                val closeTime = Date(res.last().closeTime)
                 println("$pair    $openTime    $closeTime")
-                it = res.last().closeTime
+                it = res.first().openTime - 1
             } else {
                 break
             }
         }
 
-        return all
+        return all.reversed()
     }
 
     fun fillCoinHistory(coin: String, endDate: Long) {
@@ -74,15 +72,13 @@ fun main(args: Array<String>) {
         val isReversed = coin in REVERSED_COINS
 
         transaction {
-            //            deleteHistories(exchange, coin)
-
             val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"${exchange}\" and coin=\"$coin\"") { rs ->
                 rs.getString("maxdate")
             }?.toLong()
 
             var startDate = startDateDB?.times(1000) ?: START_DATE
             startDate += PERIOD_MS
-            val items = chartDataItems(pair, startDate, endDate, PERIOD_TYPE)
+            val items = chartDataItems(pair, startDate, endDate)
 
             var lastDate = -1L
             for (item in items) {
