@@ -71,7 +71,7 @@ def build_predict_w(
         padding="valid",
         activation="relu",
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=5e-7,
     )
     net = tflearn.dropout(net, 0.5)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
@@ -113,7 +113,7 @@ def build_predict_w(
         filter_number=128,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=5e-7,
     )
     net = tflearn.dropout(net, 0.5)
     net = eiie_dense(
@@ -121,7 +121,7 @@ def build_predict_w(
         filter_number=128,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=5e-7,
     )
     net = tflearn.dropout(net, 0.5)
 
@@ -138,7 +138,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=5e-7,
     )
 
     return net
