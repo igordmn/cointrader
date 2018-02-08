@@ -66,7 +66,7 @@ def build_predict_w(
     net = tflearn.layers.conv_2d(
         net,
         nb_filter=32,
-        filter_size=[1, 7],
+        filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
         activation="relu",
