@@ -65,15 +65,16 @@ def build_predict_w(
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=32,
-        filter_size=[1, 5],
+        nb_filter=8,
+        filter_size=[1, 3],
         strides=[1, 1],
         padding="valid",
         activation="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-6,
     )
-    net = tflearn.dropout(net, 0.5)
+    # net = tflearn.batch_normalization(net)
+    # net = tflearn.dropout(net, 0.2)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
     #     net,
@@ -110,27 +111,29 @@ def build_predict_w(
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=128,
+        filter_number=32,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-6,
     )
-    net = tflearn.dropout(net, 0.5)
+    # net = tflearn.batch_normalization(net)
+    # net = tflearn.dropout(net, 0.2)
     net = eiie_dense(
         net,
-        filter_number=128,
+        filter_number=32,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-6,
     )
-    net = tflearn.dropout(net, 0.5)
+    # net = tflearn.batch_normalization(net)
+    # net = tflearn.dropout(net, 0.2)
 
     # net = eiie_lstm(net, coin_number)
 
     # net = eiie_output(
     #     net,
     #     regularizer=None,
-    #     weight_decay=5e-8,
+    #     weight_decay=5e-7,
     # )
 
     net = eiie_output_withw(
@@ -138,7 +141,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=5e-6,
     )
 
     return net
@@ -265,7 +268,7 @@ class NNAgent:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.5
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
