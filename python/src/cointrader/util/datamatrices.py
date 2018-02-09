@@ -107,10 +107,10 @@ def get_global_panel(database_dir, config):
                 panel.loc[indicator, coin, serial_data.index] = serial_data.squeeze()
                 panel = panel_fillna(panel)
 
-            sql = ("SELECT closeTime-60-{period} AS date_norm, open, close, high, low FROM History WHERE"
+            sql = ("SELECT closeTime-{exchange_db_period}-{period} AS date_norm, open, close, high, low FROM History WHERE"
                    " date>={start} and date<={end}"
-                   " and (closeTime-60)%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                start=start, end=end, period=config.period, exchange=config.exchange, coin=coin))
+                   " and (closeTime-{exchange_db_period})%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
+                start=start, end=end, period=config.period, exchange=config.exchange, exchange_db_period=config.exchange_db_period, coin=coin))
 
             gc.collect()
 
