@@ -11,7 +11,7 @@ def train_net(agent, matrix, config, log):
 
         log('step %d' % i)
         log('1 day profit (train)', (total_train_profit ** (1 / config.log_steps)) ** periods_per_day)
-        log('1 day profit (test)', (total_train_profit ** (1 / batch_count)) ** periods_per_day)
+        log('1 day profit (test)', (total_profit ** (1 / batch_count)) ** periods_per_day)
         log('\n')
 
     def train():
