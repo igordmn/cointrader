@@ -74,7 +74,7 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, 0.2)
+    net = tflearn.dropout(net, 0.2)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
     #     net,
@@ -117,7 +117,7 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, 0.2)
+    net = tflearn.dropout(net, 0.2)
     net = eiie_dense(
         net,
         filter_number=32,
@@ -126,7 +126,7 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, 0.2)
+    net = tflearn.dropout(net, 0.2)
 
     # net = eiie_lstm(net, coin_number)
 

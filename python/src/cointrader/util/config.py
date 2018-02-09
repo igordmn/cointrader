@@ -48,7 +48,7 @@ class TrainConfig(NamedTuple):
     log_steps: int = 1000
     period: int = 300
     start_time: int = parse_time("2017/7/1 00:00:00")
-    end_time: int = parse_time("2018/2/8 20:20:00")
+    end_time: int = parse_time("2018/2/9 12:40:00")
     test_days: float = 8
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
