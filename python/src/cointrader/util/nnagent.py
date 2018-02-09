@@ -74,7 +74,7 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    net = tflearn.dropout(net, 0.2)
+    # net = tflearn.dropout(net, 0.2)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
     #     net,
@@ -117,7 +117,7 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    net = tflearn.dropout(net, 0.2)
+    # net = tflearn.dropout(net, 0.2)
     net = eiie_dense(
         net,
         filter_number=32,
@@ -126,23 +126,23 @@ def build_predict_w(
         weight_decay=5e-6,
     )
     # net = tflearn.batch_normalization(net)
-    net = tflearn.dropout(net, 0.2)
+    # net = tflearn.dropout(net, 0.2)
 
     # net = eiie_lstm(net, coin_number)
 
-    # net = eiie_output(
-    #     net,
-    #     regularizer=None,
-    #     weight_decay=5e-7,
-    # )
-
-    net = eiie_output_withw(
+    net = eiie_output(
         net,
-        batch_size,
-        previous_w,
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-6,
     )
+
+    # net = eiie_output_withw(
+    #     net,
+    #     batch_size,
+    #     previous_w,
+    #     regularizer="L2",
+    #     weight_decay=5e-6,
+    # )
 
     return net
 
@@ -245,7 +245,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        train = tf.train.AdamOptimizer(0.00028 * 6).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
