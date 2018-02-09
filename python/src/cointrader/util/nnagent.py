@@ -281,8 +281,7 @@ class NNAgent:
         tf.reset_default_graph()
         self._session.close()
 
-    def train(self, x, price_incs, buy_fees, sell_fees, previous_w):
-    # def train(self, x_old, price_incs_old, buy_fees_old, sell_fees_old, previous_w_old):
+    def train(self, batch):
         session = self._session
         t = self._tensors
 
@@ -295,37 +294,37 @@ class NNAgent:
 
         tflearn.is_training(True, session)
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
-            t.x: x,
-            t.price_incs: price_incs,
-            # t.buy_fees: buy_fees,
-            # t.sell_fees: sell_fees,
-            t.previous_w: previous_w,
-            t.batch_size: x.shape[0]
+            t.x: batch.x,
+            t.price_incs: batch.price_incs,
+            # t.buy_fees: batch.buy_fees,
+            # t.sell_fees: batch.sell_fees,
+            t.previous_w: batch.previous_w,
+            t.batch_size: batch.x.shape[0]
         })
+        batch.setw(results[1])
 
-        return results[1:]
+        return results[2:]
 
-    def test(self, x, price_incs, buy_fees, sell_fees, previous_w):
+    def test(self, batch):
         session = self._session
         t = self._tensors
 
         tflearn.is_training(False, session)
         results = session.run(
             [
-                t.capital, t.geometric_mean_profit, t.log_mean_profit,
-                t.sharp_ratio, t.sortino_ratio,
-                t.standard_profit_deviation, t.downside_profit_deviation
+                t.predict_w, t.geometric_mean_profit
             ],
             feed_dict={
-                t.x: x,
-                t.price_incs: price_incs,
-                # t.buy_fees: buy_fees,
-                # t.sell_fees: sell_fees,
-                t.previous_w: previous_w,
-                t.batch_size: x.shape[0]
+                t.x: batch.x,
+                t.price_incs: batch.price_incs,
+                # t.buy_fees: batch.buy_fees,
+                # t.sell_fees: batch.sell_fees,
+                t.previous_w: batch.previous_w,
+                t.batch_size: batch.x.shape[0]
             }
         )
-        return results
+        batch.setw(results[0])
+        return results[1:]
 
     def best_portfolio(self, history, previous_w):
         session = self._session

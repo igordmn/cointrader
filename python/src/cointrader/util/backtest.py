@@ -5,7 +5,9 @@ from src.cointrader.util.indicators import compute_max_drawdown, sharpe_ratio, p
 
 
 def backtest(agent, matrix, config, log):
-    x, price_inc, all_prices, buy_fees, sell_fees, w = matrix.get_test_set()
+    test_set = matrix.get_test_set()
+    x = test_set.x
+    all_prices = test_set.prices
     total_steps = x.shape[0]
 
     def normalize_portfolio(portfolio):

@@ -53,4 +53,3 @@ class TrainConfig(NamedTuple):
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
     geometric_bias: float = 1e-04
-    use_geometric_sample: bool = True

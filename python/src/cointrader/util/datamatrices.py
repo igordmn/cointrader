@@ -13,10 +13,6 @@ def geometricSample(start, end, bias):
     return result
 
 
-def randomSample(start, end):
-    return np.random.randint(start, end)
-
-
 def aproximate_price(open, close, high, low, t):
     # t from 0.0 to 1.0
 
@@ -45,11 +41,11 @@ def random_price(open, close, high, low):
 
 
 def sell_fee(standard_fee, price, high, low):
-    return standard_fee #1 - low / price * (1 - standard_fee)
+    return standard_fee  # 1 - low / price * (1 - standard_fee)
 
 
 def buy_fee(standard_fee, price, high, low):
-    return standard_fee #1 - price / high * (1 - standard_fee)
+    return standard_fee  # 1 - price / high * (1 - standard_fee)
 
 
 def get_global_panel(database_dir, config):
@@ -119,7 +115,7 @@ def get_global_panel(database_dir, config):
             gc.collect()
 
             serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-            serial_data['z_price'] = serial_data['open']#= serial_data.apply(lambda row: row['low'], axis=1)
+            serial_data['z_price'] = serial_data['open']  # = serial_data.apply(lambda row: row['low'], axis=1)
             # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
             # serial_data['zz_buy_fee'] = serial_data.apply(
             #     lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
@@ -145,9 +141,9 @@ def get_global_panel(database_dir, config):
 
 
 class DataBatch:
-    def __init__(self, x, price_inc, prices, buy_fees, sell_fees, previous_w, setw):
+    def __init__(self, x, price_incs, prices, buy_fees, sell_fees, previous_w, setw):
         self.x = x
-        self.price_inc = price_inc
+        self.price_incs = price_incs
         self.buy_fees = buy_fees
         self.sell_fees = sell_fees
         self.prices = prices
@@ -164,54 +160,29 @@ class DataMatrices:
         self.__divide_data(config.test_days, config.period)
         self.s = 0
 
-    def get_train_set(self):
-        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._train_ind)
-        return x, price_inc, prices, buy_fees, sell_fees, last_w
-
     def get_test_set(self):
-        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(self._test_ind)
-        return x, price_inc, prices, buy_fees, sell_fees, last_w
+        return self.__pack_samples(self._test_ind)
 
-    def next_batch(self):
-        def next_experience_batch():
-            start_index = self._train_ind[0]
-            end_index = self._train_ind[-1]
-            experiences = [i for i in range(start_index, end_index)]
-            end = len(experiences) - self.config.batch_size
-            batch_start = geometricSample(0, end, self.config.geometric_bias) if self.config.use_geometric_sample else randomSample(0, end)
-            return experiences[batch_start:batch_start + self.config.batch_size]
+    def train_batches(self):
+        start_index = self._train_ind[0]
+        end_index = self._train_ind[-1]
+        experiences = range(start_index, end_index)
+        end = len(experiences) - self.config.batch_size
+        while True:
+            batch_start = geometricSample(0, end, self.config.geometric_bias)
+            indices = experiences[batch_start:batch_start + self.config.batch_size]
+            yield self.__pack_samples(indices)
 
-        x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(
-            [state_index for state_index in next_experience_batch()])
-
-        def setw(w):
-            self.__PVM.iloc[indexes, :] = w
-
-        return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
-
-    def batch_sequential_count(self):
-        return self._train_ind[-1] - self.config.batch_size
-
-    def next_batch_sequential(self):
-        def next_experience_batch():
-            start_index = self._train_ind[0]
-            end_index = self._train_ind[-1]
-            experiences = [i for i in range(start_index, end_index)]
-            batch_start = self.s
-            self.s += 1
-            return experiences[batch_start:batch_start + self.config.batch_size] if batch_start + self.config.batch_size < len(experiences) else None
-        batch = next_experience_batch()
-
-        if batch is not None:
-            x, price_inc, prices, buy_fees, sell_fees, last_w, indexes = self.__pack_samples(
-                [state_index for state_index in batch])
-
-            def setw(w):
-                self.__PVM.iloc[indexes, :] = w
-
-            return DataBatch(x, price_inc, prices, buy_fees, sell_fees, last_w, setw)
-        else:
-            return None
+    def test_batches(self):
+        start_index = self._test_ind[0]
+        end_index = self._test_ind[-1]
+        experiences = range(start_index, end_index)
+        end = len(experiences)
+        batch_start = 0
+        while batch_start < end:
+            indices = experiences[batch_start:min(batch_start + self.config.batch_size, end)]
+            yield self.__pack_samples(indices)
+            batch_start += self.config.batch_size
 
     def __pack_samples(self, indexes):
         indexes = np.array(indexes)
@@ -229,13 +200,18 @@ class DataMatrices:
         M = np.concatenate((bitcoin_M, M), axis=2)
         x = M[:, :-1, :, :-1]
         prices = M[:, -1, :, -2]  # -3 indicator (second index) should be "z_price"
-        price_inc = M[:, -1, :, -1] / M[:, -1, :, -2]
+        price_incs = M[:, -1, :, -1] / M[:, -1, :, -2]
+
         # x = M[:, :-3, :, :-1]
         # prices = M[:, -3, :, -2]  # -3 indicator (second index) should be "z_price"
-        # price_inc = M[:, -3, :, -1] / M[:, -3, :, -2]
+        # price_incs = M[:, -3, :, -1] / M[:, -3, :, -2]
         # buy_fees = M[:, -2, :, -2]  # -2 indicator (second index) should be "zz_buy_fee"
         # sell_fees = M[:, -1, :, -2]  # -1 indicator (second index) should be "zzz_sell_fee"
-        return x, price_inc, prices, None, None, last_w, indexes
+
+        def setw(w):
+            self.__PVM.iloc[indexes, :] = w
+
+        return DataBatch(x, price_incs, prices, None, None, last_w, setw)
 
     def __divide_data(self, test_days, period):
         periods_per_day = 24 * 60 * 60 / period
