@@ -73,6 +73,16 @@ def build_predict_w(
         regularizer="L2",
         weight_decay=config.weight_decay,
     )
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=config.conv_size,
+        filter_size=[1, config.conv_kernel],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer="L2",
+        weight_decay=config.weight_decay,
+    )
     # net = tflearn.batch_normalization(net)
     # net = tflearn.dropout(net, 0.2)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
