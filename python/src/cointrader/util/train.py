@@ -45,7 +45,7 @@ def train_net_sequential(agent, matrix, config, log):
 
     total_train_profit = 1.0
     total_test_profit = 1.0
-    portfolio = np.zeros((1 + config.coin_number))
+    portfolio = np.zeros((1 + len(config.coins)))
     portfolio[0] = 1.0
 
     for i in range(matrix.train_sequential_start(), matrix.train_sequential_end()):

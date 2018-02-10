@@ -47,7 +47,7 @@ def backtest(agent, matrix, config, log):
         return sum
 
     def trade_all():
-        portfolio = np.zeros((1 + config.coin_number))
+        portfolio = np.zeros((1 + len(config.coins)))
         portfolio[0] = 1.0
         capitals = []
 

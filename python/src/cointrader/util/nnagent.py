@@ -59,19 +59,19 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
 
 
 def build_predict_w(
-        batch_size, coin_number, x, previous_w
+        batch_size, config, x, previous_w
 ):
     net = tf.transpose(x, [0, 2, 3, 1])
     net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=8,
-        filter_size=[1, 3],
+        nb_filter=config.conv_size,
+        filter_size=[1, config.conv_kernel],
         strides=[1, 1],
         padding="valid",
         activation="relu",
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=config.weight_decay,
     )
     # net = tflearn.batch_normalization(net)
     # net = tflearn.dropout(net, 0.2)
@@ -111,19 +111,19 @@ def build_predict_w(
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=32,
+        filter_number=config.dense_size,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-7,
+        weight_decay=config.weight_decay,
     )
     # net = tflearn.batch_normalization(net)
     # net = tflearn.dropout(net, 0.2)
     net = eiie_dense(
         net,
-        filter_number=32,
+        filter_number=config.dense_size,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=config.weight_decay,
     )
     # net = tflearn.batch_normalization(net)
     # net = tflearn.dropout(net, 0.2)
@@ -141,7 +141,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-6,
+        weight_decay=config.weight_decay,
     )
 
     return net
@@ -218,20 +218,21 @@ class Tensors(NamedTuple):
 class NNAgent:
     def __init__(
             self,
-            fee,
-            indicator_number, coin_number, window_size,
+            config,
             restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
-        x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, window_size])
+        indicator_number = len(config.indicators)
+        coin_number = 1 + len(config.coins)  # with BTC
+        x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, config.window_size])
         price_incs = tf.placeholder(tf.float32, shape=[None, coin_number])
         buy_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
         sell_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
-        predict_w = build_predict_w(batch_size, coin_number, x, previous_w)
+        predict_w = build_predict_w(batch_size, config, x, previous_w)
 
         # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees)
-        profits = compute_profits_fix(batch_size, previous_w, predict_w, price_incs, fee)
+        profits = compute_profits_fix(batch_size, previous_w, predict_w, price_incs, config.fee)
         # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, fee)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
@@ -245,7 +246,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(0.00028 * 6).minimize(loss)
+        train = tf.train.AdamOptimizer(config.leearning_rate).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,

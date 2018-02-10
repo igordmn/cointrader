@@ -156,7 +156,7 @@ class DataMatrices:
         self.config = config
         self.__global_data = get_global_panel(database_dir, config)
         self.__PVM = pd.DataFrame(index=self.__global_data.minor_axis, columns=["BTC"] + config.coins)
-        self.__PVM = self.__PVM.fillna(1.0 / (1 + config.coin_number))
+        self.__PVM = self.__PVM.fillna(1.0 / (1 + len(config.coins)))
         self.__divide_data(config.test_days, config.period)
         self.s = 0
 
