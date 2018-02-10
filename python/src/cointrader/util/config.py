@@ -48,10 +48,10 @@ class TrainConfig(NamedTuple):
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
+    fee: float = 0.0019
 
     period: int = 300
     geometric_bias: float = 5e-07
-    fee: float = 0.0019
     window_size: int = 320
     batch_size: int = 80
     sequential_steps = 5

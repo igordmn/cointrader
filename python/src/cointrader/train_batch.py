@@ -51,17 +51,15 @@ def print_default_config():
     c = TrainConfig()
     log_info("")
     log_info("")
-    log_info("exc", c.exchange, "fee", c.fee, "coins", c.coins)
-    log_info("start", c.start_time, "end", c.end_time)
+    log_info("exc", c.exchange, "fee", c.fee, "coins", c.coins, "indicators", c.indicators)
+    log_info("start", c.start_time, "end", c.end_time, "result_days", c.sequential_result_days, "log_steps", c.log_steps)
 
 
 def print_config(c, result):
     log_info(
-        "t", c.test_days,
-        "s", c.steps, "p", c.period,
-        "b", c.batch_size, "w", c.window_size, "i", c.indicator_number,
-        "geom", c.use_geometric_sample, "geom_bias", c.geometric_bias,
-        "RESULT", result
+        "period", c.period, "window_size", c.window_size, "batch_size", c.batch_size, "sequential_steps", c.sequential_steps,
+        "learning_rate", c.learning_rate, "weight_decay", c.weight_decay, "conv_size", c.conv_size,
+        "conv_kernel", c.conv_kernel, "dense_size", c.dense_size
     )
 
 
