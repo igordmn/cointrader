@@ -23,8 +23,8 @@ binance_coins = [
     "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "EOS", "WTC", "ADA",
     "XVG", "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG",
     "TNT", "QTUM", "LSK", "GAS", "VIB", "ZRX", "OMG", "BTS",
-    "SUB", "XMR", "LRC", "STRAT", "MDA", "ENJ", "KNC", "REQ",
-    "AST", "ENG", "ZEC", "DGD", "ADX", "BQX", "SALT",
+    # "SUB", "XMR", "LRC", "STRAT", "MDA", "ENJ", "KNC", "REQ",
+    # "AST", "ENG", "ZEC", "DGD", "ADX", "BQX", "SALT",
 
     # "USDT", "ETH", "NEO", "WTC", "HSR", "LTC", "BCH", "IOTA", "QTUM", "ZRX"
 ]

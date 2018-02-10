@@ -67,7 +67,7 @@ def train_net_sequential(agent, matrix, config, log):
         portfolio = new_portfolio
 
         if i >= result_start_step:
-            result *= test_profit
+            result_profit *= test_profit
 
         if i % config.log_steps == 0:
             train_day_profit = total_train_profit ** (periods_per_day / config.log_steps / config.sequential_steps)
