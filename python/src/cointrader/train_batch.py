@@ -184,7 +184,8 @@ for config in configs:
 
     start = time.time()
 
-    result = geo_mean([test_with_config(config) for x in range(test_count)])
+    # result = geo_mean([test_with_config(config) for x in range(test_count)])
+    result = test_with_config(config)
     print_config(config, result)
     gc.collect()
 
