@@ -60,3 +60,4 @@ class TrainConfig(NamedTuple):
     conv_size = 8
     conv_kernel = 3
     dense_size = 32
+    result_days = 10
