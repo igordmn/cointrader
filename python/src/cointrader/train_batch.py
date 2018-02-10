@@ -62,6 +62,7 @@ def print_config(c, result):
 
 
 configs = [
+    TrainConfig(batch_size=20, sequential_steps=2, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=16, conv_kernel=3, dense_size=64),
     TrainConfig(batch_size=20, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=16, conv_kernel=3, dense_size=64),
     TrainConfig(batch_size=20, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=16, conv_kernel=3, dense_size=64),
 
