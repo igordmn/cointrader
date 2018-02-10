@@ -43,8 +43,8 @@ class TrainConfig(NamedTuple):
     coins: list = binance_coins
     coin_number: int = len(coins)
     fee: float = 0.0019
-    window_size: int = 320
-    batch_size: int = 120
+    window_size: int = 160
+    batch_size: int = 80
     steps: int = 20000
     log_steps: int = 250
     period: int = 300
