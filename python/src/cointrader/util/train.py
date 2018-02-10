@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def train_net(agent, matrix, config, log):
     def log_results(i, train_period_profit):
         total_profit = 1.0
@@ -33,16 +36,28 @@ def train_net(agent, matrix, config, log):
 
 
 def train_net_sequential(agent, matrix, config, log):
+    def normalize_portfolio(portfolio):
+        return portfolio / np.sum(portfolio)
+
+    def profit(old_portoflio, new_portfolio, price_incs):
+        cost = 1 - np.sum(new_portfolio - old_portoflio) * config.fee
+        return np.sum(new_portfolio * price_incs) * cost
+
     total_train_profit = 1.0
     total_test_profit = 1.0
+    portfolio = np.zeros((1 + config.coin_number))
+    portfolio[0] = 1.0
 
     for i in range(matrix.train_sequential_start(), matrix.train_sequential_end()):
         for batch in matrix.train_batches_sequential(i, config.train_sequential_steps):
             train_batch_profit = agent.train(batch)[0]
             total_train_profit *= train_batch_profit
 
-        test_batch_profit = agent.test(matrix.sample_at(i))[0]
-        total_test_profit *= test_batch_profit
+        test_data = matrix.sample_at(i)
+        result = np.squeeze(agent.best_portfolio(test_data.x, portfolio[np.newaxis, :]))
+        new_portfolio = normalize_portfolio(result)
+        total_test_profit *= profit(portfolio, new_portfolio, test_data.price_incs[0])
+        portfolio = new_portfolio
 
         if i % config.log_steps == 0:
             periods_per_day = int(24 * 60 * 60 / config.period)
