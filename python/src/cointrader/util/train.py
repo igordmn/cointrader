@@ -79,4 +79,4 @@ def train_net_sequential(agent, matrix, config, log):
 
     all_periods = matrix.train_sequential_end() - matrix.train_sequential_start()
 
-    return [all_periods ** (periods_per_day / all_periods), result_profit ** (periods_per_day / result_periods)]
+    return [result_all_profit ** (periods_per_day / all_periods), result_profit ** (periods_per_day / result_periods)]
