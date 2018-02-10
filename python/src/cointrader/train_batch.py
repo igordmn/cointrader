@@ -54,6 +54,7 @@ def print_default_config():
 
 def print_config(c, result):
     log_info(
+        "result", result,
         "period", c.period, "window_size", c.window_size, "batch_size", c.batch_size, "sequential_steps", c.sequential_steps,
         "learning_rate", c.learning_rate, "weight_decay", c.weight_decay, "conv_size", c.conv_size,
         "conv_kernel", c.conv_kernel, "dense_size", c.dense_size
@@ -61,11 +62,25 @@ def print_config(c, result):
 
 
 configs = [
-    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=8, conv_kernel=3, dense_size=32),
-    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=8, conv_kernel=3, dense_size=32),
+    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    
+    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-02, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-02, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=4, sequential_bias=5e-02, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    
+    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-01, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-01, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=4, sequential_bias=5e-01, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    
+    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
+    TrainConfig(batch_size=80, sequential_steps=4, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=24, conv_kernel=5, dense_size=96),
 ]
 
-test_count = 2
+test_count = 1
 
 print_default_config()
 log_info("")
