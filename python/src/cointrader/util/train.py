@@ -55,13 +55,15 @@ def train_net_sequential(agent, matrix, config, log):
     def train():
         total_profit = 1.0
 
-        for i in range(matrix.train_sequential_start(), matrix.train_sequential_end()):
-            for batch in matrix.train_batches_sequential(i, config.train_sequential_steps):
+        i = 0
+        for seq_step in range(matrix.train_sequential_start(), matrix.train_sequential_end()):
+            for batch in matrix.train_batches_sequential(seq_step, config.train_sequential_steps):
                 batch_profit = agent.train(batch)[0]
                 total_profit *= batch_profit
 
-            if i % config.log_steps == 0 or i == matrix.train_sequential_end() - 1:
-                log_results(i, total_profit ** (1 / config.log_steps))
-                total_profit = 1.0
+                if i % config.log_steps == 0:
+                    log_results(i, total_profit ** (1 / config.log_steps))
+                    total_profit = 1.0
+                i += 1
 
     train()

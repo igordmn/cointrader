@@ -201,7 +201,7 @@ class DataMatrices:
             yield self.__pack_samples(indices)
 
     def test_batches_sequential(self, step):
-        periods_per_day = 60 * 60 * 24 / self.config.period
+        periods_per_day = int(60 * 60 * 24 / self.config.period)
         start_index = step
         end_index = step + self.config.test_days * periods_per_day
         experiences = range(start_index, end_index)
