@@ -44,6 +44,7 @@ class TrainConfig(NamedTuple):
     start_time: int = parse_time("2018/1/1 00:00:00")
     end_time: int = parse_time("2018/2/7 16:00:00")
     test_days: float = 1
+    result_days = 20
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
@@ -60,4 +61,3 @@ class TrainConfig(NamedTuple):
     conv_size = 8
     conv_kernel = 3
     dense_size = 32
-    result_days = 10
