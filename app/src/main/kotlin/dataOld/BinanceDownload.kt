@@ -18,7 +18,8 @@ private val COINS = setOf(
         "GAS", "VIB", "ZRX", "OMG", "LEND", "BRD", "GTO", "BTS",
         "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP",
         "WABI", "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC",
-        "WINGS", "ENG", "DGD", "ADX", "BQX", "SALT"
+        "WINGS", "ENG", "DGD", "ADX", "BQX", "SALT",
+        "VIBE", "BCD", "APPC", "FUN", "TRIG", "ENJ"
 )
 
 private const val REVERSED_COINS = "USDT"
