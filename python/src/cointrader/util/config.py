@@ -49,8 +49,8 @@ class TrainConfig(NamedTuple):
     log_steps: int = 250
     period: int = 300
     geometric_bias: float = 5e-07
-    start_time: int = parse_time("2018/1/1 00:00:00")
-    end_time: int = parse_time("2018/1/10 16:00:00")
+    start_time: int = parse_time("2018/1/22 00:00:00")
+    end_time: int = parse_time("2018/2/7 16:00:00")
     test_days: float = 1
     train_sequential_steps = 2
     train_sequential_bias = 5e-03
