@@ -44,7 +44,7 @@ class TrainConfig(NamedTuple):
     start_time: int = parse_time("2018/1/1 00:00:00")
     end_time: int = parse_time("2018/2/7 16:00:00")
     test_days: float = 1
-    result_days = 20
+    sequential_result_days = 20
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
@@ -54,8 +54,8 @@ class TrainConfig(NamedTuple):
     fee: float = 0.0019
     window_size: int = 160
     batch_size: int = 80
-    train_sequential_steps = 5
-    train_sequential_bias = 5e-02
+    sequential_steps = 5
+    sequential_bias = 5e-02
     learning_rate = 0.00028 * 6
     weight_decay = 5e-6
     conv_size = 8
