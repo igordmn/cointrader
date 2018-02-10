@@ -46,13 +46,13 @@ class TrainConfig(NamedTuple):
     window_size: int = 320
     batch_size: int = 120
     steps: int = 20000
-    log_steps: int = 500
+    log_steps: int = 250
     period: int = 300
     geometric_bias: float = 5e-07
-    start_time: int = parse_time("2017/12/15 00:00:00")
-    end_time: int = parse_time("2017/12/29 16:00:00")
+    start_time: int = parse_time("2018/1/1 00:00:00")
+    end_time: int = parse_time("2018/2/7 16:00:00")
     test_days: float = 1
     train_sequential_steps = 2
-    train_sequential_bias = 5e-02
+    train_sequential_bias = 5e-03
     indicators: list = sorted(["close", "high", "low"])
     indicator_number: int = len(indicators)
