@@ -5,7 +5,7 @@ import numpy as np
 
 from src.cointrader.util.backtest import backtest
 from src.cointrader.util.config import TrainConfig
-from src.cointrader.util.train import train_net
+from src.cointrader.util.train import train_net, train_net_sequential
 from src.cointrader.constants import *
 from src.cointrader.util.nnagent import NNAgent
 from src.cointrader.util.datamatrices import DataMatrices
@@ -26,9 +26,8 @@ def test_with_config(config):
     matrix = DataMatrices(DATABASE_DIR, config)
     agent = NNAgent(config)
     try:
-        train_net(agent, matrix, config, empty_print)
-        one_day_profit, capitals = backtest(agent, matrix, config, empty_print)
-        return one_day_profit
+        result = train_net_sequential(agent, matrix, config, empty_print)
+        return result
     except Exception:
         print(traceback.format_exc())
         return -1
@@ -70,7 +69,7 @@ configs = [
 
 ]
 
-test_count = 5
+test_count = 2
 
 print_default_config()
 log_info("")
