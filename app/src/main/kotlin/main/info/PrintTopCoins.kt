@@ -81,7 +81,9 @@ fun printTopCoins() = runBlocking {
                 )
             }
     infos.forEach(::println)
-    println(listOf("USDT") + infos.map { it.name })
+
+    val printList = listOf("USDT") + infos.map { it.name }
+    println(printList.joinToString(", ") { "\"$it\"" })
 }
 
 private suspend fun volume(client: BinanceAPI, coin: String, hourCount: Int, before: Instant? = null): BigDecimal {
