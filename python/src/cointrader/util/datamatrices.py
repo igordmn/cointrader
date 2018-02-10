@@ -188,7 +188,7 @@ class DataMatrices:
     def train_batches_sequential(self, step, count):
         assert step > self.config.batch_size
         for i in range(count):
-            batch_end = geometricSample(self.config.batch_size, step, self.config.train_sequential_bias)
+            batch_end = geometricSample(self.config.batch_size, step, self.config.sequential_bias)
             indices = range(batch_end - self.config.batch_size, batch_end)
             yield self.__pack_samples(indices)
 

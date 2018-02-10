@@ -18,15 +18,12 @@ def geo_mean(iterable):
     return a.prod() ** (1.0 / len(a))
 
 
-def empty_print(*_):
-    pass
-
-
 def test_with_config(config):
+    np.random.seed(284112293)
     matrix = DataMatrices(DATABASE_DIR, config)
     agent = NNAgent(config)
     try:
-        result = train_net_sequential(agent, matrix, config, empty_print)
+        result = train_net_sequential(agent, matrix, config, print)
         return result
     except Exception:
         print(traceback.format_exc())
@@ -64,7 +61,8 @@ def print_config(c, result):
 
 
 configs = [
-
+    TrainConfig(batch_size=80, sequential_steps=1, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=8, conv_kernel=3, dense_size=32),
+    TrainConfig(batch_size=80, sequential_steps=2, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-6, conv_size=8, conv_kernel=3, dense_size=32),
 ]
 
 test_count = 2
