@@ -40,7 +40,7 @@ def train_net_sequential(agent, matrix, config, log):
         return portfolio / np.sum(portfolio)
 
     def profit(old_portoflio, new_portfolio, price_incs):
-        cost = 1 - np.sum(new_portfolio - old_portoflio) * config.fee
+        cost = 1 - np.sum(np.abs(new_portfolio - old_portoflio)) * config.fee
         return np.sum(new_portfolio * price_incs) * cost
 
     periods_per_day = int(24 * 60 * 60 / config.period)
