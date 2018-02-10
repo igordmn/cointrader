@@ -178,31 +178,15 @@ def compute_profits(batch_size, previous_w, predict_w, price_inc, fee):
 
     w0 = future_w[:batch_size - 1]
     w1 = predict_w[1:batch_size]
-    future_commission = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
+    cost = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
 
-    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), future_commission], axis=0)
+    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), cost], axis=0)
 
 
 def compute_profits3(batch_size, previous_w, predict_w, price_inc, fee):
     future_portfolio = price_inc * predict_w
     future_commission = 1 - tf.reduce_sum(tf.abs(previous_w - predict_w), axis=1) * fee
     return tf.reduce_sum(future_portfolio, axis=[1]) * future_commission
-
-
-def compute_profits_fix(batch_size, previous_w, predict_w, price_inc, fee):
-    future_portfolio = price_inc * predict_w
-    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
-
-    w0 = future_w[:batch_size - 1]
-    w1 = predict_w[1:batch_size]
-    future_commission = tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
-    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.concat([tf.zeros(1), future_commission], axis=0)
-
-
-def compute_profits3_fix(batch_size, previous_w, predict_w, price_inc, fee):
-    future_portfolio = price_inc * predict_w
-    return tf.reduce_sum(future_portfolio, axis=[1]) - tf.reduce_sum(tf.abs(previous_w - predict_w), axis=1) * fee
-
 
 
 class Tensors(NamedTuple):
@@ -241,9 +225,7 @@ class NNAgent:
         previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
         predict_w = build_predict_w(batch_size, config, x, previous_w)
 
-        # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees)
-        profits = compute_profits_fix(batch_size, previous_w, predict_w, price_incs, config.fee)
-        # profits = compute_profits(batch_size, previous_w, predict_w, price_incs, fee)
+        profits = compute_profits(batch_size, previous_w, predict_w, price_incs, config.fee)
         log_profits = tf.log(profits)
         capital = tf.reduce_prod(profits)
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
