@@ -41,12 +41,15 @@ def train_net_sequential(agent, matrix, config, log):
             train_batch_profit = agent.train(batch)[0]
             total_train_profit *= train_batch_profit
 
-        test_batch_profit = agent.test(matrix.sample_at(i + 1))[0]
+        test_batch_profit = agent.test(matrix.sample_at(i))[0]
         total_test_profit *= test_batch_profit
 
         if i % config.log_steps == 0:
-            train_day_profit = total_train_profit ** (1 / config.log_steps / config.train_sequential_steps)
-            test_day_profit = total_test_profit ** (1 / config.log_steps)
+            periods_per_day = int(24 * 60 * 60 / config.period)
+            train_period_profit = total_train_profit ** (1 / config.log_steps / config.train_sequential_steps)
+            test_period_profit = total_test_profit ** (1 / config.log_steps)
+            train_day_profit = train_period_profit ** periods_per_day
+            test_day_profit = test_period_profit ** periods_per_day
             log(f'{i}   {train_day_profit}   {test_day_profit}')
             total_train_profit = 1.0
             total_test_profit = 1.0

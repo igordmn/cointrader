@@ -164,11 +164,10 @@ class DataMatrices:
         return self.__pack_samples(self._test_ind)
 
     def train_batches(self):
-        start_index = 0
-        end_index = self._test_ind[0] - 1 - self.config.batch_size
+        end_index = self._test_ind[0] - 1
         while True:
-            batch_start = geometricSample(start_index, end_index, self.config.geometric_bias)
-            indices = range(batch_start, batch_start + self.config.batch_size)
+            batch_end = geometricSample(self.config.batch_size, end_index, self.config.geometric_bias)
+            indices = range(batch_end - self.config.batch_size, batch_end)
             yield self.__pack_samples(indices)
 
     def test_batches(self):
@@ -187,11 +186,10 @@ class DataMatrices:
         return self._test_ind[-1] - 2
 
     def train_batches_sequential(self, step, count):
-        start_index = 0
-        end_index = step - self.config.batch_size
+        assert step > self.config.batch_size
         for i in range(count):
-            batch_start = geometricSample(start_index, end_index, self.config.train_sequential_bias)
-            indices = range(batch_start, batch_start + self.config.batch_size)
+            batch_end = geometricSample(self.config.batch_size, step, self.config.train_sequential_bias)
+            indices = range(batch_end - self.config.batch_size, batch_end)
             yield self.__pack_samples(indices)
 
     def sample_at(self, index):
