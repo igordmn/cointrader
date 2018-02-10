@@ -50,7 +50,7 @@ def train_net_sequential(agent, matrix, config, log):
     portfolio = np.zeros((1 + len(config.coins)))
     portfolio[0] = 1.0
 
-    result_periods = config.result_days * periods_per_day
+    result_periods = config.sequential_result_days * periods_per_day
     result_start_step = matrix.train_sequential_end() - result_periods
     result = 1.0
 
