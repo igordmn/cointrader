@@ -25,10 +25,32 @@ def backtest(agent, matrix, config, log):
 
         return capital_after_fee * new_portfolio_percents
 
+    def rebalance_limit(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices):
+        current_index = portfolio_percents.tolist().index(max(portfolio_percents))
+        buy_index = new_portfolio_percents.tolist().index(max(new_portfolio_percents))
+
+        if buy_index != current_index:
+            current_price = prices[current_index]
+            buy_price = prices[buy_index]
+            can_sell = next_low_prices[current_index] <= current_price <= next_high_prices[current_index]
+            can_buy = next_low_prices[buy_index] <= buy_price <= next_high_prices[buy_index]
+
+            if current_index != 0 and can_sell:
+                old_amount = portfolio[current_index]
+                portfolio[current_index] = 0.0
+                portfolio[0] = old_amount * current_price * (1 - config.fee)
+
+            if buy_index != 0 and portfolio[0] > 0 and can_buy:
+                old_amount = portfolio[0]
+                portfolio[0] = 0.0
+                portfolio[buy_index] = old_amount / buy_price * (1 - config.fee)
+
     def trade_single(step, portfolio):
         history = x[step][np.newaxis, :, :, :]
 
         prices = all_prices[step]
+        next_high_prices = test_set.price_incs[step + 1, -1, :, 1]
+        next_low_prices = test_set.price_incs[step + 1, -1, :, 2]
 
         portfolio_btc = portfolio * prices
         portfolio_percents = normalize_portfolio(portfolio_btc)
@@ -36,8 +58,10 @@ def backtest(agent, matrix, config, log):
         new_portfolio_percents = normalize_portfolio(result)
         log("portfolio", ", ".join("%.2f" % f for f in new_portfolio_percents))
 
-        portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
-        return portfolio_btc / prices
+        # portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
+        # return portfolio_btc / prices
+
+        return rebalance_limit(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
 
     def compute_capital(step, portfolio):
         current_prices = all_prices[step]
