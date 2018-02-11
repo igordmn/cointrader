@@ -45,12 +45,14 @@ def backtest(agent, matrix, config, log):
                 portfolio[0] = 0.0
                 portfolio[buy_index] = old_amount / buy_price * (1 - config.fee)
 
+        return portfolio
+
     def trade_single(step, portfolio):
         history = x[step][np.newaxis, :, :, :]
 
         prices = all_prices[step]
-        next_high_prices = test_set.price_incs[step + 1, -1, :, 1]
-        next_low_prices = test_set.price_incs[step + 1, -1, :, 2]
+        next_high_prices = test_set.x[step + 1, 1, :, -1]
+        next_low_prices = test_set.x[step + 1, 2, :, -1]
 
         portfolio_btc = portfolio * prices
         portfolio_percents = normalize_portfolio(portfolio_btc)

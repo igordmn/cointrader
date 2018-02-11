@@ -27,7 +27,7 @@ matrix = DataMatrices(DATABASE_DIR, config)
 
 try:
     result = train_net_sequential(agent, matrix, config, print)
-    print("{config.result_days} days average day profit: {result}")
+    print(f"{config.result_days} days average day profit: {result}")
     agent.save(NET_FILE)
 finally:
     agent.recycle()

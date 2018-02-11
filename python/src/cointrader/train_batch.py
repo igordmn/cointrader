@@ -62,7 +62,13 @@ def print_config(c, result):
 
 
 configs = [
-    TrainConfig(batch_size=10, sequential_steps=2, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-7, conv_size=16, conv_kernel=3, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 9, weight_decay=5e-10, conv_size=3, conv_kernel=3, dense_size=10),
+    TrainConfig(batch_size=10, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 7, weight_decay=5e-10, conv_size=3, conv_kernel=3, dense_size=10),
+    TrainConfig(batch_size=10, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 6, weight_decay=5e-10, conv_size=3, conv_kernel=3, dense_size=10),
+    TrainConfig(batch_size=10, sequential_steps=4, sequential_bias=5e-03, learning_rate=0.00028 * 5, weight_decay=5e-10, conv_size=3, conv_kernel=3, dense_size=10),
+]
+
+configs2 = [
     TrainConfig(batch_size=10, sequential_steps=4, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-7, conv_size=16, conv_kernel=3, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-7, conv_size=16, conv_kernel=3, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=2, sequential_bias=5e-04, learning_rate=0.00028 * 6, weight_decay=5e-5, conv_size=16, conv_kernel=3, dense_size=64),
@@ -173,8 +179,8 @@ configs = [
 
 test_count = 1
 
-print_default_config()
-log_info("")
+# print_default_config()
+# log_info("")
 
 total_num = len(configs)
 num = 0

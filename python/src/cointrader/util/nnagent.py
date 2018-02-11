@@ -57,7 +57,6 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
     net = net[:, :, 0, 0]
     return tflearn.layers.core.activation(net, activation="softmax")
 
-
 def build_predict_w(
         batch_size, config, x, previous_w
 ):
@@ -238,7 +237,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(config.learning_rate).minimize(loss)
+        train = tf.train.RMSPropOptimizer(config.learning_rate).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,

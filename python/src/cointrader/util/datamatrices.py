@@ -107,31 +107,34 @@ def get_global_panel(database_dir, config):
                 panel.loc[indicator, coin, serial_data.index] = serial_data.squeeze()
                 panel = panel_fillna(panel)
 
-            sql = ("SELECT closeTime-{exchange_db_period}-{period} AS date_norm, open, close, high, low FROM History WHERE"
-                   " date>={start} and date<={end}"
-                   " and (closeTime-{exchange_db_period})%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
-                start=start, end=end, period=config.period, exchange=config.exchange, exchange_db_period=config.exchange_db_period, coin=coin))
-
-            gc.collect()
-
-            serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
-            serial_data['z_price'] = serial_data['open']  # = serial_data.apply(lambda row: row['low'], axis=1)
-            # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
-            # serial_data['zz_buy_fee'] = serial_data.apply(
-            #     lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
-            # serial_data['zzz_sell_fee'] = serial_data.apply(
-            #     lambda row: sell_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
-
-            panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
-                columns=['open', 'close', 'high', 'low']).squeeze()
-            # panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
-            #     columns=['open', 'close', 'high', 'low', 'zz_buy_fee', 'zzz_sell_fee']).squeeze()
-            # panel.loc["zz_buy_fee", coin, serial_data.index] = serial_data.drop(
-            #     columns=['open', 'close', 'high', 'low', 'z_price', 'zzz_sell_fee']).squeeze()
-            # panel.loc["zzz_sell_fee", coin, serial_data.index] = serial_data.drop(
-            #     columns=['open', 'close', 'high', 'low', 'z_price', 'zz_buy_fee']).squeeze()
-
+            panel.loc["z_price", coin, serial_data.index] = panel.loc["close", coin, serial_data.index]
             panel = panel_fillna(panel)
+
+            # sql = ("SELECT closeTime-{exchange_db_period}-{period} AS date_norm, open, close, high, low FROM History WHERE"
+            #        " date>={start} and date<={end}"
+            #        " and (closeTime-{exchange_db_period})%{period}=0 and exchange=\"{exchange}\" and coin=\"{coin}\"".format(
+            #     start=start, end=end, period=config.period, exchange=config.exchange, exchange_db_period=config.exchange_db_period, coin=coin))
+            #
+            # gc.collect()
+            #
+            # serial_data = pd.read_sql_query(sql, con=connection, index_col="date_norm")
+            # serial_data['z_price'] = serial_data['open']  # = serial_data.apply(lambda row: row['low'], axis=1)
+            # # serial_data['z_price'] = serial_data.apply(lambda row: random_price(row['open'], row['close'], row['high'], row['low']), axis=1)
+            # # serial_data['zz_buy_fee'] = serial_data.apply(
+            # #     lambda row: buy_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+            # # serial_data['zzz_sell_fee'] = serial_data.apply(
+            # #     lambda row: sell_fee(config.fee, row['z_price'], row['high'], row['low']), axis=1)
+            #
+            # panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
+            #     columns=['open', 'close', 'high', 'low']).squeeze()
+            # # panel.loc["z_price", coin, serial_data.index] = serial_data.drop(
+            # #     columns=['open', 'close', 'high', 'low', 'zz_buy_fee', 'zzz_sell_fee']).squeeze()
+            # # panel.loc["zz_buy_fee", coin, serial_data.index] = serial_data.drop(
+            # #     columns=['open', 'close', 'high', 'low', 'z_price', 'zzz_sell_fee']).squeeze()
+            # # panel.loc["zzz_sell_fee", coin, serial_data.index] = serial_data.drop(
+            # #     columns=['open', 'close', 'high', 'low', 'z_price', 'zz_buy_fee']).squeeze()
+            #
+            # panel = panel_fillna(panel)
 
     finally:
         connection.commit()
@@ -210,7 +213,7 @@ class DataMatrices:
         # bitcoin_M = np.concatenate((bitcoin_M_prices, bitcoin_M_fees), axis=1)
         M = np.concatenate((bitcoin_M, M), axis=2)
         x = M[:, :-1, :, :-1]
-        prices = M[:, -1, :, -2]  # -3 indicator (second index) should be "z_price"
+        prices = M[:, -1, :, -2]  # -1 indicator (second index) should be "z_price"
         price_incs = M[:, -1, :, -1] / M[:, -1, :, -2]
 
         # x = M[:, :-3, :, :-1]

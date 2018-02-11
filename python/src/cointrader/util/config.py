@@ -34,10 +34,10 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     exchange_db_period = 60
     coins: list = binance_coins
-    start_time: int = parse_time("2017/11/1 00:00:00")
-    end_time: int = parse_time("2018/2/11 10:00:00")
+    start_time: int = parse_time("2018/1/1 00:00:00")
+    end_time: int = parse_time("2018/1/10 11:00:00")
     test_days: float = 1
-    sequential_result_days = 20
+    sequential_result_days = 2
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
@@ -46,7 +46,7 @@ class TrainConfig(NamedTuple):
     period: int = 240
     geometric_bias: float = 5e-07
     window_size: int = 160
-    batch_size: int = 80
+    batch_size: int = 10
     sequential_steps: int = 1
     sequential_bias: float = 5e-03
     learning_rate: float = 0.00028 * 6
