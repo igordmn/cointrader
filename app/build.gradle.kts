@@ -61,6 +61,9 @@ dependencies {
     compile("org.jetbrains.exposed:exposed:0.9.1")
     compile("com.github.kittinunf.fuel:fuel:1.12.0")
     compile("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion")
+    compile("org.deeplearning4j:deeplearning4j-core:0.9.1")
+    compile("org.deeplearning4j:rl4j-core:0.9.1")
+    compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 

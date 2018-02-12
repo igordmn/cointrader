@@ -13,13 +13,7 @@ def parse_time(time_string):
 
 
 binance_coins = [
-    # "USDT", "ETH", "TRX", "ICX", "VEN", "XRP", "NEO", "EOS", "ELF", "CND", "WTC", "XLM", "ADA", "HSR", "LTC", "VIBE", "XVG", "BCH", "LSK",
-    # "IOTA", "POE", "BCD", "ETC", "BRD", "QTUM", "ZRX", "OMG", "BTS", "LEND", "GAS", "SUB", "APPC", "AION", "STRAT", "XMR", "FUN", "TRIG",
-    # "ENJ", "ENG", "BTG", "DASH"
-
-    "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "EOS", "WTC", "ADA",
-    "XVG", "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG",
-    "TNT", "QTUM", "LSK", "GAS", "VIB", "ZRX", "OMG", "BTS",
+    "USDT", "BCH", "ETH", "NEO", "IOTA", "ETC", "WTC", "QSP", "EOS", "QTUM", "XRP", "LTC", "HSR", "OMG", "STRAT", "MTL", "XMR", "SUB", "LSK", "ZEC"
 ]
 
 poloniex_coins = [
@@ -34,17 +28,17 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     exchange_db_period = 60
     coins: list = binance_coins
-    start_time: int = parse_time("2018/1/1 00:00:00")
+    start_time: int = parse_time("2017/9/1 00:00:00")
     # start_time: int = parse_time("2018/1/22 00:00:00")
-    end_time: int = parse_time("2018/2/11 11:00:00")
+    end_time: int = parse_time("2018/2/13 00:00:00")
     test_days: float = 1
-    sequential_result_days = 20
+    sequential_result_days = 23
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
     fee: float = 0.0019
 
-    period: int = 240
+    period: int = 840
     geometric_bias: float = 5e-07
     window_size: int = 320
     batch_size: int = 10

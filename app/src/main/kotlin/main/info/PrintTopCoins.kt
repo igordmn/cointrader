@@ -16,22 +16,19 @@ import java.time.ZoneOffset
 
 // todo https://api.coinmarketcap.com/v1/ticker/?limit=100
 fun printTopCoins() = runBlocking {
-    val beforeTime = LocalDateTime.of(2018, 1, 15, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
-    val minVolume = BigDecimal(1_000_000)
+    val beforeTime = LocalDateTime.of(2017, 12, 1, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
+    val minVolume = BigDecimal(150)
     val topCount = 60
     val excludedCoins = setOf("BNBBTC")
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
-    val allPrices = api.allPrices()
     val constants = BinanceConstants()
 
-    val oneBTCinUSDT = BigDecimal(allPrices.find { it.symbol == "BTCUSDT" }!!.price)
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
-    val prices: Map<String, BigDecimal> = allPrices.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to BigDecimal(it.price) }
-    val allLimits: Map<String, BinanceMarketLimits> = prices.keys.associate { it to BinanceMarketLimits(it, exchangeInfo) }
 
     val exist = info.keys.associate { it to existBefore(api, it, beforeTime) }
+    val volumesMonthBeforeTime = info.keys.associate { it to volume(api, it, 20 * 24, beforeTime) / BigDecimal(20) }
     val volumesMonth1 = info.keys.associate { it to volume(api, it, 20 * 24) / BigDecimal(20) }
     val volumesMonth2 = info.keys.associate { it to volume(api, it, 20 * 24, Instant.now() - Duration.ofDays(20)) / BigDecimal(20) }
     val volumesWeek1 = info.keys.associate { it to volume(api, it, 7 * 24) / BigDecimal(7) }
@@ -39,13 +36,15 @@ fun printTopCoins() = runBlocking {
     val volumesDay1 = info.keys.associate { it to volume(api, it, 1 * 24) / BigDecimal(1) }
     val volumesDay2 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(1)) / BigDecimal(1) }
     val volumesDay3 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(2)) / BigDecimal(1) }
-    val volumesMonth1List = volumesMonth1.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesMonth2List = volumesMonth2.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesWeek1List = volumesWeek1.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesWeek2List = volumesWeek2.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay1List = volumesDay1.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay2List = volumesDay2.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
-    val volumesDay3List = volumesDay3.entries.filter { it.value * oneBTCinUSDT >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesMonthBeforeTimeList = volumesMonthBeforeTime.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesMonth1List = volumesMonth1.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesMonth2List = volumesMonth2.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesWeek1List = volumesWeek1.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesWeek2List = volumesWeek2.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay1List = volumesDay1.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay2List = volumesDay2.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val volumesDay3List = volumesDay3.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
+    val topCoinsMonthBeforeTime = volumesMonthBeforeTimeList.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsMonth1 = volumesMonth1List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsMonth2 = volumesMonth2List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsWeek1 = volumesWeek1List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
@@ -53,12 +52,11 @@ fun printTopCoins() = runBlocking {
     val topCoinsDay1 = volumesDay1List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsDay2 = volumesDay2List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsDay3 = volumesDay3List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
-    val topCoins = topCoinsMonth1 intersect topCoinsMonth2 intersect topCoinsWeek1 intersect topCoinsWeek2 intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3
+    val topCoins = topCoinsMonthBeforeTime intersect topCoinsMonth1 intersect topCoinsMonth2 intersect topCoinsWeek1 intersect topCoinsWeek2 intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3
 
     val infos = topCoins
             .map {
-                val limits = allLimits[it]!!.get()
-                val price = prices[it]!!
+                val volumeMonthBeforeTime = volumesMonthBeforeTime[it]!!
                 val volumeMonth1 = volumesMonth1[it]!!
                 val volumeMonth2 = volumesMonth2[it]!!
                 val volumeWeek1 = volumesWeek1[it]!!
@@ -70,14 +68,14 @@ fun printTopCoins() = runBlocking {
                 val name = it.removeSuffix("BTC")
                 CoinInfo(
                         constants.binanceNameToStandard[name] ?: name,
-                        volumeMonth1 * oneBTCinUSDT,
-                        volumeMonth2 * oneBTCinUSDT,
-                        volumeWeek1 * oneBTCinUSDT,
-                        volumeWeek2 * oneBTCinUSDT,
-                        volumeDay1 * oneBTCinUSDT,
-                        volumeDay2 * oneBTCinUSDT,
-                        volumeDay3 * oneBTCinUSDT,
-                        limits.amountStep * price * oneBTCinUSDT
+                        volumeMonthBeforeTime,
+                        volumeMonth1,
+                        volumeMonth2,
+                        volumeWeek1,
+                        volumeWeek2,
+                        volumeDay1,
+                        volumeDay2,
+                        volumeDay3
                 )
             }
     infos.forEach(::println)
@@ -95,19 +93,18 @@ private suspend fun existBefore(client: BinanceAPI, coin: String, time: Instant)
     return client.getCandlestickBars(coin, "1h", 100, null, time.toEpochMilli()).isNotEmpty()
 }
 
-// Prices in USDT
 private data class CoinInfo(
         val name: String,
+        val volumeMonthBeforeTime: BigDecimal,
         val volumeMonth1: BigDecimal,
         val volumeMonth2: BigDecimal,
         val volumeWeek1: BigDecimal,
         val volumeWeek2: BigDecimal,
         val volumeDay1: BigDecimal,
         val volumeDay2: BigDecimal,
-        val volumeDay3: BigDecimal,
-        val amountStep: BigDecimal
+        val volumeDay3: BigDecimal
 ) {
     override fun toString(): String {
-        return "$name\t$volumeMonth1\t$volumeMonth2\t$volumeWeek1\t$volumeWeek2\t$volumeDay1\t$volumeDay2\t$volumeDay3\t$amountStep"
+        return "$name\t$volumeMonthBeforeTime\t$volumeMonth1\t$volumeMonth2\t$volumeWeek1\t$volumeWeek2\t$volumeDay1\t$volumeDay2\t$volumeDay3"
     }
 }
