@@ -63,7 +63,9 @@ def print_config(c, result):
 
 
 configs = [
-    TrainConfig(batch_size=10, sequential_steps=16, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=16, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 ]
 
 test_count = 3

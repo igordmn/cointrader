@@ -40,7 +40,7 @@ class TrainConfig(NamedTuple):
 
     period: int = 840
     geometric_bias: float = 5e-07
-    window_size: int = 320
+    window_size: int = 240
     batch_size: int = 10
     sequential_steps: int = 1
     sequential_bias: float = 5e-03
