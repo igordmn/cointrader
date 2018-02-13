@@ -40,7 +40,7 @@ class TrainConfig(NamedTuple):
     fee: float = 0.0019
 
     period: int = 840
-    geometric_bias: float = 5e-07
+    geometric_bias: float = 5e-06
     window_size: int = 320
     batch_size: int = 10
     sequential_steps: int = 1
