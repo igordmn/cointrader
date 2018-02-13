@@ -54,6 +54,8 @@ def train_net_sequential(agent, matrix, config, log):
     result_start_step = matrix.train_sequential_end() - result_periods
     result_profit = 1.0
     result_all_profit = 1.0
+    result_capital = 1
+    result_capitals = []
 
     for i in range(matrix.train_sequential_start(), matrix.train_sequential_end()):
         for batch in matrix.train_batches_sequential(i, config.sequential_steps):
@@ -70,6 +72,8 @@ def train_net_sequential(agent, matrix, config, log):
         if i >= result_start_step:
             result_profit *= test_profit
         result_all_profit *= test_profit
+        result_capital *= test_profit
+        result_capitals.append(result_capital)
 
         if i % config.log_steps == 0:
             train_day_profit = total_train_profit ** (periods_per_day / config.log_steps / config.sequential_steps)
@@ -80,4 +84,4 @@ def train_net_sequential(agent, matrix, config, log):
 
     all_periods = matrix.train_sequential_end() - matrix.train_sequential_start()
 
-    return [result_all_profit ** (periods_per_day / all_periods), result_profit ** (periods_per_day / result_periods)]
+    return result_all_profit ** (periods_per_day / all_periods), result_profit ** (periods_per_day / result_periods), result_capitals

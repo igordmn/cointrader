@@ -26,8 +26,9 @@ agent = NNAgent(config)
 matrix = DataMatrices(DATABASE_DIR, config)
 
 try:
-    result = train_net_sequential(agent, matrix, config, print)
-    print(f"{config.result_days} days average day profit: {result}")
+    result_all, result_last, capitals = train_net_sequential(agent, matrix, config, print)
+    print(f"{result_all} {result_last}")
+    plot_log(capitals, config)
     agent.save(NET_FILE)
 finally:
     agent.recycle()

@@ -5,6 +5,7 @@ import numpy as np
 
 from src.cointrader.util.backtest import backtest
 from src.cointrader.util.config import TrainConfig
+from src.cointrader.util.plot import plot_log
 from src.cointrader.util.train import train_net, train_net_sequential
 from src.cointrader.constants import *
 from src.cointrader.util.nnagent import NNAgent
@@ -23,8 +24,7 @@ def test_with_config(config):
     matrix = DataMatrices(DATABASE_DIR, config)
     agent = NNAgent(config)
     try:
-        result = train_net_sequential(agent, matrix, config, print)
-        return result
+        return train_net_sequential(agent, matrix, config, print)
     except Exception:
         print(traceback.format_exc())
         return -1
@@ -52,9 +52,9 @@ def print_default_config():
     log_info("start", c.start_time, "end", c.end_time, "result_days", c.sequential_result_days, "log_steps", c.log_steps)
 
 
-def print_config(c, result):
+def print_config(c, result_all, result_last):
     log_info(
-        "result", result,
+        "result_all", result_all, "result_last", result_last,
         "period", c.period, "window_size", c.window_size, "batch_size", c.batch_size, "sequential_steps", c.sequential_steps, "sequential_bias", c.sequential_bias,
         "learning_rate", c.learning_rate, "weight_decay", c.weight_decay, "conv_size", c.conv_size,
         "conv_kernel", c.conv_kernel, "dense_size", c.dense_size,
@@ -63,10 +63,6 @@ def print_config(c, result):
 
 
 configs = [
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-
-
-
     TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 12, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 12, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
@@ -113,8 +109,8 @@ for config in configs:
 
     # result = sorted([test_with_config(config)[1] for x in range(test_count)])[1]
     # result = geo_mean([test_with_config(config)[1] for x in range(test_count)])
-    result = test_with_config(config)
-    print_config(config, result)
+    result_all, result_last, _ = test_with_config(config)
+    print_config(config, result_all, result_last)
     gc.collect()
 
     end = time.time()
