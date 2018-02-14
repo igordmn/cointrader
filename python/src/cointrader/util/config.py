@@ -30,9 +30,9 @@ class TrainConfig(NamedTuple):
     exchange: str = "binance"
     exchange_db_period = 60
     coins: list = binance_coins
-    start_time: int = parse_time("2017/9/1 00:00:00")
-    end_time: int = parse_time("2018/2/13 00:00:00")
-    test_days: float = 1
+    start_time: int = parse_time("2017/8/1 00:00:00")
+    end_time: int = parse_time("2018/2/14 16:30:00")
+    test_days: float = 23
     sequential_result_days = 23
     steps: int = 20000
     log_steps: int = 250
@@ -40,15 +40,15 @@ class TrainConfig(NamedTuple):
     fee: float = 0.0019
 
     period: int = 840
-    geometric_bias: float = 5e-06
+    geometric_bias: float = 5e-07
     window_size: int = 320
     batch_size: int = 10
-    sequential_steps: int = 1
+    sequential_steps: int = 8
     sequential_bias: float = 5e-03
     learning_rate: float = 0.00028 * 6
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.5
-    conv_size: int = 8
-    conv_kernel: int = 3
-    dense_size: int = 32
+    conv_size: int = 24
+    conv_kernel: int = 5
+    dense_size: int = 64
