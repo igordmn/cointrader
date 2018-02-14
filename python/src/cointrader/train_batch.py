@@ -64,32 +64,29 @@ def print_config(c, result_all, result_last):
 
 configs = [
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
-
-
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028 * 6, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028 * 6, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028 * 6, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.8, use_batch_normalization=True, conv_size=5, conv_kernel=3, dense_size=12),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.4, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-03, learning_rate=0.00028, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-02, learning_rate=0.00028, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=32, sequential_bias=5e-04, learning_rate=0.00028, dropout=0.3, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 ]
 
