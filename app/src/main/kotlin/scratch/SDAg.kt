@@ -1,4 +1,4 @@
-package data
+package scratch
 
 import java.io.File
 

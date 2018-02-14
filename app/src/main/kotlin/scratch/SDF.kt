@@ -1,10 +1,9 @@
-package train
+package scratch
 
 import jep.DirectNDArray
 import jep.Jep
 import python.jep
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 import java.util.*
 import kotlin.system.measureNanoTime
 
