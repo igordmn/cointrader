@@ -31,9 +31,9 @@ class TrainConfig(NamedTuple):
     exchange_db_period = 60
     coins: list = binance_coins
     start_time: int = parse_time("2017/9/1 00:00:00")
-    end_time: int = parse_time("2018/2/13 00:00:00")
-    test_days: float = 23
-    sequential_result_days = 23
+    end_time: int = parse_time("2018/2/15 22:40:00")
+    test_days: float = 30
+    sequential_result_days = 30
     steps: int = 20000
     log_steps: int = 250
     indicators: list = sorted(["close", "high", "low"])
