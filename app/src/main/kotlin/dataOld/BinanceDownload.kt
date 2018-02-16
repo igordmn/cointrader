@@ -12,11 +12,12 @@ import kotlin.math.roundToLong
 private val exchange = "binance"
 
 private val COINS = setOf(
-        "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS", "ELF", "WTC", "CND", "ADA", "XLM", "XVG", "HSR", "LTC", "BCH",
-        "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK", "GAS", "VIB", "ZRX", "OMG", "LEND", "BRD", "GTO", "BTS", "SUB",
-        "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP", "WABI", "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC",
-        "WINGS", "ENG", "DGD", "ADX", "BQX", "SALT", "VIBE", "BCD", "APPC", "FUN", "TRIG", "POWR", "MANA", "BNB", "TNB",
-        "CTR", "AMB", "LINK", "MCO", "CDT", "OST"
+        "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS", "ELF", "WTC", "CND", "ADA", "XLM", "XVG",
+        "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK", "GAS", "VIB", "ZRX", "OMG",
+        "LEND", "BRD", "GTO", "BTS", "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP", "WABI",
+        "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC", "WINGS", "ENG", "DGD", "ADX", "BQX", "SALT",
+        "VIBE", "BCD", "APPC", "FUN", "TRIG", "POWR", "MANA", "BNB", "TNB", "CTR", "AMB", "LINK", "MCO",
+        "CDT", "OST", "PPT", "GXS"
 )
 
 private const val REVERSED_COINS = "USDT"

@@ -32,8 +32,8 @@ def backtest(agent, matrix, config, log):
         if buy_index != current_index:
             current_price = prices[current_index]
             buy_price = prices[buy_index]
-            can_sell = current_price < next_high_prices[current_index]
-            can_buy = next_low_prices[buy_index] < buy_price
+            can_sell = True  #current_price < next_high_prices[current_index]
+            can_buy = True  #next_low_prices[buy_index] < buy_price
 
             if current_index != 0 and can_sell:
                 old_amount = portfolio[current_index]
