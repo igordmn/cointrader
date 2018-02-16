@@ -236,11 +236,6 @@ class Tensors(NamedTuple):
 
     capital: tf.Tensor
     geometric_mean_profit: tf.Tensor
-    log_mean_profit: tf.Tensor
-    standard_profit_deviation: tf.Tensor
-    downside_profit_deviation: tf.Tensor
-    sharp_ratio: tf.Tensor
-    sortino_ratio: tf.Tensor
 
     train: tf.Tensor
 
@@ -267,11 +262,6 @@ class NNAgent:
         geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
         log_mean = tf.reduce_mean(log_profits)
 
-        standard_deviation = tf.sqrt(tf.reduce_mean((log_profits - log_mean) ** 2))
-        downside_deviation = tf.sqrt(tf.reduce_mean(tf.minimum(0.0, log_profits) ** 2))
-        sharp_ratio = log_mean / standard_deviation
-        sortino_ratio = log_mean / downside_deviation
-
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
         train = tf.train.AdamOptimizer(config.learning_rate).minimize(loss)
@@ -287,11 +277,6 @@ class NNAgent:
 
             capital,
             geometric_mean,
-            log_mean,
-            standard_deviation,
-            downside_deviation,
-            sharp_ratio,
-            sortino_ratio,
 
             train
         )
@@ -333,27 +318,6 @@ class NNAgent:
         batch.setw(results[1])
 
         return results[2:]
-
-    def test(self, batch):
-        session = self._session
-        t = self._tensors
-
-        tflearn.is_training(False, session)
-        results = session.run(
-            [
-                t.predict_w, t.geometric_mean_profit
-            ],
-            feed_dict={
-                t.x: batch.x,
-                t.price_incs: batch.price_incs,
-                # t.buy_fees: batch.buy_fees,
-                # t.sell_fees: batch.sell_fees,
-                t.previous_w: batch.previous_w,
-                t.batch_size: batch.x.shape[0]
-            }
-        )
-        batch.setw(results[0])
-        return results[1:]
 
     def best_portfolio(self, history, previous_w):
         session = self._session
