@@ -32,8 +32,8 @@ fun main(args: Array<String>) = runBlocking {
             "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
             "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
     )
-//    val applyAddFee = 0.00017
-    val applyAddFee = 0.0000
+    val applyAddFee = 0.00017
+//    val applyAddFee = 0.0000
 
     val tradeBuilder = TradeBuilder()
 

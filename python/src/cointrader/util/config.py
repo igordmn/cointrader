@@ -39,11 +39,11 @@ class TrainConfig(NamedTuple):
     test_days: float = 15
     sequential_result_days = 30
     steps: int = 2000000
-    log_steps: int = 10000
+    log_steps: int = 5000
     indicators: list = sorted(["close", "high", "low"])
     fee: float = 0.0018
 
-    period: int = 120
+    period: int = 240
     geometric_bias: float = 5e-06
     window_size: int = 320
     batch_size: int = 109
