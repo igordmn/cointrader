@@ -19,7 +19,7 @@ data class TestConfig(
                 "WINGS"
         ),
         val initialCoins: Map<String, BigDecimal> = mapOf(
-                "BTC" to BigDecimal("3.00")
+                "BTC" to BigDecimal("1.00")
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
