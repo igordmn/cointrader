@@ -32,6 +32,8 @@ fun main(args: Array<String>) = runBlocking {
             "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
             "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
     )
+//    val applyAddFee = 0.00017
+    val applyAddFee = 0.0000
 
     val tradeBuilder = TradeBuilder()
 
@@ -45,9 +47,10 @@ fun main(args: Array<String>) = runBlocking {
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
             .toList()
 
-    val meanCommission =  Math.sqrt(comissions.geoMean())
+    val meanCommission =  Math.sqrt(comissions.geoMean()) * (1 - applyAddFee)
+    val count = comissions.size
 
-    println("fact commission $meanCommission")
+    println("fact commission $meanCommission. count $count")
 
 //    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
 //    val constants = BinanceConstants()

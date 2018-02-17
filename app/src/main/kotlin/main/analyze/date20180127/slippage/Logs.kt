@@ -7,7 +7,7 @@ import java.util.zip.ZipFile
 
 private val folders = listOf(
 //        "D:/Development/Projects/cointrader/archive/0003/app/bin/log/archive"
-        "D:/Development/Projects/cointrader/archive/0004/app/bin/log/archive"
+        "D:/Development/Projects/build/0006/app/bin/log/archive"
 )
 
 private val realTradePrefixes = listOf("realTrade", "realTest")
