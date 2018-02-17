@@ -41,18 +41,21 @@ class TrainConfig(NamedTuple):
     steps: int = 2000000
     log_steps: int = 10000
     indicators: list = sorted(["close", "high", "low"])
-    fee: float = 0.0019
+    fee: float = 0.0018
 
-    period: int = 840
+    period: int = 120
     geometric_bias: float = 5e-06
-    window_size: int = 200
+    window_size: int = 320
     batch_size: int = 109
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
-    learning_rate: float = 0.00028
+    learning_rate: float = 0.00028 * 2
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.5
     conv_size: int = 24
     conv_kernel: int = 5
     dense_size: int = 64
+
+    indicator_number: int = len(indicators)
+    coin_number: int = len(coins)

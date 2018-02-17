@@ -9,7 +9,7 @@ from src.cointrader.util.config import TrainConfig
 from src.cointrader.util.plot import plot_log
 from src.cointrader.util.train import train_net
 from src.cointrader.constants import *
-from src.cointrader.util.nnagent import NNAgent
+from src.cointrader.util.nnagent import NNAgent, train_config_to_nn
 from src.cointrader.util.datamatrices import DataMatrices
 
 dir = dirname(abspath(NET_FILE))
@@ -22,7 +22,7 @@ np.random.seed(284112293)
 
 config = TrainConfig()
 
-agent = NNAgent(config)
+agent = NNAgent(train_config_to_nn(config))
 matrix = DataMatrices(DATABASE_DIR, config)
 
 try:

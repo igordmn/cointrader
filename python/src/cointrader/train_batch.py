@@ -8,7 +8,7 @@ from src.cointrader.util.config import TrainConfig, parse_time
 from src.cointrader.util.plot import plot_log
 from src.cointrader.util.train import train_net, train_net_sequential
 from src.cointrader.constants import *
-from src.cointrader.util.nnagent import NNAgent
+from src.cointrader.util.nnagent import NNAgent, train_config_to_nn
 from src.cointrader.util.datamatrices import DataMatrices
 import logging
 import time
@@ -22,7 +22,7 @@ def geo_mean(iterable):
 def test_with_config(config):
     np.random.seed(284112293)
     matrix = DataMatrices(DATABASE_DIR, config)
-    agent = NNAgent(config)
+    agent = NNAgent(train_config_to_nn(config))
     try:
         return train_net_sequential(agent, matrix, config, print)
     except Exception:

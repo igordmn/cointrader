@@ -15,42 +15,42 @@ import java.nio.file.Path
 
 class NeuralTradeAdviser(
         jep: Jep,
-        private val mainCoin: String,
-        private val altCoins: List<String>,
+        private val operationScale: Int,
+        private val coins: List<String>,
         private val previousCount: Int,
         private val netPath: Path,
         fee: BigDecimal,
+        learningRate: BigDecimal,
         private val indicators: AdviseIndicators
 
 ) : TradeAdviser {
-    private val net = NNAgent(jep, indicators.count, altCoins.size, previousCount, netPath.toAbsolutePath().toString())
+    private val net = NNAgent(jep, indicators.count, coins.size, previousCount, fee, learningRate, netPath.toAbsolutePath().toString())
 
     override suspend fun bestPortfolioPortions(currentPortions: CoinPortions, previousCandles: CoinToCandles): CoinPortions {
-        val scale = currentPortions[mainCoin]!!.scale()
         return net.bestPortfolioPortions(
                 currentPortions.toMatrix(),
                 previousCandles.toMatrix()
-        ).toPortions(scale)
+        ).toPortions()
     }
 
-    private fun CoinPortions.toMatrix() = DoubleMatrix2D(1, altCoins.size) { _, altCoinIndex ->
-        val coin = altCoins[altCoinIndex]
+    private fun CoinPortions.toMatrix() = DoubleMatrix2D(1, coins.size) { _, index ->
+        val coin = coins[index]
         this[coin]!!.toDouble()
     }
 
-    private fun DoubleMatrix2D.toPortions(scale: Int): CoinPortions {
+    private fun DoubleMatrix2D.toPortions(): CoinPortions {
         val portions = HashMap<String, BigDecimal>()
         forEach { _, coinIndex, value ->
-            val coin = coinOf(coinIndex)
+            val coin = coins[coinIndex]
             portions[coin] = BigDecimal(value)
         }
-        return portions.portions(scale)
+        return portions.portions(operationScale)
     }
 
     private fun CoinToCandles.toMatrix() = DoubleMatrix4D(
-            1, indicators.count, altCoins.size, previousCount
-    ) { _, indicatorIndex, altCoinIndex, candleIndex ->
-        val coin = altCoins[altCoinIndex]
+            1, indicators.count, coins.size, previousCount
+    ) { _, indicatorIndex, coinIndex, candleIndex ->
+        val coin = coins[coinIndex]
         val candles = this[coin]!!.reversed()
         val candle = candles[candleIndex]
         candle.indicatorValue(indicatorIndex)
@@ -62,6 +62,4 @@ class NeuralTradeAdviser(
         2 -> low.toDouble()
         else -> unsupportedOperation()
     }
-
-    private fun coinOf(index: Int): String = if (index == 0) mainCoin else altCoins[index - 1]
 }

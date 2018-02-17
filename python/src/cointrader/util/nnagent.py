@@ -2,8 +2,7 @@ from typing import NamedTuple
 
 import tflearn
 import tensorflow as tf
-import numpy as np
-import numpy
+
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
@@ -12,21 +11,6 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
         net, filter_number, [1, width], [1, 1], "valid", activation_function,
         regularizer=regularizer, weight_decay=weight_decay
     )
-
-
-def eiie_lstm(net, coin_number):
-    neuron_number = 128
-    dropout = 0.1
-    net = tf.transpose(net, [0, 2, 3, 1])
-
-    resultlist = []
-    for i in range(coin_number):
-        result = tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=dropout, scope="eiie_lstm", reuse=i > 0)
-        resultlist.append(result)
-
-    net = tf.stack(resultlist)
-    net = tf.transpose(net, [1, 0, 2])
-    return tf.reshape(net, [-1, coin_number, 1, neuron_number])
 
 
 def eiie_output(net, regularizer, weight_decay):
@@ -240,6 +224,24 @@ class Tensors(NamedTuple):
     train: tf.Tensor
 
 
+class NNConfig(NamedTuple):
+    indicator_number: int
+    coin_number: int
+    window_size: int
+    fee: int
+    learning_rate: int
+
+
+def train_config_to_nn(config):
+    return NNConfig(
+        indicator_number=config.indicator_number,
+        coin_number=config.coin_number + 1,   # with BTC
+        window_size=config.window_size,
+        fee=config.fee,
+        learning_rate=config.learning_rate
+    )
+
+
 class NNAgent:
     def __init__(
             self,
@@ -247,13 +249,11 @@ class NNAgent:
             restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
-        indicator_number = len(config.indicators)
-        coin_number = 1 + len(config.coins)  # with BTC
-        x = tf.placeholder(tf.float32, shape=[None, indicator_number, coin_number, config.window_size])
-        price_incs = tf.placeholder(tf.float32, shape=[None, coin_number])
-        buy_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
-        sell_fees = tf.placeholder(tf.float32, shape=[None, coin_number])
-        previous_w = tf.placeholder(tf.float32, shape=[None, coin_number])
+        x = tf.placeholder(tf.float32, shape=[None, config.indicator_number,  config.coin_number, config.window_size])
+        price_incs = tf.placeholder(tf.float32, shape=[None, config.coin_number])
+        buy_fees = tf.placeholder(tf.float32, shape=[None, config.coin_number])
+        sell_fees = tf.placeholder(tf.float32, shape=[None, config.coin_number])
+        previous_w = tf.placeholder(tf.float32, shape=[None, config.coin_number])
         predict_w = build_predict_w(batch_size, config, x, previous_w)
 
         profits = compute_profits(batch_size, previous_w, predict_w, price_incs, config.fee)
@@ -298,13 +298,6 @@ class NNAgent:
     def train(self, batch):
         session = self._session
         t = self._tensors
-
-        # indices = np.random.permutation(x_old.shape[2])
-        # x = np.take(x_old, indices, axis=2)
-        # price_incs = np.take(price_incs_old, indices, axis=1)
-        # buy_fees = np.take(buy_fees_old, indices, axis=1)
-        # sell_fees = np.take(sell_fees_old, indices, axis=1)
-        # previous_w = np.take(previous_w_old, indices, axis=1)
 
         tflearn.is_training(True, session)
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
