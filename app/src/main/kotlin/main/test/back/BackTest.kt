@@ -1,6 +1,7 @@
 package main.test.back
 
 import adviser.net.NeuralTradeAdviser
+import adviser.net.neuralTradeAdviser
 import exchange.*
 import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
@@ -62,15 +63,7 @@ private suspend fun run(log: Logger) = jep().use { jep ->
         preloadedHistories.preload(serverTime)
         val markets = TestMarkets(preloadedHistories, constants, time, portfolio, config.fee, info, operationScale, config.period)
 
-        val adviser = NeuralTradeAdviser(
-                jep,
-                config.mainCoin,
-                config.altCoins,
-                config.historyCount,
-                Paths.get("data/train_package/netfile"),
-                config.fee,
-                config.indicators
-        )
+        val adviser = neuralTradeAdviser(jep, operationScale, config)
         val trade = AdvisableTrade(
                 config.mainCoin,
                 config.altCoins,

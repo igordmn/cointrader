@@ -1,6 +1,7 @@
 package main.real
 
 import adviser.net.NeuralTradeAdviser
+import adviser.net.neuralTradeAdviser
 import exchange.binance.*
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
@@ -69,15 +70,7 @@ private suspend fun run(log: Logger) = jep().use { jep ->
         val testMarkets = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, testPortfolio, config.fee, info, operationScale, config.period)
         val testMarkets2 = BinanceWithTestBrokerMarkets(preloadedHistories, constants, api, testPortfolio2, config.fee, info, operationScale, config.period)
 
-        val adviser = NeuralTradeAdviser(
-                jep,
-                config.mainCoin,
-                config.altCoins,
-                config.historyCount,
-                Paths.get("data/train_package/netfile"),
-                config.fee,
-                config.indicators
-        )
+        val adviser = neuralTradeAdviser(jep, operationScale, config)
         val binanceTrade = AdvisableTrade(
                 config.mainCoin,
                 config.altCoins,
