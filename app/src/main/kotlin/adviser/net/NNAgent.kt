@@ -20,10 +20,10 @@ class NNAgent(
         jep.eval("from cointrader.util.nnagent import NNConfig")
         jep.eval("agent = None")
         jep.eval("""
-                def createAgent(indicatorNumber, coinNumber, windowSize, fee, learningRate, netPath):
+                def createAgent(indicator_number, coin_number, window_size, fee, learning_rate, net_path):
                     global agent
-                    config = NNConfig(indicatorNumber=indicatorNumber, coin_number=coinNumber, window_size=window_size, fee=fee, learningRate=learningRate)
-                    agent = NNAgent(config, netPath)
+                    config = NNConfig(indicator_number=indicator_number, coin_number=coin_number, window_size=window_size, fee=fee, learning_rate=learning_rate)
+                    agent = NNAgent(config, net_path)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(history, previous_w):
