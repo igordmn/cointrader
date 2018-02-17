@@ -58,6 +58,7 @@ def build_predict_w(
         regularizer=None,
         weight_decay=0,
     )
+    net = tflearn.batch_normalization(net)
     net = eiie_dense(
         net,
         filter_number=10,
@@ -65,6 +66,7 @@ def build_predict_w(
         regularizer="L2",
         weight_decay=5e-9,
     )
+    net = tflearn.batch_normalization(net)
 
     net = eiie_output_withw(
         net,
@@ -213,8 +215,6 @@ class Tensors(NamedTuple):
     batch_size: tf.Tensor
     x: tf.Tensor
     price_incs: tf.Tensor
-    buy_fees: tf.Tensor
-    sell_fees: tf.Tensor
     previous_w: tf.Tensor
     predict_w: tf.Tensor
 
@@ -251,8 +251,6 @@ class NNAgent:
         batch_size = tf.placeholder(tf.int32, shape=[])
         x = tf.placeholder(tf.float32, shape=[None, config.indicator_number,  config.coin_number, config.window_size])
         price_incs = tf.placeholder(tf.float32, shape=[None, config.coin_number])
-        buy_fees = tf.placeholder(tf.float32, shape=[None, config.coin_number])
-        sell_fees = tf.placeholder(tf.float32, shape=[None, config.coin_number])
         previous_w = tf.placeholder(tf.float32, shape=[None, config.coin_number])
         predict_w = build_predict_w(batch_size, config, x, previous_w)
 
@@ -270,8 +268,6 @@ class NNAgent:
             batch_size,
             x,
             price_incs,
-            buy_fees,
-            sell_fees,
             previous_w,
             predict_w,
 
@@ -303,8 +299,6 @@ class NNAgent:
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
             t.x: batch.x,
             t.price_incs: batch.price_incs,
-            # t.buy_fees: batch.buy_fees,
-            # t.sell_fees: batch.sell_fees,
             t.previous_w: batch.previous_w,
             t.batch_size: batch.x.shape[0]
         })
