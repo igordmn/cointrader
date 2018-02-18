@@ -37,7 +37,7 @@ class TrainConfig(NamedTuple):
     start_time: int = parse_time("2017/8/1 00:00:00")
     end_time: int = parse_time("2018/2/18 11:40:00")
     test_days: float = 10
-    sequential_result_days = 30
+    sequential_result_days = 10
     steps: int = 80000
     log_steps: int = 2000
     indicators: list = sorted(["close", "high", "low"])
@@ -45,7 +45,7 @@ class TrainConfig(NamedTuple):
 
     period: int = 300
     geometric_bias: float = 5e-06
-    window_size: int = 160
+    window_size: int = 320
     batch_size: int = 109
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
