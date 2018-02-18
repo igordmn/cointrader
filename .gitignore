@@ -8,7 +8,6 @@ out/
 build/
 /local.properties
 /workspace.properties
-*.iml
 
 *.log
 *.log.zip
