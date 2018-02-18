@@ -65,6 +65,9 @@ def backtest(agent, matrix, config, log):
         # portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
         # return portfolio_btc / prices
 
+        # portfolio_btc = rebalance2(step, portfolio_btc, portfolio_percents, new_portfolio_percents)
+        # return portfolio_btc / prices
+
         return rebalance3(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
 
     def compute_capital(step, portfolio):
