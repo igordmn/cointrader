@@ -7,7 +7,7 @@ def train_net(agent, matrix, config, log, save_max):
     def empty_print(*_):
         pass
 
-    max_result = 1.0
+    max_result = 0.0
     result_mul = 1.0
     result_count = 0
 
