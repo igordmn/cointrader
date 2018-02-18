@@ -49,7 +49,7 @@ def print_default_config():
     log_info("")
     log_info("")
     log_info("exc", c.exchange, "fee", c.fee, "coins", c.coins, "indicators", c.indicators)
-    log_info("start", c.start_time, "end", c.end_time, "result_days", c.sequential_result_days, "log_steps", c.log_steps)
+    log_info("start", c.start_time, "end", c.end_time, "result_days", c.test_days, "log_steps", c.log_steps)
 
 
 def print_config(c, result_all, result_last):

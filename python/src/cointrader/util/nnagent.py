@@ -215,12 +215,12 @@ class NNConfig(NamedTuple):
     window_size: int
     fee: int
     learning_rate: int
-    # weight_decay: float
-    # use_batch_normalization: bool
-    # dropout: float
-    # conv_size: int
-    # conv_kernel: int
-    # dense_size: int
+    weight_decay: float
+    use_batch_normalization: bool
+    dropout: float
+    conv_size: int
+    conv_kernel: int
+    dense_size: int
 
 
 def train_config_to_nn(config):
@@ -230,12 +230,12 @@ def train_config_to_nn(config):
         window_size=config.window_size,
         fee=config.fee,
         learning_rate=config.learning_rate,
-        # weight_decay=config.weight_decay,
-        # use_batch_normalization=config.use_batch_normalization,
-        # dropout=config.dropout,
-        # conv_size=config.conv_size,
-        # conv_kernel=config.conv_kernel,
-        # dense_size=config.dense_size,
+        weight_decay=config.weight_decay,
+        use_batch_normalization=config.use_batch_normalization,
+        dropout=config.dropout,
+        conv_size=config.conv_size,
+        conv_kernel=config.conv_kernel,
+        dense_size=config.dense_size,
     )
 
 
