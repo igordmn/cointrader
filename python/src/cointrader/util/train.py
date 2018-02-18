@@ -46,7 +46,7 @@ def train_net(agent, matrix, config, log, save_max):
     train()
 
     avg_result = result_mul ** (1 / result_count)
-    return avg_result, max_result
+    return avg_result, max_result, 0
 
 
 def train_net_sequential(agent, matrix, config, log):
