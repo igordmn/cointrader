@@ -1,6 +1,8 @@
 package train
 
+import adviser.AdviseIndicators
 import exchange.candle.CoinToCandles
+import java.time.Duration
 
 class TrainData(
         private val data: FloatArray,
@@ -13,4 +15,8 @@ class TrainData(
         require(to >= from)
         TODO()
     }
+}
+
+suspend fun loadTrainData(coins: List<String>, period: Duration) {
+
 }
