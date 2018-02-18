@@ -10,7 +10,7 @@ def train_net(agent, matrix, config, log, save_max):
     max_result = 1.0
 
     def log_results(i, train_period_profit):
-        global max_result
+        nonlocal max_result
 
         periods_per_day = int(24 * 60 * 60 / config.period)
         test_day_profit, _ = backtest(agent, matrix, config, empty_print)
