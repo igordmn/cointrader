@@ -37,7 +37,7 @@ class TrainConfig(NamedTuple):
     start_time: int = parse_time("2017/8/1 00:00:00")
     end_time: int = parse_time("2018/2/18 21:50:00")
     test_days: float = 14
-    steps: int = 80000
+    steps: int = 40000
     log_steps: int = 2000
     indicators: list = sorted(["close", "high", "low"])
     fee: float = 0.0014

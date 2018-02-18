@@ -17,15 +17,17 @@ def backtest(agent, matrix, config, log):
         capital = np.sum(portfolio)
         desired_portfolio = capital * new_portfolio_percents
 
-        diffs = desired_portfolio - portfolio
-        buys = diffs.clip(min=0)
-        sells = (-diffs).clip(min=0)
-        total_fee = np.sum(buys * config.fee) + np.sum(sells * config.fee)
+        total_fee = np.sum(np.abs(desired_portfolio - portfolio)) * config.fee
         capital_after_fee = capital - total_fee
 
         return capital_after_fee * new_portfolio_percents
 
-    def rebalance_limit(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices):
+    def rebalance2(step, portfolio, portfolio_percents, new_portfolio_percents):
+        capital = np.sum(portfolio)
+        cost = 1 - np.sum(np.abs(portfolio_percents - new_portfolio_percents)) * config.fee
+        return capital * cost * new_portfolio_percents
+
+    def rebalance3(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices):
         current_index = portfolio_percents.tolist().index(max(portfolio_percents))
         buy_index = new_portfolio_percents.tolist().index(max(new_portfolio_percents))
 
@@ -63,7 +65,7 @@ def backtest(agent, matrix, config, log):
         # portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
         # return portfolio_btc / prices
 
-        return rebalance_limit(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
+        return rebalance3(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
 
     def compute_capital(step, portfolio):
         current_prices = all_prices[step]
