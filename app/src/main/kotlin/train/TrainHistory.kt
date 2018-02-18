@@ -1,4 +1,0 @@
-package train
-
-class TrainHistory {
-}
