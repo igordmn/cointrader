@@ -20,7 +20,8 @@ class TestHistoricalMarketPrice(
     override suspend fun current(): BigDecimal {
         val nextMinute = time.current().truncatedTo(ChronoUnit.MINUTES) + Duration.ofMinutes(1)
         val candle = oneMinuteHistory.candlesBefore(nextMinute).take(1).first().item
-        return randomPriceIn(candle)
+//        return randomPriceIn(candle)
+        return candle.low
     }
 
     private fun randomPriceIn(candle: Candle): BigDecimal = approximatedPricesFactory.forCandle(candle).exactAt(Math.random())
