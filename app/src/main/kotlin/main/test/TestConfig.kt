@@ -20,7 +20,7 @@ data class TestConfig(
         ),
         val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 160,
-        val fee: BigDecimal = BigDecimal("0.0015"),
+        val fee: BigDecimal = BigDecimal("0.0014"),
         val learningRate: BigDecimal = BigDecimal("0.00028"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
         val backTestStartTime: Instant = Instant.now() - Duration.ofHours(16)

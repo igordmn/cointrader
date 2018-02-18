@@ -8,7 +8,12 @@ import org.slf4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 
-fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = null): BinanceAPI {
+fun binanceAPI(
+        apiKey: String? = null,
+        secret: String? = null,
+        log: Logger? = null,
+        maxRequestsPerSecond: Int = 6  // binance has 20 request per second limit
+): BinanceAPI {
     val httpClient = OkHttpClient.Builder()
 
     if (log != null) {
@@ -29,5 +34,5 @@ fun binanceAPI(apiKey: String? = null, secret: String? = null, log: Logger? = nu
             .addConverterFactory(JacksonConverterFactory.create())
             .client(httpClient.build()).build()
 
-    return BinanceAPI(retrofit.create(BinanceAPIService::class.java))
+    return BinanceAPI(retrofit.create(BinanceAPIService::class.java), maxRequestsPerSecond)
 }

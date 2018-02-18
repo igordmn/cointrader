@@ -52,8 +52,7 @@ private suspend fun run(log: Logger) = jep().use { jep ->
 
     val operationScale = 32
 
-//    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
-    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java))
+    val api = binanceAPI(apiKey, secret, LoggerFactory.getLogger(BinanceAPI::class.java), 10)
     val constants = BinanceConstants()
     val binancePortfolio = BinancePortfolio(constants, api)
     val testPortfolio = TestPortfolio(config.initialCoins)
