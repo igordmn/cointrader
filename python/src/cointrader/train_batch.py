@@ -61,25 +61,22 @@ def print_config(c, result_all, result_last):
         "dropout", c.dropout, "use_batch_normalization", c.use_batch_normalization
     )
 
-# todo low as price in datamatrices
-
 configs = [
-    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=5e-03, learning_rate=0.00028 * 6, dropout=0.5, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
     TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=12, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=32),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=48, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=128),
-
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 8, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 4, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 2, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-
-    TrainConfig(batch_size=10, sequential_steps=6, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=12, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
-    TrainConfig(batch_size=10, sequential_steps=14, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=12, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=32),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=48, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=128),
+    #
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 8, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 4, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 2, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    #
+    # TrainConfig(batch_size=10, sequential_steps=6, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=12, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+    # TrainConfig(batch_size=10, sequential_steps=14, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
     # todo adam, 240 period, 60 period, low-high fee, without log, old arch, without btc
 ]
