@@ -290,7 +290,7 @@ class NNAgent:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.2
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
