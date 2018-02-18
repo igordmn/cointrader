@@ -47,10 +47,10 @@ fun main(args: Array<String>) = runBlocking {
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
             .toList()
 
-    val meanCommission =  Math.sqrt(comissions.geoMean()) * (1 - applyAddFee)
+    val fee = 1 - Math.sqrt(comissions.geoMean()) * (1 - applyAddFee)
     val count = comissions.size
 
-    println("fact commission $meanCommission. count $count")
+    println("fact commission $fee. count $count")
 
 //    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
 //    val constants = BinanceConstants()

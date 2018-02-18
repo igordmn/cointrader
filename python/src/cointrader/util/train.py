@@ -3,15 +3,23 @@ import numpy as np
 from src.cointrader.util.backtest import backtest
 
 
-def train_net(agent, matrix, config, log):
+def train_net(agent, matrix, config, log, save_max):
     def empty_print(*_):
         pass
 
+    max_result = 1.0
+
     def log_results(i, train_period_profit):
+        global max_result
+
         periods_per_day = int(24 * 60 * 60 / config.period)
         test_day_profit, _ = backtest(agent, matrix, config, empty_print)
         train_day_profit = train_period_profit ** periods_per_day
         log(f'{i}   {train_day_profit}   {test_day_profit}')
+
+        if test_day_profit > max_result and i >= config.max_network_min_steps:
+            max_result = test_day_profit
+            save_max(agent)
 
     def train():
         total_profit = 1.0
