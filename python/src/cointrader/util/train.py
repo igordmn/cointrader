@@ -19,7 +19,7 @@ def train_net(agent, matrix, config, log, save_max):
 
         if test_day_profit > max_result and i >= config.max_network_min_steps:
             max_result = test_day_profit
-            save_max(agent)
+            save_max(i, agent)
 
     def train():
         total_profit = 1.0

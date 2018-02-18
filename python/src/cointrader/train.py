@@ -31,9 +31,10 @@ agent = NNAgent(train_config_to_nn(config))
 matrix = DataMatrices(DATABASE_DIR, config)
 
 
-def save_max(agent):
-    clear_train_dir(NET_FILE_MAX)
-    agent.save(NET_FILE_MAX)
+def save_max(step, agent):
+    path = NET_FILE_MAX + f"/{step}"
+    clear_train_dir(path)
+    agent.save(path)
 
 
 try:
