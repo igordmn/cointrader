@@ -57,7 +57,7 @@ class TrainConfig(NamedTuple):
     conv_kernel: int = 5
     dense_size: int = 32
 
-    max_network_min_steps: int = 10000
+    max_network_min_steps: int = 20000
 
     indicator_number: int = len(indicators)
     coin_number: int = len(coins)
