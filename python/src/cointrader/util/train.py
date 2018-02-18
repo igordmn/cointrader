@@ -8,9 +8,13 @@ def train_net(agent, matrix, config, log, save_max):
         pass
 
     max_result = 1.0
+    result_mul = 1.0
+    result_count = 0
 
     def log_results(i, train_period_profit):
         nonlocal max_result
+        nonlocal result_mul
+        nonlocal result_count
 
         periods_per_day = int(24 * 60 * 60 / config.period)
         test_day_profit, _ = backtest(agent, matrix, config, empty_print)
@@ -20,6 +24,9 @@ def train_net(agent, matrix, config, log, save_max):
         if test_day_profit > max_result and i >= config.max_network_min_steps:
             max_result = test_day_profit
             save_max(i, agent)
+
+        result_mul *= test_day_profit
+        result_count += 1
 
     def train():
         total_profit = 1.0
@@ -37,6 +44,9 @@ def train_net(agent, matrix, config, log, save_max):
                 break
 
     train()
+
+    avg_result = result_mul ** (1 / result_count)
+    return avg_result, max_result
 
 
 def train_net_sequential(agent, matrix, config, log):

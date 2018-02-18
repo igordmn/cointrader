@@ -19,12 +19,16 @@ def geo_mean(iterable):
     return a.prod() ** (1.0 / len(a))
 
 
+def empty_save_max(step, agent):
+    pass
+
 def test_with_config(config):
     np.random.seed(284112293)
     matrix = DataMatrices(DATABASE_DIR, config)
     agent = NNAgent(train_config_to_nn(config))
     try:
-        return train_net_sequential(agent, matrix, config, print)
+        # return train_net_sequential(agent, matrix, config, print)
+        return train_net(agent, matrix, config, print, empty_save_max)
     except Exception:
         print(traceback.format_exc())
         return -1
@@ -61,7 +65,7 @@ def print_config(c, result_all, result_last):
         "dropout", c.dropout, "use_batch_normalization", c.use_batch_normalization
     )
 
-configs = [
+configs_b = [
     TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
     # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=12, conv_kernel=5, dense_size=64),
@@ -79,6 +83,31 @@ configs = [
     # TrainConfig(batch_size=10, sequential_steps=14, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
     # todo adam, 240 period, 60 period, low-high fee, without log, old arch, without btc
+]
+
+configs = [
+    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
+    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
+    TrainConfig(conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
+    TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
+    TrainConfig(window_size=320, conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
+
+    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.9),
+    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.9),
+    TrainConfig(conv_size=24, conv_kernel=5, dense_size=64, dropout=0.55),
+    TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.55),
+    TrainConfig(window_size=320, conv_size=3, conv_kernel=5, dense_size=10, dropout=0.9),
+
+    TrainConfig(conv_size=3, conv_kernel=7, dense_size=10, dropout=0.8),
+    TrainConfig(window_size=480, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
+
+    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.6),
+    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.6),
+
+
+    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8, geometric_bias=5e-05),
+    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8, geometric_bias=9e-04),
+    TrainConfig(window_size=320, period=120, conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
 ]
 
 test_count = 3

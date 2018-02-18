@@ -48,25 +48,125 @@ def build_predict_w(
 
 
     net = net / net[:, :, -1, 0, None, None]
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=3,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer=None,
+    #     weight_decay=0,
+    # )
+    # net = tflearn.batch_normalization(net)
+    # net = eiie_dense(
+    #     net,
+    #     filter_number=10,
+    #     activation_function="relu",
+    #     regularizer="L2",
+    #     weight_decay=5e-9,
+    # )
+    # net = tflearn.batch_normalization(net)
+    #
+    # net = eiie_output_withw(
+    #     net,
+    #     batch_size,
+    #     previous_w,
+    #     regularizer="L2",
+    #     weight_decay=5e-8,
+    # )
+
+
+
+    # net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=3,
-        filter_size=[1, 2],
+        nb_filter=config.conv_size,
+        filter_size=[1, config.conv_kernel],
         strides=[1, 1],
         padding="valid",
         activation="relu",
         regularizer=None,
-        weight_decay=0,
+        weight_decay=config.weight_decay,
     )
-    net = tflearn.batch_normalization(net)
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=config.conv_size,
+        filter_size=[1, config.conv_kernel],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer=None,
+        weight_decay=config.weight_decay,
+    )
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=16,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer=None,
+    #     weight_decay=5e-8,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=32,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer=None,
+    #     weight_decay=5e-8,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=64,
+    #     filter_size=[1, 2],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation="relu",
+    #     regularizer=None,
+    #     weight_decay=5e-8,
+    # )
+    # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     net = eiie_dense(
         net,
-        filter_number=10,
+        filter_number=config.dense_size,
         activation_function="relu",
-        regularizer="L2",
-        weight_decay=5e-9,
+        regularizer=None,
+        weight_decay=config.weight_decay,
     )
-    net = tflearn.batch_normalization(net)
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
+    net = eiie_dense(
+        net,
+        filter_number=config.dense_size,
+        activation_function="relu",
+        regularizer=None,
+        weight_decay=config.weight_decay,
+    )
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
+
+    # net = eiie_lstm(net, coin_number)
+
+    # net = eiie_output(
+    #     net,
+    #     regularizer=None,
+    #     weight_decay=5e-5,
+    # )
 
     net = eiie_output_withw(
         net,
@@ -75,106 +175,6 @@ def build_predict_w(
         regularizer="L2",
         weight_decay=5e-8,
     )
-
-
-
-    # net = tf.log(net / net[:, :, -1, None, :])
-    # net = tflearn.layers.conv_2d(
-    #     net,
-    #     nb_filter=config.conv_size,
-    #     filter_size=[1, config.conv_kernel],
-    #     strides=[1, 1],
-    #     padding="valid",
-    #     activation="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
-    # net = tflearn.layers.conv_2d(
-    #     net,
-    #     nb_filter=config.conv_size,
-    #     filter_size=[1, config.conv_kernel],
-    #     strides=[1, 1],
-    #     padding="valid",
-    #     activation="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
-    # # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    # # net = tflearn.layers.conv_2d(
-    # #     net,
-    # #     nb_filter=16,
-    # #     filter_size=[1, 2],
-    # #     strides=[1, 1],
-    # #     padding="valid",
-    # #     activation="relu",
-    # #     regularizer=None,
-    # #     weight_decay=5e-8,
-    # # )
-    # # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    # # net = tflearn.layers.conv_2d(
-    # #     net,
-    # #     nb_filter=32,
-    # #     filter_size=[1, 2],
-    # #     strides=[1, 1],
-    # #     padding="valid",
-    # #     activation="relu",
-    # #     regularizer=None,
-    # #     weight_decay=5e-8,
-    # # )
-    # # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    # # net = tflearn.layers.conv_2d(
-    # #     net,
-    # #     nb_filter=64,
-    # #     filter_size=[1, 2],
-    # #     strides=[1, 1],
-    # #     padding="valid",
-    # #     activation="relu",
-    # #     regularizer=None,
-    # #     weight_decay=5e-8,
-    # # )
-    # # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
-    # net = eiie_dense(
-    #     net,
-    #     filter_number=config.dense_size,
-    #     activation_function="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
-    # net = eiie_dense(
-    #     net,
-    #     filter_number=config.dense_size,
-    #     activation_function="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
-    #
-    # # net = eiie_lstm(net, coin_number)
-    #
-    # # net = eiie_output(
-    # #     net,
-    # #     regularizer=None,
-    # #     weight_decay=5e-5,
-    # # )
-    #
-    # net = eiie_output_withw(
-    #     net,
-    #     batch_size,
-    #     previous_w,
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
 
     return net
 
