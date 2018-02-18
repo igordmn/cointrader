@@ -23,5 +23,5 @@ data class TestConfig(
         val fee: BigDecimal = BigDecimal("0.0014"),
         val learningRate: BigDecimal = BigDecimal("0.00028"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
-        val backTestStartTime: Instant = Instant.now() - Duration.ofHours(16)
+        val backTestStartTime: Instant = Instant.now() - Duration.ofDays(8)
 )
