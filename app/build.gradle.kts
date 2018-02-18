@@ -93,8 +93,8 @@ val original = startScripts.windowsStartScriptGenerator
 startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
     override fun generateScript(details: JavaAppStartScriptGenerationDetails, destination: Writer) {
         val header = "@if \"%DEBUG%\" == \"\" @echo off"
-        val classPathOld = Regex("set CLASSPATH=.*\n")
-        val classPathNew = "set CLASSPATH=%APP_HOME%/lib/*\n"
+        val classPathOld = Regex("set CLASSPATH=.*\r\n")
+        val classPathNew = "set CLASSPATH=%APP_HOME%/lib/*\r\n"
         val additional = "set PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
 
         val midStr = StringWriter()
