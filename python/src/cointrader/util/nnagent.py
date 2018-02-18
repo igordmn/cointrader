@@ -64,7 +64,7 @@ def build_predict_w(
         filter_number=10,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-10,
+        weight_decay=5e-9,
     )
     net = tflearn.batch_normalization(net)
 
@@ -73,7 +73,7 @@ def build_predict_w(
         batch_size,
         previous_w,
         regularizer="L2",
-        weight_decay=5e-10,
+        weight_decay=5e-8,
     )
 
 

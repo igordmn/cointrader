@@ -39,7 +39,7 @@ class TrainConfig(NamedTuple):
     test_days: float = 10
     sequential_result_days = 30
     steps: int = 80000
-    log_steps: int = 4000
+    log_steps: int = 2000
     indicators: list = sorted(["close", "high", "low"])
     fee: float = 0.0014
 
