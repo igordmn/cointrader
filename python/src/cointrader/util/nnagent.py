@@ -179,21 +179,6 @@ def build_predict_w(
     return net
 
 
-def compute_profits2(batch_size, previous_w, predict_w, price_incs, buy_fees, sell_fees):
-    pure_profits = price_incs * predict_w
-    pure_profit = tf.reduce_sum(pure_profits, axis=1)
-
-    future_w = pure_profits / pure_profit[:, None]
-    previous_w = tf.concat([predict_w[0, None], future_w[:batch_size - 1]],
-                           axis=0)  # for first step assume portfolio equals predicted value
-    diffs = predict_w - previous_w
-    buys = tf.nn.relu(diffs)
-    sells = tf.nn.relu(-diffs)
-    total_fee = tf.reduce_sum(buys * buy_fees, axis=1) + tf.reduce_sum(sells * sell_fees, axis=1)
-
-    return pure_profit * (1 - total_fee)
-
-
 def compute_profits(batch_size, previous_w, predict_w, price_inc, fee):
     future_portfolio = price_inc * predict_w
     future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
@@ -205,7 +190,7 @@ def compute_profits(batch_size, previous_w, predict_w, price_inc, fee):
     return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), cost], axis=0)
 
 
-def compute_profits3(batch_size, previous_w, predict_w, price_inc, fee):
+def compute_profits2(batch_size, previous_w, predict_w, price_inc, fee):
     future_portfolio = price_inc * predict_w
     future_commission = 1 - tf.reduce_sum(tf.abs(previous_w - predict_w), axis=1) * fee
     return tf.reduce_sum(future_portfolio, axis=[1]) * future_commission
