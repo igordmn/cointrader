@@ -6,12 +6,15 @@ import util.math.DoubleMatrix2D
 import util.math.DoubleMatrix4D
 import java.math.BigDecimal
 import java.nio.file.Path
+import java.nio.file.Paths
+
+val DEFAULT_NET_PATH = Paths.get("data/train_package/netfile")
 
 class NNAgent(
         private val jep: Jep,
         private val indicatorNumber: Int,
         private val coinNumber: Int,
-        private val windowSize: Int,
+        private val historyCount: Int,
         private val fee: BigDecimal,
         private val learningRate: BigDecimal,
         netPath: String? = null
@@ -30,7 +33,7 @@ class NNAgent(
                 def best_portfolio(history, previous_w):
                     return agent.best_portfolio(history, previous_w)
             """.trimIndent())
-        jep.invoke("createAgent", indicatorNumber, coinNumber, windowSize, fee.toDouble(), learningRate.toDouble(), netPath)
+        jep.invoke("createAgent", indicatorNumber, coinNumber, historyCount, fee.toDouble(), learningRate.toDouble(), netPath)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -38,7 +41,7 @@ class NNAgent(
         require(currentPortions.n2 == coinNumber)
         require(history.n2 == indicatorNumber)
         require(history.n3 == coinNumber)
-        require(history.n4 == windowSize)
+        require(history.n4 == historyCount)
         require(currentPortions.n1 == history.n1)
 
         val nphistory = NDArray(history.data, history.n1, history.n2, history.n3, history.n4)
@@ -55,7 +58,7 @@ class NNAgent(
         require(currentPortions.n2 == coinNumber)
         require(history.n2 == indicatorNumber)
         require(history.n3 == coinNumber)
-        require(history.n4 == windowSize)
+        require(history.n4 == historyCount)
         require(priceIncs.n2 == coinNumber)
         require(priceIncs.n1 == currentPortions.n1)
         require(priceIncs.n1 == history.n1)

@@ -7,7 +7,7 @@ import exchange.candle.Candle
 import util.math.DoubleMatrix4D
 import exchange.candle.CoinToCandles
 import jep.Jep
-import main.test.TestConfig
+import main.test.Config
 import util.lang.unsupportedOperation
 import util.math.DoubleMatrix2D
 import util.math.portions
@@ -15,7 +15,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
 
-fun neuralTradeAdviser(jep: Jep, operationScale: Int, config: TestConfig) = NeuralTradeAdviser(
+fun neuralTradeAdviser(jep: Jep, operationScale: Int, config: Config) = NeuralTradeAdviser(
         jep,
         operationScale,
         listOf(config.mainCoin) + config.altCoins,

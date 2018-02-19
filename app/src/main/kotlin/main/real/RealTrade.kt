@@ -1,6 +1,5 @@
 package main.real
 
-import adviser.net.NeuralTradeAdviser
 import adviser.net.neuralTradeAdviser
 import exchange.binance.*
 import exchange.binance.api.BinanceAPI
@@ -9,9 +8,8 @@ import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.binance.market.makeBinanceCacheDB
 import exchange.test.BinanceWithTestBrokerMarkets
 import exchange.test.TestPortfolio
-import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
-import main.test.TestConfig
+import main.test.Config
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import python.jep
@@ -20,7 +18,6 @@ import trader.MultipleTrade
 import trader.TradingBot
 import util.log.logger
 import java.io.File
-import java.nio.file.Paths
 import java.time.Instant
 
 fun realTrade() = runBlocking {
@@ -44,7 +41,7 @@ fun realTrade() = runBlocking {
 }
 
 private suspend fun run(log: Logger) = jep().use { jep ->
-    val config = TestConfig()
+    val config = Config()
     log.info("Config:\n$config")
 
     val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()

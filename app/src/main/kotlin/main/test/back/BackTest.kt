@@ -1,6 +1,5 @@
 package main.test.back
 
-import adviser.net.NeuralTradeAdviser
 import adviser.net.neuralTradeAdviser
 import exchange.*
 import exchange.binance.BinanceConstants
@@ -16,9 +15,8 @@ import exchange.test.TestHistoricalMarketPrice
 import exchange.test.TestMarketBroker
 import exchange.test.TestPortfolio
 import exchange.test.TestTime
-import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
-import main.test.TestConfig
+import main.test.Config
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import python.jep
@@ -28,7 +26,6 @@ import trader.TradingBot
 import util.lang.truncatedTo
 import util.log.logger
 import java.math.BigDecimal
-import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -46,7 +43,7 @@ fun backTest() = runBlocking {
 }
 
 private suspend fun run(log: Logger) = jep().use { jep ->
-    val config = TestConfig()
+    val config = Config()
     log.info("Config:\n$config")
 
     val operationScale = 32

@@ -1,6 +1,5 @@
 package main.test.forward
 
-import adviser.net.NeuralTradeAdviser
 import adviser.net.neuralTradeAdviser
 import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
@@ -11,16 +10,14 @@ import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.binance.market.makeBinanceCacheDB
 import exchange.test.BinanceWithTestBrokerMarkets
 import exchange.test.TestPortfolio
-import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
-import main.test.TestConfig
+import main.test.Config
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import python.jep
 import trader.AdvisableTrade
 import trader.TradingBot
 import util.log.logger
-import java.nio.file.Paths
 import java.time.Instant
 
 fun forwardTest() = runBlocking {
@@ -37,7 +34,7 @@ fun forwardTest() = runBlocking {
 }
 
 private suspend fun run(log: Logger) = jep().use { jep ->
-    val config = TestConfig()
+    val config = Config()
     log.info("Config:\n$config")
 
     val operationScale = 32

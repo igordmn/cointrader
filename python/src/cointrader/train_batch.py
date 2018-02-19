@@ -86,28 +86,9 @@ configs_b = [
 ]
 
 configs = [
-    # TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
-    # TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
-    TrainConfig(conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
-    TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
-    TrainConfig(window_size=320, conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
-
-    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.9),
-    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.9),
-    TrainConfig(conv_size=24, conv_kernel=5, dense_size=64, dropout=0.55),
-    TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.55),
-    TrainConfig(window_size=320, conv_size=3, conv_kernel=5, dense_size=10, dropout=0.9),
-
-    TrainConfig(conv_size=3, conv_kernel=7, dense_size=10, dropout=0.8),
-    TrainConfig(window_size=480, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
-
-    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.6),
-    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.6),
-
-
-    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8, geometric_bias=5e-05),
-    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8, geometric_bias=9e-04),
-    TrainConfig(window_size=320, period=120, conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
+    TrainConfig(window_size=240, conv_size=12, conv_kernel=5, dense_size=32, dropout=0.45),
+    TrainConfig(window_size=160, conv_size=12, conv_kernel=5, dense_size=32, dropout=0.45, geometric_bias=5e-05),
+    TrainConfig(window_size=160, conv_size=12, conv_kernel=5, dense_size=32, dropout=0.45, geometric_bias=9e-04),
 ]
 
 test_count = 3
