@@ -86,8 +86,8 @@ configs_b = [
 ]
 
 configs = [
-    TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
-    TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
+    # TrainConfig(conv_size=3, conv_kernel=2, dense_size=10, dropout=0.8),
+    # TrainConfig(conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
     TrainConfig(conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
     TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
     TrainConfig(window_size=320, conv_size=3, conv_kernel=5, dense_size=10, dropout=0.8),
