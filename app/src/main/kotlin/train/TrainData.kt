@@ -32,6 +32,7 @@ class TrainData(
             val candle = Candle(close, high, low)
             coinIndexToCandle.add(candle)
         }
+        return Moment(coinIndexToCandle)
     }
 
     data class Moment(val coinIndexToCandle: List<Candle>)
