@@ -200,7 +200,7 @@ def compute_profits2(batch_size, previous_w, predict_w, price_inc, fee):
 
 class Tensors(NamedTuple):
     batch_size: tf.Tensor
-    x: tf.Tensor
+    history: tf.Tensor
     price_incs: tf.Tensor
     previous_w: tf.Tensor
     predict_w: tf.Tensor
@@ -296,7 +296,7 @@ class NNAgent:
 
         tflearn.is_training(True, session)
         results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
-            t.x: batch.x,
+            t.history: batch.x,
             t.price_incs: batch.price_incs,
             t.previous_w: batch.previous_w,
             t.batch_size: batch.x.shape[0]
@@ -305,6 +305,20 @@ class NNAgent:
 
         return results[2:]
 
+    def trainNew(self, history, previous_w, price_incs):
+        session = self._session
+        t = self._tensors
+
+        tflearn.is_training(True, session)
+        results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
+            t.history: history,
+            t.price_incs: price_incs,
+            t.previous_w: previous_w,
+            t.batch_size: history.shape[0]
+        })
+
+        return results[1:]
+
     def best_portfolio(self, history, previous_w):
         session = self._session
         t = self._tensors
@@ -312,7 +326,7 @@ class NNAgent:
         tflearn.is_training(False, session)
 
         result = session.run(t.predict_w, feed_dict={
-            t.x: history,
+            t.history: history,
             t.previous_w: previous_w,
             t.batch_size: history.shape[0]
         })
