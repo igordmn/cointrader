@@ -48,7 +48,6 @@ def build_predict_w(
 
     # [batch, assets, window, features]
     net = net / net[:, :, -1, 0, None, None]  # divide on last close
-    # net = tf.concat((net[:, :, :, 0, None], net[:, :, :, 1:] * net[:, :, :, 0, None]), axis=3)  # divide low/high on close
     net = tf.log(net)
     # net = tflearn.layers.conv_2d(
     #     net,

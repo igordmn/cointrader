@@ -25,6 +25,8 @@ fun main(args: Array<String>) {
                 makeBinanceCacheDB().use { cache ->
                     val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, config.mainCoin, config.altCoins)
                     preloadedHistories.preload(config.trainEndTime)
+
+
                 }
             }
         }
