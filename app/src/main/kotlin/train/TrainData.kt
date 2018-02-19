@@ -1,8 +1,11 @@
 package train
 
+import exchange.ReversedMarketHistory
+import exchange.binance.BinanceConstants
 import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
+import exchange.history.MarketHistory
 import exchange.history.NormalizedMarketHistory
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.coroutines.experimental.channels.toList
@@ -43,7 +46,7 @@ class TrainData(
     }
 }
 
-suspend fun loadTrainData(coins: List<String>, histories: PreloadedBinanceMarketHistories, from: Instant, to: Instant): TrainData {
+suspend fun loadTrainData(constants: BinanceConstants, mainCoin: String, altCoins: List<String>, histories: PreloadedBinanceMarketHistories, from: Instant, to: Instant): TrainData {
     val operationScale = 32
     val period = Duration.ofMinutes(1)
     val fromTruncated = from.truncatedTo(period)
@@ -54,12 +57,23 @@ suspend fun loadTrainData(coins: List<String>, histories: PreloadedBinanceMarket
     val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
 
     val candleCount = diff.toMinutes().toInt()
-    val coinCount = coins.size
+    val coinCount = altCoins.size
     val indicatorCount = TrainData.Candle.indicatorCount
-    val data = FloatArray(candleCount * coins.size * indicatorCount)
+    val data = FloatArray(candleCount * altCoins.size * indicatorCount)
 
-    coins.forEachIndexed { coinIndex, coin ->
-        val binanceHistory = histories[coin]
+    fun history(altCoin: String): MarketHistory {
+        val name = constants.marketName(altCoin, mainCoin)
+        val reversedName = constants.marketName(mainCoin, altCoin)
+
+        return when {
+            name != null -> histories[name]
+            reversedName != null -> ReversedMarketHistory(histories[reversedName], operationScale)
+            else -> throw UnsupportedOperationException()
+        }
+    }
+
+    altCoins.forEachIndexed { coinIndex, coin ->
+        val binanceHistory = history(coin)
         val history = NormalizedMarketHistory(binanceHistory, normalizer, period)
         val candles = history.candlesBefore(toTruncated).takeWhile { it.timeRange.start >= fromTruncated }.toList()
         require(candles.size == candleCount)
