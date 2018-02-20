@@ -8,6 +8,7 @@ import com.binance.api.client.domain.event.ListenKey
 import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
+import com.google.common.util.concurrent.RateLimiter
 import exchange.binance.api.model.NewOrderResponse
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
@@ -19,6 +20,7 @@ class BinanceAPI(
         private val maxRequestsPerSecond: Int
 ) {
     private val thread = newSingleThreadContext("binanceApi")
+    private val rateLimiter = RateLimiter.create(maxRequestsPerSecond.toDouble())
 
     suspend fun serverTime(): ServerTime = perform {
         service.serverTime
@@ -118,7 +120,7 @@ class BinanceAPI(
 
     private suspend fun <T> perform(action: suspend () -> Deferred<T>): T {
         return async(thread) {
-            Thread.sleep(ceil(1000.0 / maxRequestsPerSecond).toLong())  // don't use delay here. binanceThread need to sleep
+            rateLimiter.acquire()
             action().await()
         }.await()
     }
