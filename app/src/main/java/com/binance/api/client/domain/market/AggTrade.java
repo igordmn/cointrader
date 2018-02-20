@@ -32,6 +32,9 @@ public class AggTrade {
   @JsonProperty("m")
   private boolean isBuyerMaker;
 
+  @JsonProperty("M")
+  private boolean isBestPrice;
+
   public long getAggregatedTradeId() {
     return aggregatedTradeId;
   }
@@ -88,6 +91,14 @@ public class AggTrade {
     isBuyerMaker = buyerMaker;
   }
 
+  public boolean isBestPrice() {
+    return isBestPrice;
+  }
+
+  public void setBestPrice(boolean bestPrice) {
+    isBestPrice = bestPrice;
+  }
+
   @Override
   public String toString() {
     return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
@@ -98,6 +109,7 @@ public class AggTrade {
         .append("lastBreakdownTradeId", lastBreakdownTradeId)
         .append("tradeTime", tradeTime)
         .append("isBuyerMaker", isBuyerMaker)
+        .append("isBestPrice", isBestPrice)
         .toString();
   }
 }

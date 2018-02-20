@@ -38,7 +38,15 @@ private suspend fun download(market: String) {
             break
         }
         println(market + " " + Instant.ofEpochMilli(trades.first().tradeTime))
-        write(market, trades)
+
+        if (trades.any { !it.isBestPrice }) {
+            println("HAHAHA")
+        }
+
+        val filteredTrades = trades.filter {
+            it.isBestPrice
+        }
+        write(market, filteredTrades)
         val lastId = trades.last().aggregatedTradeId
         writeLastId(market, lastId)
         id = lastId + 1
