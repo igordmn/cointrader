@@ -36,8 +36,8 @@ fun main(args: Array<String>) {
     )
 
     fun pair(coin: String): String {
-        val isReversed = coin in REVERSED_COINS
-        val final_name = ALT_NAMES[coin] ?: coin
+        val isReversed = coin in DOWNLOAD_REVERSED_COINS
+        val final_name = DOWNLOAD_ALT_NAMES[coin] ?: coin
         return if (isReversed) "${final_name}_BTC" else "BTC_$final_name"
     }
 
@@ -54,8 +54,8 @@ fun main(args: Array<String>) {
     fun fillCoinHistory(coin: String, endDate: Long) {
         println(coin)
         val pair = pair(coin)
-        val isReversed = coin in REVERSED_COINS
-//        val items = chartDataItems(pair, START_DATE, END_DATE, PERIOD_S)
+        val isReversed = coin in DOWNLOAD_REVERSED_COINS
+//        val items = chartDataItems(downloadPair, START_DATE, END_DATE, PERIOD_S)
 
         transaction {
 //            deleteHistories(exchange, coin)

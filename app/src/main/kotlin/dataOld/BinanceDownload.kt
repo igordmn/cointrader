@@ -11,7 +11,7 @@ import kotlin.math.roundToLong
 
 private val exchange = "binance"
 
-private val COINS = setOf(
+val DOWNLOAD_COINS = setOf(
         "USDT", "ETH", "TRX", "NEO", "VEN", "XRP", "ICX", "EOS", "ELF", "WTC", "CND", "ADA", "XLM", "XVG",
         "HSR", "LTC", "BCH", "ETC", "IOTA", "POE", "BTG", "QTUM", "TNT", "LSK", "GAS", "VIB", "ZRX", "OMG",
         "LEND", "BRD", "GTO", "BTS", "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP", "WABI",
@@ -20,10 +20,16 @@ private val COINS = setOf(
         "CDT", "OST", "PPT", "GXS"
 )
 
-private const val REVERSED_COINS = "USDT"
-private val ALT_NAMES = mapOf(
+const val DOWNLOAD_REVERSED_COINS = "USDT"
+val DOWNLOAD_ALT_NAMES = mapOf(
         "BCH" to "BCC"
 )
+
+fun downloadPair(coin: String): String {
+    val isReversed = coin in DOWNLOAD_REVERSED_COINS
+    val final_name = DOWNLOAD_ALT_NAMES[coin] ?: coin
+    return if (isReversed) "BTC$final_name" else "${final_name}BTC"
+}
 
 private const val START_DATE = 1420243200L * 1000  // 03.01.2015
 private val PERIOD_TYPE = "1m"
@@ -32,11 +38,7 @@ private val PERIOD_MS = 60 * 1000
 fun main(args: Array<String>) {
     val api = binanceAPI()
 
-    fun pair(coin: String): String {
-        val isReversed = coin in REVERSED_COINS
-        val final_name = ALT_NAMES[coin] ?: coin
-        return if (isReversed) "BTC$final_name" else "${final_name}BTC"
-    }
+
 
     fun chartDataItems(pair: String, startDate: Long, endDate: Long): List<Candlestick> {
         val all = ArrayList<Candlestick>()
@@ -62,8 +64,8 @@ fun main(args: Array<String>) {
 
     fun fillCoinHistory(coin: String, endDate: Long) {
         println(coin)
-        val pair = pair(coin)
-        val isReversed = coin in REVERSED_COINS
+        val pair = downloadPair(coin)
+        val isReversed = coin in DOWNLOAD_REVERSED_COINS
 
         transaction {
             val startDateDB = execSQL("select max(date) as maxdate from History where exchange=\"${exchange}\" and coin=\"$coin\"") { rs ->
@@ -102,7 +104,7 @@ fun main(args: Array<String>) {
     val serverTime = runBlocking { api.serverTime() }.serverTime
     val endDate = (serverTime / PERIOD_MS) * PERIOD_MS
 
-    for (coin in COINS) {
+    for (coin in DOWNLOAD_COINS) {
         fillCoinHistory(coin, endDate)
     }
 }

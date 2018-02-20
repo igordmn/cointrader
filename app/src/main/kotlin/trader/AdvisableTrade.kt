@@ -11,6 +11,7 @@ import kotlinx.coroutines.experimental.channels.map
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import org.slf4j.Logger
+import util.concurrent.mapAsync
 import util.lang.truncatedTo
 import util.lang.zipValues
 import util.math.portions
