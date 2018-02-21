@@ -77,9 +77,6 @@ def build_predict_w(
     #     weight_decay=5e-8,
     # )
 
-
-
-    # net = tf.log(net / net[:, :, -1, None, :])
     net = tflearn.layers.conv_2d(
         net,
         nb_filter=config.conv_size,
