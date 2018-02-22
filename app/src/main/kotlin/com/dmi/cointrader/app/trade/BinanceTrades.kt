@@ -1,4 +1,4 @@
-package com.dmi.cointrader.trade
+package com.dmi.cointrader.app.trade
 
 import com.binance.api.client.domain.market.AggTrade
 import exchange.binance.api.BinanceAPI

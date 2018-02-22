@@ -1,4 +1,4 @@
-package com.dmi.cointrader.trade
+package com.dmi.cointrader.app.trade
 
 import java.time.Instant
 

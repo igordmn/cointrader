@@ -1,6 +1,5 @@
-package com.dmi.cointrader.trade
+package com.dmi.cointrader.app.trade
 
-import kotlinx.coroutines.experimental.channels.ChannelIterator
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import java.time.Instant
 
