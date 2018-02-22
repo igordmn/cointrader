@@ -30,6 +30,15 @@
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/../../../app/out/production/classes" />
     <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../app/build/generated/source/apt/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../app/build/generated/source/apt/main" isTestSource="false" generated="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../app/build/generated/source/kapt/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../app/build/generated/source/kapt/main" isTestSource="false" generated="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../app/build/generated/source/kaptKotlin/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../app/build/generated/source/kaptKotlin/main" isTestSource="false" generated="true" />
+    </content>
     <content url="file://$MODULE_DIR$/../../../app/src/main">
       <sourceFolder url="file://$MODULE_DIR$/../../../app/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../../app/src/main/kotlin" isTestSource="false" />
@@ -87,6 +96,7 @@
     <orderEntry type="library" name="Gradle: org.xerial:sqlite-jdbc:3.21.0.1" level="project" />
     <orderEntry type="library" name="Gradle: org.reflections:reflections:0.9.10" level="project" />
     <orderEntry type="library" name="Gradle: com.google.guava:guava:24.0-jre" level="project" />
+    <orderEntry type="library" name="Gradle: io.objectbox:objectbox-windows:1.4.1" level="project" />
     <orderEntry type="library" name="Gradle: io.objectbox:objectbox-java-api:1.4.1" level="project" />
     <orderEntry type="library" name="Gradle: org.greenrobot:essentials:3.0.0-RC1" level="project" />
     <orderEntry type="library" name="Gradle: com.google.flatbuffers:flatbuffers-java:1.7.2" level="project" />

@@ -1,0 +1,108 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:8537037976314497930",
+      "lastPropertyId": "2:3858977615502750212",
+      "name": "Market",
+      "properties": [
+        {
+          "id": "1:5506508596723553849",
+          "name": "id"
+        },
+        {
+          "id": "2:3858977615502750212",
+          "name": "name"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:6213427859019454171",
+      "lastPropertyId": "4:3135070263897743207",
+      "name": "TradeChunk",
+      "properties": [
+        {
+          "id": "1:4379241326222078719",
+          "name": "id"
+        },
+        {
+          "id": "2:5023781575816954431",
+          "name": "lastTradeId"
+        },
+        {
+          "id": "3:2240907667699105813",
+          "name": "list"
+        },
+        {
+          "id": "4:3135070263897743207",
+          "indexId": "1:3603338622430093273",
+          "name": "marketId"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:3212869332224648045",
+      "lastPropertyId": "3:229421474519612903",
+      "name": "TradeMoment",
+      "properties": [
+        {
+          "id": "1:8643478064317555417",
+          "name": "id"
+        },
+        {
+          "id": "2:4592065452383880579",
+          "indexId": "2:940025799830163",
+          "name": "num"
+        },
+        {
+          "id": "3:229421474519612903",
+          "name": "candles"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:8829716549327486576",
+      "lastPropertyId": "5:5138423799439081761",
+      "name": "TradeMomentsMeta",
+      "properties": [
+        {
+          "id": "1:2363573206052528828",
+          "name": "id"
+        },
+        {
+          "id": "2:5687241591044849681",
+          "name": "startTime"
+        },
+        {
+          "id": "3:7693982859117200756",
+          "name": "endTime"
+        },
+        {
+          "id": "4:1318061112188446796",
+          "name": "period"
+        },
+        {
+          "id": "5:5138423799439081761",
+          "name": "coins"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "4:8829716549327486576",
+  "lastIndexId": "2:940025799830163",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 4,
+  "modelVersionParserMinimum": 4,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

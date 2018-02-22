@@ -29,6 +29,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serializationVersion")
         classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
+        classpath("net.ltgt.gradle:gradle-apt-plugin:0.13")
     }
 }
 
@@ -40,6 +41,8 @@ plugins {
 
 apply {
     plugin("kotlinx-serialization")
+    plugin("kotlin-kapt")
+    plugin("net.ltgt.apt-idea")
     plugin("io.objectbox")
 }
 
@@ -74,6 +77,8 @@ dependencies {
     compile("org.deeplearning4j:rl4j-core:0.9.1")
     compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
     compile("io.objectbox:objectbox-kotlin:$objectboxVersion")
+    compile("io.objectbox:objectbox-windows:$objectboxVersion")
+    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
