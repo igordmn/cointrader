@@ -32,8 +32,7 @@ matrix = DataMatrices(DATABASE_DIR, config)
 
 
 def save_max(step, agent):
-    path = NET_FILE_MAX + f"/{step}"
-    clear_train_dir(path)
+    path = NET_FILE_MAX + step
     agent.save(path)
 
 

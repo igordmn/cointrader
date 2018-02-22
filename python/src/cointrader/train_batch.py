@@ -83,12 +83,11 @@ configs_b = [
     # TrainConfig(batch_size=10, sequential_steps=14, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
     # todo adam, 240 period, 60 period, low-high fee, without log, old arch, without btc
+
 ]
 
 configs = [
-    TrainConfig(window_size=320, conv_size=6, conv_kernel=5, dense_size=64, dropout=0.45),
-    TrainConfig(window_size=320, conv_size=12, conv_kernel=7, dense_size=32, dropout=0.45),
-    TrainConfig(window_size=320, conv_size=24, conv_kernel=5, dense_size=32, dropout=0.55),
+    TrainConfig(window_size=480, conv_size=24, conv_kernel=2, dense_size=64, dropout=0.45),
 ]
 
 test_count = 3

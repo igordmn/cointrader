@@ -13,7 +13,7 @@ import java.net.URI
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.21"
+    kotlinVersion = "1.2.10"
     var serializationVersion: String by extra
     serializationVersion = "0.4"
 
@@ -42,6 +42,7 @@ val kotlinVersion: String by extra
 val serializationVersion: String by extra
 
 dependencies {
+    compile(kotlin("stdlib", kotlinVersion))
     compile(kotlin("stdlib-jdk8", kotlinVersion))
     compile(kotlin("reflect", kotlinVersion))
     compile(":jep-3.7.1:")
@@ -57,6 +58,7 @@ dependencies {
     compile("org.apache.commons:commons-lang3:3.6")
     compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.21")
+    compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.0")
     compile("org.xerial:sqlite-jdbc:3.21.0.1")
     compile("com.google.guava:guava:24.0-jre")
     compile("org.jetbrains.exposed:exposed:0.9.1")

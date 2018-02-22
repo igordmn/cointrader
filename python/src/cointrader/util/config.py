@@ -37,18 +37,18 @@ class TrainConfig(NamedTuple):
     start_time: int = parse_time("2017/8/1 00:00:00")
     end_time: int = parse_time("2018/2/18 21:50:00")
     test_days: float = 14
-    steps: int = 80000
+    steps: int = 1000000
     log_steps: int = 2000
     indicators: list = sorted(["close", "high", "low"])
     fee: float = 0.0014
 
     period: int = 300
     geometric_bias: float = 5e-06
-    window_size: int = 160
-    batch_size: int = 109
+    window_size: int = 480
+    batch_size: int = 80
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
-    learning_rate: float = 0.00028 * 2
+    learning_rate: float = 0.00028
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.45

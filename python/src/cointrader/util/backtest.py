@@ -4,7 +4,7 @@ from src.cointrader.util.indicators import compute_max_drawdown, sharpe_ratio, p
     sortino_ratio, downside_deviation
 
 
-def backtest(agent, matrix, config, log):
+def backtest(agent, matrix, config, log, use_allin=True):
     test_set = matrix.get_test_set()
     x = test_set.x
     all_prices = test_set.prices
@@ -22,15 +22,15 @@ def backtest(agent, matrix, config, log):
 
         return capital_after_fee * new_portfolio_percents
 
-    def rebalance3(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices):
+    def rebalance_allin(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices):
         current_index = portfolio_percents.tolist().index(max(portfolio_percents))
         buy_index = new_portfolio_percents.tolist().index(max(new_portfolio_percents))
 
         if buy_index != current_index:
             current_price = prices[current_index]
             buy_price = prices[buy_index]
-            can_sell = True  #current_price < next_high_prices[current_index]
-            can_buy = True  #next_low_prices[buy_index] < buy_price
+            can_sell = True  # current_price < next_high_prices[current_index]
+            can_buy = True  # next_low_prices[buy_index] < buy_price
 
             if current_index != 0 and can_sell:
                 old_amount = portfolio[current_index]
@@ -57,10 +57,11 @@ def backtest(agent, matrix, config, log):
         new_portfolio_percents = normalize_portfolio(result)
         log("portfolio", ", ".join("%.2f" % f for f in new_portfolio_percents))
 
-        # portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
-        # return portfolio_btc / prices
-
-        return rebalance3(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
+        if use_allin:
+            return rebalance_allin(portfolio, portfolio_percents, new_portfolio_percents, prices, next_high_prices, next_low_prices)
+        else:
+            portfolio_btc = rebalance(step, portfolio_btc, new_portfolio_percents)
+            return portfolio_btc / prices
 
     def compute_capital(step, portfolio):
         current_prices = all_prices[step]
