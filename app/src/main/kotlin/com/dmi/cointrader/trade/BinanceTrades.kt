@@ -9,16 +9,8 @@ fun binanceTrades(
         api: BinanceAPI,
         market: String,
         startId: Long,
-        downloadTicks: ReceiveChannel<Instant>
-): ReceiveChannel<BinanceTrade> = produce {
-    var id = startId
-    downloadTicks.consumeEach { tick ->
-        binanceTrades(api, market, id).takeWhile { it.trade.time <= tick }.consumeEach {
-            send(it)
-            id = it.aggregatedId + 1
-        }
-    }
-}
+        beforeTime: Instant
+): ReceiveChannel<BinanceTrade> = binanceTrades(api, market, startId).takeWhile { it.trade.time <= beforeTime }
 
 private fun binanceTrades(
         api: BinanceAPI,
@@ -41,7 +33,7 @@ private fun binanceTrades(
     }
 }
 
-fun AggTrade.toBinanceTrade() = BinanceTrade(
+private fun AggTrade.toBinanceTrade() = BinanceTrade(
         aggregatedTradeId,
         Trade(
                 Instant.ofEpochMilli(tradeTime),
