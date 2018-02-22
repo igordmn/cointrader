@@ -8,7 +8,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketLimits
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
-import util.math.sum
+import com.dmi.util.math.sum
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime

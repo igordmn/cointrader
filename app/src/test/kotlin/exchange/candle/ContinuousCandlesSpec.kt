@@ -5,7 +5,7 @@ import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
-import util.lang.InstantRange
+import com.dmi.util.lang.InstantRange
 import java.math.BigDecimal
 import java.time.Instant
 

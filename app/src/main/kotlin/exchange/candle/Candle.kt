@@ -1,10 +1,10 @@
 package exchange.candle
 
 import kotlinx.serialization.*
-import util.lang.RangeTimed
-import util.lang.RangeTimedMerger
-import util.math.max
-import util.math.min
+import com.dmi.util.lang.RangeTimed
+import com.dmi.util.lang.RangeTimedMerger
+import com.dmi.util.math.max
+import com.dmi.util.math.min
 import java.math.BigDecimal
 
 typealias CoinToCandles = Map<String, List<Candle>>

@@ -1,4 +1,4 @@
-package util.math
+package com.dmi.util.math
 
 class DoubleMatrix4D(
         val n1: Int,

@@ -7,7 +7,7 @@ import exchange.binance.api.binanceAPI
 import exchange.binance.market.BinanceMarketLimits
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
-import util.math.sum
+import com.dmi.util.math.sum
 
 fun main(args: Array<String>) = runBlocking {
     val api = binanceAPI()

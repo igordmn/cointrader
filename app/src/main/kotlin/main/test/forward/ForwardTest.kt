@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 import python.jep
 import trader.AdvisableTrade
 import trader.TradingBot
-import util.log.logger
+import com.dmi.util.log.logger
 import java.time.Instant
 
 fun forwardTest() = runBlocking {

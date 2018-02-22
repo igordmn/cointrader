@@ -1,6 +1,6 @@
-package util.lang.time
+package com.dmi.util.lang.time
 
-import util.lang.*
+import com.dmi.util.lang.*
 
 class RangeTimedCutter<T>(
         private val cutInside: (T, t1: Double, t2: Double) -> T

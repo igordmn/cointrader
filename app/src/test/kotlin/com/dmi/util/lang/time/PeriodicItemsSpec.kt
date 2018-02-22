@@ -1,4 +1,4 @@
-package util.lang.time
+package com.dmi.util.lang.time
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
@@ -6,8 +6,8 @@ import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
-import util.lang.RangeTimed
-import util.lang.RangeTimedMerger
+import com.dmi.util.lang.RangeTimed
+import com.dmi.util.lang.RangeTimedMerger
 import java.time.Duration
 import java.time.Instant
 

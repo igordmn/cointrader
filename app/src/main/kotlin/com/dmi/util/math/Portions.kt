@@ -1,4 +1,4 @@
-package util.math
+package com.dmi.util.math
 
 import java.math.BigDecimal
 import java.math.RoundingMode

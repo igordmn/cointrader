@@ -9,9 +9,9 @@ import io.kotlintest.specs.FreeSpec
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
-import util.lang.InstantRange
-import util.lang.min
-import util.lang.truncatedTo
+import com.dmi.util.lang.InstantRange
+import com.dmi.util.lang.min
+import com.dmi.util.lang.truncatedTo
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.time.Duration

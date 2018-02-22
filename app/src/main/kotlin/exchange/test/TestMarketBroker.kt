@@ -4,9 +4,9 @@ import exchange.MarketBroker
 import exchange.MarketLimits
 import exchange.MarketPrice
 import org.slf4j.Logger
-import util.math.equalsWithoutScale
-import util.math.notEqualsWithoutScale
-import util.math.round
+import com.dmi.util.math.equalsWithoutScale
+import com.dmi.util.math.notEqualsWithoutScale
+import com.dmi.util.math.round
 import java.math.BigDecimal
 import java.math.RoundingMode
 

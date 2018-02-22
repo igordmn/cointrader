@@ -1,9 +1,9 @@
-package util.lang.time
+package com.dmi.util.lang.time
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
-import util.lang.RangeTimed
-import util.lang.unsupportedOperation
+import com.dmi.util.lang.RangeTimed
+import com.dmi.util.lang.unsupportedOperation
 import java.time.Instant
 
 class RangeTimedCutterSpec : FreeSpec({

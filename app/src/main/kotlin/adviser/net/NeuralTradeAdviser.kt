@@ -4,13 +4,13 @@ import adviser.AdviseIndicators
 import adviser.CoinPortions
 import adviser.TradeAdviser
 import exchange.candle.Candle
-import util.math.DoubleMatrix4D
+import com.dmi.util.math.DoubleMatrix4D
 import exchange.candle.CoinToCandles
 import jep.Jep
 import main.test.Config
-import util.lang.unsupportedOperation
-import util.math.DoubleMatrix2D
-import util.math.portions
+import com.dmi.util.lang.unsupportedOperation
+import com.dmi.util.math.DoubleMatrix2D
+import com.dmi.util.math.portions
 import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths

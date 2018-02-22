@@ -6,7 +6,7 @@ import dataOld.downloadPair
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
-import util.concurrent.mapAsync
+import com.dmi.util.concurrent.mapAsync
 import java.nio.file.Paths
 import java.time.Instant
 

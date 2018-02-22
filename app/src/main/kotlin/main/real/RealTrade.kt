@@ -16,7 +16,7 @@ import python.jep
 import trader.AdvisableTrade
 import trader.MultipleTrade
 import trader.TradingBot
-import util.log.logger
+import com.dmi.util.log.logger
 import java.io.File
 import java.time.Instant
 

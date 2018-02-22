@@ -4,7 +4,7 @@ import data.HistoryCache
 import exchange.candle.TimedCandle
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.takeWhile
-import util.lang.truncatedTo
+import com.dmi.util.lang.truncatedTo
 import java.time.Duration
 import java.time.Instant
 

@@ -3,8 +3,8 @@ package trader
 import exchange.ExchangeTime
 import kotlinx.coroutines.experimental.NonCancellable.isActive
 import org.slf4j.Logger
-import util.concurrent.delay
-import util.lang.truncatedTo
+import com.dmi.util.concurrent.delay
+import com.dmi.util.lang.truncatedTo
 import java.awt.Toolkit
 import java.time.Duration
 import java.time.Instant

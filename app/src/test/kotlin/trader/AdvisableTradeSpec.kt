@@ -16,8 +16,8 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.runBlocking
-import util.lang.truncatedTo
-import util.lang.unsupportedOperation
+import com.dmi.util.lang.truncatedTo
+import com.dmi.util.lang.unsupportedOperation
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant

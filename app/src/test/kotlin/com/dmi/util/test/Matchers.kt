@@ -1,4 +1,4 @@
-package util.test
+package com.dmi.util.test
 
 import io.kotlintest.matchers.Matcher
 import io.kotlintest.matchers.Result

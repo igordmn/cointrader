@@ -1,7 +1,7 @@
 package exchange.candle
 
-import util.math.max
-import util.math.min
+import com.dmi.util.math.max
+import com.dmi.util.math.min
 import java.math.BigDecimal
 import java.math.RoundingMode
 

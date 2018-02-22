@@ -23,8 +23,8 @@ import python.jep
 import trader.AdvisableTrade
 import trader.Trade
 import trader.TradingBot
-import util.lang.truncatedTo
-import util.log.logger
+import com.dmi.util.lang.truncatedTo
+import com.dmi.util.log.logger
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant

@@ -7,7 +7,7 @@ import exchange.MarketBroker
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.model.NewOrderResponse
 import org.slf4j.Logger
-import util.math.sum
+import com.dmi.util.math.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant

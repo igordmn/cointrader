@@ -2,8 +2,8 @@ package adviser.net
 
 import jep.Jep
 import jep.NDArray
-import util.math.DoubleMatrix2D
-import util.math.DoubleMatrix4D
+import com.dmi.util.math.DoubleMatrix2D
+import com.dmi.util.math.DoubleMatrix4D
 import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -20,8 +20,8 @@ class NNAgent(
         netPath: String? = null
 ): AutoCloseable {
     init {
-        jep.eval("from cointrader.util.nnagent import NNAgent")
-        jep.eval("from cointrader.util.nnagent import NNConfig")
+        jep.eval("from cointrader.com.dmi.util.nnagent import NNAgent")
+        jep.eval("from cointrader.com.dmi.util.nnagent import NNConfig")
         jep.eval("agent = None")
         jep.eval("""
                 def createAgent(indicator_number, coin_number, window_size, fee, learning_rate, net_path):

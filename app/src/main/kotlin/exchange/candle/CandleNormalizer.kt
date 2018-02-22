@@ -1,8 +1,8 @@
 package exchange.candle
 
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import util.lang.time.PeriodicItems
-import util.lang.time.RangeTimedCutter
+import com.dmi.util.lang.time.PeriodicItems
+import com.dmi.util.lang.time.RangeTimedCutter
 import java.time.Duration
 import java.time.Instant
 

@@ -1,4 +1,4 @@
-package util.lang
+package com.dmi.util.lang
 
 import kotlinx.serialization.Serializable
 import java.time.Duration

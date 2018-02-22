@@ -1,4 +1,4 @@
-package util.concurrent
+package com.dmi.util.concurrent
 
 import kotlinx.coroutines.experimental.delay
 import java.time.Duration

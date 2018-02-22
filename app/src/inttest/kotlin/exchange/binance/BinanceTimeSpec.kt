@@ -4,8 +4,8 @@ import exchange.binance.api.binanceAPI
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
-import util.concurrent.delay
-import util.test.between
+import com.dmi.util.concurrent.delay
+import com.dmi.util.test.between
 import java.time.Duration
 
 class BinanceTimeSpec : StringSpec({

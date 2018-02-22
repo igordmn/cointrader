@@ -9,7 +9,7 @@ import exchange.history.MarketHistory
 import exchange.history.NormalizedMarketHistory
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.coroutines.experimental.channels.toList
-import util.lang.truncatedTo
+import com.dmi.util.lang.truncatedTo
 import java.time.Duration
 import java.time.Instant
 

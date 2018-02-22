@@ -12,7 +12,7 @@ import exchange.binance.market.PreloadedBinanceMarketHistories
 import exchange.candle.LinearApproximatedPricesFactory
 import exchange.candle.approximateCandleNormalizer
 import exchange.history.NormalizedMarketHistory
-import util.log.logger
+import com.dmi.util.log.logger
 import java.math.BigDecimal
 import java.time.Duration
 

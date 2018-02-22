@@ -6,8 +6,8 @@ import io.kotlintest.matchers.beLessThan
 import io.kotlintest.matchers.should
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
-import util.concurrent.delay
-import util.math.max
+import com.dmi.util.concurrent.delay
+import com.dmi.util.math.max
 import java.math.BigDecimal
 import java.time.Duration
 

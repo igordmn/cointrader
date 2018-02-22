@@ -14,8 +14,8 @@ import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
 import org.slf4j.LoggerFactory
-import util.lang.truncatedTo
-import util.math.sum
+import com.dmi.util.lang.truncatedTo
+import com.dmi.util.math.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.*
