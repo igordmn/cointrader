@@ -68,6 +68,7 @@ dependencies {
     compile("org.deeplearning4j:deeplearning4j-core:0.9.1")
     compile("org.deeplearning4j:rl4j-core:0.9.1")
     compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
+    compile("commons-transaction:commons-transaction:1.2")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
