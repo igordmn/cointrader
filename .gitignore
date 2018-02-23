@@ -13,6 +13,7 @@ objectbox-windows-x64.dll
 *.log
 *.log.zip
 *.tmp
+*.bak
 
 __pycache__/
 
