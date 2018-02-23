@@ -23,7 +23,7 @@ def sharpe_ratio(profits):
 
 def sortino_ratio(profits):
     log_profits = np.log(profits)
-    return np.mean(log_profits) / downside_deviation(profits)
+    return np.mean(log_profits) / downside_deviation(log_profits)
 
 
 def standard_deviation(profits):

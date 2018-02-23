@@ -65,8 +65,10 @@ def print_config(c, result_all, result_last):
         "dropout", c.dropout, "use_batch_normalization", c.use_batch_normalization
     )
 
-configs_b = [
-    TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+configs = [
+    TrainConfig(batch_size=10, window_size=160, sequential_steps=8, sequential_bias=5e-04, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
+
+    # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=64),
 
     # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=12, conv_kernel=5, dense_size=64),
     # TrainConfig(batch_size=10, sequential_steps=8, sequential_bias=3e-03, learning_rate=0.00028 * 6, dropout=0.45, use_batch_normalization=True, conv_size=24, conv_kernel=5, dense_size=32),
@@ -86,8 +88,8 @@ configs_b = [
 
 ]
 
-configs = [
-    TrainConfig(window_size=480, conv_size=24, conv_kernel=2, dense_size=64, dropout=0.45),
+configs_j = [
+    TrainConfig(window_size=160, conv_size=24, conv_kernel=5, dense_size=64, dropout=0.45),
 ]
 
 test_count = 3

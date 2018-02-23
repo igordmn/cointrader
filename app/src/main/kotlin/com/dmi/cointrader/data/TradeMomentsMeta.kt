@@ -18,9 +18,6 @@ data class TradeMomentsMeta(
         @Convert(converter = InstantConverter::class, dbType = Long::class)
         val startTime: Instant,
 
-        @Convert(converter = InstantConverter::class, dbType = Long::class)
-        val endTime: Instant,
-
         @Convert(converter = DurationConverter::class, dbType = Long::class)
         val period: Duration,
 
