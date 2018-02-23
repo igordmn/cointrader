@@ -18,13 +18,12 @@ class FileFixedDataArray(
     var size: Long = computeSize()
         private set
 
-    suspend fun read(start: Long, end: Long, data: ByteBuffer) {
-        require(start in 0..size)
-        require(end in 0..size)
-        require(end >= start)
-        require(data.remaining() == (end - start).toInt() * itemBytes)
+    suspend fun read(range: LongRange, data: ByteBuffer) {
+        require(range.start in 0..size)
+        require(range.endInclusive in 0..size)
+        require(data.remaining() == (range.endInclusive - range.start).toInt() * itemBytes)
         AsynchronousFileChannel.open(file, StandardOpenOption.READ).use { channel ->
-            channel.aRead(data, start * itemBytes)
+            channel.aRead(data, range.start * itemBytes)
         }
     }
 
