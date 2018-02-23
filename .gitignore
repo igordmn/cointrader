@@ -8,7 +8,6 @@ out/
 build/
 /local.properties
 /workspace.properties
-objectbox-windows-x64.dll
 
 *.log
 *.log.zip
