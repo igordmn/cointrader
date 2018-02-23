@@ -16,20 +16,15 @@ buildscript {
     kotlinVersion = "1.2.10"
     var serializationVersion: String by extra
     serializationVersion = "0.4"
-    var objectboxVersion: String by extra
-    objectboxVersion = "1.4.1"
 
     repositories {
         mavenCentral()
         jcenter()
         maven("https://kotlin.bintray.com/kotlinx")
-        maven("http://objectbox.net/beta-repo")
     }
 
     dependencies {
         classpath("org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serializationVersion")
-        classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
-        classpath("net.ltgt.gradle:gradle-apt-plugin:0.13")
     }
 }
 
@@ -42,13 +37,10 @@ plugins {
 apply {
     plugin("kotlinx-serialization")
     plugin("kotlin-kapt")
-    plugin("net.ltgt.apt-idea")
-    plugin("io.objectbox")
 }
 
 val kotlinVersion: String by extra
 val serializationVersion: String by extra
-val objectboxVersion: String by extra
 
 dependencies {
     compile(kotlin("stdlib", kotlinVersion))
@@ -76,9 +68,6 @@ dependencies {
     compile("org.deeplearning4j:deeplearning4j-core:0.9.1")
     compile("org.deeplearning4j:rl4j-core:0.9.1")
     compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
-    compile("io.objectbox:objectbox-kotlin:$objectboxVersion")
-    compile("io.objectbox:objectbox-windows:$objectboxVersion")
-    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
