@@ -89,7 +89,7 @@ def build_predict_w(
     )
     if config.use_batch_normalization:
         net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
+    net = tflearn.dropout(net, config.dropout)
     # net = tflearn.layers.conv_2d(
     #     net,
     #     nb_filter=config.conv_size,
