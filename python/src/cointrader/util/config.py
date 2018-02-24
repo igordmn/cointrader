@@ -48,7 +48,7 @@ class TrainConfig(NamedTuple):
     batch_size: int = 109
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
-    learning_rate: float = 2 * 0.00028
+    learning_rate: float = 1000 * 0.00028
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.45

@@ -90,19 +90,19 @@ def build_predict_w(
     if config.use_batch_normalization:
         net = tflearn.batch_normalization(net)
     net = tflearn.dropout(net, config.dropout)
-    # net = tflearn.layers.conv_2d(
-    #     net,
-    #     nb_filter=config.conv_size,
-    #     filter_size=[1, config.conv_kernel],
-    #     strides=[1, 1],
-    #     padding="valid",
-    #     activation="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
+    net = tflearn.layers.conv_2d(
+        net,
+        nb_filter=config.conv_size,
+        filter_size=[1, config.conv_kernel],
+        strides=[1, 1],
+        padding="valid",
+        activation="relu",
+        regularizer=None,
+        weight_decay=config.weight_decay,
+    )
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
     # net = tflearn.layers.conv.max_pool_2d(net, [1, 2])
     # net = tflearn.layers.conv_2d(
     #     net,
@@ -147,16 +147,16 @@ def build_predict_w(
     if config.use_batch_normalization:
         net = tflearn.batch_normalization(net)
     net = tflearn.dropout(net, config.dropout)
-    # net = eiie_dense(
-    #     net,
-    #     filter_number=config.dense_size,
-    #     activation_function="relu",
-    #     regularizer=None,
-    #     weight_decay=config.weight_decay,
-    # )
-    # if config.use_batch_normalization:
-    #     net = tflearn.batch_normalization(net)
-    # net = tflearn.dropout(net, config.dropout)
+    net = eiie_dense(
+        net,
+        filter_number=config.dense_size,
+        activation_function="relu",
+        regularizer=None,
+        weight_decay=config.weight_decay,
+    )
+    if config.use_batch_normalization:
+        net = tflearn.batch_normalization(net)
+    net = tflearn.dropout(net, config.dropout)
 
     # net = eiie_lstm(net, coin_number)
 
@@ -257,7 +257,7 @@ class NNAgent:
 
         loss = -log_mean
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.AdamOptimizer(config.learning_rate).minimize(loss)
+        train = tf.train.RMSPropOptimizer(config.learning_rate).minimize(loss)
 
         self._tensors = Tensors(
             batch_size,
