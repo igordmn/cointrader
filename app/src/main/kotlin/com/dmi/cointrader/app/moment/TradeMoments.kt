@@ -1,9 +1,11 @@
 package com.dmi.cointrader.app.moment
 
 import com.dmi.util.io.AtomicFileDataStore
+import com.dmi.util.io.AtomicFileStore
 import com.dmi.util.io.FileFixedArray
 import com.dmi.util.io.appendToFileName
 import com.google.common.hash.Hashing
+import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.file.Path
@@ -15,6 +17,44 @@ interface ComputedFileArray<R> {
     val size: Long
     suspend fun compute()
     suspend fun get(range: LongRange): List<R>
+}
+
+class TransformFileArray<T, R>(
+        file: Path,
+        serializer: FileFixedArray.Serializer<R>,
+        private val other: ComputedFileArray<T>,
+        private val transformId: ByteArray,
+        private val transform: (Sequence<T>) -> Sequence<R>
+) : ComputedFileArray<R> {
+    override val id: ByteArray = hash(listOf(transformId, other.id))
+
+    private val idStore = AtomicFileDataStore(file.appendToFileName(".id"))
+    private val metaStore = AtomicFileStore(file.appendToFileName(".meta"), Meta.serializer())
+    private val fileArray = FileFixedArray(file.appendToFileName(".array"), serializer)
+
+    override suspend fun compute() {
+        other.compute()
+
+        if (idStore.exists()) {
+            val storedId = idStore.read()
+            if (!Arrays.equals(storedId, id)) {
+                fileArray.clear()
+                metaStore.write(Meta(0, 0))
+                idStore.write(id)
+            }
+        } else {
+            metaStore.write(Meta(0, 0))
+            idStore.write(id)
+        }
+
+        val meta = met
+    }
+
+    override val size: Long = fileArray.size
+    override suspend fun get(range: LongRange): List<R> = fileArray.get(range)
+
+    @Serializable
+    data class Meta(val otherIndex: Int, val thisIndex: Int)
 }
 
 class CombinedFileArray<T>(
@@ -42,7 +82,9 @@ class CombinedFileArray<T>(
             val storedId = idStore.read()
             if (!Arrays.equals(storedId, id)) {
                 fileArray.clear()
+                idStore.write(id)
             }
+        } else {
             idStore.write(id)
         }
 
