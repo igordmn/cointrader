@@ -3,23 +3,21 @@ package com.dmi.util.io
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.runBlocking
-import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 
-class AtomicFileStoreSpec : FreeSpec() {
+class AtomicFileDataStoreSpec : FreeSpec() {
     init {
         "shouldn't exist initially" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
                 store.exists() shouldBe false
             }
         }
 
         "write and read data" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
 
                 store.write(byteArrayOf(1, 2, 3))
 
@@ -29,7 +27,7 @@ class AtomicFileStoreSpec : FreeSpec() {
 
         "write twice and read data" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
 
                 store.write(byteArrayOf(1, 2, 3))
                 store.write(byteArrayOf(1, 2))
@@ -40,7 +38,7 @@ class AtomicFileStoreSpec : FreeSpec() {
 
         "remove if not exists" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
 
                 store.exists() shouldBe false
                 store.remove()
@@ -50,7 +48,7 @@ class AtomicFileStoreSpec : FreeSpec() {
 
         "remove after write" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
 
                 store.write(byteArrayOf(1, 2, 3))
                 store.exists() shouldBe true
@@ -61,7 +59,7 @@ class AtomicFileStoreSpec : FreeSpec() {
 
         "write empty data" {
             test { file ->
-                val store = AtomicFileStore(file)
+                val store = AtomicFileDataStore(file)
 
                 store.write(byteArrayOf())
 
@@ -78,7 +76,7 @@ class AtomicFileStoreSpec : FreeSpec() {
                     val tempFile = file.appendToFileName(".tmp")
                     tempFile.append(1, 2, 3, 4, 5)
 
-                    val store = AtomicFileStore(file)
+                    val store = AtomicFileDataStore(file)
 
                     store.exists() shouldBe true
                     store.read().toList() shouldBe byteListOf(1, 2)
@@ -93,7 +91,7 @@ class AtomicFileStoreSpec : FreeSpec() {
                     val tempFile = file.appendToFileName(".tmp")
                     tempFile.append(1, 2, 3, 4, 5)
 
-                    val store = AtomicFileStore(file)
+                    val store = AtomicFileDataStore(file)
                     store.write(byteArrayOf(1, 2, 6))
 
                     store.exists() shouldBe true
@@ -109,7 +107,7 @@ class AtomicFileStoreSpec : FreeSpec() {
                     val tempFile = file.appendToFileName(".tmp")
                     tempFile.append(1, 2, 3, 4, 5)
 
-                    val store = AtomicFileStore(file)
+                    val store = AtomicFileDataStore(file)
 
                     store.exists() shouldBe true
                     store.read().toList() shouldBe byteListOf(1, 2, 3, 4, 5)
@@ -124,7 +122,7 @@ class AtomicFileStoreSpec : FreeSpec() {
                     val tempFile = file.appendToFileName(".tmp")
                     tempFile.append(1, 2, 3, 4, 5)
 
-                    val store = AtomicFileStore(file)
+                    val store = AtomicFileDataStore(file)
                     store.write(byteArrayOf(1, 2))
 
                     store.read().toList() shouldBe byteListOf(1, 2)

@@ -9,7 +9,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 
-class AtomicFileStore(private val file: Path) {
+class AtomicFileDataStore(private val file: Path) {
     private val tempFile = file.appendToFileName(".tmp")
 
     suspend fun write(data: ByteArray) {
