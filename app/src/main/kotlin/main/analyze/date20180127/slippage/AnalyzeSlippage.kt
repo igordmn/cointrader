@@ -43,13 +43,15 @@ fun main(args: Array<String>) = runBlocking {
             .map(tradeBuilder::buildNext)
             .filterNotNull()
 
-    val comissions = trades
+    val fees = trades
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
+            .map { 1 - Math.sqrt(it.toDouble()) * (1 - applyAddFee) }
             .toList()
 
-    val fee = 1 - Math.sqrt(comissions.geoMean()) * (1 - applyAddFee)
-    val count = comissions.size
+    val fee = fees.geoMean()
+    val count = fees.size
 
+    val joined = fees.joinToString("\n") { it.toString().replace(".", ",") }
     println("fact commission $fee. count $count")
 
 //    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
@@ -89,9 +91,9 @@ fun main(args: Array<String>) = runBlocking {
 //    }
 }
 
-private fun List<BigDecimal>.geoMean(): Double {
+private fun List<Double>.geoMean(): Double {
     val total = reduce { acc, item -> acc * item }
-    return Math.pow(total.toDouble(), 1.0 / size)
+    return Math.pow(total, 1.0 / size)
 }
 
 private fun parseLine(line: String): Line = when {
