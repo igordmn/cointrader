@@ -10,16 +10,26 @@ class FileFixedArray<T>(
     private val dataArray = FileFixedDataArray(file, serializer.itemBytes)
 
     val size: Long get() = dataArray.size
-
     fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
+    fun clear() = dataArray.clear()
 
     suspend fun get(range: LongRange): List<T> {
         require(range.start in 0..size)
         require(range.endInclusive in 0..size)
 
         val size = (range.endInclusive - range.start).toInt()
+        return readList(size) {
+            dataArray.read(range, it)
+        }
+    }
+
+    suspend fun append(items: List<T>) {
+        dataArray.append(toBuffer(items))
+    }
+
+    private suspend fun readList(size: Int, read: suspend (ByteBuffer) -> Unit): List<T> {
         val buffer = ByteBuffer.allocate(size * serializer.itemBytes)
-        dataArray.read(range, buffer)
+        read(buffer)
         buffer.rewind()
 
         val items = ArrayList<T>(size)
@@ -29,14 +39,12 @@ class FileFixedArray<T>(
         return items
     }
 
-    fun clear() = dataArray.clear()
-
-    suspend fun append(items: List<T>) {
+    private fun toBuffer(items: List<T>): ByteBuffer {
         val buffer = ByteBuffer.allocate(items.size * serializer.itemBytes)
         items.forEach {
             serializer.serialize(it, buffer)
         }
-        dataArray.append(buffer)
+        return buffer
     }
 
     interface Serializer<T> {
