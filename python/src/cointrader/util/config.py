@@ -52,9 +52,9 @@ class TrainConfig(NamedTuple):
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.45
-    conv_size: int = 12
+    conv_size: int = 24
     conv_kernel: int = 5
-    dense_size: int = 32
+    dense_size: int = 64
 
     max_network_min_steps: int = 20000
 

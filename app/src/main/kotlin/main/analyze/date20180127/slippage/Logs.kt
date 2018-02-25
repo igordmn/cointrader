@@ -6,7 +6,7 @@ import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 private val folders = listOf(
-        "D:/Development/Projects/cointrader/build/0007/app/app/bin/log/archive/1"
+        "D:/Development/Projects/cointrader/build/0007/app/app/bin/log/archive/2"
 )
 
 private val realTradePrefixes = listOf("realTrade", "realTest")
