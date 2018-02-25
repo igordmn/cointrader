@@ -47,7 +47,7 @@ class TransformFileArray<T, R>(
             idStore.write(id)
         }
 
-        val meta = met
+//        val meta = met
     }
 
     override val size: Long = fileArray.size
