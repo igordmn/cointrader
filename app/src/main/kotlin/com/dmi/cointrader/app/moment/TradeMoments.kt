@@ -1,10 +1,12 @@
 package com.dmi.cointrader.app.moment
 
+import com.dmi.util.concurrent.flatten
 import com.dmi.util.io.AtomicFileDataStore
 import com.dmi.util.io.AtomicFileStore
 import com.dmi.util.io.FileFixedArray
 import com.dmi.util.io.appendToFileName
 import com.google.common.hash.Hashing
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -22,39 +24,66 @@ interface ComputedFileArray<R> {
 class TransformFileArray<T, R>(
         file: Path,
         serializer: FileFixedArray.Serializer<R>,
-        private val other: ComputedFileArray<T>,
+        private val original: ComputedFileArray<T>,
         private val transformId: ByteArray,
-        private val transform: (Sequence<T>) -> Sequence<R>
+        private val transform: suspend (ReceiveChannel<ItemInfo<T>>) -> ReceiveChannel<ItemInfo<R>>
 ) : ComputedFileArray<R> {
-    override val id: ByteArray = hash(listOf(transformId, other.id))
+    override val id: ByteArray = hash(listOf(transformId, original.id))
 
     private val idStore = AtomicFileDataStore(file.appendToFileName(".id"))
     private val metaStore = AtomicFileStore(file.appendToFileName(".meta"), Meta.serializer())
     private val fileArray = FileFixedArray(file.appendToFileName(".array"), serializer)
 
     override suspend fun compute() {
-        other.compute()
+        val windowSize = 1000L
+
+        original.compute()
+
+        val meta: Meta
 
         if (idStore.exists()) {
             val storedId = idStore.read()
             if (!Arrays.equals(storedId, id)) {
                 fileArray.clear()
-                metaStore.write(Meta(0, 0))
+                meta = Meta(0, 0)
+                metaStore.write(meta)
                 idStore.write(id)
+            } else {
+                meta = metaStore.read()
+                fileArray.reduceSize(meta.thisIndex)
             }
         } else {
-            metaStore.write(Meta(0, 0))
+            fileArray.clear()
+            meta = Meta(0, 0)
+            metaStore.write(meta)
             idStore.write(id)
         }
 
-//        val meta = met
+        (meta.originalLastIndex until original.size)
+                .rangeChunked(windowSize)
+                .asReceiveChannel()
+                .map { range ->
+                    original.get(range).mapIndexed { i, it ->
+                        ItemInfo(range.start + i, it)
+                    }
+                }
+                .flatten()
+                .apply { transform(this) }
+                .chunked(windowSize)
+                .forEach {
+                    metaStore.write(Meta(it.last().originalLastIndex, meta.thisIndex + it.size))
+                    fileArray.append(it)
+                }
+
     }
 
     override val size: Long = fileArray.size
     override suspend fun get(range: LongRange): List<R> = fileArray.get(range)
 
     @Serializable
-    data class Meta(val otherIndex: Int, val thisIndex: Int)
+    data class Meta(val originalLastIndex: Long, val thisIndex: Long)
+    
+    class ItemInfo<out T>(val originalIndex: Long, val item: T)
 }
 
 class CombinedFileArray<T>(
@@ -85,6 +114,7 @@ class CombinedFileArray<T>(
                 idStore.write(id)
             }
         } else {
+            fileArray.clear()
             idStore.write(id)
         }
 
