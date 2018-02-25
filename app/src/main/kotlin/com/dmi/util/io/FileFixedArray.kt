@@ -11,6 +11,8 @@ class FileFixedArray<T>(
 
     val size: Long get() = dataArray.size
 
+    fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
+
     suspend fun get(range: LongRange): List<T> {
         require(range.start in 0..size)
         require(range.endInclusive in 0..size)
