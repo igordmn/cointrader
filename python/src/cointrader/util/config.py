@@ -44,17 +44,17 @@ class TrainConfig(NamedTuple):
 
     period: int = 300
     geometric_bias: float = 5e-06
-    window_size: int = 160
-    batch_size: int = 109
+    window_size: int = 320
+    batch_size: int = 50
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
-    learning_rate: float = 1000 * 0.00028
+    learning_rate: float = 2 * 0.00028
     weight_decay: float = 5e-6
     use_batch_normalization: bool = True
     dropout: float = 0.45
-    conv_size: int = 24
+    conv_size: int = 48
     conv_kernel: int = 5
-    dense_size: int = 64
+    dense_size: int = 96
 
     max_network_min_steps: int = 20000
 

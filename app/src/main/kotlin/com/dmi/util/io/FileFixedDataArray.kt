@@ -18,6 +18,11 @@ class FileFixedDataArray(
     var size: Long = computeSize()
         private set
 
+    fun reduceSize(newSize: Long) {
+        require(newSize <= size)
+        size = newSize
+    }
+
     suspend fun read(range: LongRange, data: ByteBuffer) {
         require(range.start in 0..size)
         require(range.endInclusive in 0..size)

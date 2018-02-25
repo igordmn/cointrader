@@ -262,6 +262,40 @@ class FileFixedDataArraySpec : FreeSpec({
             }
         }
     }
+
+    "modify size" - {
+        "modify size and read" {
+            test { file ->
+                val array = FileFixedDataArray(file, 5)
+                val writeBufferAll = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+                val readBufferAll = ByteBuffer.allocate(5)
+
+                array.append(writeBufferAll)
+                array.reduceSize(1)
+                array.read(0L..1L, readBufferAll)
+
+                array.size shouldBe 1L
+                data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5)
+            }
+        }
+
+        "modify size, append and read" {
+            test { file ->
+                val array = FileFixedDataArray(file, 5)
+                val writeBuffer1 = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+                val writeBuffer2 = buffer(11, 12, 13, 14, 15)
+                val readBufferAll = ByteBuffer.allocate(10)
+
+                array.append(writeBuffer1)
+                array.reduceSize(1)
+                array.append(writeBuffer2)
+                array.read(0L..2L, readBufferAll)
+
+                array.size shouldBe 2L
+                data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 11, 12, 13, 14, 15)
+            }
+        }
+    }
 })
 
 private fun test(action: suspend (Path) -> Unit) {
