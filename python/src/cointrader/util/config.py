@@ -45,7 +45,7 @@ class TrainConfig(NamedTuple):
     period: int = 300
     geometric_bias: float = 5e-06
     window_size: int = 320
-    batch_size: int = 60
+    batch_size: int = 109
     sequential_steps: int = 8
     sequential_bias: float = 5e-03
     learning_rate: float = 2 * 0.00028
