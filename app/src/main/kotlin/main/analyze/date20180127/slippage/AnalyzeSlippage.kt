@@ -43,15 +43,16 @@ fun main(args: Array<String>) = runBlocking {
             .map(tradeBuilder::buildNext)
             .filterNotNull()
 
-    val fees = trades
+    val costs = trades
             .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
-            .map { 1 - Math.sqrt(it.toDouble()) * (1 - applyAddFee) }
+            .map { Math.sqrt(it.toDouble()) * (1 - applyAddFee) }
             .toList()
 
-    val fee = fees.geoMean()
-    val count = fees.size
+    val cost = costs.geoMean()
+    val fee = 1 - cost
+    val count = costs.size
 
-    val joined = fees.joinToString("\n") { it.toString().replace(".", ",") }
+    val joined = costs.joinToString("\n") { it.toString().replace(".", ",") }
     println("fact commission $fee. count $count")
 
 //    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
