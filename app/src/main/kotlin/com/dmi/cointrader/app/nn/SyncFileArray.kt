@@ -39,7 +39,6 @@ fun marketInfo(coin: String): MarketInfo {
 fun main(args: Array<String>) {
     runBlocking {
         val api = binanceAPI()
-        val constants = BinanceConstants()
         val startTime = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3"))
         val period = Duration.ofMinutes(5)
         val coins: List<String> = listOf(
@@ -66,6 +65,8 @@ fun main(args: Array<String>) {
 
             val binanceTradesSource = BinanceTradeSource(BinanceTradeConfig(market.name), currentTime, ::getTrades)
             binanceTrades.syncWith(binanceTradesSource)
+
+            // TODO reverse
             ArraySource(Unit, binanceTrades)
         }
 
