@@ -3,9 +3,7 @@ package com.dmi.cointrader.app.nn
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.flatten
-import com.dmi.util.io.AtomicFileStore
-import com.dmi.util.io.FileArray
-import com.dmi.util.io.appendToFileName
+import com.dmi.util.io.*
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -236,7 +234,7 @@ class SyncFileArray<in CONFIG : Any, ITEMID : Any, ITEM>(
         file: Path,
         configSerializer: KSerializer<CONFIG>,
         idSerializer: KSerializer<ITEMID>,
-        itemSerializer: FileArray.Serializer<ITEM>,
+        itemSerializer: FixedSerializer<ITEM>,
         private val bufferSize: Int = 100
 ) : SuspendArray<ITEM> {
     private val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer)
@@ -280,14 +278,14 @@ class SyncFileArray<in CONFIG : Any, ITEMID : Any, ITEM>(
     }
 }
 
-private class MomentSerializer(size: Int) : FileArray.Serializer<Moment> {
-    val listSerializer = FileArray.ListSerializer(size, CandleSerializer())
+private class MomentSerializer(size: Int) : FixedSerializer<Moment> {
+    val listSerializer = FixedListSerializer(size, CandleSerializer())
     override val itemBytes: Int = listSerializer.itemBytes
     override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.coinIndexToCandle, data)
     override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
 }
 
-private class CandleSerializer : FileArray.Serializer<Candle> {
+private class CandleSerializer : FixedSerializer<Candle> {
     override val itemBytes: Int = 3 * 8
 
     override fun serialize(item: Candle, data: ByteBuffer) {

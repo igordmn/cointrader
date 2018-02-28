@@ -5,7 +5,7 @@ import java.nio.file.Path
 
 class FileArray<T>(
         file: Path,
-        private val serializer: Serializer<T>
+        private val serializer: FixedSerializer<T>
 ) {
     private val dataArray = FileDataArray(file, serializer.itemBytes)
 
@@ -45,27 +45,5 @@ class FileArray<T>(
             serializer.serialize(it, buffer)
         }
         return buffer
-    }
-
-    interface Serializer<T> {
-        val itemBytes: Int
-
-        fun serialize(item: T, data: ByteBuffer)
-        fun deserialize(data: ByteBuffer): T
-    }
-
-    class ListSerializer<T>(
-            private val size: Int,
-            private val original: FileArray.Serializer<T>
-    ) : FileArray.Serializer<List<T>> {
-        override val itemBytes: Int = original.itemBytes * size
-
-        override fun serialize(item: List<T>, data: ByteBuffer) = item.forEach {
-            original.serialize(it, data)
-        }
-
-        override fun deserialize(data: ByteBuffer): List<T> = (1..size).map {
-            original.deserialize(data)
-        }
     }
 }
