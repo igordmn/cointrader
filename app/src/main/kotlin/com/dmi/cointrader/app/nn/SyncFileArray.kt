@@ -12,6 +12,10 @@ import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
 
+fun main(args: Array<String>) {
+
+}
+
 interface SuspendArray<out T> {
     val size: Long
 
@@ -28,15 +32,16 @@ data class Moment(val coinIndexToCandle: List<Candle>)
 data class MomentConfig(val startTime: Instant, val period: Duration, val coins: List<String>)
 
 @Serializable
-data class BinanceCandleId(val firstAggTradeId: Long)
+data class CandleId(val firstTradeId: Long)
 
 @Serializable
-data class BinanceMomentId(val candles: List<BinanceCandleId>)
+data class MomentId(val candles: List<CandleId>)
 
 typealias BinanceAggTradeId = Long
-typealias BinanceTradeItem = SyncFileArray.Source.Item<BinanceAggTradeId, Trade>
-typealias BinanceCandleItem = SyncFileArray.Source.Item<BinanceCandleId, Candle>
-typealias BinanceMomentItem = SyncFileArray.Source.Item<BinanceMomentId, Moment>
+typealias TradeId = Long
+typealias TradeItem = SyncFileArray.Source.Item<TradeId, Trade>
+typealias CandleItem = SyncFileArray.Source.Item<CandleId, Candle>
+typealias MomentItem = SyncFileArray.Source.Item<MomentId, Moment>
 
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
@@ -46,10 +51,10 @@ fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
 
 // todo add pads and gaps
 class CandleBuilder(private val startTime: Instant, private val period: Duration) {
-    private val trades = ArrayList<BinanceTradeItem>()
+    private val trades = ArrayList<TradeItem>()
     private var periodIndex: Long = -1
 
-    fun addAndBuild(trade: BinanceTradeItem): BinanceCandleItem? {
+    fun addAndBuild(trade: TradeItem): CandleItem? {
         val periodIndex = periodIndex(startTime, period, trade.value.time)
         return if (trades.isNotEmpty()) {
             require(periodIndex >= this.periodIndex)
@@ -70,11 +75,11 @@ class CandleBuilder(private val startTime: Instant, private val period: Duration
         }
     }
 
-    fun buildLast(): BinanceCandleItem? = if (trades.isNotEmpty()) build() else null
+    fun buildLast(): CandleItem? = if (trades.isNotEmpty()) build() else null
 
-    private fun build() = BinanceCandleItem(
+    private fun build() = CandleItem(
             periodIndex.apply { require(this >= 0) },
-            BinanceCandleId(trades.first().id),
+            CandleId(trades.first().id),
             Candle(
                     trades.last().value.price,
                     trades.maxBy { it.value.price }!!.value.price,
@@ -83,17 +88,17 @@ class CandleBuilder(private val startTime: Instant, private val period: Duration
     )
 }
 
-private fun ReceiveChannel<BinanceTradeItem>.candles(
+private fun ReceiveChannel<TradeItem>.candles(
         startTime: Instant,
         endTime: Instant,
         period: Duration
-): ReceiveChannel<BinanceCandleItem> = candlesWithTrades(startTime, endTime, period).candlesWithoutTrades(startTime, endTime, period)
+): ReceiveChannel<CandleItem> = candlesWithTrades(startTime, endTime, period).candlesWithoutTrades(startTime, endTime, period)
 
-private fun ReceiveChannel<BinanceTradeItem>.candlesWithTrades(
+private fun ReceiveChannel<TradeItem>.candlesWithTrades(
         startTime: Instant,
         endTime: Instant,
         period: Duration
-): ReceiveChannel<BinanceCandleItem> = produce<BinanceCandleItem> {
+): ReceiveChannel<CandleItem> = produce<CandleItem> {
     val candleBuilder = CandleBuilder(startTime, period)
     takeWhile { it.value.time < endTime }.consumeEach {
         val candle = candleBuilder.addAndBuild(it)
@@ -107,12 +112,12 @@ private fun ReceiveChannel<BinanceTradeItem>.candlesWithTrades(
     }
 }
 
-private fun ReceiveChannel<BinanceCandleItem>.candlesWithoutTrades(
+private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
         startTime: Instant,
         endTime: Instant,
         period: Duration
-): ReceiveChannel<BinanceCandleItem> = produce {
-    var last: BinanceCandleItem? = null
+): ReceiveChannel<CandleItem> = produce {
+    var last: CandleItem? = null
     val endIndex = periodIndex(startTime, period, endTime)
 
     consumeEach {
@@ -120,7 +125,7 @@ private fun ReceiveChannel<BinanceCandleItem>.candlesWithoutTrades(
         require(it.index >= startIndex)
 
         for (i in startIndex until it.index) {
-            send(BinanceCandleItem(i, it.id, it.value))
+            send(CandleItem(i, it.id, it.value))
         }
 
         send(it)
@@ -130,16 +135,16 @@ private fun ReceiveChannel<BinanceCandleItem>.candlesWithoutTrades(
 
     last?.let {
         for (i in it.index until endIndex) {
-            send(BinanceCandleItem(i, it.id, it.value))
+            send(CandleItem(i, it.id, it.value))
         }
     }
 }
 
-private fun List<ReceiveChannel<BinanceCandleItem>>.moments(): ReceiveChannel<BinanceMomentItem> {
+private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> {
     return zip().map { moment(it) }
 }
 
-private fun moment(candles: List<BinanceCandleItem>): BinanceMomentItem {
+private fun moment(candles: List<CandleItem>): MomentItem {
     require(candles.isNotEmpty())
     val index = candles.first().index
     candles.forEach {
@@ -147,9 +152,9 @@ private fun moment(candles: List<BinanceCandleItem>): BinanceMomentItem {
     }
     val candleIds = candles.map { it.id }
     val candleValues = candles.map { it.value }
-    val id = BinanceMomentId(candleIds)
+    val id = MomentId(candleIds)
     val value = Moment(candleValues)
-    return BinanceMomentItem(index, id, value)
+    return MomentItem(index, id, value)
 }
 
 private fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<T>> = produce {
@@ -175,9 +180,9 @@ data class BinanceTradeConfig(val market: String)
 class BinanceTradeSource(
         override val config: BinanceTradeConfig,
         var currentTime: Instant,
-        private val getTrades: (aggTradeId: BinanceAggTradeId, beforeTime: Instant) -> ReceiveChannel<BinanceTradeItem>
+        private val getTrades: (aggTradeId: BinanceAggTradeId, beforeTime: Instant) -> ReceiveChannel<TradeItem>
 ) : SyncFileArray.Source<BinanceTradeConfig, BinanceAggTradeId, Trade> {
-    override fun getNew(lastId: BinanceAggTradeId?): ReceiveChannel<BinanceTradeItem> {
+    override fun getNew(lastId: BinanceAggTradeId?): ReceiveChannel<TradeItem> {
         return getTrades(lastId ?: 0, currentTime)
     }
 }
@@ -185,13 +190,13 @@ class BinanceTradeSource(
 class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
-        private val getTrades: (coin: String, aggTradeId: BinanceAggTradeId) -> ReceiveChannel<BinanceTradeItem>
-) : SyncFileArray.Source<MomentConfig, BinanceMomentId, Moment> {
-    override fun getNew(lastId: BinanceMomentId?): ReceiveChannel<BinanceMomentItem> {
+        private val getTrades: (coin: String, aggTradeId: TradeId) -> ReceiveChannel<TradeItem>
+) : SyncFileArray.Source<MomentConfig, MomentId, Moment> {
+    override fun getNew(lastId: MomentId?): ReceiveChannel<MomentItem> {
         return config.coins
                 .mapIndexed { i, it ->
                     val aggTradeId: Long = if (lastId != null) {
-                        lastId.candles[i].firstAggTradeId
+                        lastId.candles[i].firstTradeId
                     } else {
                         0L
                     }
