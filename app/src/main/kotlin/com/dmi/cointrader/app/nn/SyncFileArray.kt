@@ -175,7 +175,7 @@ class MomentSource(
         override val config: MomentConfig,
         private val getTrades: (coin: String, aggTradeId: BinanceAggTradeId, beforeTime: Instant) -> ReceiveChannel<BinanceTradeItem>,
         private val getCurrentTime: suspend () -> Instant
-) : SyncFileArray.Source<BinanceMomentId, Moment> {
+) : SyncFileArray.Source<MomentConfig, BinanceMomentId, Moment> {
     override suspend fun getNew(lastId: BinanceMomentId?): ReceiveChannel<SyncFileArray.Source.Item<BinanceMomentId, Moment>> {
         val currentTime = getCurrentTime()
         return config.coins
@@ -191,20 +191,20 @@ class MomentSource(
     }
 }
 
-class SyncFileArray<T, ID : Any>(
+class SyncFileArray<CONFIG: Any, ITEMID : Any, ITEM>(
         file: Path,
-        configSerializer: KSerializer<Any>,
-        idSerializer: KSerializer<ID>,
-        itemSerializer: FileArray.Serializer<T>
+        configSerializer: KSerializer<CONFIG>,
+        idSerializer: KSerializer<ITEMID>,
+        itemSerializer: FileArray.Serializer<ITEM>
 ) {
     private val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer)
     private val lastIdStore = AtomicFileStore(file.appendToFileName(".lastId"), idSerializer)
     private val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
 
     val size: Long get() = fileArray.size
-    suspend fun get(range: LongRange): List<T> = fileArray.get(range)
+    suspend fun get(range: LongRange): List<ITEM> = fileArray.get(range)
 
-    suspend fun syncWith(source: Source<ID, T>) {
+    suspend fun syncWith(source: Source<CONFIG, ITEMID, ITEM>) {
         val chunkSize = 100
 
         val config = configStore.readOrNull()
@@ -218,19 +218,25 @@ class SyncFileArray<T, ID : Any>(
 
         var isFirst = true
         source.getNew(lastId).chunked(chunkSize).consumeEach {
+            val index = it.last().index
+            val id = it.last().id
+            val items = it.map { it.value }
+
             if (isFirst) {
-                fileArray.reduceSize(it.last().index)
+                fileArray.reduceSize(index)
+                isFirst = false
             }
-            fileArray.append(it.map { it.value })
-            lastIdStore.write(it.last().id)
-            isFirst = false
+
+            require(index == fileArray.size + items.size - 1)
+            fileArray.append(items)
+            lastIdStore.write(id)
         }
     }
 
-    interface Source<ITEMID : Any, out T> {
-        val config: Any
-        suspend fun getNew(lastId: ITEMID?): ReceiveChannel<Item<ITEMID, T>>
-        data class Item<out ID : Any, out T>(val index: Long, val id: ID, val value: T)
+    interface Source<out CONFIG : Any, ITEMID : Any, out ITEM> {
+        val config: CONFIG
+        suspend fun getNew(lastId: ITEMID?): ReceiveChannel<Item<ITEMID, ITEM>>
+        data class Item<out ID : Any, out ITEM>(val index: Long, val id: ID, val value: ITEM)
     }
 }
 
