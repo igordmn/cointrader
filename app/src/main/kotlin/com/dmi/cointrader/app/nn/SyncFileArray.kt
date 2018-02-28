@@ -119,7 +119,6 @@ fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
 }
 
 
-// todo add pads and gaps
 class CandleBuilder(private val startTime: Instant, private val period: Duration) {
     private val trades = ArrayList<TradeItem>()
     private var periodIndex: Long = -1
