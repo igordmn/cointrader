@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
         val momentConfig = MomentConfig(startTime, period, coins)
         val currentTime = Instant.ofEpochMilli(api.serverTime().serverTime)
 
-        coins.forEach { coin ->
+        val coinToTrades = coins.map { coin ->
             val market = marketInfo(coin)
             val binanceTrades = SyncFileArray(
                     Paths.get("D:/yy/trades/$market"),
@@ -66,7 +66,22 @@ fun main(args: Array<String>) {
 
             val binanceTradesSource = BinanceTradeSource(BinanceTradeConfig(market.name), currentTime, ::getTrades)
             binanceTrades.syncWith(binanceTradesSource)
+            ArraySource(Unit, binanceTrades)
         }
+
+        fun getTrades(coinIndex: Int, startId: TradeId): ReceiveChannel<TradeItem> {
+            return coinToTrades[coinIndex].getNew()
+        }
+
+        val moments = SyncFileArray(
+                Paths.get("D:/yy/moments"),
+                MomentConfig.serializer(),
+                MomentId.serializer(),
+                MomentSerializer(coins.size)
+        )
+
+        val momentsSource = MomentSource(momentConfig, currentTime, ::getTrades)
+        moments.syncWith(momentsSource)
     }
 }
 
@@ -247,17 +262,20 @@ class BinanceTradeSource(
 class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
-        private val getTrades: (coin: String, startId: TradeId) -> ReceiveChannel<TradeItem>
+        private val getTrades: (coinIndex: Int, startInfo: SyncFileArray.Source.ItemInfo<TradeId>) -> ReceiveChannel<TradeItem>
 ) : SyncFileArray.Source<MomentConfig, MomentId, Moment> {
     override fun getNew(lastInfo: SyncFileArray.Source.ItemInfo<MomentId>?): ReceiveChannel<MomentItem> {
-        return config.coins
-                .mapIndexed { i, it ->
-                    val aggTradeId: Long = if (lastInfo != null) {
-                        lastInfo.id.candles[i].firstTradeId
+        return config.coins.indices
+                .map { i ->
+                    val startInfo = if (lastInfo != null) {
+                        SyncFileArray.Source.ItemInfo(
+                                lastInfo.index,
+                                lastInfo.id.candles[i].firstTradeId
+                        )
                     } else {
-                        0L
+                        null
                     }
-                    getTrades(it, aggTradeId).candles(config.startTime, currentTime, config.period)
+                    getTrades(i, startInfo).candles(config.startTime, currentTime, config.period)
                 }
                 .moments()
     }
