@@ -1,19 +1,71 @@
 package com.dmi.cointrader.app.nn
 
 import com.dmi.cointrader.app.trade.Trade
+import com.dmi.cointrader.app.trade.binanceTrades
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.flatten
 import com.dmi.util.io.*
+import exchange.binance.BinanceConstants
+import exchange.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.channels.*
+import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.internal.LongSerializer
 import java.nio.ByteBuffer
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+
+data class MarketInfo(val coin: String, val name: String, val isReversed: Boolean)
+
+fun marketInfo(coin: String): MarketInfo {
+    val mainCoin = "BTC"
+    val constants = BinanceConstants()
+
+    val name = constants.marketName(coin, mainCoin)
+    val reversedName = constants.marketName(mainCoin, coin)
+
+    return when {
+        name != null -> MarketInfo(coin, name, false)
+        reversedName != null -> MarketInfo(coin, reversedName, true)
+        else -> throw UnsupportedOperationException()
+    }
+}
 
 fun main(args: Array<String>) {
+    runBlocking {
+        val api = binanceAPI()
+        val constants = BinanceConstants()
+        val startTime = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3"))
+        val period = Duration.ofMinutes(5)
+        val coins: List<String> = listOf(
+                "USDT", "ETH", "TRX", "XRP", "LTC", "ETC", "ICX"
+        )
 
+        val momentConfig = MomentConfig(startTime, period, coins)
+        val currentTime = Instant.ofEpochMilli(api.serverTime().serverTime)
+
+        coins.forEach { coin ->
+            val market = marketInfo(coin)
+            val binanceTrades = SyncFileArray(
+                    Paths.get("D:/yy/trades/$market"),
+                    BinanceTradeConfig.serializer(),
+                    LongSerializer,
+                    TradeSerializer()
+            )
+            fun getTrades(startId: BinanceAggTradeId, beforeTime: Instant): ReceiveChannel<TradeItem> {
+                return binanceTrades(api, market.name, startId, beforeTime).map {
+                    SyncFileArray.Source.Item(0, it.aggregatedId, it.trade)
+                }
+            }
+            val binanceTradesSource = BinanceTradeSource(BinanceTradeConfig(market.name), currentTime, ::getTrades)
+            binanceTrades.syncWith(binanceTradesSource)
+        }
+    }
 }
 
 interface SuspendArray<out T> {
@@ -180,7 +232,7 @@ data class BinanceTradeConfig(val market: String)
 class BinanceTradeSource(
         override val config: BinanceTradeConfig,
         var currentTime: Instant,
-        private val getTrades: (aggTradeId: BinanceAggTradeId, beforeTime: Instant) -> ReceiveChannel<TradeItem>
+        private val getTrades: (startId: BinanceAggTradeId, beforeTime: Instant) -> ReceiveChannel<TradeItem>
 ) : SyncFileArray.Source<BinanceTradeConfig, BinanceAggTradeId, Trade> {
     override fun getNew(lastId: BinanceAggTradeId?): ReceiveChannel<TradeItem> {
         return getTrades(lastId ?: 0, currentTime)
@@ -190,7 +242,7 @@ class BinanceTradeSource(
 class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
-        private val getTrades: (coin: String, aggTradeId: TradeId) -> ReceiveChannel<TradeItem>
+        private val getTrades: (coin: String, startId: TradeId) -> ReceiveChannel<TradeItem>
 ) : SyncFileArray.Source<MomentConfig, MomentId, Moment> {
     override fun getNew(lastId: MomentId?): ReceiveChannel<MomentItem> {
         return config.coins
@@ -288,6 +340,22 @@ private class MomentSerializer(size: Int) : FixedSerializer<Moment> {
     override val itemBytes: Int = listSerializer.itemBytes
     override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.coinIndexToCandle, data)
     override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
+}
+
+private class TradeSerializer : FixedSerializer<Trade> {
+    override val itemBytes: Int = 3 * 8
+
+    override fun serialize(item: Trade, data: ByteBuffer) {
+        data.putLong(item.time.toEpochMilli())
+        data.putDouble(item.amount)
+        data.putDouble(item.price)
+    }
+
+    override fun deserialize(data: ByteBuffer): Trade = Trade(
+            Instant.ofEpochMilli(data.long),
+            data.double,
+            data.double
+    )
 }
 
 private class CandleSerializer : FixedSerializer<Candle> {
