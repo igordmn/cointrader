@@ -25,4 +25,5 @@ class AtomicFileStore<T : Any>(
 
     suspend fun write(obj: T) = dataStore.write(dump(serializer, obj))
     suspend fun read(): T = load(serializer, dataStore.read())
+    suspend fun readOrNull(): T? = if (exists()) read() else null
 }

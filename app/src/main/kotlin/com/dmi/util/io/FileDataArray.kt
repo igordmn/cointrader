@@ -11,7 +11,7 @@ import java.nio.file.StandardOpenOption
 /**
  * For store data with fixed size in file
  */
-class FileFixedDataArray(
+class FileDataArray(
         private val file: Path,
         private val itemBytes: Int
 ) {

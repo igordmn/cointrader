@@ -3,11 +3,11 @@ package com.dmi.util.io
 import java.nio.ByteBuffer
 import java.nio.file.Path
 
-class FileFixedArray<T>(
+class FileArray<T>(
         file: Path,
         private val serializer: Serializer<T>
 ) {
-    private val dataArray = FileFixedDataArray(file, serializer.itemBytes)
+    private val dataArray = FileDataArray(file, serializer.itemBytes)
 
     val size: Long get() = dataArray.size
     fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
@@ -52,5 +52,20 @@ class FileFixedArray<T>(
 
         fun serialize(item: T, data: ByteBuffer)
         fun deserialize(data: ByteBuffer): T
+    }
+
+    class ListSerializer<T>(
+            private val size: Int,
+            private val original: FileArray.Serializer<T>
+    ) : FileArray.Serializer<List<T>> {
+        override val itemBytes: Int = original.itemBytes * size
+
+        override fun serialize(item: List<T>, data: ByteBuffer) = item.forEach {
+            original.serialize(it, data)
+        }
+
+        override fun deserialize(data: ByteBuffer): List<T> = (1..size).map {
+            original.deserialize(data)
+        }
     }
 }

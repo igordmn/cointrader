@@ -7,13 +7,12 @@ import kotlinx.coroutines.experimental.runBlocking
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 
-class FileFixedDataArraySpec : FreeSpec() {
+class FileDataArraySpec : FreeSpec() {
     init {
         "initial size" {
             test { file ->
-                val array = FileFixedDataArray(file, 5)
+                val array = FileDataArray(file, 5)
 
                 array.size shouldBe 0L
             }
@@ -22,7 +21,7 @@ class FileFixedDataArraySpec : FreeSpec() {
         "append" - {
             "append single item" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4, 5)
                     val readBuffer = ByteBuffer.allocate(5)
 
@@ -36,7 +35,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "append two items at once" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBufferAll = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                     val readBufferAll = ByteBuffer.allocate(5 * 2)
                     val readBuffer1 = ByteBuffer.allocate(5)
@@ -56,7 +55,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "append two items two times" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer1 = buffer(1, 2, 3, 4, 5)
                     val writeBuffer2 = buffer(6, 7, 8, 9, 10)
                     val readBufferAll = ByteBuffer.allocate(5 * 2)
@@ -80,7 +79,7 @@ class FileFixedDataArraySpec : FreeSpec() {
         "clear" - {
             "clear empty array" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
 
                     array.clear()
 
@@ -90,7 +89,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "clear array" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4, 5)
 
                     array.append(writeBuffer)
@@ -102,7 +101,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "append item after clear" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4, 5)
                     val readBuffer = ByteBuffer.allocate(5)
 
@@ -119,7 +118,7 @@ class FileFixedDataArraySpec : FreeSpec() {
         "restrictions" - {
             "cannot append item not multiplied by 5" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4)
 
                     shouldThrow<IllegalArgumentException> {
@@ -130,7 +129,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "cannot read item not multiplied by 5" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4, 5)
                     val readBuffer = ByteBuffer.allocate(4)
 
@@ -149,7 +148,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
 
                     array.size shouldBe 0L
                 }
@@ -159,7 +158,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4, 5, 6)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val readBuffer = ByteBuffer.allocate(5)
 
                     array.read(0L..1L, readBuffer)
@@ -173,7 +172,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val readBufferAll = ByteBuffer.allocate(5 * 2)
                     val readBuffer1 = ByteBuffer.allocate(5)
                     val readBuffer2 = ByteBuffer.allocate(5)
@@ -193,7 +192,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBufferAll = buffer(11, 12, 13, 14, 15)
                     val readBufferAll = ByteBuffer.allocate(5 * 3)
                     val readBuffer1And2 = ByteBuffer.allocate(5 * 2)
@@ -215,7 +214,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBufferAll = buffer(11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
                     val readBufferAll = ByteBuffer.allocate(5 * 4)
                     val readBuffer1And2 = ByteBuffer.allocate(5 * 2)
@@ -240,7 +239,7 @@ class FileFixedDataArraySpec : FreeSpec() {
                 test { file ->
                     file.append(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)  // not multiplied by 5
 
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer1 = buffer(11, 12, 13, 14, 15)
                     val writeBuffer2 = buffer(16, 17, 18, 19, 20)
                     val readBufferAll = ByteBuffer.allocate(5 * 4)
@@ -267,7 +266,7 @@ class FileFixedDataArraySpec : FreeSpec() {
         "modify size" - {
             "modify size and read" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBufferAll = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                     val readBufferAll = ByteBuffer.allocate(5)
 
@@ -282,7 +281,7 @@ class FileFixedDataArraySpec : FreeSpec() {
 
             "modify size, append and read" {
                 test { file ->
-                    val array = FileFixedDataArray(file, 5)
+                    val array = FileDataArray(file, 5)
                     val writeBuffer1 = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                     val writeBuffer2 = buffer(11, 12, 13, 14, 15)
                     val readBufferAll = ByteBuffer.allocate(10)
