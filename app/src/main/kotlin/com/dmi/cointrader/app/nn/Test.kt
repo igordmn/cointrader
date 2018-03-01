@@ -1,16 +1,14 @@
 package com.dmi.cointrader.app.nn
 
-import com.dmi.cointrader.app.moment.*
+import com.dmi.cointrader.app.moment.MomentConfig
+import com.dmi.cointrader.app.moment.MomentSource
+import com.dmi.cointrader.app.moment.momentArray
 import com.dmi.cointrader.app.trade.BinanceTradeConfig
 import com.dmi.cointrader.app.trade.BinanceTradeSource
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.binanceTradeArray
-import com.dmi.util.collection.SuspendArray
-import com.dmi.util.io.Indexed
-import com.dmi.util.io.NumIdIndex
 import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
-import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
 import java.nio.file.Paths
 import java.time.Duration
