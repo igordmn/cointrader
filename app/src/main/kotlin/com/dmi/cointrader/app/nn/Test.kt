@@ -6,10 +6,10 @@ import com.dmi.cointrader.app.moment.MomentFixedSerializer
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.TradeFixedSerializer
 import com.dmi.util.collection.SuspendArray
-import com.dmi.util.collection.rangeChunked
-import com.dmi.util.concurrent.flatten
 import com.dmi.util.concurrent.zip
 import com.dmi.util.io.IdentitySource
+import com.dmi.util.io.IndexedItem
+import com.dmi.util.io.NumIdIndex
 import com.dmi.util.io.SyncFileArray
 import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
@@ -62,7 +62,7 @@ fun main(args: Array<String>) {
 
             fun getTrades(startIndex: BinanceTradeIndex, beforeTime: Instant): ReceiveChannel<TradeItem> {
                 return binanceTrades(api, market.name, startIndex.id, beforeTime).mapIndexed { i, it ->
-                    IdentitySource.Item(IdentitySource.Index(startIndex.num + i, it.aggregatedId), it.trade)
+                    IndexedItem(NumIdIndex(startIndex.num + i, it.aggregatedId), it.trade)
                 }
             }
 
@@ -94,7 +94,7 @@ fun main(args: Array<String>) {
 data class MomentConfig(val startTime: Instant, val period: Duration, val coins: List<String>)
 
 @Serializable
-data class CandleId(val firstTradeId: Long)
+data class CandleId(val firstTradeIndex: Long)
 
 @Serializable
 data class MomentId(val candles: List<CandleId>)
@@ -102,14 +102,14 @@ data class MomentId(val candles: List<CandleId>)
 typealias BinanceTradeId = Long
 typealias TradeId = Long
 
-typealias BinanceTradeIndex = IdentitySource.Index<BinanceTradeId>
-typealias TradeIndex = IdentitySource.Index<TradeId>
-typealias CandleIndex = IdentitySource.Index<CandleId>
-typealias MomentIndex = IdentitySource.Index<MomentId>
+typealias BinanceTradeIndex = NumIdIndex<BinanceTradeId>
+typealias TradeIndex = NumIdIndex<TradeId>
+typealias CandleIndex = NumIdIndex<CandleId>
+typealias MomentIndex = NumIdIndex<MomentId>
 
-typealias TradeItem = IdentitySource.Item<TradeIndex, Trade>
-typealias CandleItem = IdentitySource.Item<CandleIndex, Candle>
-typealias MomentItem = IdentitySource.Item<MomentIndex, Moment>
+typealias TradeItem = IndexedItem<TradeIndex, Trade>
+typealias CandleItem = IndexedItem<CandleIndex, Candle>
+typealias MomentItem = IndexedItem<MomentIndex, Moment>
 
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
@@ -145,7 +145,7 @@ class CandleBuilder(private val startTime: Instant, private val period: Duration
     fun buildLast(): CandleItem? = if (trades.isNotEmpty()) build() else null
 
     private fun build() = CandleItem(
-            IdentitySource.Index(
+            NumIdIndex(
                     periodIndex.apply { require(this >= 0) },
                     CandleId(trades.first().index.id)
             ),
@@ -194,7 +194,7 @@ private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
         require(it.index.num >= startIndex)
 
         for (i in startIndex until it.index.num) {
-            send(CandleItem(IdentitySource.Index(i, it.index.id), it.value))
+            send(CandleItem(NumIdIndex(i, it.index.id), it.value))
         }
 
         send(it)
@@ -204,7 +204,7 @@ private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
 
     last?.let {
         for (i in it.index.num until endIndex) {
-            send(CandleItem(IdentitySource.Index(i, it.index.id), it.value))
+            send(CandleItem(NumIdIndex(i, it.index.id), it.value))
         }
     }
 }
@@ -221,7 +221,7 @@ private fun moment(candles: List<CandleItem>): MomentItem {
     val candleValues = candles.map { it.value }
     val id = MomentId(candleIds)
     val value = Moment(candleValues)
-    return MomentItem(IdentitySource.Index(index, id), value)
+    return MomentItem(NumIdIndex(index, id), value)
 }
 
 @Serializable
@@ -238,46 +238,32 @@ class BinanceTradeSource(
     }
 }
 
+typealias TradeArray = SuspendArray<Trade>
+
 class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
-        private val getTrades: (coinIndex: Int, startIndex: TradeIndex) -> ReceiveChannel<TradeItem>
+        private val coinIndexToTrades: List<TradeArray>
 ) : IdentitySource<MomentConfig, MomentIndex, Moment> {
     override fun after(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
         return config.coins.indices
                 .map { i ->
-                    val startIndex = if (lastIndex != null) {
-                        IdentitySource.Index(
-                                lastIndex.num,
-                                lastIndex.id.candles[i].firstTradeId
-                        )
+                    val startNum: Long
+                    val startTradeIndex: Long
+                    if (lastIndex != null) {
+                        startNum = lastIndex.num
+                        startTradeIndex = lastIndex.id.candles[i].firstTradeIndex
                     } else {
-                        null
+                        startNum = 0
+                        startTradeIndex = 0
                     }
-                    getTrades(i, startIndex).candles(config.startTime, currentTime, config.period)
+                    val trades = coinIndexToTrades[i]
+
+                    fun tradeItem(localNum: Long, trade: Trade) = IndexedItem(NumIdIndex(), item)
+                    trades.channel(startTradeIndex).map
+
+                    getTrades(i, startTradeIndex).candles(config.startTime, currentTime, config.period)
                 }
                 .moments()
-    }
-}
-
-typealias LongIndex = IdentitySource.Index<Long>
-
-class ArraySource<out CONFIG : Any, out ITEM>(
-        override val config: CONFIG,
-        val array: SuspendArray<ITEM>,
-        private val bufferSize: Int = 100
-) : IdentitySource<CONFIG, LongIndex, ITEM> {
-    override fun after(lastIndex: IdentitySource.Index<Long>?): ReceiveChannel<IdentitySource.Item<LongIndex, ITEM>> {
-        fun item(index: Long, item: ITEM) = IdentitySource.Item(IdentitySource.Index(index, index), item)
-
-        val startIndex = (lastIndex?.num ?: -1) + 1
-        return (startIndex until array.size)
-                .rangeChunked(bufferSize.toLong())
-                .asReceiveChannel()
-                .map { range ->
-                    val items = array.get(range)
-                    range.zip(items, ::item)
-                }
-                .flatten()
     }
 }

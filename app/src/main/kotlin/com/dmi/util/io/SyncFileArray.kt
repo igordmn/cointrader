@@ -7,14 +7,15 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.serialization.KSerializer
 import java.nio.file.Path
 
-interface IdentitySource<out CONFIG : Any, INDEX : IdentitySource.Index<*>, out ITEM> {
+data class NumIdIndex<out ID : Any>(val num: Long, val id: ID)
+data class IndexedItem<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
+
+interface IdentitySource<out CONFIG : Any, INDEX : NumIdIndex<*>, out ITEM> {
     val config: CONFIG
-    fun after(lastIndex: INDEX?): ReceiveChannel<Item<INDEX, ITEM>>
-    data class Index<out ID : Any>(val num: Long, val id: ID)
-    data class Item<out INDEX : Index<*>, out VALUE>(val index: INDEX, val value: VALUE)
+    fun after(lastIndex: INDEX?): ReceiveChannel<IndexedItem<INDEX, ITEM>>
 }
 
-class SyncFileArray<in CONFIG : Any, INDEX : IdentitySource.Index<*>, ITEM>(
+class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
         file: Path,
         configSerializer: KSerializer<CONFIG>,
         indexSerializer: KSerializer<INDEX>,
