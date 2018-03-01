@@ -7,29 +7,28 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.serialization.KSerializer
 import java.nio.file.Path
 
-interface IdentitySource<out CONFIG : Any, ITEMID : Any, out ITEM> {
+interface IdentitySource<out CONFIG : Any, INDEX : IdentitySource.Index<*>, out ITEM> {
     val config: CONFIG
-    fun getNew(lastIndex: Index<ITEMID>?): ReceiveChannel<Item<ITEMID, ITEM>>
+    fun after(lastIndex: INDEX?): ReceiveChannel<Item<INDEX, ITEM>>
     data class Index<out ID : Any>(val num: Long, val id: ID)
-    data class Item<out ID : Any, out VALUE>(val index: Index<ID>, val value: VALUE)
+    data class Item<out INDEX : Index<*>, out VALUE>(val index: INDEX, val value: VALUE)
 }
 
-class SyncFileArray<in CONFIG : Any, ITEMID : Any, ITEM>(
+class SyncFileArray<in CONFIG : Any, INDEX : IdentitySource.Index<*>, ITEM>(
         file: Path,
         configSerializer: KSerializer<CONFIG>,
-        idSerializer: KSerializer<ITEMID>,
+        indexSerializer: KSerializer<INDEX>,
         itemSerializer: FixedSerializer<ITEM>,
         private val bufferSize: Int = 100
 ) : SuspendArray<ITEM> {
     private val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer)
-    private val indexSerializer: KSerializer<IdentitySource.Index<ITEMID>> = TODO()
     private val lastIndexStore = AtomicFileStore(file.appendToFileName(".lastIndex"), indexSerializer)
     private val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
 
     override val size: Long get() = fileArray.size
     override suspend fun get(range: LongRange): List<ITEM> = fileArray.get(range)
 
-    suspend fun syncWith(source: IdentitySource<CONFIG, ITEMID, ITEM>) {
+    suspend fun syncWith(source: IdentitySource<CONFIG, INDEX, ITEM>) {
         val config = configStore.readOrNull()
         if (config != source.config) {
             lastIndexStore.remove()
@@ -40,7 +39,7 @@ class SyncFileArray<in CONFIG : Any, ITEMID : Any, ITEM>(
         val lastIndex = lastIndexStore.readOrNull()
 
         var isFirst = true
-        source.getNew(lastIndex).chunked(bufferSize).consumeEach {
+        source.after(lastIndex).chunked(bufferSize).consumeEach {
             val index = it.last().index
             val items = it.map { it.value }
 

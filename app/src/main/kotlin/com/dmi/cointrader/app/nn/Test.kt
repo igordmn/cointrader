@@ -101,12 +101,15 @@ data class MomentId(val candles: List<CandleId>)
 
 typealias BinanceTradeId = Long
 typealias TradeId = Long
+
 typealias BinanceTradeIndex = IdentitySource.Index<BinanceTradeId>
 typealias TradeIndex = IdentitySource.Index<TradeId>
+typealias CandleIndex = IdentitySource.Index<CandleId>
 typealias MomentIndex = IdentitySource.Index<MomentId>
-typealias TradeItem = IdentitySource.Item<TradeId, Trade>
-typealias CandleItem = IdentitySource.Item<CandleId, Candle>
-typealias MomentItem = IdentitySource.Item<MomentId, Moment>
+
+typealias TradeItem = IdentitySource.Item<TradeIndex, Trade>
+typealias CandleItem = IdentitySource.Item<CandleIndex, Candle>
+typealias MomentItem = IdentitySource.Item<MomentIndex, Moment>
 
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
@@ -228,8 +231,8 @@ class BinanceTradeSource(
         override val config: BinanceTradeConfig,
         var currentTime: Instant,
         private val getTrades: (startIndex: BinanceTradeIndex, beforeTime: Instant) -> ReceiveChannel<TradeItem>
-) : IdentitySource<BinanceTradeConfig, BinanceTradeId, Trade> {
-    override fun getNew(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
+) : IdentitySource<BinanceTradeConfig, BinanceTradeIndex, Trade> {
+    override fun after(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
         val startIndex = lastIndex ?: BinanceTradeIndex(0, 0)
         return getTrades(startIndex, currentTime)
     }
@@ -239,8 +242,8 @@ class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
         private val getTrades: (coinIndex: Int, startIndex: TradeIndex) -> ReceiveChannel<TradeItem>
-) : IdentitySource<MomentConfig, MomentId, Moment> {
-    override fun getNew(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
+) : IdentitySource<MomentConfig, MomentIndex, Moment> {
+    override fun after(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
         return config.coins.indices
                 .map { i ->
                     val startIndex = if (lastIndex != null) {
@@ -257,12 +260,14 @@ class MomentSource(
     }
 }
 
+typealias LongIndex = IdentitySource.Index<Long>
+
 class ArraySource<out CONFIG : Any, out ITEM>(
         override val config: CONFIG,
         val array: SuspendArray<ITEM>,
         private val bufferSize: Int = 100
-) : IdentitySource<CONFIG, Long, ITEM> {
-    override fun getNew(lastIndex: IdentitySource.Index<Long>?): ReceiveChannel<IdentitySource.Item<Long, ITEM>> {
+) : IdentitySource<CONFIG, LongIndex, ITEM> {
+    override fun after(lastIndex: IdentitySource.Index<Long>?): ReceiveChannel<IdentitySource.Item<LongIndex, ITEM>> {
         fun item(index: Long, item: ITEM) = IdentitySource.Item(IdentitySource.Index(index, index), item)
 
         val startIndex = (lastIndex?.num ?: -1) + 1
