@@ -1,28 +1,66 @@
 package com.dmi.cointrader.app.candle
 
-import com.dmi.cointrader.app.nn.CandleId
-import com.dmi.cointrader.app.nn.periodIndex
 import com.dmi.cointrader.app.trade.IndexedTrade
 import com.dmi.util.io.NumIdIndex
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.consumeEach
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.channels.takeWhile
+import com.dmi.util.lang.InstantRange
+import com.dmi.util.lang.min
+import kotlinx.coroutines.experimental.channels.*
 import java.time.Duration
 import java.time.Instant
+import kotlin.coroutines.experimental.buildSequence
 
 
-class TradesCandle<out TRADE_INDEX>(val firstTradeIndex: TRADE_INDEX, val candle: Candle)
+class TradesCandle<out TRADE_INDEX>(val firstTradeIndex: TRADE_INDEX, val periodNum: Int, val candle: Candle)
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
     return Duration.between(time, startTime).toMillis() / period.toMillis()
+}
+
+fun timeRangeSequence(startTime: Instant, endTime: Instant, period: Duration): Sequence<InstantRange> {
+    return buildSequence {
+        var start = startTime
+        while (start < endTime) {
+            val end = min(endTime, start + period)
+            yield(start..end)
+            start = end
+        }
+    }
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         startTime: Instant,
         endTime: Instant,
         period: Duration
-): ReceiveChannel<TradesCandle<INDEX>> = candlesWithTrades(startTime, endTime, period).candlesWithoutTrades(startTime, endTime, period)
+): ReceiveChannel<TradesCandle<INDEX>> {
+    fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
+        var trades = ArrayList<IndexedTrade<INDEX>>()
+
+        val inTimeTrades = dropWhile {
+            it.value.time < startTime
+        }.takeWhile {
+            it.value.time < endTime
+        }
+
+
+
+        for (range in timeRangeSequence(startTime, endTime, period)) {
+
+        }
+
+
+        val candleBuilder = CandleBuilder(startTime, period)
+        takeWhile { it.value.time < endTime }.consumeEach {
+            val candle = candleBuilder.addAndBuild(it)
+            if (candle != null) {
+                send(candle)
+            }
+        }
+        val lastCandle = candleBuilder.buildLast()
+        if (lastCandle != null) {
+            send(lastCandle)
+        }
+    }
+}
 
 class CandleBuilder(private val startTime: Instant, private val period: Duration) {
     private val trades = ArrayList<TradeItem>()

@@ -12,7 +12,6 @@ import com.dmi.util.io.NumIdIndex
 import com.dmi.util.io.SyncFileArray
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
-import kotlinx.coroutines.experimental.channels.mapIndexed
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
@@ -48,24 +47,23 @@ class MomentSource(
     }
 
     private fun candlesAfter(coinIndex: Int, lastIndex: MomentIndex?): ReceiveChannel<CandleItem> {
-        val startNum: Long
-        val startTradeIndex: Long
-        if (lastIndex != null) {
-            startNum = lastIndex.num
-            startTradeIndex = lastIndex.id.candles[coinIndex].firstTradeIndex
+        val startTradeIndex: Long = if (lastIndex != null) {
+            lastIndex.id.candles[coinIndex].firstTradeIndex
         } else {
-            startNum = 0
-            startTradeIndex = 0
+            0
         }
         val trades = coinIndexToTrades[coinIndex]
         return trades
                 .channelIndexed(startTradeIndex)
                 .candles(config.startTime, currentTime, config.period)
-                .toItems(startNum)
+                .toItems()
     }
 
-    private fun ReceiveChannel<TradesCandle<Long>>.toItems(startNum: Long): ReceiveChannel<CandleItem> = mapIndexed { i, it ->
-        CandleItem(CandleIndex(startNum + i, CandleId(it.firstTradeIndex)), it.candle)
+    private fun ReceiveChannel<TradesCandle<Long>>.toItems(): ReceiveChannel<CandleItem> = map {
+        CandleItem(
+                CandleIndex(it.periodNum.toLong(), CandleId(it.firstTradeIndex)),
+                it.candle
+        )
     }
 
     private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> = zip().map { moment(it) }
