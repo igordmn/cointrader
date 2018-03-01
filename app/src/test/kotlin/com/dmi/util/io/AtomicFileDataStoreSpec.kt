@@ -46,7 +46,7 @@ class AtomicFileDataStoreSpec : FreeSpec() {
             }
         }
 
-        "remove after write" {
+        "remove newCandles write" {
             test { file ->
                 val store = AtomicFileDataStore(file)
 

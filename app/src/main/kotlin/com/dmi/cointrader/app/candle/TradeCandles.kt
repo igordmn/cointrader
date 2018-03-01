@@ -10,7 +10,7 @@ import java.time.Instant
 import kotlin.coroutines.experimental.buildSequence
 
 
-class TradesCandle<out TRADE_INDEX>(val firstTradeIndex: TRADE_INDEX, val periodNum: Int, val candle: Candle)
+class TradesCandle<out TRADE_INDEX>(val firstTradeIndex: TRADE_INDEX, val periodIndex: Int, val candle: Candle)
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
     return Duration.between(time, startTime).toMillis() / period.toMillis()

@@ -35,7 +35,7 @@ class BinanceTradeSource(
         override val config: BinanceTradeConfig,
         var currentTime: Instant
 ) : IdentitySource<BinanceTradeConfig, BinanceTradeIndex, Trade> {
-    override fun after(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
+    override fun newItems(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
         val startIndex = lastIndex ?: BinanceTradeIndex(0, 0)
         return getTrades(startIndex, currentTime)
     }

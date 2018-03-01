@@ -12,6 +12,8 @@ import com.dmi.util.io.NumIdIndex
 import com.dmi.util.io.SyncFileArray
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.mapIndexed
+import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
@@ -38,7 +40,7 @@ class MomentSource(
         var currentTime: Instant,
         private val coinIndexToTrades: List<SuspendArray<Trade>>
 ) : IdentitySource<MomentConfig, MomentIndex, Moment> {
-    override fun after(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
+    override fun newItems(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
         return config.coins.indices
                 .map { i ->
                     candlesAfter(i, lastIndex)
@@ -47,23 +49,27 @@ class MomentSource(
     }
 
     private fun candlesAfter(coinIndex: Int, lastIndex: MomentIndex?): ReceiveChannel<CandleItem> {
-        val startTradeIndex: Long = if (lastIndex != null) {
-            lastIndex.id.candles[coinIndex].firstTradeIndex
+        val startNum: Long
+        val firstTradeIndex: Long
+        if (lastIndex != null) {
+            startNum = lastIndex.num
+            firstTradeIndex = lastIndex.id.candles[coinIndex].firstTradeIndex
         } else {
-            0
+            startNum = 0
+            firstTradeIndex = 0
         }
         val trades = coinIndexToTrades[coinIndex]
         return trades
-                .channelIndexed(startTradeIndex)
+                .channelIndexed(firstTradeIndex)
+                .takeWhile {
+                    it.value.time < currentTime
+                }
                 .candles(config.startTime, currentTime, config.period)
-                .toItems()
+                .toItems(startNum)
     }
 
-    private fun ReceiveChannel<TradesCandle<Long>>.toItems(): ReceiveChannel<CandleItem> = map {
-        CandleItem(
-                CandleIndex(it.periodNum.toLong(), CandleId(it.firstTradeIndex)),
-                it.candle
-        )
+    private fun ReceiveChannel<TradesCandle<Long>>.toItems(startNum: Long): ReceiveChannel<CandleItem> = mapIndexed { i, it ->
+        CandleItem(CandleIndex(startNum + i, CandleId(it.firstTradeIndex)), it.candle)
     }
 
     private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> = zip().map { moment(it) }

@@ -99,7 +99,7 @@ class FileDataArraySpec : FreeSpec() {
                 }
             }
 
-            "append item after clear" {
+            "append item newCandles clear" {
                 test { file ->
                     val array = FileDataArray(file, 5)
                     val writeBuffer = buffer(1, 2, 3, 4, 5)

@@ -31,7 +31,7 @@ class TradingBot(
 
     private suspend fun trade() {
         val currentTime = time.current()
-        val truncated = currentTime.truncatedTo(period)
+        val truncated = currentTime.truncatedTo(period) // todo нужно округлять, а не truncate
         val nextStart = if (truncated == currentTime) truncated else truncated + period
         val timeForStart = Duration.between(currentTime, nextStart)
 

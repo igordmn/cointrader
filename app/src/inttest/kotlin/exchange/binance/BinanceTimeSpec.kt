@@ -12,7 +12,7 @@ class BinanceTimeSpec : StringSpec({
     val api = binanceAPI()
     val time = BinanceTime(api)
 
-    "current time diff after delay" {
+    "current time diff newCandles delay" {
         runBlocking {
             val delay = Duration.ofSeconds(1)
             val maxDiff = Duration.ofSeconds(3)

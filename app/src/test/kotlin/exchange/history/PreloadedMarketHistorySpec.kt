@@ -212,7 +212,7 @@ class PreloadedMarketHistorySpec : FreeSpec({
         }
     }
 
-    "loadup after preload"  {
+    "loadup newCandles preload"  {
         usePreloadedHistory {
             it.preload(instant(18000))
             it.preload(instant(18060))

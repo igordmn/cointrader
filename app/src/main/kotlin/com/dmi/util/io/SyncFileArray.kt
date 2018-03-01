@@ -12,7 +12,7 @@ data class Indexed<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
 
 interface IdentitySource<out CONFIG : Any, INDEX : NumIdIndex<*>, out ITEM> {
     val config: CONFIG
-    fun after(lastIndex: INDEX?): ReceiveChannel<Indexed<INDEX, ITEM>>
+    fun newItems(lastIndex: INDEX?): ReceiveChannel<Indexed<INDEX, ITEM>>
 }
 
 class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
@@ -40,7 +40,7 @@ class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
         val lastIndex = lastIndexStore.readOrNull()
 
         var isFirst = true
-        source.after(lastIndex).chunked(bufferSize).consumeEach {
+        source.newItems(lastIndex).chunked(bufferSize).consumeEach {
             val index = it.last().index
             val items = it.map { it.value }
 
