@@ -8,11 +8,11 @@ import kotlinx.serialization.KSerializer
 import java.nio.file.Path
 
 data class NumIdIndex<out ID : Any>(val num: Long, val id: ID)
-data class IndexedItem<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
+data class Indexed<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
 
 interface IdentitySource<out CONFIG : Any, INDEX : NumIdIndex<*>, out ITEM> {
     val config: CONFIG
-    fun after(lastIndex: INDEX?): ReceiveChannel<IndexedItem<INDEX, ITEM>>
+    fun after(lastIndex: INDEX?): ReceiveChannel<Indexed<INDEX, ITEM>>
 }
 
 class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
