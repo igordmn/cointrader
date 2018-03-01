@@ -206,9 +206,7 @@ private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
     }
 }
 
-private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> {
-    return zip().map { moment(it) }
-}
+private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> = zip().map { moment(it) }
 
 private fun moment(candles: List<CandleItem>): MomentItem {
     require(candles.isNotEmpty())
