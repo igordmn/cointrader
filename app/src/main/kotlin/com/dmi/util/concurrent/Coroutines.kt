@@ -1,5 +1,6 @@
 package com.dmi.util.concurrent
 
+import com.dmi.util.collection.zip
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.*
 
@@ -25,4 +26,16 @@ fun <T> ReceiveChannel<T>.chunked(size: Int): ReceiveChannel<List<T>> = produce 
     if (chunk.isNotEmpty()) {
         send(chunk)
     }
+}
+
+fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<T>> = produce {
+    do {
+        val indexToCandles = map {
+            it.take(bufferSize).toList()
+        }
+        val chunk: List<List<T>> = indexToCandles.zip()
+        chunk.forEach {
+            send(it)
+        }
+    } while (chunk.size == bufferSize)
 }

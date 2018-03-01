@@ -28,9 +28,9 @@ fun printTopCoins() = runBlocking {
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
 
     val exist = info.keys.associate { it to existBefore(api, it, beforeTime) }
-//    val volumesMonthBeforeTime = info.keys.associate { it to volume(api, it, 20 * 24, beforeTime) / BigDecimal(20) }
-//    val volumesMonth1 = info.keys.associate { it to volume(api, it, 20 * 24) / BigDecimal(20) }
-//    val volumesMonth2 = info.keys.associate { it to volume(api, it, 20 * 24, Instant.now() - Duration.ofDays(20)) / BigDecimal(20) }
+//    val volumesMonthBeforeTime = index.keys.associate { it to volume(api, it, 20 * 24, beforeTime) / BigDecimal(20) }
+//    val volumesMonth1 = index.keys.associate { it to volume(api, it, 20 * 24) / BigDecimal(20) }
+//    val volumesMonth2 = index.keys.associate { it to volume(api, it, 20 * 24, Instant.now() - Duration.ofDays(20)) / BigDecimal(20) }
     val volumesWeek1 = info.keys.associate { it to volume(api, it, 7 * 24) / BigDecimal(7) }
     val volumesWeek2 = info.keys.associate { it to volume(api, it, 7 * 24, Instant.now() - Duration.ofDays(7)) / BigDecimal(7) }
     val volumesDay1 = info.keys.associate { it to volume(api, it, 1 * 24) / BigDecimal(1) }

@@ -1,19 +1,22 @@
 package com.dmi.cointrader.app.nn
 
+import com.dmi.cointrader.app.candle.Candle
+import com.dmi.cointrader.app.moment.Moment
+import com.dmi.cointrader.app.moment.MomentFixedSerializer
 import com.dmi.cointrader.app.trade.Trade
-import com.dmi.cointrader.app.trade.binanceTrades
-import com.dmi.util.concurrent.chunked
+import com.dmi.cointrader.app.trade.TradeFixedSerializer
+import com.dmi.util.collection.SuspendArray
+import com.dmi.util.collection.rangeChunked
 import com.dmi.util.concurrent.flatten
-import com.dmi.util.io.*
+import com.dmi.util.concurrent.zip
+import com.dmi.util.io.IdentitySource
+import com.dmi.util.io.SyncFileArray
 import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
-import java.nio.ByteBuffer
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -54,12 +57,12 @@ fun main(args: Array<String>) {
                     Paths.get("D:/yy/trades/$market"),
                     BinanceTradeConfig.serializer(),
                     LongSerializer,
-                    TradeSerializer()
+                    TradeFixedSerializer()
             )
 
-            fun getTrades(startInfo: SyncFileArray.Source.ItemInfo<BinanceAggTradeId>, beforeTime: Instant): ReceiveChannel<TradeItem> {
-                return binanceTrades(api, market.name, startInfo.id, beforeTime).mapIndexed { i, it ->
-                    SyncFileArray.Source.Item(SyncFileArray.Source.ItemInfo(startInfo.index + i, it.aggregatedId), it.trade)
+            fun getTrades(startIndex: BinanceTradeIndex, beforeTime: Instant): ReceiveChannel<TradeItem> {
+                return binanceTrades(api, market.name, startIndex.id, beforeTime).mapIndexed { i, it ->
+                    IdentitySource.Item(IdentitySource.Index(startIndex.num + i, it.aggregatedId), it.trade)
                 }
             }
 
@@ -78,7 +81,7 @@ fun main(args: Array<String>) {
                 Paths.get("D:/yy/moments"),
                 MomentConfig.serializer(),
                 MomentId.serializer(),
-                MomentSerializer(coins.size)
+                MomentFixedSerializer(coins.size)
         )
 
         val momentsSource = MomentSource(momentConfig, currentTime, ::getTrades)
@@ -86,17 +89,6 @@ fun main(args: Array<String>) {
     }
 }
 
-interface SuspendArray<out T> {
-    val size: Long
-
-    suspend fun get(range: LongRange): List<T>
-}
-
-@Serializable
-data class Candle(val close: Double, val high: Double, val low: Double)
-
-@Serializable
-data class Moment(val coinIndexToCandle: List<Candle>)
 
 @Serializable
 data class MomentConfig(val startTime: Instant, val period: Duration, val coins: List<String>)
@@ -107,11 +99,14 @@ data class CandleId(val firstTradeId: Long)
 @Serializable
 data class MomentId(val candles: List<CandleId>)
 
-typealias BinanceAggTradeId = Long
+typealias BinanceTradeId = Long
 typealias TradeId = Long
-typealias TradeItem = SyncFileArray.Source.Item<TradeId, Trade>
-typealias CandleItem = SyncFileArray.Source.Item<CandleId, Candle>
-typealias MomentItem = SyncFileArray.Source.Item<MomentId, Moment>
+typealias BinanceTradeIndex = IdentitySource.Index<BinanceTradeId>
+typealias TradeIndex = IdentitySource.Index<TradeId>
+typealias MomentIndex = IdentitySource.Index<MomentId>
+typealias TradeItem = IdentitySource.Item<TradeId, Trade>
+typealias CandleItem = IdentitySource.Item<CandleId, Candle>
+typealias MomentItem = IdentitySource.Item<MomentId, Moment>
 
 
 fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
@@ -147,9 +142,9 @@ class CandleBuilder(private val startTime: Instant, private val period: Duration
     fun buildLast(): CandleItem? = if (trades.isNotEmpty()) build() else null
 
     private fun build() = CandleItem(
-            SyncFileArray.Source.ItemInfo(
+            IdentitySource.Index(
                     periodIndex.apply { require(this >= 0) },
-                    CandleId(trades.first().info.id)
+                    CandleId(trades.first().index.id)
             ),
             Candle(
                     trades.last().value.price,
@@ -192,11 +187,11 @@ private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
     val endIndex = periodIndex(startTime, period, endTime)
 
     consumeEach {
-        val startIndex = if (last != null) last!!.info.index + 1 else 0
-        require(it.info.index >= startIndex)
+        val startIndex = if (last != null) last!!.index.num + 1 else 0
+        require(it.index.num >= startIndex)
 
-        for (i in startIndex until it.info.index) {
-            send(CandleItem(SyncFileArray.Source.ItemInfo(i, it.info.id), it.value))
+        for (i in startIndex until it.index.num) {
+            send(CandleItem(IdentitySource.Index(i, it.index.id), it.value))
         }
 
         send(it)
@@ -205,8 +200,8 @@ private fun ReceiveChannel<CandleItem>.candlesWithoutTrades(
     }
 
     last?.let {
-        for (i in it.info.index until endIndex) {
-            send(CandleItem(SyncFileArray.Source.ItemInfo(i, it.info.id), it.value))
+        for (i in it.index.num until endIndex) {
+            send(CandleItem(IdentitySource.Index(i, it.index.id), it.value))
         }
     }
 }
@@ -217,32 +212,15 @@ private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentIte
 
 private fun moment(candles: List<CandleItem>): MomentItem {
     require(candles.isNotEmpty())
-    val index = candles.first().info.index
+    val index = candles.first().index.num
     candles.forEach {
-        require(it.info.index == index)
+        require(it.index.num == index)
     }
-    val candleIds = candles.map { it.info.id }
+    val candleIds = candles.map { it.index.id }
     val candleValues = candles.map { it.value }
     val id = MomentId(candleIds)
     val value = Moment(candleValues)
-    return MomentItem(SyncFileArray.Source.ItemInfo(index, id), value)
-}
-
-private fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<T>> = produce {
-    do {
-        val indexToCandles = map {
-            it.take(bufferSize).toList()
-        }
-        val chunk: List<List<T>> = indexToCandles.zip()
-        chunk.forEach {
-            send(it)
-        }
-    } while (chunk.size == bufferSize)
-}
-
-private fun <T> List<List<T>>.zip(): List<List<T>> {
-    val newSize = minBy { it.size }!!.size
-    return (0 until newSize).map { i -> this.map { it[i] } }
+    return MomentItem(IdentitySource.Index(index, id), value)
 }
 
 @Serializable
@@ -251,31 +229,31 @@ data class BinanceTradeConfig(val market: String)
 class BinanceTradeSource(
         override val config: BinanceTradeConfig,
         var currentTime: Instant,
-        private val getTrades: (startInfo: SyncFileArray.Source.ItemInfo<BinanceAggTradeId>, beforeTime: Instant) -> ReceiveChannel<TradeItem>
-) : SyncFileArray.Source<BinanceTradeConfig, BinanceAggTradeId, Trade> {
-    override fun getNew(lastInfo: SyncFileArray.Source.ItemInfo<BinanceAggTradeId>?): ReceiveChannel<TradeItem> {
-        val startInfo = lastInfo ?: SyncFileArray.Source.ItemInfo<BinanceAggTradeId>(0, 0)
-        return getTrades(startInfo, currentTime)
+        private val getTrades: (startIndex: BinanceTradeIndex, beforeTime: Instant) -> ReceiveChannel<TradeItem>
+) : IdentitySource<BinanceTradeConfig, BinanceTradeId, Trade> {
+    override fun getNew(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
+        val startIndex = lastIndex ?: BinanceTradeIndex(0, 0)
+        return getTrades(startIndex, currentTime)
     }
 }
 
 class MomentSource(
         override val config: MomentConfig,
         var currentTime: Instant,
-        private val getTrades: (coinIndex: Int, startInfo: SyncFileArray.Source.ItemInfo<TradeId>) -> ReceiveChannel<TradeItem>
-) : SyncFileArray.Source<MomentConfig, MomentId, Moment> {
-    override fun getNew(lastInfo: SyncFileArray.Source.ItemInfo<MomentId>?): ReceiveChannel<MomentItem> {
+        private val getTrades: (coinIndex: Int, startIndex: TradeIndex) -> ReceiveChannel<TradeItem>
+) : IdentitySource<MomentConfig, MomentId, Moment> {
+    override fun getNew(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
         return config.coins.indices
                 .map { i ->
-                    val startInfo = if (lastInfo != null) {
-                        SyncFileArray.Source.ItemInfo(
-                                lastInfo.index,
-                                lastInfo.id.candles[i].firstTradeId
+                    val startIndex = if (lastIndex != null) {
+                        IdentitySource.Index(
+                                lastIndex.num,
+                                lastIndex.id.candles[i].firstTradeId
                         )
                     } else {
                         null
                     }
-                    getTrades(i, startInfo).candles(config.startTime, currentTime, config.period)
+                    getTrades(i, startIndex).candles(config.startTime, currentTime, config.period)
                 }
                 .moments()
     }
@@ -285,11 +263,11 @@ class ArraySource<out CONFIG : Any, out ITEM>(
         override val config: CONFIG,
         val array: SuspendArray<ITEM>,
         private val bufferSize: Int = 100
-) : SyncFileArray.Source<CONFIG, Long, ITEM> {
-    override fun getNew(lastInfo: SyncFileArray.Source.ItemInfo<Long>?): ReceiveChannel<SyncFileArray.Source.Item<Long, ITEM>> {
-        fun item(index: Long, item: ITEM) = SyncFileArray.Source.Item(SyncFileArray.Source.ItemInfo(index, index), item)
+) : IdentitySource<CONFIG, Long, ITEM> {
+    override fun getNew(lastIndex: IdentitySource.Index<Long>?): ReceiveChannel<IdentitySource.Item<Long, ITEM>> {
+        fun item(index: Long, item: ITEM) = IdentitySource.Item(IdentitySource.Index(index, index), item)
 
-        val startIndex = (lastInfo?.index ?: -1) + 1
+        val startIndex = (lastIndex?.num ?: -1) + 1
         return (startIndex until array.size)
                 .rangeChunked(bufferSize.toLong())
                 .asReceiveChannel()
@@ -299,101 +277,4 @@ class ArraySource<out CONFIG : Any, out ITEM>(
                 }
                 .flatten()
     }
-}
-
-private fun LongRange.rangeChunked(size: Long): List<LongRange> {
-    val ranges = ArrayList<LongRange>()
-    for (st in start until endInclusive step size) {
-        val nd = Math.min(endInclusive, st + size)
-        ranges.add(LongRange(st, nd))
-    }
-    return ranges
-}
-
-class SyncFileArray<in CONFIG : Any, ITEMID : Any, ITEM>(
-        file: Path,
-        configSerializer: KSerializer<CONFIG>,
-        idSerializer: KSerializer<ITEMID>,
-        itemSerializer: FixedSerializer<ITEM>,
-        private val bufferSize: Int = 100
-) : SuspendArray<ITEM> {
-    private val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer)
-    private val infoSerializer: KSerializer<Source.ItemInfo<ITEMID>> = TODO()
-    private val lastInfoStore = AtomicFileStore(file.appendToFileName(".lastInfo"), infoSerializer)
-    private val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
-
-    override val size: Long get() = fileArray.size
-    override suspend fun get(range: LongRange): List<ITEM> = fileArray.get(range)
-
-    suspend fun syncWith(source: Source<CONFIG, ITEMID, ITEM>) {
-        val config = configStore.readOrNull()
-        if (config != source.config) {
-            lastInfoStore.remove()
-            fileArray.clear()
-            configStore.write(source.config)
-        }
-
-        val lastInfo = lastInfoStore.readOrNull()
-
-        var isFirst = true
-        source.getNew(lastInfo).chunked(bufferSize).consumeEach {
-            val info = it.last().info
-            val items = it.map { it.value }
-
-            if (isFirst) {
-                fileArray.reduceSize(info.index)
-                isFirst = false
-            }
-
-            require(info.index == fileArray.size + items.size - 1)
-            fileArray.append(items)
-            lastInfoStore.write(info)
-        }
-    }
-
-    interface Source<out CONFIG : Any, ITEMID : Any, out ITEM> {
-        val config: CONFIG
-        fun getNew(lastInfo: ItemInfo<ITEMID>?): ReceiveChannel<Item<ITEMID, ITEM>>
-        data class ItemInfo<out ID : Any>(val index: Long, val id: ID)
-        data class Item<out ID : Any, out ITEM>(val info: ItemInfo<ID>, val value: ITEM)
-    }
-}
-
-private class MomentSerializer(size: Int) : FixedSerializer<Moment> {
-    val listSerializer = FixedListSerializer(size, CandleSerializer())
-    override val itemBytes: Int = listSerializer.itemBytes
-    override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.coinIndexToCandle, data)
-    override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
-}
-
-private class TradeSerializer : FixedSerializer<Trade> {
-    override val itemBytes: Int = 3 * 8
-
-    override fun serialize(item: Trade, data: ByteBuffer) {
-        data.putLong(item.time.toEpochMilli())
-        data.putDouble(item.amount)
-        data.putDouble(item.price)
-    }
-
-    override fun deserialize(data: ByteBuffer): Trade = Trade(
-            Instant.ofEpochMilli(data.long),
-            data.double,
-            data.double
-    )
-}
-
-private class CandleSerializer : FixedSerializer<Candle> {
-    override val itemBytes: Int = 3 * 8
-
-    override fun serialize(item: Candle, data: ByteBuffer) {
-        data.putDouble(item.close)
-        data.putDouble(item.high)
-        data.putDouble(item.low)
-    }
-
-    override fun deserialize(data: ByteBuffer): Candle = Candle(
-            data.double,
-            data.double,
-            data.double
-    )
 }
