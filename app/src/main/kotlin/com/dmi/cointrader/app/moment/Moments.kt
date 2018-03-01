@@ -64,7 +64,7 @@
 //                .takeWhile {
 //                    it.value.time < currentTime
 //                }
-//                .candles(config.startTime, currentTime, config.period)
+//                .candles(config.startTime, config.period)
 //                .toItems(startNum)
 //    }
 //

@@ -1,7 +1,7 @@
 package com.dmi.cointrader.app.trade
 
+import com.dmi.util.collection.Indexed
 import com.dmi.util.io.FixedSerializer
-import com.dmi.util.io.Indexed
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.time.Instant

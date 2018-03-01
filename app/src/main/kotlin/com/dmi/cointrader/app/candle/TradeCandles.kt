@@ -29,18 +29,10 @@
 //
 //fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
 //        startTime: Instant,
-//        endTime: Instant,
 //        period: Duration
 //): ReceiveChannel<TradesCandle<INDEX>> {
 //    fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
 //        var trades = ArrayList<IndexedTrade<INDEX>>()
-//
-//        val inTimeTrades = dropWhile {
-//            it.value.time < startTime
-//        }.takeWhile {
-//            it.value.time < endTime
-//        }
-//
 //
 //
 //        for (range in timeRangeSequence(startTime, endTime, period)) {
