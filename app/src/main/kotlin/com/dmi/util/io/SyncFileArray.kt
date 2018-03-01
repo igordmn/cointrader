@@ -1,5 +1,7 @@
 package com.dmi.util.io
 
+import com.dmi.util.collection.Indexed
+import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.collection.SuspendArray
 import com.dmi.util.concurrent.chunked
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -7,12 +9,9 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.serialization.KSerializer
 import java.nio.file.Path
 
-data class NumIdIndex<out ID : Any>(val num: Long, val id: ID)
-data class Indexed<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
-
-interface IdentitySource<out CONFIG : Any, INDEX : NumIdIndex<*>, out ITEM> {
+interface IdentitySource<out CONFIG : Any, ID: Any, out ITEM> {
     val config: CONFIG
-    fun newItems(lastIndex: INDEX?): ReceiveChannel<Indexed<INDEX, ITEM>>
+    fun newItems(lastId: ID?): ReceiveChannel<Indexed<ID, ITEM>>
 }
 
 class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(

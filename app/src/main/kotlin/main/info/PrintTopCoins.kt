@@ -17,7 +17,7 @@ import java.time.ZoneOffset
 // todo https://api.coinmarketcap.com/v1/ticker/?limit=100
 fun printTopCoins() = runBlocking {
     val beforeTime = LocalDateTime.of(2018, 1, 30, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
-    val minVolume = BigDecimal(180)
+    val minVolume = BigDecimal(150)
     val topCount = 60
     val excludedCoins = setOf("BNBBTC")
 
