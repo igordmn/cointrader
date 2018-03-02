@@ -1,17 +1,15 @@
-//package com.dmi.cointrader.app.candle
-//
-//import com.dmi.cointrader.app.trade.IndexedTrade
-//import com.dmi.util.io.NumIdIndex
-//import com.dmi.util.lang.InstantRange
-//import com.dmi.util.lang.min
-//import kotlinx.coroutines.experimental.channels.*
-//import java.time.Duration
-//import java.time.Instant
-//import kotlin.coroutines.experimental.buildSequence
-//
-//
-//class TradesCandle<out TRADE_INDEX>(val firstTradeIndex: TRADE_INDEX, val periodIndex: Int, val candle: Candle)
-//
+package com.dmi.cointrader.app.candle
+
+import com.dmi.cointrader.app.trade.IndexedTrade
+import com.dmi.util.lang.InstantRange
+import com.dmi.util.lang.min
+import kotlinx.coroutines.experimental.channels.*
+import java.time.Duration
+import java.time.Instant
+import kotlin.coroutines.experimental.buildSequence
+
+class TradesCandle<TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val periodNum: Int, val candle: Candle)
+
 //fun periodIndex(startTime: Instant, period: Duration, time: Instant): Long {
 //    return Duration.between(time, startTime).toMillis() / period.toMillis()
 //}
@@ -29,7 +27,9 @@
 //
 //fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
 //        startTime: Instant,
-//        period: Duration
+//        period: Duration,
+//        startNum: Int,
+//        endNum: Int
 //): ReceiveChannel<TradesCandle<INDEX>> {
 //    fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
 //        var trades = ArrayList<IndexedTrade<INDEX>>()
@@ -53,7 +53,7 @@
 //        }
 //    }
 //}
-//
+
 //class CandleBuilder(private val startTime: Instant, private val period: Duration) {
 //    private val trades = ArrayList<TradeItem>()
 //    private var periodIndex: Long = -1

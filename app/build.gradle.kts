@@ -28,22 +28,22 @@ buildscript {
 
     dependencies {
         classpath("org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serializationVersion")
-        classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
-        classpath("net.ltgt.gradle:gradle-apt-plugin:0.13")
+//        classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
+//        classpath("net.ltgt.gradle:gradle-apt-plugin:0.13")
     }
 }
 
 plugins {
     application
     java
-    kotlin("jvm") version "1.2.0"
+    kotlin("jvm") version "1.2.30"
 }
 
 apply {
-    plugin("kotlinx-serialization")
-    plugin("kotlin-kapt")
-    plugin("net.ltgt.apt-idea")
-    plugin("io.objectbox")
+//    plugin("kotlinx-serialization")
+//    plugin("kotlin-kapt")
+//    plugin("net.ltgt.apt-idea")
+//    plugin("io.objectbox")
 }
 
 val kotlinVersion: String by extra
@@ -77,8 +77,8 @@ dependencies {
     compile("org.deeplearning4j:deeplearning4j-core:0.9.1")
     compile("org.deeplearning4j:rl4j-core:0.9.1")
     compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
-    compile("io.objectbox:objectbox-kotlin:$objectboxVersion")
-    compile("io.objectbox:objectbox-windows:$objectboxVersion")
+//    compile("io.objectbox:objectbox-kotlin:$objectboxVersion")
+//    compile("io.objectbox:objectbox-windows:$objectboxVersion")
     compile("com.sleepycat:je:5.0.73")
     compile("org.deephacks.lmdbjni:lmdbjni:0.4.6")
     compile("org.deephacks.lmdbjni:lmdbjni-win64:0.4.6")
@@ -87,7 +87,7 @@ dependencies {
     compile("org.jetbrains.xodus:xodus-openAPI:1.2.0")
     compile("org.jetbrains.xodus:xodus-environment:1.2.0")
     compile("org.rocksdb:rocksdbjni:5.5.1")
-    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
+//    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
 }
 
