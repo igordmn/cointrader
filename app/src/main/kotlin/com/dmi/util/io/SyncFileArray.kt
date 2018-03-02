@@ -9,9 +9,9 @@ import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.serialization.KSerializer
 import java.nio.file.Path
 
-interface IdentitySource<out CONFIG : Any, ID: Any, out ITEM> {
+interface SyncSource<out CONFIG : Any, INDEX: Any, out ITEM> {
     val config: CONFIG
-    fun newItems(lastId: ID?): ReceiveChannel<Indexed<ID, ITEM>>
+    fun newItems(lastIndex: INDEX?): ReceiveChannel<Indexed<INDEX, ITEM>>
 }
 
 class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
@@ -28,7 +28,7 @@ class SyncFileArray<in CONFIG : Any, INDEX : NumIdIndex<*>, ITEM>(
     override val size: Long get() = fileArray.size
     override suspend fun get(range: LongRange): List<ITEM> = fileArray.get(range)
 
-    suspend fun syncWith(source: IdentitySource<CONFIG, INDEX, ITEM>) {
+    suspend fun syncWith(source: SyncSource<CONFIG, INDEX, ITEM>) {
         val config = configStore.readOrNull()
         if (config != source.config) {
             lastIndexStore.remove()
