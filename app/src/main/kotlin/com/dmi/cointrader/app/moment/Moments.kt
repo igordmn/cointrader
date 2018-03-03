@@ -8,7 +8,6 @@ import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.collection.SuspendArray
-import com.dmi.util.collection.openRight
 import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileArray

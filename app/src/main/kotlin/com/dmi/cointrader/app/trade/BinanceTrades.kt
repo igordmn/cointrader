@@ -30,12 +30,25 @@ fun binanceTradeArray(path: Path) = SyncFileArray(
 )
 
 class BinanceTradeSource(
+        private val api: BinanceAPI,
+        private val market: String,
         override val config: BinanceTradeConfig,
         var currentTime: Instant
 ) : SyncSource<BinanceTradeConfig, BinanceTradeIndex, Trade> {
     override fun newItems(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
-        val startIndex = lastIndex ?: BinanceTradeIndex(0, 0)
-        return getTrades(startIndex, currentTime)
+        val startNum: Long
+        val startId: Long
+        if (lastIndex != null) {
+            startNum = lastIndex.num + 1
+            startId = lastIndex.id + 1
+        } else {
+            startNum = 0L
+            startId = 0L
+        }
+
+        return binanceTrades(api, market, startId, currentTime).mapIndexed { num, trade ->
+            TradeItem(TradeIndex(startNum + num, trade.id), trade.trade)
+        }
     }
 }
 
