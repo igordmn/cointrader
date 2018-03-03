@@ -39,3 +39,37 @@ fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<
         }
     } while (chunk.size == bufferSize)
 }
+
+fun <T> ReceiveChannel<T>.insert(
+        itemsBefore: (next: T) -> List<T>,
+        itemsBetween: (previous: T, next: T) -> List<T>,
+        itemsAfter: (previous: T) -> List<T>
+): ReceiveChannel<T> = insertBefore(itemsBefore).insertBetween(itemsBetween).insertAfter(itemsAfter)
+
+fun <T> ReceiveChannel<T>.insertBefore(items: (next: T) -> List<T>): ReceiveChannel<T> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+}
+
+fun <E> ReceiveChannel<E>.insertBetween(items: (E, E) -> List<E>): ReceiveChannel<E> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+}
+
+fun <E> ReceiveChannel<E>.insertAfter(itemsAfter: (E) -> List<E>): ReceiveChannel<E> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+}
+
+fun <T, M, C> ReceiveChannel<T>.chunkedBy(marker: (T) -> M, fold: (M, List<T>) -> C): ReceiveChannel<C> {
+    return chunkedBy(marker).map { (key, value) ->
+        fold(key, value)
+    }
+}
+
+fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M, List<T>>> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+}
+
+fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produce {
+    consumeEach {
+        send(transform(it))
+    }
+}

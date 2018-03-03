@@ -1,38 +1,50 @@
 package com.dmi.cointrader.app.candle
 
 import com.dmi.cointrader.app.trade.IndexedTrade
-import com.dmi.util.collection.LongOpenRightRange
-import com.dmi.util.lang.InstantRange
-import com.dmi.util.lang.min
+import com.dmi.util.concurrent.chunkedBy
+import com.dmi.util.concurrent.insert
+import com.dmi.util.concurrent.map
 import kotlinx.coroutines.experimental.channels.*
 import java.time.Duration
 import java.time.Instant
-import kotlin.coroutines.experimental.buildSequence
 
-class TradesCandle<out TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val periodNum: Long, val candle: Candle)
+class TradesCandle<out TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val num: Long, val candle: Candle)
 
-fun periodNum(startTime: Instant, period: Duration, time: Instant): Long {
+fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
     return Duration.between(time, startTime).toMillis() / period.toMillis()
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         startTime: Instant,
         period: Duration,
-        numRange: LongRange
+        nums: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
-    fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
-        var trades = ArrayList<IndexedTrade<INDEX>>()
-
-        val it = iterator()
-
-        var trade = it.next()
-
-        for (num in numRange) {
-            val startTime = ;
-            val endTime = ;
-
-
-
-        }
+    class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
+        fun build() = TradesCandle(trades.last().index, num, Candle(
+                trades.last().value.price,
+                trades.maxBy { it.value.price }!!.value.price,
+                trades.minBy { it.value.price }!!.value.price
+        ))
     }
+
+    fun candleNum(trade: IndexedTrade<INDEX>) = candleNum(startTime, period, trade.value.time)
+
+    fun candlesBefore(next: CandleBillet): List<CandleBillet> = (nums.start until next.num).map {
+        CandleBillet(it, listOf(next.trades.first()))
+    }
+
+    fun candlesAfter(previous: CandleBillet): List<CandleBillet> = (previous.num + 1..nums.endInclusive).map {
+        CandleBillet(it, listOf(previous.trades.last()))
+    }
+
+    fun candlesBetween(previous: CandleBillet, next: CandleBillet) = (previous.num + 1 until next.num).map {
+        CandleBillet(it, listOf(previous.trades.last()))
+    }
+
+    return this
+            .chunkedBy(::candleNum, ::CandleBillet)
+            .insert(::candlesBefore, ::candlesBetween, ::candlesAfter)
+            .dropWhile { it.num < nums.start }
+            .takeWhile { it.num <= nums.endInclusive }
+            .map(CandleBillet::build)
 }

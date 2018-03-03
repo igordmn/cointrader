@@ -3,7 +3,7 @@ package com.dmi.cointrader.app.moment
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.candles
-import com.dmi.cointrader.app.candle.periodNum
+import com.dmi.cointrader.app.candle.candleNum
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
@@ -44,7 +44,7 @@ class MomentSource(
         require(currentTime >= config.startTime)
 
         val firstNum = if (lastIndex != null) lastIndex.num + 1 else 0L
-        val lastNum = periodNum(config.startTime, config.period, currentTime)
+        val lastNum = candleNum(config.startTime, config.period, currentTime)
 
         val tradeStartIndices = if (lastIndex != null) {
             lastIndex.id.candles.map(CandleId::lastTradeIndex)
@@ -65,8 +65,8 @@ class MomentSource(
     private fun ReceiveChannel<TradesCandle<Long>>.toItems(lastNum: Long): ReceiveChannel<CandleItem> {
         var previousIndex: CandleIndex? = null
         return map {
-            val index = if (previousIndex == null || it.periodNum <= lastNum - config.reloadLastCount) {
-                CandleIndex(it.periodNum, CandleId(it.lastTradeIndex))
+            val index = if (previousIndex == null || it.num <= lastNum - config.reloadLastCount) {
+                CandleIndex(it.num, CandleId(it.lastTradeIndex))
             } else {
                 previousIndex!!
             }
