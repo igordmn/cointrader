@@ -29,7 +29,7 @@ fun timeRangeSequence(startTime: Instant, endTime: Instant, period: Duration): S
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         startTime: Instant,
         period: Duration,
-        numRange: LongOpenRightRange
+        numRange: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
     fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
         var trades = ArrayList<IndexedTrade<INDEX>>()

@@ -54,7 +54,7 @@ class MomentSource(
                 .map { i ->
                     coinIndexToTrades[i]
                             .channelIndexed(tradeStartIndices[i])
-                            .candles(config.startTime, config.period, openRight(startNum..endNum))
+                            .candles(config.startTime, config.period, startNum..endNum)
                             .toItems(endNum)
                 }
                 .moments()
