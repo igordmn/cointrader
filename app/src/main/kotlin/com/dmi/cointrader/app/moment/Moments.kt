@@ -41,8 +41,10 @@ class MomentSource(
         private val coinIndexToTrades: List<SuspendArray<Trade>>
 ) : SyncSource<MomentsConfig, MomentIndex, Moment> {
     override fun newItems(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
-        val startNum = if (lastIndex != null) lastIndex.num + 1 else 0L
-        val endNum = periodNum(config.startTime, config.period, currentTime)
+        require(currentTime > config.startTime)
+
+        val firstNum = if (lastIndex != null) lastIndex.num + 1 else 0L
+        val lastNum = periodNum(config.startTime, config.period, currentTime)
 
         val tradeStartIndices = if (lastIndex != null) {
             lastIndex.id.candles.map(CandleId::lastTradeIndex)
@@ -54,21 +56,21 @@ class MomentSource(
                 .map { i ->
                     coinIndexToTrades[i]
                             .channelIndexed(tradeStartIndices[i])
-                            .candles(config.startTime, config.period, startNum..endNum)
-                            .toItems(endNum)
+                            .candles(config.startTime, config.period, firstNum..lastNum)
+                            .toItems(lastNum)
                 }
                 .moments()
     }
 
-    private fun ReceiveChannel<TradesCandle<Long>>.toItems(endNum: Long): ReceiveChannel<CandleItem> {
-        var lastIndex: CandleIndex? = null
+    private fun ReceiveChannel<TradesCandle<Long>>.toItems(lastNum: Long): ReceiveChannel<CandleItem> {
+        var previousIndex: CandleIndex? = null
         return map {
-            val index = if (lastIndex == null || it.periodNum < endNum - config.reloadLastCount) {
+            val index = if (previousIndex == null || it.periodNum <= lastNum - config.reloadLastCount) {
                 CandleIndex(it.periodNum, CandleId(it.lastTradeIndex))
             } else {
-                lastIndex!!
+                previousIndex!!
             }
-            lastIndex = index
+            previousIndex = index
             CandleItem(index, it.candle)
         }
     }
