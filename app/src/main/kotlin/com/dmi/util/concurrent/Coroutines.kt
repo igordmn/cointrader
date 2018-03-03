@@ -64,8 +64,29 @@ fun <T, M, C> ReceiveChannel<T>.chunkedBy(marker: (T) -> M, fold: (M, List<T>) -
     }
 }
 
-fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M, List<T>>> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M, List<T>>> = produce {
+    class Billet(val mark: M, firstItem: T) {
+        val items = arrayListOf(firstItem)
+
+        suspend fun addOrSend(mark: M, item: T): Billet = if (this.mark != mark) {
+            send()
+            Billet(mark, item)
+        } else {
+            items.add(item)
+            this
+        }
+
+        suspend fun send() = send(Pair(mark, items))
+    }
+
+    var billet: Billet? = null
+
+    consumeEach {
+        val mark = marker(it)
+        billet = billet?.addOrSend(mark, it) ?: Billet(mark, it)
+    }
+
+    billet?.send()
 }
 
 fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produce {
