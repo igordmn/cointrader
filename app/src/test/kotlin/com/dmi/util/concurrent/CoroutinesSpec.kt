@@ -76,19 +76,19 @@ class CoroutinesSpec : Spec() {
         "insertFirst" - {
             "simple" {
                 channelOf(4, 5, 6).insertFirst {
-                    listOf(it - 1, it - 2)
+                    listOf(it - 2, it - 1)
                 }.toList() shouldBe listOf(2, 3, 4, 5, 6)
             }
 
             "into single" {
                 channelOf(1).insertFirst {
-                    listOf(it - 1, it - 2)
-                }.toList() shouldBe listOf(0, -1, 1)
+                    listOf(it - 2, it - 1)
+                }.toList() shouldBe listOf(-1, 0, 1)
             }
 
             "into empty" {
                 channelOf().insertFirst {
-                    listOf(it - 1, it - 2)
+                    listOf(it - 2, it - 1)
                 }.toList() shouldBe emptyList<Int>()
             }
 
@@ -108,19 +108,19 @@ class CoroutinesSpec : Spec() {
         "insertLast" - {
             "simple" {
                 channelOf(4, 5, 6).insertLast {
-                    listOf(it - 1, it - 2)
+                    listOf(it - 2, it - 1)
                 }.toList() shouldBe listOf(4, 5, 6, 4, 5)
             }
 
             "into single" {
                 channelOf(1).insertLast {
-                    listOf(it - 1, it - 2)
-                }.toList() shouldBe listOf(1, 0, -1)
+                    listOf(it - 2, it - 1)
+                }.toList() shouldBe listOf(1, -1, 0)
             }
 
             "into empty" {
                 channelOf().insertLast {
-                    listOf(it - 1, it - 2)
+                    listOf(it - 2, it - 1)
                 }.toList() shouldBe emptyList<Int>()
             }
 
@@ -171,7 +171,6 @@ class CoroutinesSpec : Spec() {
 
         "chunkedBy" - {
             "simple" {
-                true shouldBe false
                 channelOf(1, 1, 2, 2, 2, 3)
                         .chunkedBy { it }
                         .toList() shouldBe listOf(listOf(1, 1), listOf(2, 2), listOf(3))

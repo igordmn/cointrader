@@ -31,15 +31,28 @@ fun <T> ReceiveChannel<T>.chunked(size: Int): ReceiveChannel<List<T>> = produce 
 }
 
 fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<T>> = produce {
-    do {
-        val chunks = map {
-            it.take(bufferSize).toList()
+    try {
+        do {
+            val iterators = map {
+                it.iterator()
+            }
+            val chunks = iterators.map {
+                ArrayList<T>(bufferSize).apply {
+                    while (size < bufferSize && it.hasNext()) {
+                        add(it.next())
+                    }
+                }
+            }
+            val chunk: List<List<T>> = chunks.zip()
+            chunk.forEach {
+                send(it)
+            }
+        } while (chunk.size == bufferSize)
+    } finally {
+        forEach {
+            it.cancel()
         }
-        val chunk: List<List<T>> = chunks.zip()
-        chunk.forEach {
-            send(it)
-        }
-    } while (chunk.size == bufferSize)
+    }
 }
 
 fun <T> ReceiveChannel<T>.insert(
@@ -74,6 +87,7 @@ fun <E> ReceiveChannel<E>.insertBetween(items: (E, E) -> List<E>): ReceiveChanne
             items(previous!!.value, it).forEach {
                 send(it)
             }
+            previous!!.value = it
         }
         send(it)
     }
