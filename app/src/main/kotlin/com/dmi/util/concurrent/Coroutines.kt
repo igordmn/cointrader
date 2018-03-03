@@ -124,28 +124,27 @@ fun <T, M, C> ReceiveChannel<T>.chunkedBy(marker: (T) -> M, fold: (M, List<T>) -
 fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M, List<T>>> = produce {
     class Billet(val mark: M, firstItem: T) {
         val items = arrayListOf(firstItem)
-
-        suspend fun addOrSend(mark: M, item: T): Billet = if (this.mark != mark) {
-            send()
-            Billet(mark, item)
-        } else {
-            items.add(item)
-            this
-        }
-
-        suspend fun send() = send(Pair(mark, items))
     }
-
-    fun Billet?.orInitial(mark: M, item: T) = this ?: Billet(mark, item)
 
     var billet: Billet? = null
 
-    consumeEach {
-        val mark = marker(it)
-        billet = billet?.addOrSend(mark, it).orInitial(mark, it)
+    consumeEach { item ->
+        val mark = marker(item)
+
+        billet = billet?.let {
+            if (it.mark != mark) {
+                send(Pair(it.mark, it.items))
+                Billet(mark, item)
+            } else {
+                it.items.add(item)
+                it
+            }
+        } ?: Billet(mark, item)
     }
 
-    billet?.send()
+    billet?.let {
+        send(Pair(it.mark, it.items))
+    }
 }
 
 fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produce {

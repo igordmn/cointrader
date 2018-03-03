@@ -147,7 +147,7 @@ class CoroutinesSpec : Spec() {
             "into single" {
                 channelOf(2).insertBetween { previous, next ->
                     listOf(previous + 1, next - 1)
-                }.toList() shouldBe emptyList<Int>()
+                }.toList() shouldBe listOf(2)
             }
 
             "into empty" {
@@ -173,7 +173,11 @@ class CoroutinesSpec : Spec() {
             "simple" {
                 channelOf(1, 1, 2, 2, 2, 3)
                         .chunkedBy { it }
-                        .toList() shouldBe listOf(listOf(1, 1), listOf(2, 2), listOf(3))
+                        .toList() shouldBe listOf(
+                        Pair(1, listOf(1, 1)),
+                        Pair(2, listOf(2, 2, 2)),
+                        Pair(3, listOf(3))
+                )
             }
 
             "empty" {
