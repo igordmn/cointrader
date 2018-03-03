@@ -14,11 +14,17 @@ class TradeCandlesSpec : Spec() {
         val startTime = instant(17)
         val period = period(4)
 
+        "empty" {
+            channelOf<IndexedTrade<Int>>()
+                    .candles(startTime, period, 0L..0L)
+                    .toList() shouldBe emptyList<TradesCandle<Int>>()
+        }
+
         "single" {
             channelOf(
                     trade(instant(5), 2, 2.5)
             ).candles(startTime, period, 0L..0L).toList() shouldBe listOf(
-                    TradesCandle(2, 0, Candle(2.5, 2.5, 2.5))
+                    TradesCandle(0, Candle(2.5, 2.5, 2.5), 2)
             )
         }
     }

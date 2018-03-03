@@ -12,7 +12,6 @@ import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileArray
 import exchange.binance.BinanceConstants
-import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map

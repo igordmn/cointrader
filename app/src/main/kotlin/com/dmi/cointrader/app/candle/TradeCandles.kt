@@ -8,7 +8,7 @@ import kotlinx.coroutines.experimental.channels.*
 import java.time.Duration
 import java.time.Instant
 
-data class TradesCandle<out TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val num: Long, val candle: Candle)
+data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
 fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
     return Duration.between(time, startTime).toMillis() / period.toMillis()
@@ -20,11 +20,11 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         nums: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
     class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
-        fun build() = TradesCandle(trades.last().index, num, Candle(
+        fun build() = TradesCandle(num, Candle(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,
                 trades.minBy { it.value.price }!!.value.price
-        ))
+        ), trades.last().index)
     }
 
     fun candleNum(trade: IndexedTrade<INDEX>) = candleNum(startTime, period, trade.value.time)
