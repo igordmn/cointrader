@@ -41,13 +41,13 @@ fun main(args: Array<String>) {
                 "USDT", "ETH", "TRX", "XRP", "LTC", "ETC", "ICX"
         )
 
-        val momentsConfig = MomentsConfig(startTime, period, coins)
+        val momentsConfig = MomentsConfig(startTime, period, coins, reloadLastCount = 5)
         val currentTime = Instant.ofEpochMilli(api.serverTime().serverTime)
 
         val coinToTrades = coins.map { coin ->
             val market = marketInfo(coin)
             val tradeConfig = BinanceTradeConfig(market.name)
-            val binanceTradeSource = BinanceTradeSource(tradeConfig, currentTime)
+            val binanceTradeSource = BinanceTradeSource(api, market.name, tradeConfig, currentTime)
             val binanceTrades = binanceTradeArray(Paths.get("D:/yy/trades/$market"))
 
             binanceTrades.syncWith(binanceTradeSource)
