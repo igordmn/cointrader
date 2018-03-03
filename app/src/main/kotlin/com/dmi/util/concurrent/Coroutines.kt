@@ -41,21 +41,62 @@ fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<
 }
 
 fun <T> ReceiveChannel<T>.insert(
-        itemsBefore: (next: T) -> List<T>,
+        itemsFirst: (first: T) -> List<T>,
         itemsBetween: (previous: T, next: T) -> List<T>,
-        itemsAfter: (previous: T) -> List<T>
-): ReceiveChannel<T> = insertBefore(itemsBefore).insertBetween(itemsBetween).insertAfter(itemsAfter)
+        itemsLast: (last: T) -> List<T>
+): ReceiveChannel<T> = insertFirst(itemsFirst).insertBetween(itemsBetween).insertLast(itemsLast)
 
-fun <T> ReceiveChannel<T>.insertBefore(items: (next: T) -> List<T>): ReceiveChannel<T> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+fun <T> ReceiveChannel<T>.insertFirst(items: (next: T) -> List<T>): ReceiveChannel<T> = produce {
+    var isFirst = true
+    consumeEach {
+        if (isFirst) {
+            items(it).forEach {
+                send(it)
+            }
+            isFirst = false
+        }
+
+        send(it)
+    }
 }
 
-fun <E> ReceiveChannel<E>.insertBetween(items: (E, E) -> List<E>): ReceiveChannel<E> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+fun <E> ReceiveChannel<E>.insertBetween(items: (E, E) -> List<E>): ReceiveChannel<E> = produce {
+    class Item(var value: E)
+
+    var previous: Item? = null
+
+    consumeEach {
+        if (previous == null) {
+            previous = Item(it)
+        } else {
+            items(previous!!.value, it).forEach {
+                send(it)
+            }
+        }
+        send(it)
+    }
 }
 
-fun <E> ReceiveChannel<E>.insertAfter(itemsAfter: (E) -> List<E>): ReceiveChannel<E> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+fun <E> ReceiveChannel<E>.insertLast(itemsAfter: (E) -> List<E>): ReceiveChannel<E> = produce {
+    class Item(var value: E)
+
+    var last: Item? = null
+
+    consumeEach {
+        send(it)
+
+        if (last == null) {
+            last = Item(it)
+        } else {
+            last!!.value = it
+        }
+    }
+
+    if (last != null) {
+        itemsAfter(last!!.value).forEach {
+            send(it)
+        }
+    }
 }
 
 fun <T, M, C> ReceiveChannel<T>.chunkedBy(marker: (T) -> M, fold: (M, List<T>) -> C): ReceiveChannel<C> {

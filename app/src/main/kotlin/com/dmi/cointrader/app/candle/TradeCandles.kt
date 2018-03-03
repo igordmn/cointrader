@@ -29,12 +29,12 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
 
     fun candleNum(trade: IndexedTrade<INDEX>) = candleNum(startTime, period, trade.value.time)
 
-    fun candlesBefore(next: CandleBillet): List<CandleBillet> = (nums.start until next.num).map {
-        CandleBillet(it, listOf(next.trades.first()))
+    fun candlesFirst(first: CandleBillet): List<CandleBillet> = (nums.start until first.num).map {
+        CandleBillet(it, listOf(first.trades.first()))
     }
 
-    fun candlesAfter(previous: CandleBillet): List<CandleBillet> = (previous.num + 1..nums.endInclusive).map {
-        CandleBillet(it, listOf(previous.trades.last()))
+    fun candlesLast(last: CandleBillet): List<CandleBillet> = (last.num + 1..nums.endInclusive).map {
+        CandleBillet(it, listOf(last.trades.last()))
     }
 
     fun candlesBetween(previous: CandleBillet, next: CandleBillet) = (previous.num + 1 until next.num).map {
@@ -43,7 +43,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
 
     return this
             .chunkedBy(::candleNum, ::CandleBillet)
-            .insert(::candlesBefore, ::candlesBetween, ::candlesAfter)
+            .insert(::candlesFirst, ::candlesBetween, ::candlesLast)
             .dropWhile { it.num < nums.start }
             .takeWhile { it.num <= nums.endInclusive }
             .map(CandleBillet::build)
