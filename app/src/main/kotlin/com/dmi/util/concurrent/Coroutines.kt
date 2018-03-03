@@ -15,6 +15,8 @@ suspend fun <T, R> Iterable<T>.mapAsync(transform: suspend (T) -> R): Iterable<R
 fun <T> ReceiveChannel<List<T>>.flatten(): ReceiveChannel<T> = flatMap { it.asReceiveChannel() }
 
 fun <T> ReceiveChannel<T>.chunked(size: Int): ReceiveChannel<List<T>> = produce {
+    require(size > 0)
+
     var chunk = ArrayList<T>(size)
     consumeEach {
         if (chunk.size == size) {
@@ -30,10 +32,10 @@ fun <T> ReceiveChannel<T>.chunked(size: Int): ReceiveChannel<List<T>> = produce 
 
 fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<T>> = produce {
     do {
-        val indexToCandles = map {
+        val chunks = map {
             it.take(bufferSize).toList()
         }
-        val chunk: List<List<T>> = indexToCandles.zip()
+        val chunk: List<List<T>> = chunks.zip()
         chunk.forEach {
             send(it)
         }
