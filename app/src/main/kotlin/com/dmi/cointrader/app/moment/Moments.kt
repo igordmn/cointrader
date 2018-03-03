@@ -8,13 +8,12 @@ import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.collection.SuspendArray
+import com.dmi.util.collection.openRight
 import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileArray
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
-import kotlinx.coroutines.experimental.channels.mapIndexed
-import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
@@ -55,7 +54,7 @@ class MomentSource(
                 .map { i ->
                     coinIndexToTrades[i]
                             .channelIndexed(tradeStartIndices[i])
-                            .candles(config.startTime, config.period, startNum..endNum)
+                            .candles(config.startTime, config.period, openRight(startNum..endNum))
                             .toItems(endNum)
                 }
                 .moments()

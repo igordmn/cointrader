@@ -1,6 +1,7 @@
 package com.dmi.cointrader.app.candle
 
 import com.dmi.cointrader.app.trade.IndexedTrade
+import com.dmi.util.collection.LongOpenRightRange
 import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.min
 import kotlinx.coroutines.experimental.channels.*
@@ -28,7 +29,7 @@ fun timeRangeSequence(startTime: Instant, endTime: Instant, period: Duration): S
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         startTime: Instant,
         period: Duration,
-        numRange: LongRange
+        numRange: LongOpenRightRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
     fun candlesWithTrades(): ReceiveChannel<TradesCandle<INDEX>> = produce<TradesCandle<INDEX>> {
         var trades = ArrayList<IndexedTrade<INDEX>>()
