@@ -23,10 +23,15 @@ abstract class Spec : io.kotlintest.Spec() {
     }
 
     infix operator fun String.invoke(test: suspend () -> Unit): TestCase {
+        val testBlocking: () -> Unit = {
+            runBlocking {
+                test()
+            }
+        }
         val tc = TestCase(
                 suite = current,
                 name = sanitizeSpecName(this),
-                test = { runBlocking { test } },
+                test = testBlocking,
                 config = defaultTestCaseConfig)
         current.addTestCase(tc)
         return tc

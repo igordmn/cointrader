@@ -171,6 +171,7 @@ class CoroutinesSpec : Spec() {
 
         "chunkedBy" - {
             "simple" {
+                true shouldBe false
                 channelOf(1, 1, 2, 2, 2, 3)
                         .chunkedBy { it }
                         .toList() shouldBe listOf(listOf(1, 1), listOf(2, 2), listOf(3))
