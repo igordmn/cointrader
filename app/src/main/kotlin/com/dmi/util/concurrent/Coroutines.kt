@@ -120,11 +120,13 @@ fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M,
         suspend fun send() = send(Pair(mark, items))
     }
 
+    fun Billet?.orInitial(mark: M, item: T) = this ?: Billet(mark, item)
+
     var billet: Billet? = null
 
     consumeEach {
         val mark = marker(it)
-        billet = billet?.addOrSend(mark, it) ?: Billet(mark, it)
+        billet = billet?.addOrSend(mark, it).orInitial(mark, it)
     }
 
     billet?.send()
