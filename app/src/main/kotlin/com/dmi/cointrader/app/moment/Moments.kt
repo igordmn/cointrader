@@ -41,7 +41,7 @@ class MomentSource(
         private val coinIndexToTrades: List<SuspendArray<Trade>>
 ) : SyncSource<MomentsConfig, MomentIndex, Moment> {
     override fun newItems(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
-        require(currentTime > config.startTime)
+        require(currentTime >= config.startTime)
 
         val firstNum = if (lastIndex != null) lastIndex.num + 1 else 0L
         val lastNum = periodNum(config.startTime, config.period, currentTime)
