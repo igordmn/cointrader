@@ -1,9 +1,8 @@
 package com.dmi.util.concurrent
 
 import com.dmi.util.test.Spec
+import com.dmi.util.test.channelOf
 import io.kotlintest.matchers.shouldBe
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
 
 class CoroutinesSpec : Spec() {
@@ -61,14 +60,14 @@ class CoroutinesSpec : Spec() {
 
             "empty channel" {
                 listOf(
-                        channelOf()
+                        channelOf<Int>()
                 ).zip(5).toList() shouldBe emptyList<Int>()
             }
 
             "empty channel with non-empty" {
                 listOf(
                         channelOf(1, 2, 3, 4),
-                        channelOf()
+                        channelOf<Int>()
                 ).zip(5).toList() shouldBe emptyList<Int>()
             }
         }
@@ -87,7 +86,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "into empty" {
-                channelOf().insertFirst {
+                channelOf<Int>().insertFirst {
                     listOf(it - 2, it - 1)
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -99,7 +98,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "insert empty into empty" {
-                channelOf().insertFirst {
+                channelOf<Int>().insertFirst {
                     emptyList()
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -119,7 +118,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "into empty" {
-                channelOf().insertLast {
+                channelOf<Int>().insertLast {
                     listOf(it - 2, it - 1)
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -131,7 +130,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "insert empty into empty" {
-                channelOf().insertLast {
+                channelOf<Int>().insertLast {
                     emptyList()
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -151,7 +150,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "into empty" {
-                channelOf().insertBetween { previous, next ->
+                channelOf<Int>().insertBetween { previous, next ->
                     listOf(previous + 1, next - 1)
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -163,7 +162,7 @@ class CoroutinesSpec : Spec() {
             }
 
             "insert empty into empty" {
-                channelOf().insertBetween { previous, next ->
+                channelOf<Int>().insertBetween { previous, next ->
                     emptyList()
                 }.toList() shouldBe emptyList<Int>()
             }
@@ -181,12 +180,10 @@ class CoroutinesSpec : Spec() {
             }
 
             "empty" {
-                channelOf()
+                channelOf<Int>()
                         .chunkedBy { it }
                         .toList() shouldBe emptyList<Int>()
             }
         }
     }
-
-    private fun channelOf(vararg values: Int): ReceiveChannel<Int> = values.toList().asReceiveChannel()
 }
