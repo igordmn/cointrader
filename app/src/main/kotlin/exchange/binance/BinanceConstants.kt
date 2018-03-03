@@ -34,4 +34,17 @@ class BinanceConstants {
             else -> null
         }
     }
+
+    fun marketInfo(coin: String, mainCoin: String): MarketInfo {
+        val name = marketName(coin, mainCoin)
+        val reversedName = marketName(mainCoin, coin)
+
+        return when {
+            name != null -> MarketInfo(coin, name, false)
+            reversedName != null -> MarketInfo(coin, reversedName, true)
+            else -> throw UnsupportedOperationException()
+        }
+    }
 }
+
+data class MarketInfo(val coin: String, val name: String, val isReversed: Boolean)

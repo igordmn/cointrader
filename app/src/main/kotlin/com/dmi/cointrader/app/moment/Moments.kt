@@ -4,18 +4,23 @@ import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.candle.candleNum
-import com.dmi.cointrader.app.trade.Trade
+import com.dmi.cointrader.app.trade.*
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.collection.SuspendArray
 import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileArray
+import exchange.binance.BinanceConstants
+import exchange.binance.MarketInfo
+import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import main.test.Config
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -34,7 +39,7 @@ typealias MomentIndex = NumIdIndex<MomentId>
 typealias CandleItem = Indexed<CandleIndex, Candle>
 typealias MomentItem = Indexed<MomentIndex, Moment>
 
-class MomentSource(
+class MomentsSource(
         override val config: MomentsConfig,
         var currentTime: Instant,
         private val coinIndexToTrades: List<SuspendArray<Trade>>
@@ -90,9 +95,43 @@ class MomentSource(
     }
 }
 
-fun momentArray(path: Path, config: MomentsConfig) = SyncFileArray(
+fun momentArray(
+        path: Path,
+        config: MomentsConfig
+) = SyncFileArray(
         path,
         MomentsConfig.serializer(),
         TODO() as KSerializer<MomentIndex>,
         MomentFixedSerializer(config.coins.size)
 )
+
+interface Moments : SuspendArray<Moment> {
+    suspend fun sync(currentTime: Instant)
+}
+
+suspend fun moments(
+        config: Config,
+        api: BinanceAPI,
+        constant: BinanceConstants,
+        currentTime: Instant
+): Moments {
+    val coinToTrades = config.altCoins.map { coin ->
+        val marketInfo = constant.marketInfo(coin, config.mainCoin)
+        binanceTrades(api, marketInfo, currentTime)
+    }
+
+    val momentsConfig = MomentsConfig(config.trainStartTime, config.period, config.altCoins, reloadLastCount = 10)
+    val array = momentArray(Paths.get("data/cache/binance/moments"), momentsConfig)
+    val source = MomentsSource(momentsConfig, currentTime, coinToTrades)
+    array.syncWith(source)
+
+    return object : Moments {
+        override suspend fun sync(currentTime: Instant) {
+            source.currentTime = currentTime
+            array.syncWith(source)
+        }
+
+        override val size: Long = array.size
+        suspend override fun get(range: LongRange): List<Moment> = array.get(range)
+    }
+}

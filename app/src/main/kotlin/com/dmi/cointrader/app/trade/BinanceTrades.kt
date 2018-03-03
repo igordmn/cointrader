@@ -1,15 +1,21 @@
 package com.dmi.cointrader.app.trade
 
 import com.binance.api.client.domain.market.AggTrade
+import com.dmi.cointrader.app.moment.Moment
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
+import com.dmi.util.collection.SuspendArray
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileArray
+import exchange.binance.BinanceConstants
+import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import main.test.Config
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Instant
 
 typealias BinanceTradeId = Long
@@ -29,7 +35,7 @@ fun binanceTradeArray(path: Path) = SyncFileArray(
         TradeFixedSerializer()
 )
 
-class BinanceTradeSource(
+class BinanceTradesSource(
         private val api: BinanceAPI,
         private val market: String,
         override val config: BinanceTradeConfig,
@@ -67,7 +73,7 @@ private fun binanceTrades(
     val count = 500
     var id = startId
 
-    while(true) {
+    while (true) {
         val trades = api.getAggTrades(market, id.toString(), count, null, null)
         if (trades.isNotEmpty()) {
             trades.forEach {
@@ -88,3 +94,35 @@ private fun AggTrade.toBinanceTrade() = BinanceTrade(
                 price.toDouble()
         )
 )
+
+interface Trades : SuspendArray<Trade> {
+    suspend fun sync(currentTime: Instant)
+}
+
+suspend fun binanceTrades(
+        api: BinanceAPI,
+        market: MarketInfo,
+        currentTime: Instant
+): Trades {
+    val tradeConfig = BinanceTradeConfig(market.name)
+    val source = BinanceTradesSource(api, market.name, tradeConfig, currentTime)
+    val originalArray = binanceTradeArray(Paths.get("data/cache/binance/trades/$market"))
+
+    originalArray.syncWith(source)
+
+    val array = if (market.isReversed) {
+        originalArray.map(Trade::reverse)
+    } else {
+        originalArray
+    }
+
+    return object : Trades {
+        override suspend fun sync(currentTime: Instant) {
+            source.currentTime = currentTime
+            originalArray.syncWith(source)
+        }
+
+        override val size: Long = array.size
+        suspend override fun get(range: LongRange): List<Trade> = array.get(range)
+    }
+}
