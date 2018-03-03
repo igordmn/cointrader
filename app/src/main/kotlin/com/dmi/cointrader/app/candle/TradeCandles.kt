@@ -8,7 +8,7 @@ import kotlinx.coroutines.experimental.channels.*
 import java.time.Duration
 import java.time.Instant
 
-class TradesCandle<out TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val num: Long, val candle: Candle)
+data class TradesCandle<out TRADE_INDEX>(val lastTradeIndex: TRADE_INDEX, val num: Long, val candle: Candle)
 
 fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
     return Duration.between(time, startTime).toMillis() / period.toMillis()
