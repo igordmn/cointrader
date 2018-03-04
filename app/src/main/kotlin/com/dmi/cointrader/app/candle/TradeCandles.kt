@@ -12,7 +12,9 @@ import java.time.Instant
 data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
 fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
-    return Duration.between(startTime, time).toMillis() / period.toMillis()
+    val distMillis = Duration.between(startTime, time).toMillis()
+    val periodMillis = period.toMillis()
+    return Math.floor(distMillis / periodMillis.toDouble()).toLong()
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
@@ -20,7 +22,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         period: Duration,
         nums: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
-    data class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
+    class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
         fun build() = TradesCandle(num, Candle(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,

@@ -127,7 +127,7 @@ class TradeCandlesSpec : Spec() {
             }
 
             "candles after middle of trades" {
-                trades().candles(instant(24), period(4), 0L..6L).toList() shouldBe listOf(
+                trades().candles(instant(36), period(4), 0L..6L).toList() shouldBe listOf(
                         TradesCandle(0, Candle(2.5, 7.5, 1.5), 1600),  // 36-40
                         TradesCandle(1, Candle(3.5, 3.5, 3.5), 1800),  // 40-44
                         TradesCandle(2, Candle(3.5, 3.5, 3.5), 1800),  // 44-48
@@ -137,7 +137,7 @@ class TradeCandlesSpec : Spec() {
                         TradesCandle(6, Candle(9.5, 9.5, 9.5), 2000)   // 60-64
                 )
 
-                trades().candles(instant(36), period(4), 0L..3L).toList() shouldBe listOf(
+                trades().candles(instant(24), period(4), 0L..3L).toList() shouldBe listOf(
                         TradesCandle(0, Candle(1.5, 1.5, 1.5), 600),   // 24-28
                         TradesCandle(1, Candle(7.5, 7.5, 7.5), 800),   // 28-32
                         TradesCandle(2, Candle(8.5, 8.5, 8.5), 1000),  // 32-36
