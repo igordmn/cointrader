@@ -89,6 +89,7 @@ dependencies {
     compile("org.rocksdb:rocksdbjni:5.5.1")
 //    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
+    testCompile("com.google.jimfs:jimfs:1.1")
 }
 
 java {

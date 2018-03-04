@@ -1,5 +1,7 @@
 package com.dmi.util.io
 
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.runBlocking
@@ -133,16 +135,9 @@ class AtomicFileDataStoreSpec : FreeSpec() {
     }
 
     private fun test(action: suspend (Path) -> Unit) {
-        val file = Files.createTempFile("test", "")
-        Files.delete(file)
-
-        try {
+        Jimfs.newFileSystem(Configuration.unix()).use {
             runBlocking {
-                action(file)
-            }
-        } finally {
-            if (Files.exists(file)) {
-                Files.delete(file)
+                action(it.getPath("/test"))
             }
         }
     }
