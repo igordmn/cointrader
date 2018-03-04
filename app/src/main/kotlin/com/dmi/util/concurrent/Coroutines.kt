@@ -63,6 +63,7 @@ fun <T> ReceiveChannel<T>.insert(
 
 fun <T> ReceiveChannel<T>.insertFirst(items: (next: T) -> List<T>): ReceiveChannel<T> = produce {
     var isFirst = true
+
     consumeEach {
         if (isFirst) {
             items(it).forEach {

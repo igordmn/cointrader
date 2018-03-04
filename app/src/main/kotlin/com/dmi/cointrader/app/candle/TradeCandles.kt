@@ -5,13 +5,14 @@ import com.dmi.util.concurrent.chunkedBy
 import com.dmi.util.concurrent.insert
 import com.dmi.util.concurrent.map
 import kotlinx.coroutines.experimental.channels.*
+import kotlinx.coroutines.experimental.runBlocking
 import java.time.Duration
 import java.time.Instant
 
 data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
 fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
-    return Duration.between(time, startTime).toMillis() / period.toMillis()
+    return Duration.between(startTime, time).toMillis() / period.toMillis()
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
@@ -19,7 +20,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         period: Duration,
         nums: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
-    class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
+    data class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
         fun build() = TradesCandle(num, Candle(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,
