@@ -1,23 +1,67 @@
 package com.dmi.util.io
 
+import com.dmi.cointrader.app.candle.Candle
+import com.dmi.cointrader.app.candle.CandleFixedSerializer
+import com.dmi.cointrader.app.moment.*
+import com.dmi.util.collection.Indexed
+import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.serialization.Serializable
+import java.nio.ByteBuffer
 import java.nio.file.Path
 
-class SyncFileArraySpec : Spec() {
-    init {
-        val fs = Jimfs.newFileSystem(Configuration.unix())
 
-        fun test(action: suspend (Path) -> Unit) {
-            Jimfs.newFileSystem(Configuration.unix()).use {
-                runBlocking {
-                    action(it.getPath("/test"))
-                }
-            }
+@Serializable
+private data class TestConfig(val x: String)
+
+@Serializable
+private data class TestId(val x: String)
+
+@Serializable
+private data class TestEntity(val x: Int)
+
+private typealias TestIndex = NumIdIndex<TestId>
+private typealias TestItem = Indexed<TestIndex, TestEntity>
+
+private class TestSource(override val config: TestConfig) : SyncSource<TestConfig, NumIdIndex<TestId>, TestItem> {
+    override fun newItems(lastIndex: NumIdIndex<TestId>?): ReceiveChannel<Indexed<NumIdIndex<TestId>, TestItem>> {
+
+    }
+}
+
+private val testIndexSerializer = NumIdIndex.serializer(TestId.serializer())
+
+private class TestEntitySerializer : FixedSerializer<TestEntity> {
+    override val itemBytes: Int = 3 * 8
+
+    override fun serialize(item: TestEntity, data: ByteBuffer) {
+        data.putInt(item.x)
+    }
+
+    override fun deserialize(data: ByteBuffer): TestEntity = TestEntity(
+            data.int
+    )
+}
+
+class SyncFileArraySpec : Spec() {
+    private val fs = Jimfs.newFileSystem(Configuration.unix())
+
+    init {
+        "x" {
+            val array = array(TestConfig("f"))
         }
     }
 
-    private data class TestConfig(val x: String)
+    private fun array(
+            config: TestConfig
+    ) = SyncFileArray(
+            fs.getPath("/test"),
+            TestConfig.serializer(),
+            testIndexSerializer,
+            TestEntitySerializer()
+    )
 }

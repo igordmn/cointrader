@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 data class Moment(val coinIndexToCandle: List<Candle>)
 
 class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
-    val listSerializer = FixedListSerializer(size, CandleFixedSerializer())
+    private val listSerializer = FixedListSerializer(size, CandleFixedSerializer())
     override val itemBytes: Int = listSerializer.itemBytes
     override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.coinIndexToCandle, data)
     override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
