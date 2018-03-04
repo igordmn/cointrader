@@ -4,8 +4,10 @@ import com.binance.api.client.domain.market.AggTrade
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.IdIndex
 import com.dmi.util.collection.SuspendArray
+import com.dmi.util.collection.Table
 import com.dmi.util.io.SyncSource
 import com.dmi.util.io.SyncFileTable
+import com.dmi.util.io.syncFileTable
 import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.*
@@ -16,44 +18,26 @@ import java.nio.file.Paths
 import java.time.Instant
 
 typealias BinanceTradeId = Long
-typealias TradeId = Long
-
-typealias BinanceTradeIndex = IdIndex<BinanceTradeId>
-typealias TradeIndex = IdIndex<TradeId>
-typealias TradeItem = Row<TradeIndex, Trade>
-
-val tradeIndexSerializer = IdIndex.serializer(LongSerializer)
+typealias BinanceTradeRow = Row<BinanceTradeId, Trade>
 
 @Serializable
 data class BinanceTradeConfig(val market: String)
 
-fun binanceTradeArray(path: Path) = SyncFileTable(
+suspend fun tradesFileTable(path: Path) = syncFileTable(
         path,
         BinanceTradeConfig.serializer(),
-        tradeIndexSerializer,
-        TradeFixedSerializer()
+        LongSerializer,
+        TradeFixedSerializer
 )
 
-class BinanceTradesSource(
+class BinanceTrades(
         private val api: BinanceAPI,
         private val market: String,
-        override val config: BinanceTradeConfig,
         var currentTime: Instant
-) : SyncSource<BinanceTradeConfig, BinanceTradeIndex, Trade> {
-    override fun newItems(lastIndex: BinanceTradeIndex?): ReceiveChannel<TradeItem> {
-        val startNum: Long
-        val startId: Long
-        if (lastIndex != null) {
-            startNum = lastIndex.index + 1
-            startId = lastIndex.id + 1
-        } else {
-            startNum = 0L
-            startId = 0L
-        }
-
-        return binanceTrades(api, market, startId, currentTime).mapIndexed { num, trade ->
-            TradeItem(TradeIndex(startNum + num, trade.id), trade.trade)
-        }
+) : Table<BinanceTradeId, Trade> {
+    override fun rowsAfter(id: BinanceTradeId?): ReceiveChannel<Row<BinanceTradeId, Trade>> {
+        val startId: Long = 1 + (id ?: -1)
+        return binanceTrades(api, market, startId, currentTime)
     }
 }
 
@@ -62,13 +46,13 @@ fun binanceTrades(
         market: String,
         startId: Long,
         beforeTime: Instant
-): ReceiveChannel<BinanceTrade> = binanceTrades(api, market, startId).takeWhile { it.trade.time <= beforeTime }
+): ReceiveChannel<BinanceTradeRow> = binanceTrades(api, market, startId).takeWhile { it.value.time <= beforeTime }
 
 private fun binanceTrades(
         api: BinanceAPI,
         market: String,
         startId: Long
-): ReceiveChannel<BinanceTrade> = produce {
+): ReceiveChannel<BinanceTradeRow> = produce {
     val count = 500
     var id = startId
 
@@ -85,7 +69,7 @@ private fun binanceTrades(
     }
 }
 
-private fun AggTrade.toBinanceTrade() = BinanceTrade(
+private fun AggTrade.toBinanceTrade() = BinanceTradeRow(
         aggregatedTradeId,
         Trade(
                 Instant.ofEpochMilli(tradeTime),
@@ -105,7 +89,7 @@ suspend fun binanceTrades(
 ): Trades {
     val tradeConfig = BinanceTradeConfig(market.name)
     val source = BinanceTradesSource(api, market.name, tradeConfig, currentTime)
-    val originalArray = binanceTradeArray(Paths.get("data/cache/binance/trades/$market"))
+    val originalArray = tradesFileTable(Paths.get("data/cache/binance/trades/$market"))
 
     originalArray.syncWith(source)
 

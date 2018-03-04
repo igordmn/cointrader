@@ -185,5 +185,32 @@ class CoroutinesSpec : Spec() {
                         .toList() shouldBe emptyList<Int>()
             }
         }
+
+        "withPrevious" - {
+            "empty" {
+                channelOf<Int>().withPrevious(1).toList() shouldBe emptyList<Int>()
+            }
+
+            "single" {
+                channelOf(1).withPrevious(1).toList() shouldBe listOf(1 to null)
+            }
+
+            "multiple" {
+                channelOf(1, 2, 3).withPrevious(1).toList() shouldBe listOf(
+                        1 to null,
+                        2 to 1,
+                        3 to 2
+                )
+            }
+
+            "with step 2" {
+                channelOf(1, 2, 3, 4).withPrevious(2).toList() shouldBe listOf(
+                        1 to null,
+                        2 to null,
+                        3 to 1,
+                        4 to 2
+                )
+            }
+        }
     }
 }

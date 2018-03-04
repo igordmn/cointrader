@@ -3,6 +3,8 @@ package com.dmi.util.concurrent
 import com.dmi.util.collection.zip
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.*
+import java.util.*
+import java.util.concurrent.LinkedBlockingQueue
 
 suspend fun <T, R> Iterable<T>.mapAsync(transform: suspend (T) -> R): Iterable<R> = map { value ->
     async {
@@ -151,5 +153,20 @@ fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M,
 fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produce {
     consumeEach {
         send(transform(it))
+    }
+}
+
+fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = produce {
+    require(num > 0)
+
+    val allPrevious = LinkedList<T>()
+    consumeEach {
+        allPrevious.addLast(it)
+        val previous = if (allPrevious.size > num) {
+            allPrevious.removeFirst()
+        } else {
+            null
+        }
+        send(Pair(it, previous))
     }
 }

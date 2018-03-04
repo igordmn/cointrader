@@ -1,16 +1,15 @@
 package com.dmi.util.io
 
 import com.dmi.util.collection.Row
-import com.dmi.util.collection.IdIndex
 import com.dmi.util.collection.Table
 import com.dmi.util.collection.rangeChunked
 import com.dmi.util.concurrent.chunked
+import com.dmi.util.concurrent.withPrevious
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.cbor.CBOR
 import java.nio.file.Path
 
 interface SyncTable<in CONFIG : Any, SOURCEID : Any, ITEM> : Table<Long, ITEM> {
@@ -45,12 +44,15 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
             var index = lastInfo?.index.plusOneOrZero()
             fileArray.reduceSize(index)
 
-            table.rowsAfter(lastInfo?.id).chunked(bufferSize).consumeEach {
-                val id = it.last().id
-                val items = it.map { it.value }
+            table.rowsAfter(lastInfo?.id).withPrevious(reloadCount).chunked(bufferSize).consumeEach {
+                val items = it.map { it.first.value }
+                val reloadAfter = it.last().second
 
                 fileArray.append(items)
-                lastInfoStore.write(SyncInfo(id, index))
+                if (reloadAfter !=  null) {
+                    lastInfoStore.write(SyncInfo(reloadAfter.id, index - reloadCount))
+                }
+
                 index++
             }
         }

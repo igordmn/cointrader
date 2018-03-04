@@ -13,7 +13,7 @@ data class Trade(val time: Instant, val amount: Double, val price: Double) {
 
 typealias IndexedTrade<INDEX> = Row<INDEX, Trade>
 
-class TradeFixedSerializer : FixedSerializer<Trade> {
+object TradeFixedSerializer : FixedSerializer<Trade> {
     override val itemBytes: Int = 3 * 8
 
     override fun serialize(item: Trade, data: ByteBuffer) {

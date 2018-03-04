@@ -5,13 +5,14 @@ import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.candleNum
 import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.trade.Trade
-import com.dmi.cointrader.app.trade.binanceTrades
+import com.dmi.cointrader.app.trade.tradesFileTable
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.SuspendArray
 import com.dmi.util.collection.Table
 import com.dmi.util.concurrent.map
 import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncFileTable
+import com.dmi.util.io.syncFileTable
 import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -75,14 +76,15 @@ class TradeMoments(
     }
 }
 
-fun momentArray(
+suspend fun momentsFileTable(
         path: Path,
         config: MomentsConfig
-) = SyncFileTable(
+) = syncFileTable(
         path,
         MomentsConfig.serializer(),
         MomentId.serializer(),
-        MomentFixedSerializer(config.coins.size)
+        MomentFixedSerializer(config.coins.size),
+        reloadCount = 10
 )
 
 interface Moments : SuspendArray<Moment> {
@@ -97,11 +99,11 @@ suspend fun moments(
 ): Moments {
     val coinToTrades = config.altCoins.map { coin ->
         val marketInfo = constant.marketInfo(coin, config.mainCoin)
-        binanceTrades(api, marketInfo, currentTime)
+        tradesFileTable(api, marketInfo, currentTime)
     }
 
-    val momentsConfig = MomentsConfig(config.trainStartTime, config.period, config.altCoins, reloadLastCount = 10)
-    val array = momentArray(Paths.get("data/cache/binance/moments"), momentsConfig)
+    val momentsConfig = MomentsConfig(config.trainStartTime, config.period, config.altCoins)
+    val array = momentsFileTable(Paths.get("data/cache/binance/moments"), momentsConfig)
     val source = MomentsSource(momentsConfig, currentTime, coinToTrades)
     array.syncWith(source)
 
