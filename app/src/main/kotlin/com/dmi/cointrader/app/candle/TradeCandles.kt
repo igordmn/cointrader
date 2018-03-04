@@ -14,7 +14,7 @@ data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val 
 fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
     val distMillis = Duration.between(startTime, time).toMillis()
     val periodMillis = period.toMillis()
-    return Math.floor(distMillis / periodMillis.toDouble()).toLong()
+    return Math.floorDiv(distMillis, periodMillis)
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
