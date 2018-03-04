@@ -26,12 +26,16 @@ private data class TestEntity(val x: Int)
 
 private typealias TestIndex = NumIdIndex<TestId>
 private typealias TestItem = Indexed<TestIndex, TestEntity>
-
-private class TestSource(override val config: TestConfig) : SyncSource<TestConfig, NumIdIndex<TestId>, TestItem> {
-    override fun newItems(lastIndex: NumIdIndex<TestId>?): ReceiveChannel<Indexed<NumIdIndex<TestId>, TestItem>> {
-
-    }
-}
+//
+//private class TestSource(
+//        override val config: TestConfig,
+//        private val items: List<Indexed<TestId, TestEntity>>,
+//        private val reloadCount: Int
+//) : SyncSource<TestConfig, TestIndex, TestEntity> {
+//    override fun newItems(lastIndex: TestIndex?): ReceiveChannel<TestItem> {
+//
+//    }
+//}
 
 private val testIndexSerializer = NumIdIndex.serializer(TestId.serializer())
 
@@ -53,6 +57,7 @@ class SyncFileArraySpec : Spec() {
     init {
         "x" {
             val array = array(TestConfig("f"))
+//            array.syncWith(TestSource(TestConfig("f")))
         }
     }
 
