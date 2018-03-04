@@ -2,6 +2,7 @@ package com.dmi.cointrader.app.trade
 
 import com.binance.api.client.domain.market.AggTrade
 import com.dmi.cointrader.app.moment.Moment
+import com.dmi.cointrader.app.moment.MomentId
 import com.dmi.util.collection.Indexed
 import com.dmi.util.collection.NumIdIndex
 import com.dmi.util.collection.SuspendArray
@@ -13,6 +14,7 @@ import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.internal.LongSerializer
 import main.test.Config
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -25,13 +27,15 @@ typealias BinanceTradeIndex = NumIdIndex<BinanceTradeId>
 typealias TradeIndex = NumIdIndex<TradeId>
 typealias TradeItem = Indexed<TradeIndex, Trade>
 
+val tradeIndexSerializer = NumIdIndex.serializer(LongSerializer)
+
 @Serializable
 data class BinanceTradeConfig(val market: String)
 
 fun binanceTradeArray(path: Path) = SyncFileArray(
         path,
         BinanceTradeConfig.serializer(),
-        TODO() as KSerializer<NumIdIndex<Long>>,
+        tradeIndexSerializer,
         TradeFixedSerializer()
 )
 

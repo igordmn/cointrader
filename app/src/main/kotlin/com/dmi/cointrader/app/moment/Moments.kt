@@ -15,7 +15,6 @@ import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import main.test.Config
 import java.nio.file.Path
@@ -34,6 +33,7 @@ data class MomentId(val candles: List<CandleId>)
 
 typealias CandleIndex = NumIdIndex<CandleId>
 typealias MomentIndex = NumIdIndex<MomentId>
+val momentIndexSerializer = NumIdIndex.serializer(MomentId.serializer())
 
 typealias CandleItem = Indexed<CandleIndex, Candle>
 typealias MomentItem = Indexed<MomentIndex, Moment>
@@ -100,7 +100,7 @@ fun momentArray(
 ) = SyncFileArray(
         path,
         MomentsConfig.serializer(),
-        TODO() as KSerializer<MomentIndex>,
+        momentIndexSerializer,
         MomentFixedSerializer(config.coins.size)
 )
 

@@ -1,7 +1,9 @@
 package com.dmi.util.collection
 
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class NumIdIndex<out ID : Any>(val num: Long, val id: ID)
 data class Indexed<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
 
