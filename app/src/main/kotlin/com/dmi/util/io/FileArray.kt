@@ -13,6 +13,7 @@ class FileArray<T>(
     fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
     fun clear() = dataArray.clear()
 
+    // todo включать endInclusive
     suspend fun get(range: LongRange): List<T> {
         require(range.start in 0..size)
         require(range.endInclusive in 0..size)

@@ -2,19 +2,20 @@ package com.dmi.cointrader.app.moment
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
-import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.candle.candleNum
-import com.dmi.cointrader.app.trade.*
-import com.dmi.util.collection.Indexed
-import com.dmi.util.collection.NumIdIndex
+import com.dmi.cointrader.app.candle.candles
+import com.dmi.cointrader.app.trade.Trade
+import com.dmi.cointrader.app.trade.binanceTrades
+import com.dmi.util.collection.Row
 import com.dmi.util.collection.SuspendArray
+import com.dmi.util.collection.Table
+import com.dmi.util.concurrent.map
 import com.dmi.util.concurrent.zip
-import com.dmi.util.io.SyncSource
-import com.dmi.util.io.SyncFileArray
+import com.dmi.util.io.SyncFileTable
 import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.withIndex
 import kotlinx.serialization.Serializable
 import main.test.Config
 import java.nio.file.Path
@@ -23,84 +24,64 @@ import java.time.Duration
 import java.time.Instant
 
 @Serializable
-data class MomentsConfig(val startTime: Instant, val period: Duration, val coins: List<String>, val reloadLastCount: Int)
+data class MomentsConfig(val startTime: Instant, val period: Duration, val coins: List<String>)
 
 @Serializable
 data class CandleId(val lastTradeIndex: Long)
 
 @Serializable
-data class MomentId(val candles: List<CandleId>)
+data class MomentId(val num: Long, val candles: List<CandleId>)
 
-typealias CandleIndex = NumIdIndex<CandleId>
-typealias MomentIndex = NumIdIndex<MomentId>
-val momentIndexSerializer = NumIdIndex.serializer(MomentId.serializer())
+typealias CandleRow = Row<CandleId, Candle>
+typealias MomentRow = Row<MomentId, Moment>
 
-typealias CandleItem = Indexed<CandleIndex, Candle>
-typealias MomentItem = Indexed<MomentIndex, Moment>
-
-class MomentsSource(
-        override val config: MomentsConfig,
-        var currentTime: Instant,
-        private val coinIndexToTrades: List<SuspendArray<Trade>>
-) : SyncSource<MomentsConfig, MomentIndex, Moment> {
-    override fun newItems(lastIndex: MomentIndex?): ReceiveChannel<MomentItem> {
+class TradeMoments(
+        private val config: MomentsConfig,
+        private val coinIndexToTrades: List<SuspendArray<Trade>>,
+        var currentTime: Instant
+) : Table<MomentId, Moment> {
+    override fun rowsAfter(id: MomentId?): ReceiveChannel<MomentRow> {
         require(currentTime >= config.startTime)
 
-        val firstNum = if (lastIndex != null) lastIndex.num + 1 else 0L
+        val firstNum = if (id != null) id.num + 1 else 0L
         val lastNum = candleNum(config.startTime, config.period, currentTime)
 
-        val tradeStartIndices = if (lastIndex != null) {
-            lastIndex.id.candles.map(CandleId::lastTradeIndex)
+        val tradeStartIndices = if (id != null) {
+            id.candles.map(CandleId::lastTradeIndex)
         } else {
             config.coins.indices.map { 0L }
         }
 
+        fun TradesCandle<Long>.toRow() = CandleRow(CandleId(lastTradeIndex), candle)
+
+        fun candles(i: Int) = coinIndexToTrades[i]
+                .channelIndexed(tradeStartIndices[i])
+                .candles(config.startTime, config.period, firstNum..lastNum)
+                .map(TradesCandle<Long>::toRow)
+
+        fun moment(candles: IndexedValue<List<CandleRow>>): MomentRow {
+            val num = firstNum + candles.index
+            val candleIds = candles.value.map { it.id }
+            val candleValues = candles.value.map { it.value }
+            val value = Moment(candleValues)
+            return MomentRow(MomentId(num, candleIds), value)
+        }
+
         return config.coins.indices
-                .map { i ->
-                    coinIndexToTrades[i]
-                            .channelIndexed(tradeStartIndices[i])
-                            .candles(config.startTime, config.period, firstNum..lastNum)
-                            .toItems(lastNum)
-                }
-                .moments()
-    }
-
-    private fun ReceiveChannel<TradesCandle<Long>>.toItems(lastNum: Long): ReceiveChannel<CandleItem> {
-        var previousIndex: CandleIndex? = null
-        return map {
-            val index = if (previousIndex == null || it.num <= lastNum - config.reloadLastCount) {
-                CandleIndex(it.num, CandleId(it.lastTradeIndex))
-            } else {
-                previousIndex!!
-            }
-            previousIndex = index
-            CandleItem(index, it.candle)
-        }
-    }
-
-    private fun List<ReceiveChannel<CandleItem>>.moments(): ReceiveChannel<MomentItem> = zip().map { moment(it) }
-
-    private fun moment(candles: List<CandleItem>): MomentItem {
-        require(candles.isNotEmpty())
-        val num = candles.first().index.num
-        candles.forEach {
-            require(it.index.num == num)
-        }
-        val candleIds = candles.map { it.index.id }
-        val candleValues = candles.map { it.value }
-        val id = MomentId(candleIds)
-        val value = Moment(candleValues)
-        return MomentItem(NumIdIndex(num, id), value)
+                .map(::candles)
+                .zip()
+                .withIndex()
+                .map(::moment)
     }
 }
 
 fun momentArray(
         path: Path,
         config: MomentsConfig
-) = SyncFileArray(
+) = SyncFileTable(
         path,
         MomentsConfig.serializer(),
-        momentIndexSerializer,
+        MomentId.serializer(),
         MomentFixedSerializer(config.coins.size)
 )
 

@@ -1,21 +1,16 @@
 package com.dmi.cointrader.app.trade
 
 import com.binance.api.client.domain.market.AggTrade
-import com.dmi.cointrader.app.moment.Moment
-import com.dmi.cointrader.app.moment.MomentId
-import com.dmi.util.collection.Indexed
-import com.dmi.util.collection.NumIdIndex
+import com.dmi.util.collection.Row
+import com.dmi.util.collection.IdIndex
 import com.dmi.util.collection.SuspendArray
 import com.dmi.util.io.SyncSource
-import com.dmi.util.io.SyncFileArray
-import exchange.binance.BinanceConstants
+import com.dmi.util.io.SyncFileTable
 import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.*
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
-import main.test.Config
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
@@ -23,16 +18,16 @@ import java.time.Instant
 typealias BinanceTradeId = Long
 typealias TradeId = Long
 
-typealias BinanceTradeIndex = NumIdIndex<BinanceTradeId>
-typealias TradeIndex = NumIdIndex<TradeId>
-typealias TradeItem = Indexed<TradeIndex, Trade>
+typealias BinanceTradeIndex = IdIndex<BinanceTradeId>
+typealias TradeIndex = IdIndex<TradeId>
+typealias TradeItem = Row<TradeIndex, Trade>
 
-val tradeIndexSerializer = NumIdIndex.serializer(LongSerializer)
+val tradeIndexSerializer = IdIndex.serializer(LongSerializer)
 
 @Serializable
 data class BinanceTradeConfig(val market: String)
 
-fun binanceTradeArray(path: Path) = SyncFileArray(
+fun binanceTradeArray(path: Path) = SyncFileTable(
         path,
         BinanceTradeConfig.serializer(),
         tradeIndexSerializer,
@@ -49,7 +44,7 @@ class BinanceTradesSource(
         val startNum: Long
         val startId: Long
         if (lastIndex != null) {
-            startNum = lastIndex.num + 1
+            startNum = lastIndex.index + 1
             startId = lastIndex.id + 1
         } else {
             startNum = 0L

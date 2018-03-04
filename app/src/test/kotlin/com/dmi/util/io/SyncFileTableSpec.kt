@@ -1,18 +1,12 @@
 package com.dmi.util.io
 
-import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.candle.CandleFixedSerializer
-import com.dmi.cointrader.app.moment.*
-import com.dmi.util.collection.Indexed
-import com.dmi.util.collection.NumIdIndex
+import com.dmi.util.collection.Row
+import com.dmi.util.collection.IdIndex
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
-import java.nio.file.Path
 
 
 @Serializable
@@ -24,8 +18,8 @@ private data class TestId(val x: String)
 @Serializable
 private data class TestEntity(val x: Int)
 
-private typealias TestIndex = NumIdIndex<TestId>
-private typealias TestItem = Indexed<TestIndex, TestEntity>
+private typealias TestIndex = IdIndex<TestId>
+private typealias TestItem = Row<TestIndex, TestEntity>
 //
 //private class TestSource(
 //        override val config: TestConfig,
@@ -37,7 +31,7 @@ private typealias TestItem = Indexed<TestIndex, TestEntity>
 //    }
 //}
 
-private val testIndexSerializer = NumIdIndex.serializer(TestId.serializer())
+private val testIndexSerializer = IdIndex.serializer(TestId.serializer())
 
 private class TestEntitySerializer : FixedSerializer<TestEntity> {
     override val itemBytes: Int = 3 * 8
@@ -51,7 +45,7 @@ private class TestEntitySerializer : FixedSerializer<TestEntity> {
     )
 }
 
-class SyncFileArraySpec : Spec() {
+class SyncFileTableSpec : Spec() {
     private val fs = Jimfs.newFileSystem(Configuration.unix())
 
     init {
@@ -63,7 +57,7 @@ class SyncFileArraySpec : Spec() {
 
     private fun array(
             config: TestConfig
-    ) = SyncFileArray(
+    ) = SyncFileTable(
             fs.getPath("/test"),
             TestConfig.serializer(),
             testIndexSerializer,
