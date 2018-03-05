@@ -26,7 +26,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,
                 trades.minBy { it.value.price }!!.value.price
-        ), trades.last().id)
+        ), trades.last().index)
     }
 
     fun candleNum(trade: IndexedTrade<INDEX>) = candleNum(startTime, period, trade.value.time)

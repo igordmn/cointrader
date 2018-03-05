@@ -1,10 +1,12 @@
 package com.dmi.util.concurrent
 
 import com.dmi.util.collection.zip
+import kotlinx.coroutines.experimental.Unconfined
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.*
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
+import kotlin.coroutines.experimental.CoroutineContext
 
 suspend fun <T, R> Iterable<T>.mapAsync(transform: suspend (T) -> R): Iterable<R> = map { value ->
     async {
@@ -174,5 +176,15 @@ fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = 
 fun <T> buildChannel(build: suspend () -> ReceiveChannel<T>): ReceiveChannel<T> = produce {
     build().consumeEach {
         send(it)
+    }
+}
+
+data class Indexed<out INDEX, out VALUE>(val index: INDEX, val value: VALUE)
+typealias LongIndexed<VALUE> = Indexed<Long, VALUE>
+
+fun <E> ReceiveChannel<E>.withLongIndex(startIndex: Long = 0): ReceiveChannel<LongIndexed<E>> = produce {
+    var index = startIndex
+    consumeEach {
+        send(LongIndexed(index++, it))
     }
 }

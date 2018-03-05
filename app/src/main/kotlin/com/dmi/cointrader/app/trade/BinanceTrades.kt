@@ -2,12 +2,11 @@ package com.dmi.cointrader.app.trade
 
 import com.binance.api.client.domain.market.AggTrade
 import com.dmi.util.atom.ReadAtom
-import com.dmi.util.collection.Row
-import com.dmi.util.collection.Table
 import com.dmi.util.concurrent.buildChannel
-import com.dmi.util.concurrent.map
-import com.dmi.util.io.SyncTable
-import com.dmi.util.io.syncFileTable
+import com.dmi.util.io.RestorableSource
+import com.dmi.util.io.SyncList
+import com.dmi.util.io.reversed
+import com.dmi.util.io.syncFileList
 import exchange.binance.BinanceConstants
 import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
@@ -15,14 +14,14 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.internal.LongSerializer
 import main.test.Config
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
 
-typealias BinanceTradeId = Long
-typealias BinanceTradeRow = Row<BinanceTradeId, Trade>
+@Serializable
+class BinanceTradeState(val id: Long)
+
+typealias BinanceTradeItem = RestorableSource.Item<BinanceTradeState, Trade>
 
 @Serializable
 data class BinanceTradeConfig(val market: String)
@@ -31,14 +30,14 @@ class BinanceTrades(
         private val api: BinanceAPI,
         private var currentTime: ReadAtom<Instant>,
         private val market: String
-) : Table<BinanceTradeId, Trade> {
-    override fun rowsAfter(id: BinanceTradeId?): ReceiveChannel<Row<BinanceTradeId, Trade>> = buildChannel {
+) : RestorableSource<BinanceTradeState, Trade> {
+    override fun restore(state: BinanceTradeState?): ReceiveChannel<BinanceTradeItem> = buildChannel {
         val currentTime = currentTime()
-        val startId: Long = 1 + (id ?: -1)
+        val startId = if (state != null) state.id + 1L else 0L
         binanceTrades(startId).takeWhile { it.value.time <= currentTime }
     }
 
-    private fun binanceTrades(startId: Long): ReceiveChannel<BinanceTradeRow> = produce {
+    private fun binanceTrades(startId: Long): ReceiveChannel<BinanceTradeItem> = produce {
         val count = 500
         var id = startId
 
@@ -46,7 +45,7 @@ class BinanceTrades(
             val trades = api.getAggTrades(market, id.toString(), count, null, null)
             if (trades.isNotEmpty()) {
                 trades.forEach {
-                    send(it.toRow())
+                    send(it.toItem())
                 }
                 id = trades.last().aggregatedTradeId + 1
             } else {
@@ -55,8 +54,8 @@ class BinanceTrades(
         }
     }
 
-    private fun AggTrade.toRow() = BinanceTradeRow(
-            aggregatedTradeId,
+    private fun AggTrade.toItem() = BinanceTradeItem(
+            BinanceTradeState(aggregatedTradeId),
             Trade(
                     Instant.ofEpochMilli(tradeTime),
                     quantity.toDouble(),
@@ -70,7 +69,7 @@ suspend fun coinToCachedBinanceTrades(
         constants: BinanceConstants,
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>
-): List<SyncTable<Trade>> {
+): List<SyncList<Trade>> {
     return  config.altCoins.map { coin ->
         val marketInfo = constants.marketInfo(coin, config.mainCoin)
         cachedBinanceTrades(api, currentTime, marketInfo)
@@ -81,14 +80,14 @@ suspend fun cachedBinanceTrades(
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>,
         marketInfo: MarketInfo
-): SyncTable<Trade> {
+): SyncList<Trade> {
     val market = marketInfo.name
     val path = Paths.get("data/cache/binance/trades/$market")
     val source = BinanceTrades(api, currentTime, market)
-    val original = syncFileTable(
+    val original: SyncList<Trade> = syncFileList(
             path,
             BinanceTradeConfig.serializer(),
-            LongSerializer,
+            BinanceTradeState.serializer(),
             TradeFixedSerializer,
             BinanceTradeConfig(market),
             source
@@ -98,13 +97,5 @@ suspend fun cachedBinanceTrades(
         original.reversed()
     } else {
         original
-    }
-}
-
-private fun SyncTable<Trade>.reversed() = object :SyncTable<Trade> {
-    suspend override fun sync() = this@reversed.sync()
-
-    override fun rowsAfter(id: Long?) = this@reversed.rowsAfter(id).map {
-        Row(it.id, it.value.reverse())
     }
 }

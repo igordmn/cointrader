@@ -1,6 +1,6 @@
 package com.dmi.cointrader.app.trade
 
-import com.dmi.util.collection.Row
+import com.dmi.util.concurrent.Indexed
 import com.dmi.util.io.FixedSerializer
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
@@ -11,7 +11,7 @@ data class Trade(val time: Instant, val amount: Double, val price: Double) {
     fun reverse() = Trade(time, amount * price, 1 / price)
 }
 
-typealias IndexedTrade<INDEX> = Row<INDEX, Trade>
+typealias IndexedTrade<INDEX> = Indexed<INDEX, Trade>
 
 object TradeFixedSerializer : FixedSerializer<Trade> {
     override val itemBytes: Int = 3 * 8

@@ -1,14 +1,12 @@
 package com.dmi.util.io
 
 import com.dmi.util.collection.Row
-import com.dmi.util.collection.Table
+import com.dmi.util.collection.RestorableSource
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
-import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.StringSerializer
 import java.util.*
@@ -20,10 +18,10 @@ private data class TestConfig(val x: String)
 private typealias TestSourceRow = Row<String, Long>
 private typealias TestDestRow = Row<Long, Long>
 
-private class TestSource : Table<String, Long> {
+private class TestSource : RestorableSource<String, Long> {
     var values: List<Pair<String, Long>> = emptyList()
 
-    override fun rowsAfter(id: String?): ReceiveChannel<TestSourceRow> {
+    override fun restore(id: String?): ReceiveChannel<TestSourceRow> {
         val map = TreeMap<String, Long>().apply { putAll(this@TestSource.values) }
         val subMap = if (id != null) {
             map.tailMap(id, false)
@@ -34,7 +32,7 @@ private class TestSource : Table<String, Long> {
     }
 }
 
-class SyncFileTableSpec : Spec({
+class SyncFileRestorableSourceSpec : Spec({
     val source = TestSource()
     val dest = testSyncTable(TestConfig("f"), source)
 
@@ -79,7 +77,7 @@ class SyncFileTableSpec : Spec({
 private suspend fun testSyncTable(
         config: TestConfig,
         source: TestSource
-) = syncFileTable(
+) = syncFileList(
         Jimfs.newFileSystem(Configuration.unix()).getPath("/test"),
         TestConfig.serializer(),
         StringSerializer,
