@@ -18,7 +18,7 @@ class FileDataArray(
     var size: Long = computeSize()
         private set
 
-    fun reduceSize(newSize: Long) {
+    fun truncate(newSize: Long) {
         require(newSize <= size)
         size = newSize
     }
@@ -44,6 +44,7 @@ class FileDataArray(
         require(data.remaining() isMultipliedBy itemBytes)
         Files.createDirectories(file.parent)
         AsynchronousFileChannel.open(file, StandardOpenOption.WRITE, StandardOpenOption.CREATE).use { channel ->
+            channel.truncate(size * itemBytes)
             channel.aWrite(data, size * itemBytes)
             size = computeSize()
         }

@@ -10,7 +10,7 @@ class FileArray<T>(
     private val dataArray = FileDataArray(file, serializer.itemBytes)
 
     val size: Long get() = dataArray.size
-    fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
+    fun truncate(newSize: Long) = dataArray.truncate(newSize)
     fun clear() = dataArray.clear()
 
     suspend fun get(range: LongRange): List<T> {

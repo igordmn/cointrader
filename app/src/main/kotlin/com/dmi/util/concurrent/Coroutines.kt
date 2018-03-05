@@ -158,7 +158,12 @@ fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produ
     }
 }
 
-fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = produce {
+data class CurrentAndPrevious<out A, out B>(
+        val current: A,
+        val previous: B
+)
+
+fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<CurrentAndPrevious<T, T?>> = produce {
     require(num >= 0)
 
     val allPrevious = LinkedList<T>()
@@ -169,7 +174,7 @@ fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = 
         } else {
             null
         }
-        send(Pair(it, previous))
+        send(CurrentAndPrevious(it, previous))
     }
 }
 

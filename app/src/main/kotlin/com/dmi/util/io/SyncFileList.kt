@@ -51,7 +51,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
     fun Long?.plusOneOrZero() = 1 + (this ?: -1)
 
     return object : SyncList<ITEM> {
-        suspend override fun size(): Long = lastInfoStore()?.index.plusOneOrZero()
+        suspend override fun size(): Long = fileArray.size
 
         suspend override fun get(range: LongRange): List<ITEM> {
             val size = size()
@@ -64,7 +64,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
             val lastInfo = lastInfoStore()
 
             val startIndex = lastInfo?.index.plusOneOrZero()
-            fileArray.reduceSize(startIndex)
+            fileArray.truncate(startIndex)
 
             source
                     .restore(lastInfo?.state)
@@ -73,10 +73,10 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
                     .chunked(bufferSize)
                     .consumeEach {
                         val items = it.map {
-                            val itemIndexed = it.first
+                            val itemIndexed = it.current
                             itemIndexed.value.value
                         }
-                        val reloadAfter = it.last().second
+                        val reloadAfter = it.last().previous
 
                         fileArray.append(items)
                         if (reloadAfter != null) {

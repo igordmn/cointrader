@@ -7,7 +7,6 @@ import io.kotlintest.matchers.shouldThrow
 import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.nio.ByteBuffer
-import java.nio.file.Files
 import java.nio.file.Path
 
 class FileDataArraySpec : FreeSpec() {
@@ -265,15 +264,15 @@ class FileDataArraySpec : FreeSpec() {
             }
         }
 
-        "modify size" - {
-            "modify size and read" {
+        "truncate size" - {
+            "truncate size and read" {
                 test { file ->
                     val array = FileDataArray(file, 5)
                     val writeBufferAll = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
                     val readBufferAll = ByteBuffer.allocate(5)
 
                     array.append(writeBufferAll)
-                    array.reduceSize(1)
+                    array.truncate(1)
                     array.read(0L..0L, readBufferAll)
 
                     array.size shouldBe 1L
@@ -281,7 +280,7 @@ class FileDataArraySpec : FreeSpec() {
                 }
             }
 
-            "modify size, append and read" {
+            "truncate size, append and read" {
                 test { file ->
                     val array = FileDataArray(file, 5)
                     val writeBuffer1 = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -289,12 +288,29 @@ class FileDataArraySpec : FreeSpec() {
                     val readBufferAll = ByteBuffer.allocate(10)
 
                     array.append(writeBuffer1)
-                    array.reduceSize(1)
+                    array.truncate(1)
                     array.append(writeBuffer2)
                     array.read(0L..1L, readBufferAll)
 
                     array.size shouldBe 2L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 11, 12, 13, 14, 15)
+                }
+            }
+
+            "truncate size to zero, append and read" {
+                test { file ->
+                    val array = FileDataArray(file, 5)
+                    val writeBuffer1 = buffer(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+                    val writeBuffer2 = buffer(11, 12, 13, 14, 15)
+                    val readBufferAll = ByteBuffer.allocate(5)
+
+                    array.append(writeBuffer1)
+                    array.truncate(0)
+                    array.append(writeBuffer2)
+                    array.read(0L..0L, readBufferAll)
+
+                    array.size shouldBe 1L
+                    data(readBufferAll) shouldBe byteListOf(11, 12, 13, 14, 15)
                 }
             }
         }

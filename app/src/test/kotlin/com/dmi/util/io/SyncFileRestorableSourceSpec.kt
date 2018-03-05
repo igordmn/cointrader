@@ -33,10 +33,9 @@ private class TestSource : RestorableSource<Long, Long> {
 }
 
 class SyncFileRestorableSourceSpec : Spec({
-    val fs = Jimfs.newFileSystem(Configuration.unix())
-
     "simple" - {
         "empty" {
+            val fs = Jimfs.newFileSystem(Configuration.unix())
             val source = TestSource()
             val dest = testSyncList(fs, TestConfig("f"), source)
             dest.toList() shouldBe emptyList<TestDestRow>()
@@ -45,6 +44,7 @@ class SyncFileRestorableSourceSpec : Spec({
         }
         
         "sync new values" {
+            val fs = Jimfs.newFileSystem(Configuration.unix())
             val source = TestSource()
             val dest = testSyncList(fs, TestConfig("f"), source)
 
@@ -107,7 +107,8 @@ class SyncFileRestorableSourceSpec : Spec({
         }
     }
 
-    "restore config" - {
+    "restore" {
+        val fs = Jimfs.newFileSystem(Configuration.unix())
         val source = TestSource()
         val dest1 = testSyncList(fs, TestConfig("f"), source)
 
@@ -131,8 +132,53 @@ class SyncFileRestorableSourceSpec : Spec({
         dest3.toList() shouldBe listOf(7L, 8L, 88L, 99L)
     }
 
-    "reload" - {
+    "reload last" {
+        val fs = Jimfs.newFileSystem(Configuration.unix())
+        val source = TestSource()
+        val dest = testSyncList(fs, TestConfig("f"), source, reloadCount = 3)
 
+        source.values = listOf(
+                20L to 7L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(7L)
+
+        source.values = listOf(
+                20L to 8L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(8L)
+
+        source.values = listOf(
+                20L to 9L,
+                30L to 10L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(9L, 10L)
+
+        source.values = listOf(
+                20L to 10L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(10L)
+
+        source.values = listOf(
+                20L to 9L,
+                30L to 20L,
+                40L to 30L,
+                50L to 40L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(9L, 20L, 30L, 40L)
+
+        source.values = listOf(
+                20L to 8L,
+                30L to 10L,
+                40L to 20L,
+                50L to 30L
+        )
+        dest.sync()
+        dest.toList() shouldBe listOf(9L, 10L, 20L, 30L)
     }
 
     "corrupted" - {
@@ -143,7 +189,8 @@ class SyncFileRestorableSourceSpec : Spec({
 private suspend fun testSyncList(
         fs: FileSystem,
         config: TestConfig,
-        source: TestSource
+        source: TestSource,
+        reloadCount: Int = 0
 ) = syncFileList(
         fs.getPath("/test"),
         TestConfig.serializer(),
@@ -151,5 +198,6 @@ private suspend fun testSyncList(
         LongFixedSerializer,
         config,
         source,
-        bufferSize = 2
+        bufferSize = 2,
+        reloadCount = reloadCount
 )
