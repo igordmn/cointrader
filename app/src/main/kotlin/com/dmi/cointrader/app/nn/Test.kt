@@ -8,6 +8,7 @@ import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.Config
+import java.nio.file.Paths
 import java.time.Instant
 
 
@@ -20,8 +21,8 @@ fun main(args: Array<String>) {
             suspend override fun invoke(): Instant = Instant.ofEpochMilli(api.serverTime().serverTime)
         }.synchronizable()
 
-        val coinToTrades = coinToCachedBinanceTrades(config, constants, api, currentTime)
-        val moments = cachedMoments(config, coinToTrades, currentTime)
+        val coinToTrades = coinToCachedBinanceTrades(config, constants, api, Paths.get("data/cache/binance/trades"), currentTime)
+        val moments = cachedMoments(config, Paths.get("data/cache/binance/moments"), coinToTrades, currentTime)
         currentTime.sync()
         coinToTrades.forEach { it.sync() }
         moments.sync()

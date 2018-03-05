@@ -14,6 +14,7 @@ import com.dmi.util.io.syncFileList
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
 import main.test.Config
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
@@ -72,11 +73,12 @@ class TradeMoments(
 
 suspend fun cachedMoments(
         config: Config,
+        path: Path,
         coinToTrades: List<SuspendList<Trade>>,
         currentTime: ReadAtom<Instant>
 ): SyncList<Moment> {
     return syncFileList(
-            Paths.get("data/cache/binance/moments"),
+            path,
             MomentsConfig.serializer(),
             MomentState.serializer(),
             MomentFixedSerializer(config.altCoins.size),
