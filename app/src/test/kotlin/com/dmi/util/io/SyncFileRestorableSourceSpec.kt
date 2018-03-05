@@ -8,7 +8,7 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
-import kotlinx.serialization.internal.StringSerializer
+import java.nio.file.FileSystem
 import java.util.*
 
 
@@ -33,17 +33,21 @@ private class TestSource : RestorableSource<Long, Long> {
 }
 
 class SyncFileRestorableSourceSpec : Spec({
-    val source = TestSource()
-    val dest = testSyncTable(TestConfig("f"), source)
+    val fs = Jimfs.newFileSystem(Configuration.unix())
 
     "simple" - {
         "empty" {
+            val source = TestSource()
+            val dest = testSyncList(fs, TestConfig("f"), source)
             dest.toList() shouldBe emptyList<TestDestRow>()
             dest.sync()
             dest.toList() shouldBe emptyList<TestDestRow>()
         }
         
         "sync new values" {
+            val source = TestSource()
+            val dest = testSyncList(fs, TestConfig("f"), source)
+
             source.values = listOf(
                     2L to 7L
             )
@@ -94,18 +98,40 @@ class SyncFileRestorableSourceSpec : Spec({
                     4L to 80L,
                     88L to 880L,
                     99L to 990L,
-                    100L to 991L
+                    100L to 991L,
+                    110L to 991L,
+                    120L to 991L
             )
             dest.sync()
-            dest.toList() shouldBe listOf(7L, 8L, 88L, 99L, 991L)
+            dest.toList() shouldBe listOf(7L, 8L, 88L, 99L, 991L, 991L, 991L)
         }
     }
 
-    "reload" - {
+    "restore config" - {
+        val source = TestSource()
+        val dest1 = testSyncList(fs, TestConfig("f"), source)
 
+        source.values = listOf(
+                20L to 7L,
+                40L to 8L,
+                88L to 88L,
+                99L to 99L
+        )
+        dest1.sync()
+        dest1.toList() shouldBe listOf(7L, 8L, 88L, 99L)
+
+        val dest2 = testSyncList(fs, TestConfig("f"), source)
+        dest2.toList() shouldBe listOf(7L, 8L, 88L, 99L)
+        dest2.sync()
+        dest2.toList() shouldBe listOf(7L, 8L, 88L, 99L)
+
+        val dest3 = testSyncList(fs, TestConfig("ff"), source)
+        dest3.toList() shouldBe emptyList<Long>()
+        dest3.sync()
+        dest3.toList() shouldBe listOf(7L, 8L, 88L, 99L)
     }
 
-    "small buffer size" - {
+    "reload" - {
 
     }
 
@@ -114,14 +140,16 @@ class SyncFileRestorableSourceSpec : Spec({
     }
 })
 
-private suspend fun testSyncTable(
+private suspend fun testSyncList(
+        fs: FileSystem,
         config: TestConfig,
         source: TestSource
 ) = syncFileList(
-        Jimfs.newFileSystem(Configuration.unix()).getPath("/test"),
+        fs.getPath("/test"),
         TestConfig.serializer(),
         LongSerializer,
         LongFixedSerializer,
         config,
-        source
+        source,
+        bufferSize = 2
 )
