@@ -24,9 +24,10 @@ class FileDataArray(
     }
 
     suspend fun read(range: LongRange, data: ByteBuffer) {
-        require(range.start in 0..size)
-        require(range.endInclusive in 0..size)
-        require(data.remaining() == (range.endInclusive - range.start).toInt() * itemBytes)
+        require(range.start in 0 until size)
+        require(range.endInclusive in 0 until size)
+        val end = range.endInclusive + 1
+        require(data.remaining() == (end - range.start).toInt() * itemBytes)
         AsynchronousFileChannel.open(file, StandardOpenOption.READ).use { channel ->
             channel.aRead(data, range.start * itemBytes)
         }

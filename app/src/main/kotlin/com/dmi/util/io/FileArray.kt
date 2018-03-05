@@ -13,12 +13,12 @@ class FileArray<T>(
     fun reduceSize(newSize: Long) = dataArray.reduceSize(newSize)
     fun clear() = dataArray.clear()
 
-    // todo включать endInclusive
     suspend fun get(range: LongRange): List<T> {
-        require(range.start in 0..size)
-        require(range.endInclusive in 0..size)
+        require(range.start in 0 until size)
+        require(range.endInclusive in 0 until size)
 
-        val size = (range.endInclusive - range.start).toInt()
+        val end = range.endInclusive + 1
+        val size = (end - range.start).toInt()
         return readList(size) {
             dataArray.read(range, it)
         }

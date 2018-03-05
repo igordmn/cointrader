@@ -28,7 +28,7 @@ class FileDataArraySpec : FreeSpec() {
                     val readBuffer = ByteBuffer.allocate(5)
 
                     array.append(writeBuffer)
-                    array.read(0L..1L, readBuffer)
+                    array.read(0L..0L, readBuffer)
 
                     array.size shouldBe 1L
                     data(readBuffer) shouldBe byteListOf(1, 2, 3, 4, 5)
@@ -44,9 +44,9 @@ class FileDataArraySpec : FreeSpec() {
                     val readBuffer2 = ByteBuffer.allocate(5)
 
                     array.append(writeBufferAll)
-                    array.read(0L..2L, readBufferAll)
-                    array.read(0L..1L, readBuffer1)
-                    array.read(1L..2L, readBuffer2)
+                    array.read(0L..1L, readBufferAll)
+                    array.read(0L..0L, readBuffer1)
+                    array.read(1L..1L, readBuffer2)
 
                     array.size shouldBe 2L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -66,9 +66,9 @@ class FileDataArraySpec : FreeSpec() {
 
                     array.append(writeBuffer1)
                     array.append(writeBuffer2)
-                    array.read(0L..2L, readBufferAll)
-                    array.read(0L..1L, readBuffer1)
-                    array.read(1L..2L, readBuffer2)
+                    array.read(0L..1L, readBufferAll)
+                    array.read(0L..0L, readBuffer1)
+                    array.read(1L..1L, readBuffer2)
 
                     array.size shouldBe 2L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -109,7 +109,7 @@ class FileDataArraySpec : FreeSpec() {
 
                     array.clear()
                     array.append(writeBuffer)
-                    array.read(0L..1L, readBuffer)
+                    array.read(0L..0L, readBuffer)
 
                     array.size shouldBe 1L
                     data(readBuffer) shouldBe byteListOf(1, 2, 3, 4, 5)
@@ -139,7 +139,7 @@ class FileDataArraySpec : FreeSpec() {
                     array.append(writeBuffer)
 
                     shouldThrow<IllegalArgumentException> {
-                        array.read(0L..1L, readBuffer)
+                        array.read(0L..0L, readBuffer)
                     }
                 }
             }
@@ -163,7 +163,7 @@ class FileDataArraySpec : FreeSpec() {
                     val array = FileDataArray(file, 5)
                     val readBuffer = ByteBuffer.allocate(5)
 
-                    array.read(0L..1L, readBuffer)
+                    array.read(0L..0L, readBuffer)
 
                     array.size shouldBe 1L
                     data(readBuffer) shouldBe byteListOf(1, 2, 3, 4, 5)
@@ -179,9 +179,9 @@ class FileDataArraySpec : FreeSpec() {
                     val readBuffer1 = ByteBuffer.allocate(5)
                     val readBuffer2 = ByteBuffer.allocate(5)
 
-                    array.read(0L..2L, readBufferAll)
-                    array.read(0L..1L, readBuffer1)
-                    array.read(1L..2L, readBuffer2)
+                    array.read(0L..1L, readBufferAll)
+                    array.read(0L..0L, readBuffer1)
+                    array.read(1L..1L, readBuffer2)
 
                     array.size shouldBe 2L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -201,9 +201,9 @@ class FileDataArraySpec : FreeSpec() {
                     val readBuffer3 = ByteBuffer.allocate(5)
 
                     array.append(writeBufferAll)
-                    array.read(0L..3L, readBufferAll)
-                    array.read(0L..2L, readBuffer1And2)
-                    array.read(2L..3L, readBuffer3)
+                    array.read(0L..2L, readBufferAll)
+                    array.read(0L..1L, readBuffer1And2)
+                    array.read(2L..2L, readBuffer3)
 
                     array.size shouldBe 3L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
@@ -224,10 +224,10 @@ class FileDataArraySpec : FreeSpec() {
                     val readBuffer4 = ByteBuffer.allocate(5)
 
                     array.append(writeBufferAll)
-                    array.read(0L..4L, readBufferAll)
-                    array.read(0L..2L, readBuffer1And2)
-                    array.read(2L..3L, readBuffer3)
-                    array.read(3L..4L, readBuffer4)
+                    array.read(0L..3L, readBufferAll)
+                    array.read(0L..1L, readBuffer1And2)
+                    array.read(2L..2L, readBuffer3)
+                    array.read(3L..3L, readBuffer4)
 
                     array.size shouldBe 4L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
@@ -251,10 +251,10 @@ class FileDataArraySpec : FreeSpec() {
 
                     array.append(writeBuffer1)
                     array.append(writeBuffer2)
-                    array.read(0L..4L, readBufferAll)
-                    array.read(0L..2L, readBuffer1And2)
-                    array.read(2L..3L, readBuffer3)
-                    array.read(3L..4L, readBuffer4)
+                    array.read(0L..3L, readBufferAll)
+                    array.read(0L..1L, readBuffer1And2)
+                    array.read(2L..2L, readBuffer3)
+                    array.read(3L..3L, readBuffer4)
 
                     array.size shouldBe 4L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
@@ -274,7 +274,7 @@ class FileDataArraySpec : FreeSpec() {
 
                     array.append(writeBufferAll)
                     array.reduceSize(1)
-                    array.read(0L..1L, readBufferAll)
+                    array.read(0L..0L, readBufferAll)
 
                     array.size shouldBe 1L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5)
@@ -291,7 +291,7 @@ class FileDataArraySpec : FreeSpec() {
                     array.append(writeBuffer1)
                     array.reduceSize(1)
                     array.append(writeBuffer2)
-                    array.read(0L..2L, readBufferAll)
+                    array.read(0L..1L, readBufferAll)
 
                     array.size shouldBe 2L
                     data(readBufferAll) shouldBe byteListOf(1, 2, 3, 4, 5, 11, 12, 13, 14, 15)
