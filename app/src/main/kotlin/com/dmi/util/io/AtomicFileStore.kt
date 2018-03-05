@@ -1,5 +1,6 @@
 package com.dmi.util.io
 
+import com.dmi.util.atom.Atom
 import kotlinx.coroutines.experimental.nio.aRead
 import kotlinx.coroutines.experimental.nio.aWrite
 import kotlinx.serialization.KSerialLoader
@@ -26,4 +27,18 @@ class AtomicFileStore<T : Any>(
     suspend fun write(obj: T) = dataStore.write(dump(serializer, obj))
     suspend fun read(): T = load(serializer, dataStore.read())
     suspend fun readOrNull(): T? = if (exists()) read() else null
+}
+
+class FileAtom<T : Any>(
+        file: Path,
+        serializer: KSerializer<T>,
+        private val default: T
+) : Atom<T> {
+    private val store = AtomicFileStore(file, serializer)
+
+    suspend override fun invoke(): T = store.readOrNull() ?: default
+
+    suspend override fun set(value: T) {
+        store.write(value)
+    }
 }

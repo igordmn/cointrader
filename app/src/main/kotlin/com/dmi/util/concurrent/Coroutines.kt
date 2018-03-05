@@ -170,3 +170,9 @@ fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = 
         send(Pair(it, previous))
     }
 }
+
+fun <T> buildChannel(build: suspend () -> ReceiveChannel<T>): ReceiveChannel<T> = produce {
+    build().consumeEach {
+        send(it)
+    }
+}

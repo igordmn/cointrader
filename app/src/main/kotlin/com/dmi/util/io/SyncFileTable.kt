@@ -12,8 +12,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
 
-interface SyncTable<in CONFIG : Any, SOURCEID : Any, ITEM> : Table<Long, ITEM> {
-    suspend fun syncWith(config: CONFIG, table: Table<SOURCEID, ITEM>)
+interface SyncTable<out ITEM> : Table<Long, ITEM> {
+    suspend fun sync()
 }
 
 suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
@@ -21,30 +21,32 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
         configSerializer: KSerializer<CONFIG>,
         idSerializer: KSerializer<SOURCEID>,
         itemSerializer: FixedSerializer<ITEM>,
+        config: CONFIG,
+        source: Table<SOURCEID, ITEM>,
         bufferSize: Int = 100,
         reloadCount: Int = 0
-): SyncTable<CONFIG, SOURCEID, ITEM> {
+): SyncTable<ITEM> {
     val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer).cached()
     val lastInfoStore = AtomicFileStore(file.appendToFileName(".lastId"), SyncInfo.serializer(idSerializer)).cached()
     val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
 
+    val storedConfig = configStore.readOrNull()
+    if (storedConfig != config) {
+        lastInfoStore.remove()
+        fileArray.clear()
+        configStore.write(config)
+    }
+
     fun Long?.plusOneOrZero() = 1 + (this ?: -1)
 
-    return object : SyncTable<CONFIG, SOURCEID, ITEM> {
-        suspend override fun syncWith(config: CONFIG, table: Table<SOURCEID, ITEM>) {
-            val storedConfig = configStore.readOrNull()
-            if (storedConfig != config) {
-                lastInfoStore.remove()
-                fileArray.clear()
-                configStore.write(config)
-            }
-
+    return object : SyncTable<ITEM> {
+        suspend override fun sync() {
             val lastInfo = lastInfoStore.readOrNull()
 
             var index = lastInfo?.index.plusOneOrZero()
             fileArray.reduceSize(index)
 
-            table.rowsAfter(lastInfo?.id).withPrevious(reloadCount).chunked(bufferSize).consumeEach {
+            source.rowsAfter(lastInfo?.id).withPrevious(reloadCount).chunked(bufferSize).consumeEach {
                 val items = it.map { it.first.value }
                 val reloadAfter = it.last().second
 
