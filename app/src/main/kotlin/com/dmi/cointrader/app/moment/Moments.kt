@@ -9,7 +9,6 @@ import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.Table
 import com.dmi.util.concurrent.buildChannel
-import com.dmi.util.io.SyncFileTable
 import com.dmi.util.io.SyncTable
 import com.dmi.util.io.syncFileTable
 import exchange.binance.BinanceConstants
@@ -83,27 +82,13 @@ suspend fun moments(
         trades(api, currentTime, marketInfo)
     }
 
-    val momentsConfig = MomentsConfig(config.trainStartTime, config.period, config.altCoins)
-    val path = Paths.get("data/cache/binance/moments")
-    val source = TradeMoments(config.trainStartTime, config.period, coinToTrades)
-    val table = syncFileTable(
-            path,
+    return syncFileTable(
+            Paths.get("data/cache/binance/moments"),
             MomentsConfig.serializer(),
             MomentId.serializer(),
             MomentFixedSerializer(config.altCoins.size),
-            config,
-            source,
+            MomentsConfig(config.trainStartTime, config.period, config.altCoins),
+            TradeMoments(config.trainStartTime, config.period, coinToTrades, currentTime),
             reloadCount = 10
     )
-    array.syncWith(source)
-
-    return object : Moments {
-        override suspend fun sync(currentTime: Instant) {
-            source.currentTime = currentTime
-            array.syncWith(source)
-        }
-
-        override val size: Long = array.size
-        suspend override fun get(range: LongRange): List<Moment> = array.get(range)
-    }
 }
