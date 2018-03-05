@@ -36,11 +36,13 @@ class SyncFileRestorableSourceSpec : Spec({
     val dest = testSyncTable(TestConfig("f"), source)
 
     "simple" - {
-        "initial" {
+        "empty" {
+            dest.toList() shouldBe emptyList<TestDestRow>()
+            dest.sync()
             dest.toList() shouldBe emptyList<TestDestRow>()
         }
         
-        "update new values" {
+        "sync new values" {
             source.values = listOf(
                     "2" to 7L
             )
@@ -99,6 +101,10 @@ class SyncFileRestorableSourceSpec : Spec({
     }
 
     "reload" - {
+
+    }
+
+    "small buffer size" - {
 
     }
 
