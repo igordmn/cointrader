@@ -5,8 +5,10 @@ import com.dmi.util.collection.Table
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.StringSerializer
 import java.util.*
@@ -37,6 +39,13 @@ class SyncFileTableSpec : Spec() {
             val source = TestSource()
             val dest = testSyncTable(TestConfig("f"), source)
             dest.sync()
+            source.values = listOf(
+                    "2" to 7L
+            )
+            dest.sync()
+            dest.rowsAfter(null).toList() shouldBe listOf(
+                    Row("2", 7L)
+            )
         }
 
         "corrupted" - {
