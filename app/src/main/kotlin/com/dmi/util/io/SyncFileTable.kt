@@ -23,9 +23,7 @@ interface RestorableSource<STATE : Any, out VALUE> {
     fun restore(state: STATE?): ReceiveChannel<Item<STATE, VALUE>>
 
     @Serializable
-    data class Item<out STATE, out VALUE>(val state: STATE, val value: VALUE) {
-        fun toPair() = Pair(state, value)
-    }
+    data class Item<out STATE, out VALUE>(val state: STATE, val value: VALUE)
 }
 
 suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(

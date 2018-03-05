@@ -2,10 +2,7 @@ package com.dmi.util.collection
 
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.io.SyncList
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.asReceiveChannel
-import kotlinx.coroutines.experimental.channels.map
-import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.channels.*
 
 interface SuspendList<out T> {
     suspend fun size(): Long
@@ -26,4 +23,6 @@ interface SuspendList<out T> {
             override suspend fun get(range: LongRange): List<R> = original.get(range).map(transform)
         }
     }
+
+    suspend fun toList(): List<T> = channel(0).toList()
 }
