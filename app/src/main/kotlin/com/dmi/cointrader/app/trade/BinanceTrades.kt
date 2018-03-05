@@ -78,11 +78,12 @@ suspend fun coinToCachedBinanceTrades(
         path: Path,
         constants: BinanceConstants,
         api: BinanceAPI,
-        currentTime: ReadAtom<Instant>
+        currentTime: ReadAtom<Instant>,
+        chunkLoadCount: Int = 500
 ): List<SyncList<Trade>> {
     return altCoins.map { coin ->
         val marketInfo = constants.marketInfo(coin, mainCoin)
-        cachedBinanceTrades(api, currentTime, path.resolve(marketInfo.name), marketInfo)
+        cachedBinanceTrades(api, currentTime, path.resolve(marketInfo.name), marketInfo, chunkLoadCount)
     }
 }
 
@@ -90,10 +91,11 @@ suspend fun cachedBinanceTrades(
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>,
         path: Path,
-        marketInfo: MarketInfo
+        marketInfo: MarketInfo,
+        chunkLoadCount: Int
 ): SyncList<Trade> {
     val market = marketInfo.name
-    val source = BinanceTrades(api, currentTime, market)
+    val source = BinanceTrades(api, currentTime, market, chunkLoadCount)
     val original: SyncList<Trade> = syncFileList(
             path,
             BinanceTradeConfig.serializer(),
