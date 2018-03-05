@@ -35,7 +35,7 @@ class BinanceMarketBroker(
         }
         return  try {
             // todo брать время с сервера
-            api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, Instant.now().toEpochMilli())
+            api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 10000, Instant.now().toEpochMilli())
         } catch (e: BinanceApiException) {
             val msg = e.error.msg
             val newException = when {
