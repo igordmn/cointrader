@@ -73,6 +73,14 @@ class TradeMoments(
 
 suspend fun cachedMoments(
         config: Config,
+        coinToTrades: List<SuspendList<Trade>>,
+        currentTime: ReadAtom<Instant>
+) = cachedMoments(config.trainStartTime, config.period, config.altCoins, Paths.get("data/cache/binance/trades"), coinToTrades, currentTime)
+
+suspend fun cachedMoments(
+        startTime: Instant,
+        period: Duration,
+        altCoins: List<String>,
         path: Path,
         coinToTrades: List<SuspendList<Trade>>,
         currentTime: ReadAtom<Instant>
@@ -81,9 +89,9 @@ suspend fun cachedMoments(
             path,
             MomentsConfig.serializer(),
             MomentState.serializer(),
-            MomentFixedSerializer(config.altCoins.size),
-            MomentsConfig(config.trainStartTime, config.period, config.altCoins),
-            TradeMoments(config.trainStartTime, config.period, coinToTrades, currentTime),
+            MomentFixedSerializer(altCoins.size),
+            MomentsConfig(startTime, period, altCoins),
+            TradeMoments(startTime, period, coinToTrades, currentTime),
             reloadCount = 10
     )
 }

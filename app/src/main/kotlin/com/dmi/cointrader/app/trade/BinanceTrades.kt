@@ -69,11 +69,19 @@ suspend fun coinToCachedBinanceTrades(
         config: Config,
         constants: BinanceConstants,
         api: BinanceAPI,
+        currentTime: ReadAtom<Instant>
+) = coinToCachedBinanceTrades(config.mainCoin, config.altCoins, Paths.get("data/cache/binance"), constants, api, currentTime)
+
+suspend fun coinToCachedBinanceTrades(
+        mainCoin: String,
+        altCoins: List<String>,
         path: Path,
+        constants: BinanceConstants,
+        api: BinanceAPI,
         currentTime: ReadAtom<Instant>
 ): List<SyncList<Trade>> {
-    return  config.altCoins.map { coin ->
-        val marketInfo = constants.marketInfo(coin, config.mainCoin)
+    return altCoins.map { coin ->
+        val marketInfo = constants.marketInfo(coin, mainCoin)
         cachedBinanceTrades(api, currentTime, path.resolve(marketInfo.name), marketInfo)
     }
 }
