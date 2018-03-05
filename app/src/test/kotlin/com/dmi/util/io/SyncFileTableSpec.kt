@@ -1,9 +1,11 @@
 package com.dmi.util.io
 
 import com.dmi.util.collection.Row
+import com.dmi.util.collection.Table
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 
@@ -18,16 +20,12 @@ private data class TestId(val x: String)
 private data class TestValue(val x: Int)
 
 private typealias TestRow = Row<TestId, TestValue>
-//
-//private class TestSource(
-//        override val config: TestConfig,
-//        private val items: List<Indexed<TestId, TestValue>>,
-//        private val reloadCount: Int
-//) : SyncSource<TestConfig, TestIndex, TestValue> {
-//    override fun newItems(lastIndex: TestIndex?): ReceiveChannel<TestItem> {
-//
-//    }
-//}
+
+private class TestSource() : Table<TestId, TestValue> {
+    override fun rowsAfter(id: TestId?): ReceiveChannel<Row<TestId, TestValue>> {
+        TODO()
+    }
+}
 
 private class TestEntitySerializer : FixedSerializer<TestValue> {
     override val itemBytes: Int = 3 * 8
@@ -48,6 +46,10 @@ class SyncFileTableSpec : Spec() {
         "x" {
             val array = array(TestConfig("f"))
 //            array.syncWith(TestSource(TestConfig("f")))
+        }
+
+        "corrupted" - {
+
         }
     }
 

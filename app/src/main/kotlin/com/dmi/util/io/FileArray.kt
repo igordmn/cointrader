@@ -45,6 +45,7 @@ class FileArray<T>(
         items.forEach {
             serializer.serialize(it, buffer)
         }
+        buffer.rewind()
         return buffer
     }
 }
