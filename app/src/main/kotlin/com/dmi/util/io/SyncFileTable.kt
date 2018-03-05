@@ -6,9 +6,7 @@ import com.dmi.util.collection.Table
 import com.dmi.util.collection.rangeChunked
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.withPrevious
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.consumeEach
-import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
@@ -64,7 +62,7 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
             val startId = id.plusOneOrZero()
             val size = lastInfoStore()?.index.plusOneOrZero()
 
-            (startId..size).rangeChunked(bufferSize.toLong()).map { range ->
+            (startId until size).rangeChunked(bufferSize.toLong()).asReceiveChannel().map { range ->
                 fileArray.get(range).forEachIndexed { i, it ->
                     send(Row(range.start + i, it))
                 }
