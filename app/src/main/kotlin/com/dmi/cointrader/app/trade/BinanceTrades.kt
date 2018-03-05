@@ -5,7 +5,6 @@ import com.dmi.util.atom.ReadAtom
 import com.dmi.util.concurrent.buildChannel
 import com.dmi.util.io.RestorableSource
 import com.dmi.util.io.SyncList
-import com.dmi.util.io.reversed
 import com.dmi.util.io.syncFileList
 import exchange.binance.BinanceConstants
 import exchange.binance.MarketInfo
@@ -94,7 +93,7 @@ suspend fun cachedBinanceTrades(
     )
 
     return if (marketInfo.isReversed) {
-        original.reversed()
+        original.map(Trade::reverse)
     } else {
         original
     }

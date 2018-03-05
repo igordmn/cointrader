@@ -55,7 +55,7 @@ class SyncFileRestorableSourceSpec : Spec({
             dest.toList() shouldBe listOf(7L)
 
             source.values = listOf(
-                    "2" to 7L,
+                    "2" to 73L,
                     "4" to 8L
             )
             dest.sync()

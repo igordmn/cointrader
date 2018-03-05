@@ -9,14 +9,14 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
 
-interface SyncList<out ITEM> : SuspendList<ITEM> {
+interface SyncList<out T> : SuspendList<T> {
     suspend fun sync()
-}
 
-fun <T> SyncList<T>.reversed() = object : SyncList<T> {
-    suspend override fun size(): Long = this@reversed.size()
-    suspend override fun get(range: LongRange) = this@reversed.get(range)
-    suspend override fun sync() = this@reversed.sync()
+    override fun <R> map(transform: (T) -> R): SyncList<R> = object : SyncList<R> {
+        suspend override fun sync() = this@SyncList.sync()
+        override suspend fun size(): Long = this@SyncList.size()
+        override suspend fun get(range: LongRange): List<R> = this@SyncList.get(range).map(transform)
+    }
 }
 
 interface RestorableSource<STATE : Any, out VALUE> {
@@ -70,7 +70,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
                 val reloadAfter = it.last().second
 
                 fileArray.append(items)
-                if (reloadAfter !=  null) {
+                if (reloadAfter != null) {
                     lastInfoStore.set(SyncInfo(reloadAfter.state, index - reloadCount))
                 }
 

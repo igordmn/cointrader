@@ -1,7 +1,5 @@
 package com.dmi.util.collection
 
-import com.dmi.cointrader.app.trade.Trade
-import com.dmi.util.io.SyncList
 import kotlinx.coroutines.experimental.channels.*
 
 interface SuspendList<out T> {
@@ -9,7 +7,7 @@ interface SuspendList<out T> {
     suspend fun get(range: LongRange): List<T>
 
     fun channel(startIndex: Long, bufferSize: Long = 100): ReceiveChannel<T> = produce {
-        (startIndex until size()).rangeChunked(bufferSize).asReceiveChannel().map { range ->
+        (startIndex until size()).rangeChunked(bufferSize).asReceiveChannel().consumeEach { range ->
             get(range).forEach { it ->
                 send(it)
             }
