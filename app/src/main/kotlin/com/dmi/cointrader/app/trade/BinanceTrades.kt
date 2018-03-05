@@ -28,7 +28,8 @@ data class BinanceTradeConfig(val market: String)
 class BinanceTrades(
         private val api: BinanceAPI,
         private var currentTime: ReadAtom<Instant>,
-        private val market: String
+        private val market: String,
+        private val chunkLoadCount: Int = 500
 ) : RestorableSource<BinanceTradeState, Trade> {
     override fun restore(state: BinanceTradeState?): ReceiveChannel<BinanceTradeItem> = buildChannel {
         val currentTime = currentTime()
@@ -37,11 +38,10 @@ class BinanceTrades(
     }
 
     private fun binanceTrades(startId: Long): ReceiveChannel<BinanceTradeItem> = produce {
-        val count = 500
         var id = startId
 
         while (true) {
-            val trades = api.getAggTrades(market, id.toString(), count, null, null)
+            val trades = api.getAggTrades(market, id.toString(), chunkLoadCount, null, null)
             if (trades.isNotEmpty()) {
                 trades.forEach {
                     send(it.toItem())

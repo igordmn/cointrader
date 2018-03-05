@@ -46,13 +46,13 @@ class TradeMoments(
         val lastNum = candleNum(startTime, period, currentTime)
         val tradeStartIndices = state?.candles?.map(CandleState::lastTradeIndex) ?: indices.map { 0L }
 
-        fun TradesCandle<Long>.toRow() = CandleItem(CandleState(lastTradeIndex), candle)
+        fun TradesCandle<Long>.toItem() = CandleItem(CandleState(lastTradeIndex), candle)
 
         fun candles(i: Int) = trades[i]
                 .channel(tradeStartIndices[i])
                 .withLongIndex(tradeStartIndices[i])
                 .candles(startTime, period, firstNum..lastNum)
-                .map(TradesCandle<Long>::toRow)
+                .map(TradesCandle<Long>::toItem)
 
         fun moment(candles: LongIndexed<List<CandleItem>>): MomentItem {
             val num = candles.index
