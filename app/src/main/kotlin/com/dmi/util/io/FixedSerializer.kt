@@ -23,3 +23,13 @@ class FixedListSerializer<T>(
         original.deserialize(data)
     }
 }
+
+object LongFixedSerializer : FixedSerializer<Long> {
+    override val itemBytes: Int = 8
+
+    override fun serialize(item: Long, data: ByteBuffer) {
+        data.putLong(item)
+    }
+
+    override fun deserialize(data: ByteBuffer): Long = data.long
+}

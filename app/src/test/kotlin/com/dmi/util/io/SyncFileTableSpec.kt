@@ -6,37 +6,27 @@ import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.serialization.Serializable
-import java.nio.ByteBuffer
+import kotlinx.serialization.internal.StringSerializer
+import java.util.*
 
 
 @Serializable
 private data class TestConfig(val x: String)
 
-@Serializable
-private data class TestId(val x: String)
+private class TestSource : Table<String, Long> {
+    var values: List<Pair<String, Long>> = emptyList()
 
-@Serializable
-private data class TestValue(val x: Int)
-
-private typealias TestRow = Row<TestId, TestValue>
-
-private class TestSource() : Table<TestId, TestValue> {
-    override fun rowsAfter(id: TestId?): ReceiveChannel<Row<TestId, TestValue>> {
-        TODO()
+    override fun rowsAfter(id: String?): ReceiveChannel<Row<String, Long>> {
+        val map = TreeMap<String, Long>().apply { putAll(this@TestSource.values) }
+        val subMap = if (id != null) {
+            map.tailMap(id, false)
+        } else {
+            map
+        }
+        return subMap.asSequence().map { Row(it.key, it.value) }.asReceiveChannel()
     }
-}
-
-private class TestEntitySerializer : FixedSerializer<TestValue> {
-    override val itemBytes: Int = 3 * 8
-
-    override fun serialize(item: TestValue, data: ByteBuffer) {
-        data.putInt(item.x)
-    }
-
-    override fun deserialize(data: ByteBuffer): TestValue = TestValue(
-            data.int
-    )
 }
 
 class SyncFileTableSpec : Spec() {
@@ -44,8 +34,9 @@ class SyncFileTableSpec : Spec() {
 
     init {
         "x" {
-            val array = array(TestConfig("f"))
-//            array.syncWith(TestSource(TestConfig("f")))
+            val source = TestSource()
+            val dest = testSyncTable(TestConfig("f"), source)
+            dest.sync()
         }
 
         "corrupted" - {
@@ -53,14 +44,15 @@ class SyncFileTableSpec : Spec() {
         }
     }
 
-    private suspend fun array(
-            config: TestConfig
+    private suspend fun testSyncTable(
+            config: TestConfig,
+            source: TestSource
     ) = syncFileTable(
             fs.getPath("/test"),
             TestConfig.serializer(),
-            TestId.serializer(),
-            TestEntitySerializer(),
+            StringSerializer,
+            LongFixedSerializer,
             config,
-            TODO()
+            source
     )
 }

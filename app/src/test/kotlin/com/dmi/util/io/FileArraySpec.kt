@@ -4,7 +4,6 @@ import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
-import java.nio.ByteBuffer
 
 class FileArraySpec: Spec() {
     init {
@@ -22,15 +21,5 @@ class FileArraySpec: Spec() {
             array.get(1L..3L) shouldBe listOf(4L, 6L, 8L)
             array.get(0L..3L) shouldBe listOf(1L, 4L, 6L, 8L)
         }
-    }
-
-    private object LongFixedSerializer : FixedSerializer<Long> {
-        override val itemBytes: Int = 8
-
-        override fun serialize(item: Long, data: ByteBuffer) {
-            data.putLong(item)
-        }
-
-        override fun deserialize(data: ByteBuffer): Long = data.long
     }
 }
