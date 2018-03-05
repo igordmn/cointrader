@@ -3,6 +3,7 @@ package com.dmi.util.io
 import com.dmi.util.atom.cached
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.chunked
+import com.dmi.util.concurrent.withLongIndex
 import com.dmi.util.concurrent.withPrevious
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
@@ -62,20 +63,26 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
         suspend override fun sync() {
             val lastInfo = lastInfoStore()
 
-            var index = lastInfo?.index.plusOneOrZero()
-            fileArray.reduceSize(index)
+            val startIndex = lastInfo?.index.plusOneOrZero()
+            fileArray.reduceSize(startIndex)
 
-            source.restore(lastInfo?.state).withPrevious(reloadCount).chunked(bufferSize).consumeEach {
-                val items = it.map { it.first.value }
-                val reloadAfter = it.last().second
+            source
+                    .restore(lastInfo?.state)
+                    .withLongIndex(startIndex)
+                    .withPrevious(reloadCount)
+                    .chunked(bufferSize)
+                    .consumeEach {
+                        val items = it.map {
+                            val itemIndexed = it.first
+                            itemIndexed.value.value
+                        }
+                        val reloadAfter = it.last().second
 
-                fileArray.append(items)
-                if (reloadAfter != null) {
-                    lastInfoStore.set(SyncInfo(reloadAfter.state, index - reloadCount))
-                }
-
-                index++
-            }
+                        fileArray.append(items)
+                        if (reloadAfter != null) {
+                            lastInfoStore.set(SyncInfo(reloadAfter.value.state, reloadAfter.index))
+                        }
+                    }
         }
     }
 }
