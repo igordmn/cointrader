@@ -1,14 +1,17 @@
 package com.dmi.util.io
 
+import com.dmi.util.atom.cached
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
+import io.kotlintest.matchers.shouldThrow
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
 import java.nio.file.FileSystem
+import java.nio.file.Files
 import java.util.*
 
 
@@ -182,7 +185,54 @@ class SyncFileRestorableSourceSpec : Spec({
     }
 
     "corrupted" - {
+        val fs = Jimfs.newFileSystem(Configuration.unix())
+        val source = TestSource()
+        val dest1 = testSyncList(fs, TestConfig("f"), source)
 
+        val file = fs.getPath("/test")
+        val configFile = file.appendToFileName(".config")
+        val lastInfoFile = file.appendToFileName(".lastInfo")
+        val arrayFile = file.appendToFileName(".array")
+
+        source.values = listOf(
+                20L to 8L,
+                30L to 10L,
+                40L to 20L,
+                50L to 30L
+        )
+        dest1.sync()
+
+        "config file not created" {
+            Files.delete(configFile)
+
+            source.values = listOf(
+                    20L to 9L,
+                    30L to 10L,
+                    40L to 20L,
+                    50L to 30L
+            )
+
+            val dest2 = testSyncList(fs, TestConfig("f"), source)
+            dest2.toList() shouldBe emptyList<Long>()
+            dest2.sync()
+            dest2.toList() shouldBe listOf(9L, 10L, 20L, 30L)
+        }
+
+        "last info file not created" {
+            Files.delete(lastInfoFile)
+
+            source.values = listOf(
+                    20L to 9L,
+                    30L to 10L,
+                    40L to 20L,
+                    50L to 30L
+            )
+
+            val dest2 = testSyncList(fs, TestConfig("f"), source)
+            dest2.toList() shouldBe listOf(8L, 10L, 20L, 30L)
+            dest2.sync()
+            dest2.toList() shouldBe listOf(9L, 10L, 20L, 30L)
+        }
     }
 })
 

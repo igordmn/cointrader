@@ -38,7 +38,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
         reloadCount: Int = 0
 ): SyncList<ITEM> {
     val configStore = NullableFileAtom(file.appendToFileName(".config"), configSerializer).cached()
-    val lastInfoStore = NullableFileAtom(file.appendToFileName(".lastId"), SyncInfo.serializer(stateSerializer)).cached()
+    val lastInfoStore = NullableFileAtom(file.appendToFileName(".lastInfo"), SyncInfo.serializer(stateSerializer)).cached()
     val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
 
     val storedConfig = configStore()
