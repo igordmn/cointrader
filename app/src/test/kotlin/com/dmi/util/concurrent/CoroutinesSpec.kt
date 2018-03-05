@@ -211,6 +211,15 @@ class CoroutinesSpec : Spec() {
                         4 to 2
                 )
             }
+
+            "zero previous" {
+                channelOf(1, 2, 3, 4).withPrevious(0).toList() shouldBe listOf(
+                        1 to 1,
+                        2 to 2,
+                        3 to 3,
+                        4 to 4
+                )
+            }
         }
     }
 }

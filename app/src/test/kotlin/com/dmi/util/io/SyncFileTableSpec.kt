@@ -17,10 +17,13 @@ import java.util.*
 @Serializable
 private data class TestConfig(val x: String)
 
+private typealias TestSourceRow = Row<String, Long>
+private typealias TestDestRow = Row<Long, Long>
+
 private class TestSource : Table<String, Long> {
     var values: List<Pair<String, Long>> = emptyList()
 
-    override fun rowsAfter(id: String?): ReceiveChannel<Row<String, Long>> {
+    override fun rowsAfter(id: String?): ReceiveChannel<TestSourceRow> {
         val map = TreeMap<String, Long>().apply { putAll(this@TestSource.values) }
         val subMap = if (id != null) {
             map.tailMap(id, false)
@@ -31,37 +34,56 @@ private class TestSource : Table<String, Long> {
     }
 }
 
-class SyncFileTableSpec : Spec() {
-    private val fs = Jimfs.newFileSystem(Configuration.unix())
+class SyncFileTableSpec : Spec({
+    val source = TestSource()
+    val dest = testSyncTable(TestConfig("f"), source)
 
-    init {
-        "x" {
-            val source = TestSource()
-            val dest = testSyncTable(TestConfig("f"), source)
-            dest.sync()
+    "simple" - {
+        "initial" {
+            dest.rowsAfter(null).toList().map(TestDestRow::toPair) shouldBe emptyList<TestDestRow>()
+            dest.rowsAfter(1).toList() shouldBe emptyList<TestDestRow>()
+        }
+        
+        "single item" {
             source.values = listOf(
                     "2" to 7L
             )
+
+            dest.rowsAfter(null).toList() shouldBe emptyList<TestDestRow>()
+            dest.rowsAfter(0).toList() shouldBe emptyList<TestDestRow>()
+            dest.rowsAfter(1).toList() shouldBe emptyList<TestDestRow>()
+
             dest.sync()
-            dest.rowsAfter(null).toList() shouldBe listOf(
-                    Row("2", 7L)
-            )
-        }
+            
+            dest.rowsAfter(null).toList() shouldBe listOf(0 to 7L)
+            dest.rowsAfter(0).toList() shouldBe emptyList<TestDestRow>()
+            dest.rowsAfter(1).toList() shouldBe emptyList<TestDestRow>()
 
-        "corrupted" - {
+            dest.sync()
 
+            dest.rowsAfter(null).toList() shouldBe listOf(0 to 7L)
+            dest.rowsAfter(0).toList() shouldBe emptyList<TestDestRow>()
+            dest.rowsAfter(1).toList() shouldBe emptyList<TestDestRow>()
         }
     }
 
-    private suspend fun testSyncTable(
-            config: TestConfig,
-            source: TestSource
-    ) = syncFileTable(
-            fs.getPath("/test"),
-            TestConfig.serializer(),
-            StringSerializer,
-            LongFixedSerializer,
-            config,
-            source
-    )
-}
+    "reload" - {
+
+    }
+
+    "corrupted" - {
+
+    }
+})
+
+private suspend fun testSyncTable(
+        config: TestConfig,
+        source: TestSource
+) = syncFileTable(
+        Jimfs.newFileSystem(Configuration.unix()).getPath("/test"),
+        TestConfig.serializer(),
+        StringSerializer,
+        LongFixedSerializer,
+        config,
+        source
+)

@@ -4,7 +4,9 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Row<out ID, out VALUE>(val id: ID, val value: VALUE)
+data class Row<out ID, out VALUE>(val id: ID, val value: VALUE) {
+    fun toPair() = Pair(id, value)
+}
 
 interface SuspendArray<out T> {
     val size: Long

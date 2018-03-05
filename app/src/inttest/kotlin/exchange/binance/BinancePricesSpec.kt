@@ -12,9 +12,8 @@ import java.math.BigDecimal
 import java.time.Duration
 
 class BinancePricesSpec : StringSpec({
-    val api = binanceAPI()
     val marketName = BinanceConstants().marketName("USDT", "BTC")!!
-    val prices = BinanceMarketPrice(marketName, api)
+    val prices = BinanceMarketPrice(marketName, binanceAPI)
 
     "get current price multiple times" {
         fun diff(price1: BigDecimal, price2: BigDecimal): Double {

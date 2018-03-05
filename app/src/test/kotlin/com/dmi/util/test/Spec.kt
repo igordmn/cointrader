@@ -8,8 +8,14 @@ import org.junit.runner.RunWith
 
 // io.kotlintest.specs.FreeSpec modification
 @RunWith(KTestJUnitRunner::class)
-abstract class Spec : io.kotlintest.Spec() {
+abstract class Spec(init: suspend Spec.() -> Unit = {}) : io.kotlintest.Spec() {
     private var current = rootTestSuite
+
+    init {
+        runBlocking {
+            init()
+        }
+    }
 
     infix operator fun String.minus(init: suspend () -> Unit) {
         val suite = TestSuite(sanitizeSpecName(this))

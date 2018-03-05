@@ -157,7 +157,7 @@ fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produ
 }
 
 fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<Pair<T, T?>> = produce {
-    require(num > 0)
+    require(num >= 0)
 
     val allPrevious = LinkedList<T>()
     consumeEach {

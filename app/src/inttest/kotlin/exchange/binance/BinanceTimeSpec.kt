@@ -9,8 +9,7 @@ import com.dmi.util.test.between
 import java.time.Duration
 
 class BinanceTimeSpec : StringSpec({
-    val api = binanceAPI()
-    val time = BinanceTime(api)
+    val time = BinanceTime(binanceAPI)
 
     "current time diff newCandles delay" {
         runBlocking {

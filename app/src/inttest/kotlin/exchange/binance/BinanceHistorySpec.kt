@@ -19,12 +19,11 @@ import java.time.temporal.ChronoUnit
 
 class BinanceHistorySpec : StringSpec({
     val operationScale = 4
-    val api = binanceAPI()
     val marketName = BinanceConstants().marketName("USDT", "BTC")!!
     val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
     val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
     val period = Duration.ofMinutes(5)
-    val history = NormalizedMarketHistory(BinanceMarketHistory(marketName, api, NOPLogger.NOP_LOGGER), normalizer, period)
+    val history = NormalizedMarketHistory(BinanceMarketHistory(marketName, binanceAPI, NOPLogger.NOP_LOGGER), normalizer, period)
 
     "get candles" {
         runBlocking {
