@@ -4,6 +4,8 @@ import com.dmi.cointrader.app.trade.IndexedTrade
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.test.Spec
 import com.dmi.util.test.channelOf
+import com.dmi.util.test.instant
+import com.dmi.util.test.period
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 import java.time.Duration
@@ -159,7 +161,5 @@ class TradeCandlesSpec : Spec() {
         }
     }
 
-    private fun instant(millis: Long): Instant = Instant.ofEpochMilli(millis)
-    private fun period(millis: Long): Duration = Duration.ofMillis(millis)
     private fun trade(time: Instant, index: Int, price: Double) = IndexedTrade(index, Trade(time, 1.0, price))
 }

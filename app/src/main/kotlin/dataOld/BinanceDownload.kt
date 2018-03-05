@@ -17,7 +17,7 @@ val DOWNLOAD_COINS = setOf(
         "LEND", "BRD", "GTO", "BTS", "SUB", "XMR", "AION", "LRC", "STRAT", "MDA", "ENJ", "QSP", "WABI",
         "KNC", "CMT", "REQ", "AST", "MTL", "DASH", "ZEC", "WINGS", "ENG", "DGD", "ADX", "BQX", "SALT",
         "VIBE", "BCD", "APPC", "FUN", "TRIG", "POWR", "MANA", "BNB", "TNB", "CTR", "AMB", "LINK", "MCO",
-        "CDT", "OST", "PPT", "GXS", "BCPT", "INS", "NEBL", "IOST", "GVT", "ARN", "SNGLS"
+        "CDT", "OST", "PPT", "GXS", "BCPT", "INS", "NEBL", "IOST", "GVT", "ARN", "SNGLS", "NANO"
 )
 
 const val DOWNLOAD_REVERSED_COINS = "USDT"
