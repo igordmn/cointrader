@@ -33,48 +33,118 @@ class TradeMomentsSpec : Spec({
     )
     val moments = TradeMoments(startTime, period, listOf(ethTrades, xrpTrades, ltcTrades), currentTime)
 
-    "all moments at time 21" {
-        moments.restore(null).toList().apply {
-            size shouldBe 3
-            this[0] shouldBe MomentItem( // 10-15
-                    MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0))),
-                    Moment(listOf(Candle(3.5, 3.5, 3.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-            )
-            this[1] shouldBe MomentItem( // 15-20
-                    MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
-                    Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-            )
-            this[2] shouldBe MomentItem( // 20-25
-                    MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
-                    Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-            )
+    "moments at time 21" - {
+        "all" {
+            moments.restore(null).toList().apply {
+                size shouldBe 3
+                this[0] shouldBe MomentItem( // 10-15
+                        MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(3.5, 3.5, 3.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+                this[1] shouldBe MomentItem( // 15-20
+                        MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+                this[2] shouldBe MomentItem( // 20-25
+                        MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+            }
+        }
+
+        "restored after first" {
+            moments.restore(MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0)))).toList().apply {
+                size shouldBe 2
+                this[0] shouldBe MomentItem( // 15-20
+                        MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+                this[1] shouldBe MomentItem( // 20-25
+                        MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+            }
+        }
+
+        "restored after second" {
+            moments.restore(MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0)))).toList().apply {
+                size shouldBe 1
+                this[0] shouldBe MomentItem( // 20-25
+                        MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
+                        Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+                )
+            }
+        }
+
+        "restored after third" {
+            moments.restore(MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0)))).toList().apply {
+                size shouldBe 0
+            }
         }
     }
 
-    "all moments at time 34" {
+    "moments at time 34" {
         currentTime.set(instant(34))
-        val result = moments.restore(null).toList()
-        result.size shouldBe 5
-        result[0] shouldBe MomentItem( // 10-15
-                MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0))),
-                Moment(listOf(Candle(3.5, 3.5, 3.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-        )
-        result[1] shouldBe MomentItem( // 15-20
-                MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
-                Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-        )
-        result[2] shouldBe MomentItem( // 20-25
-                MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
-                Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
-        )
-        result[3] shouldBe MomentItem( // 25-30
-                MomentState(3L, listOf(CandleState(4), CandleState(0), CandleState(1))),
-                Moment(listOf(Candle(6.5, 6.5, 1.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
-        )
-        result[4] shouldBe MomentItem( // 30-35
-                MomentState(4L, listOf(CandleState(4), CandleState(0), CandleState(1))),
-                Moment(listOf(Candle(6.5, 6.5, 6.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
-        )
+
+        "all" {
+            val result = moments.restore(null).toList()
+            result.size shouldBe 5
+            result[0] shouldBe MomentItem( // 10-15
+                    MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0))),
+                    Moment(listOf(Candle(3.5, 3.5, 3.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+            )
+            result[1] shouldBe MomentItem( // 15-20
+                    MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
+                    Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+            )
+            result[2] shouldBe MomentItem( // 20-25
+                    MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
+                    Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+            )
+            result[3] shouldBe MomentItem( // 25-30
+                    MomentState(3L, listOf(CandleState(4), CandleState(0), CandleState(1))),
+                    Moment(listOf(Candle(6.5, 6.5, 1.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
+            )
+            result[4] shouldBe MomentItem( // 30-35
+                    MomentState(4L, listOf(CandleState(4), CandleState(0), CandleState(1))),
+                    Moment(listOf(Candle(6.5, 6.5, 6.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
+            )
+        }
+
+        "restored after first" {
+            val result = moments.restore(MomentState(0L, listOf(CandleState(0), CandleState(0), CandleState(0)))).toList()
+            result.size shouldBe 4
+            result[0] shouldBe MomentItem( // 15-20
+                    MomentState(1L, listOf(CandleState(1), CandleState(0), CandleState(0))),
+                    Moment(listOf(Candle(2.5, 3.5, 2.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+            )
+            result[1] shouldBe MomentItem( // 20-25
+                    MomentState(2L, listOf(CandleState(2), CandleState(0), CandleState(0))),
+                    Moment(listOf(Candle(4.5, 4.5, 4.5), Candle(300.5, 300.5, 300.5), Candle(30.5, 30.5, 30.5)))
+            )
+            result[2] shouldBe MomentItem( // 25-30
+                    MomentState(3L, listOf(CandleState(4), CandleState(0), CandleState(1))),
+                    Moment(listOf(Candle(6.5, 6.5, 1.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
+            )
+            result[3] shouldBe MomentItem( // 30-35
+                    MomentState(4L, listOf(CandleState(4), CandleState(0), CandleState(1))),
+                    Moment(listOf(Candle(6.5, 6.5, 6.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
+            )
+        }
+
+        "restored after fourth" {
+            val result = moments.restore(MomentState(3L, listOf(CandleState(4), CandleState(0), CandleState(1)))).toList()
+            result.size shouldBe 1
+            result[0] shouldBe MomentItem( // 30-35
+                    MomentState(4L, listOf(CandleState(4), CandleState(0), CandleState(1))),
+                    Moment(listOf(Candle(6.5, 6.5, 6.5), Candle(300.5, 300.5, 300.5), Candle(60.5, 60.5, 60.5)))
+            )
+        }
+
+        "restored after fifth" {
+            val result = moments.restore(MomentState(4L, listOf(CandleState(4), CandleState(0), CandleState(1)))).toList()
+            result.size shouldBe 0
+        }
     }
 })
 
