@@ -1,5 +1,6 @@
 package com.dmi.util.io
 
+import com.dmi.util.atom.cached
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.Table
 import com.dmi.util.collection.rangeChunked
@@ -26,22 +27,22 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
         bufferSize: Int = 100,
         reloadCount: Int = 0
 ): SyncTable<ITEM> {
-    val configStore = AtomicFileStore(file.appendToFileName(".config"), configSerializer).cached()
-    val lastInfoStore = AtomicFileStore(file.appendToFileName(".lastId"), SyncInfo.serializer(idSerializer)).cached()
+    val configStore = NullableFileAtom(file.appendToFileName(".config"), configSerializer).cached()
+    val lastInfoStore = NullableFileAtom(file.appendToFileName(".lastId"), SyncInfo.serializer(idSerializer)).cached()
     val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
 
-    val storedConfig = configStore.readOrNull()
+    val storedConfig = configStore()
     if (storedConfig != config) {
-        lastInfoStore.remove()
+        lastInfoStore.set(null)
         fileArray.clear()
-        configStore.write(config)
+        configStore.set(config)
     }
 
     fun Long?.plusOneOrZero() = 1 + (this ?: -1)
 
     return object : SyncTable<ITEM> {
         suspend override fun sync() {
-            val lastInfo = lastInfoStore.readOrNull()
+            val lastInfo = lastInfoStore()
 
             var index = lastInfo?.index.plusOneOrZero()
             fileArray.reduceSize(index)
@@ -52,7 +53,7 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
 
                 fileArray.append(items)
                 if (reloadAfter !=  null) {
-                    lastInfoStore.write(SyncInfo(reloadAfter.id, index - reloadCount))
+                    lastInfoStore.set(SyncInfo(reloadAfter.id, index - reloadCount))
                 }
 
                 index++
@@ -61,7 +62,7 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
 
         override fun rowsAfter(id: Long?): ReceiveChannel<Row<Long, ITEM>> = produce {
             val startId = id.plusOneOrZero()
-            val size = lastInfoStore.readOrNull()?.index.plusOneOrZero()
+            val size = lastInfoStore()?.index.plusOneOrZero()
 
             (startId..size).rangeChunked(bufferSize.toLong()).map { range ->
                 fileArray.get(range).forEachIndexed { i, it ->
@@ -74,24 +75,3 @@ suspend fun <CONFIG : Any, SOURCEID : Any, ITEM> syncFileTable(
 
 @Serializable
 private data class SyncInfo<out ID>(val id: ID, val index: Long)
-
-private interface CachedFileStore<T : Any> {
-    fun remove()
-    suspend fun write(obj: T)
-    fun readOrNull(): T?
-}
-
-private suspend fun <T : Any> AtomicFileStore<T>.cached(): CachedFileStore<T> {
-    val fileStore = this
-    var value = fileStore.readOrNull()
-    return object : CachedFileStore<T> {
-        override fun remove() = fileStore.remove()
-
-        suspend override fun write(obj: T) {
-            fileStore.write(obj)
-            value = obj
-        }
-
-        override fun readOrNull(): T? = value
-    }
-}
