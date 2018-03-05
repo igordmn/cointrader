@@ -8,6 +8,7 @@ import com.dmi.util.concurrent.buildChannel
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.SyncTable
 import com.dmi.util.io.syncFileTable
+import exchange.binance.BinanceConstants
 import exchange.binance.MarketInfo
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -15,6 +16,7 @@ import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
+import main.test.Config
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
@@ -63,7 +65,19 @@ class BinanceTrades(
     )
 }
 
-suspend fun trades(
+suspend fun coinToCachedBinanceTrades(
+        config: Config,
+        constants: BinanceConstants,
+        api: BinanceAPI,
+        currentTime: ReadAtom<Instant>
+): List<SyncTable<Trade>> {
+    return  config.altCoins.map { coin ->
+        val marketInfo = constants.marketInfo(coin, config.mainCoin)
+        cachedBinanceTrades(api, currentTime, marketInfo)
+    }
+}
+
+suspend fun cachedBinanceTrades(
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>,
         marketInfo: MarketInfo

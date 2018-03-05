@@ -1,7 +1,7 @@
 package com.dmi.util.atom
 
-interface Atom<T> {
-    suspend operator fun invoke(): T
+interface Atom<T>: ReadAtom<T> {
+    override suspend operator fun invoke(): T
     suspend fun set(value: T)
 }
 

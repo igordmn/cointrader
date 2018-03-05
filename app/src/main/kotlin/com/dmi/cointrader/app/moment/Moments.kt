@@ -5,7 +5,7 @@ import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.candleNum
 import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.trade.Trade
-import com.dmi.cointrader.app.trade.trades
+import com.dmi.cointrader.app.trade.cachedBinanceTrades
 import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.Table
@@ -75,17 +75,11 @@ class TradeMoments(
     }
 }
 
-suspend fun moments(
+suspend fun cachedMoments(
         config: Config,
-        api: BinanceAPI,
-        constant: BinanceConstants,
+        coinToTrades: List<Table<Long, Trade>>,
         currentTime: ReadAtom<Instant>
 ): SyncTable<Moment> {
-    val coinToTrades = config.altCoins.map { coin ->
-        val marketInfo = constant.marketInfo(coin, config.mainCoin)
-        trades(api, currentTime, marketInfo)
-    }
-
     return syncFileTable(
             Paths.get("data/cache/binance/moments"),
             MomentsConfig.serializer(),
