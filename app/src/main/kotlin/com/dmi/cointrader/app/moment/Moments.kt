@@ -3,17 +3,21 @@ package com.dmi.cointrader.app.moment
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.candleNum
+import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.trades
 import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.Row
 import com.dmi.util.collection.Table
 import com.dmi.util.concurrent.buildChannel
+import com.dmi.util.concurrent.map
+import com.dmi.util.concurrent.zip
 import com.dmi.util.io.SyncTable
 import com.dmi.util.io.syncFileTable
 import exchange.binance.BinanceConstants
 import exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.withIndex
 import kotlinx.serialization.Serializable
 import main.test.Config
 import java.nio.file.Paths
@@ -46,12 +50,12 @@ class TradeMoments(
 
         val firstNum = if (id != null) id.num + 1 else 0L
         val lastNum = candleNum(startTime, period, currentTime)
-        val tradeStartIndices = id?.candles?.map(CandleId::lastTradeIndex) ?: indices.map { 0L }
+        val tradesAfter = id?.candles?.map { it.lastTradeIndex - 1 } ?: indices.map { null }
 
         fun TradesCandle<Long>.toRow() = CandleRow(CandleId(lastTradeIndex), candle)
 
         fun candles(i: Int) = trades[i]
-                .rowsAfter(tradeStartIndices[i])
+                .rowsAfter(tradesAfter[i])
                 .candles(startTime, period, firstNum..lastNum)
                 .map(TradesCandle<Long>::toRow)
 
