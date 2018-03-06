@@ -35,7 +35,7 @@ private class TestSource : RestorableSource<Long, Long> {
     }
 }
 
-class SyncFileRestorableSourceSpec : Spec({
+class SyncFileListSpec : Spec({
     "simple" - {
         "empty" {
             val fs = Jimfs.newFileSystem(Configuration.unix())
