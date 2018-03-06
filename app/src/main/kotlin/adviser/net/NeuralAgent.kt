@@ -8,8 +8,6 @@ import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
 
-val DEFAULT_NET_PATH = Paths.get("data/train_package/netfile")
-
 class NeuralAgent(
         private val jep: Jep,
         private val indicatorNumber: Int,

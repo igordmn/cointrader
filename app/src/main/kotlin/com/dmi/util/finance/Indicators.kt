@@ -1,4 +1,4 @@
-package com.dmi.cointrader.app.statistics
+package com.dmi.util.finance
 
 import kotlin.math.pow
 import kotlin.math.ln

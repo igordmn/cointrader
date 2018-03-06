@@ -87,6 +87,7 @@ dependencies {
     compile("org.jetbrains.xodus:xodus-openAPI:1.2.0")
     compile("org.jetbrains.xodus:xodus-environment:1.2.0")
     compile("org.rocksdb:rocksdbjni:5.5.1")
+    compile("org.apache.commons:commons-math3:3.6.1")
 //    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
     testCompile("io.kotlintest:kotlintest:2.0.7")
     testCompile("com.google.jimfs:jimfs:1.1")
