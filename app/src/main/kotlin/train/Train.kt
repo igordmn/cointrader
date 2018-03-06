@@ -1,6 +1,5 @@
 package train
 
-import adviser.net.DEFAULT_NET_PATH
 import adviser.net.NNAgent
 import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
@@ -9,8 +8,6 @@ import exchange.binance.market.makeBinanceCacheDB
 import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.Config
-import python.jep
-import java.nio.file.Files
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>) {
@@ -28,7 +25,7 @@ fun main(args: Array<String>) {
                     preloadedHistories.preload(config.trainEndTime)
 
                     println(measureTimeMillis {
-                        val trainData = loadTrainData(constants, config.mainCoin, listOf(config.altCoins.first()), preloadedHistories, config.trainStartTime, config.trainEndTime)
+                        val trainData = loadTrainData(constants, config.mainCoin, listOf(config.altCoins.first()), preloadedHistories, config.startTime, config.trainEndTime)
                     })
                 }
 //            }

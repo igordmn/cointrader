@@ -1,6 +1,5 @@
 package exchange.binance
 
-import exchange.binance.api.binanceAPI
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.runBlocking
@@ -9,7 +8,7 @@ import com.dmi.util.test.between
 import java.time.Duration
 
 class BinanceTimeSpec : StringSpec({
-    val time = BinanceTime(binanceAPI)
+    val time = BinanceTimeOld(binanceAPI)
 
     "current time diff newCandles delay" {
         runBlocking {

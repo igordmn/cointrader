@@ -54,7 +54,7 @@ private suspend fun run(log: Logger) = jep().use { jep ->
     val binancePortfolio = BinancePortfolio(constants, api)
     val testPortfolio = TestPortfolio(config.initialCoins)
     val testPortfolio2 = TestPortfolio(config.initialCoins)
-    val time = BinanceTime(api)
+    val time = BinanceTimeOld(api)
     val info = BinanceInfo.load(api)
 
     makeBinanceCacheDB().use { cache ->

@@ -13,15 +13,15 @@ data class Config(
         val initialCoins: Map<String, BigDecimal> = mapOf(
                 "BTC" to BigDecimal("1.00")
         ),
-        val period: Duration = Duration.ofMinutes(5),
         val historyCount: Int = 320,
         val fee: BigDecimal = BigDecimal("0.0018"),
         val learningRate: BigDecimal = BigDecimal("0.00056"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
         val backTestStartTime: Instant = Instant.now() - Duration.ofDays(5),
 
+        val startTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
+        val period: Duration = Duration.ofMinutes(5),
 
-        val trainStartTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
         val trainEndTime: Instant = LocalDateTime.of(2018, 2, 18, 21, 50, 0).toInstant(ZoneOffset.of("+3")),
         val trainTestDays: Int = 14,
 

@@ -3,7 +3,7 @@ package main.test.forward
 import adviser.net.neuralTradeAdviser
 import exchange.binance.BinanceConstants
 import exchange.binance.BinanceInfo
-import exchange.binance.BinanceTime
+import exchange.binance.BinanceTimeOld
 import exchange.binance.api.BinanceAPI
 import exchange.binance.api.binanceAPI
 import exchange.binance.market.PreloadedBinanceMarketHistories
@@ -42,7 +42,7 @@ private suspend fun run(log: Logger) = jep().use { jep ->
     val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
     val constants = BinanceConstants()
     val portfolio = TestPortfolio(config.initialCoins)
-    val time = BinanceTime(api)
+    val time = BinanceTimeOld(api)
     val info = BinanceInfo.load(api)
 
     makeBinanceCacheDB().use { cache ->

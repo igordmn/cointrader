@@ -15,6 +15,7 @@ import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
 import main.test.Config
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
@@ -70,7 +71,11 @@ suspend fun coinToCachedBinanceTrades(
         constants: BinanceConstants,
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>
-) = coinToCachedBinanceTrades(config.mainCoin, config.altCoins, Paths.get("data/cache/binance"), constants, api, currentTime)
+): List<SyncList<Trade>> {
+    val path = Paths.get("data/cache/binance")
+    Files.createDirectories(path)
+    return coinToCachedBinanceTrades(config.mainCoin, config.altCoins, path, constants, api, currentTime)
+}
 
 suspend fun coinToCachedBinanceTrades(
         mainCoin: String,
