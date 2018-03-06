@@ -22,10 +22,13 @@ data class Config(
         val startTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
         val period: Duration = Duration.ofMinutes(5),
 
+        val trainStartTime: Instant = startTime,
         val trainEndTime: Instant = LocalDateTime.of(2018, 2, 18, 21, 50, 0).toInstant(ZoneOffset.of("+3")),
-        val trainTestDays: Int = 14,
+        val trainTestDays: Int = 30,
+        val trainIncludeTestToTrain: Boolean = false,
+        val trainGeometricBias: Double = 3e-05,
 
         val trainSteps: Int = 40000,
         val trainLogSteps: Int = 2000,
-        val trainMaxNetworkMinSteps: Int = 2000
+        val trainBatchSize: Int = 100
 )
