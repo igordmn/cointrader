@@ -12,7 +12,8 @@ class BinanceConstants {
             "BTS", "XZC", "LSK", "TNT", "FUEL", "MANA", "BCD", "DGD", "ADX",
             "ADA", "PPT", "CMT", "XLM", "CND", "LEND", "WABI", "TNB", "WAVES",
             "GTO", "ICX", "OST", "ELF", "AION", "NEBL", "BRD", "EDO", "WINGS",
-            "NAV", "LUN", "TRIG", "APPC", "VIBE", "RLC", "INS", "PIVX", "IOST"
+            "NAV", "LUN", "TRIG", "APPC", "VIBE", "RLC", "INS", "PIVX", "IOST",
+            "NANO"
     )
 
     val btcReversedMarkets = setOf("USDT")
