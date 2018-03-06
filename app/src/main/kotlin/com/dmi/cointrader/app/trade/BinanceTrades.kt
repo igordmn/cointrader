@@ -70,11 +70,12 @@ suspend fun coinToCachedBinanceTrades(
         config: Config,
         constants: BinanceConstants,
         api: BinanceAPI,
-        currentTime: ReadAtom<Instant>
+        currentTime: ReadAtom<Instant>,
+        coinLog: (coin: String) -> SyncList.Log<Trade> = { SyncList.EmptyLog() }
 ): List<SyncList<Trade>> {
     val path = Paths.get("data/cache/binance")
     Files.createDirectories(path)
-    return coinToCachedBinanceTrades(config.mainCoin, config.altCoins, path, constants, api, currentTime)
+    return coinToCachedBinanceTrades(config.mainCoin, config.altCoins, path, constants, api, currentTime, coinLog)
 }
 
 suspend fun coinToCachedBinanceTrades(
@@ -84,11 +85,12 @@ suspend fun coinToCachedBinanceTrades(
         constants: BinanceConstants,
         api: BinanceAPI,
         currentTime: ReadAtom<Instant>,
+        coinLog: (coin: String) -> SyncList.Log<Trade> = { SyncList.EmptyLog() },
         chunkLoadCount: Int = 500
 ): List<SyncList<Trade>> {
     return altCoins.map { coin ->
         val marketInfo = constants.marketInfo(coin, mainCoin)
-        cachedBinanceTrades(api, currentTime, path.resolve(marketInfo.name), marketInfo, chunkLoadCount)
+        cachedBinanceTrades(api, currentTime, path.resolve(marketInfo.name), marketInfo, coinLog(coin), chunkLoadCount)
     }
 }
 
@@ -97,6 +99,7 @@ suspend fun cachedBinanceTrades(
         currentTime: ReadAtom<Instant>,
         path: Path,
         marketInfo: MarketInfo,
+        log: SyncList.Log<Trade> = SyncList.EmptyLog(),
         chunkLoadCount: Int
 ): SyncList<Trade> {
     val market = marketInfo.name

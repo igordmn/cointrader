@@ -18,6 +18,12 @@ interface SyncList<out T> : SuspendList<T> {
         override suspend fun size(): Long = this@SyncList.size()
         override suspend fun get(range: LongRange): List<R> = this@SyncList.get(range).map(transform)
     }
+
+    interface Log<in T> {
+        fun itemsAppended(items: List<T>, indices: LongRange) {}
+    }
+
+    class EmptyLog<in T>: Log<T>
 }
 
 interface RestorableSource<STATE : Any, out VALUE> {
@@ -34,6 +40,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
         itemSerializer: FixedSerializer<ITEM>,
         config: CONFIG,
         source: RestorableSource<SOURCE_STATE, ITEM>,
+        log: SyncList.Log<ITEM> = SyncList.EmptyLog(),
         bufferSize: Int = 100,
         reloadCount: Int = 0
 ): SyncList<ITEM> {
@@ -79,6 +86,8 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
                         val reloadAfter = it.last().previous
 
                         fileArray.append(items)
+                        log.itemsAppended(items, it.first().current.index..it.last().current.index)
+
                         if (reloadAfter != null) {
                             lastInfoStore.set(SyncInfo(reloadAfter.value.state, reloadAfter.index))
                         }
