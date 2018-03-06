@@ -1,12 +1,14 @@
 package com.dmi.cointrader.app.test
 
-data class BackTestResult(
-        val hourCapitals: List<Double>,
-        val dayProfit: Double,
-        val hourNegativeDeviation: Double,
-        val hourMaximumDrawdawn: Double
-)
+class BackTest {
+    suspend fun invoke(): Result {
+        TODO()
+    }
 
-fun backTest(): BackTestResult {
-
+    data class Result(
+            val hourCapitals: List<Double>,
+            val dayProfit: Double,
+            val hourNegativeDeviation: Double,
+            val hourMaximumDrawdawn: Double
+    )
 }

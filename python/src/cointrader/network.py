@@ -30,7 +30,7 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
 
 
 def build_predict_w(
-        batch_size, config, history, previous_w
+        batch_size, history, previous_w
 ):
     net = tf.transpose(history, [0, 2, 3, 1])
 
@@ -82,103 +82,80 @@ def compute_profits(batch_size, predict_w, price_inc, fee):
     return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), cost], axis=0)
 
 
-class Tensors(NamedTuple):
-    batch_size: tf.Tensor
-    history: tf.Tensor
-    price_incs: tf.Tensor
-    previous_w: tf.Tensor
-    predict_w: tf.Tensor
-
-    capital: tf.Tensor
-    geometric_mean_profit: tf.Tensor
-
-    train: tf.Tensor
-
-
-class NNConfig(NamedTuple):
-    coin_number: int
-    window_size: int
-    fee: int
-    indicator_number: int
-
-
-class NeuralAgent:
+class NeuralNetwork:
     def __init__(
             self,
-            config,
-            gpu_memory_fraction=0.2,
-            restore_path=None,
+            coin_count,
+            history_count,
+            indicator_count,
+            gpu_memory_fraction,
+            load_file,
     ):
-        batch_size = tf.placeholder(tf.int32, shape=[])
-        history = tf.placeholder(tf.float32, shape=[None, config.indicator_number,  config.coin_number, config.window_size])
-        price_incs = tf.placeholder(tf.float32, shape=[None, config.coin_number])
-        previous_w = tf.placeholder(tf.float32, shape=[None, config.coin_number])
-        predict_w = build_predict_w(batch_size, config, history, previous_w)
-
-        profits = compute_profits(batch_size, predict_w, price_incs, config.fee)
-        log_profits = tf.log(profits)
-        capital = tf.reduce_prod(profits)
-        geometric_mean = tf.pow(tf.reduce_prod(capital), 1 / tf.to_float(batch_size))
-        log_mean = tf.reduce_mean(log_profits)
-
-        loss = -log_mean
-        loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        train = tf.train.RMSPropOptimizer(0.00028 * 2).minimize(loss)
-
-        self._tensors = Tensors(
-            batch_size,
-            history,
-            price_incs,
-            previous_w,
-            predict_w,
-
-            capital,
-            geometric_mean,
-
-            train
-        )
+        self.batch_size = tf.placeholder(tf.int32, shape=[])
+        self.history = tf.placeholder(tf.float32, shape=[None, indicator_count,  coin_count, history_count])
+        self.previous_w = tf.placeholder(tf.float32, shape=[None, coin_count])
+        self.predict_w = build_predict_w(self.batch_size, self.history, self.previous_w)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
-        self._session = tf.Session(config=tf_config)
-        self._saver = tf.train.Saver()
+        self.session = tf.Session(config=tf_config)
+        self.saver = tf.train.Saver()
 
-        if restore_path:
-            self._saver.restore(self._session, restore_path)
+        if load_file:
+            self.saver.restore(self.session, load_file)
         else:
-            self._session.run(tf.global_variables_initializer())
-
-    def train(self, batch):
-        session = self._session
-        t = self._tensors
-
-        tflearn.is_training(True, session)
-        results = session.run([t.train, t.predict_w, t.geometric_mean_profit], feed_dict={
-            t.history: batch.x,
-            t.price_incs: batch.price_incs,
-            t.previous_w: batch.previous_w,
-            t.batch_size: batch.x.shape[0]
-        })
-
-        return results[2:]
+            self.session.run(tf.global_variables_initializer())
 
     def best_portfolio(self, history, previous_w):
-        session = self._session
-        t = self._tensors
+        tflearn.is_training(False, self.session)
 
-        tflearn.is_training(False, session)
-
-        result = session.run(t.predict_w, feed_dict={
-            t.history: history,
-            t.previous_w: previous_w,
-            t.batch_size: history.shape[0]
+        result = self.session.run(self.predict_w, feed_dict={
+            self.history: history,
+            self.previous_w: previous_w,
+            self.batch_size: history.shape[0]
         })
 
         return result
 
     def save(self, path):
-        self._saver.save(self._session, path)
+        self.saver.save(self.session, path)
 
     def recycle(self):
         tf.reset_default_graph()
-        self._session.close()
+        self.session.close()
+
+
+class NeuralTrainer:
+    def __init__(
+            self,
+            fee,
+            network
+    ):
+        self.price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number])
+
+        self.profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, fee)
+        self.log_profits = tf.log(self.profits)
+        self.capital = tf.reduce_prod(self.profits)
+        self.geometric_mean_profit = tf.pow(tf.reduce_prod(self.capital), 1 / tf.to_float(network.batch_size))
+        self.log_mean_profit = tf.reduce_mean(self.log_profits)
+
+        self.loss = -self.log_mean_profit
+        self.loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+        self.train = tf.train.RMSPropOptimizer(0.00028 * 2).minimize(self.loss)
+
+        self.batch_size = network.batch_size
+        self.history = network.history
+        self.previous_w = network.previous_w
+        self.predict_w = network.previous_w
+        self.session = network.session
+
+    def train(self, previous_w, history, price_incs):
+        tflearn.is_training(True, self.session)
+        results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
+            self.history: history,
+            self.price_incs: price_incs,
+            self.previous_w: previous_w,
+            self.batch_size: history.shape[0]
+        })
+
+        return results[1:]

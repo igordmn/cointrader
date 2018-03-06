@@ -66,7 +66,7 @@ dependencies {
     compile("commons-codec:commons-codec:1.10")
     compile("org.apache.commons:commons-lang3:3.6")
     compile("io.reactivex.rxjava2:rxkotlin:2.2.0")
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.22.5")
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.21")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.22.5")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.0")
     compile("org.xerial:sqlite-jdbc:3.21.0.1")
@@ -131,7 +131,7 @@ startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
         destination.write(text)
     }
 }
-println("$projectDir/python/src")
+
 configure<ApplicationPluginConvention> {
     applicationDistribution
             .from("$rootDir")

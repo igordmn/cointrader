@@ -73,7 +73,7 @@ suspend fun coinToCachedBinanceTrades(
         currentTime: ReadAtom<Instant>,
         coinLog: (coin: String) -> SyncList.Log<Trade> = { SyncList.EmptyLog() }
 ): List<SyncList<Trade>> {
-    val path = Paths.get("data/cache/binance")
+    val path = Paths.get("data/cache/binance/trades")
     Files.createDirectories(path)
     return coinToCachedBinanceTrades(config.mainCoin, config.altCoins, path, constants, api, currentTime, coinLog)
 }
