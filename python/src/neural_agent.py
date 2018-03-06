@@ -102,7 +102,7 @@ class NNConfig(NamedTuple):
     indicator_number: int
 
 
-class NNAgent:
+class NeuralAgent:
     def __init__(
             self,
             config,

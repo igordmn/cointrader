@@ -1,4 +1,4 @@
-package train
+package com.dmi.cointrader.app.statistics
 
 import kotlin.math.pow
 import kotlin.math.ln
