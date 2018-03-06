@@ -106,6 +106,7 @@ class NNAgent:
     def __init__(
             self,
             config,
+            gpu_memory_fraction=0.2,
             restore_path=None,
     ):
         batch_size = tf.placeholder(tf.int32, shape=[])
@@ -138,7 +139,7 @@ class NNAgent:
         )
 
         tf_config = tf.ConfigProto()
-        tf_config.gpu_options.per_process_gpu_memory_fraction = 0.5
+        tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
         self._session = tf.Session(config=tf_config)
         self._saver = tf.train.Saver()
 
@@ -146,10 +147,6 @@ class NNAgent:
             self._saver.restore(self._session, restore_path)
         else:
             self._session.run(tf.global_variables_initializer())
-
-    def recycle(self):
-        tf.reset_default_graph()
-        self._session.close()
 
     def train(self, batch):
         session = self._session
@@ -196,3 +193,7 @@ class NNAgent:
 
     def save(self, path):
         self._saver.save(self._session, path)
+
+    def recycle(self):
+        tf.reset_default_graph()
+        self._session.close()
