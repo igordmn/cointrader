@@ -5,7 +5,13 @@ import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 
 @Serializable
-data class Candle(val close: Double, val high: Double, val low: Double)
+data class Candle(val close: Double, val high: Double, val low: Double) {
+    init {
+        require(high >= low)
+        require(close <= high)
+        require(close >= low)
+    }
+}
 
 class CandleFixedSerializer : FixedSerializer<Candle> {
     override val itemBytes: Int = 3 * 8

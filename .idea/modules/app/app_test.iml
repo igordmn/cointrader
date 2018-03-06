@@ -49,7 +49,7 @@
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.21" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.exposed:exposed:0.9.1" level="project" />
     <orderEntry type="library" name="Gradle: com.github.kittinunf.fuel:fuel:1.12.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.4" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.4.1" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.xodus:xodus-environment:1.2.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.xodus:xodus-compress:1.2.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.xodus:xodus-openAPI:1.2.0" level="project" />

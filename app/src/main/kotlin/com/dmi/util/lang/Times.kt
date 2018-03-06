@@ -1,6 +1,9 @@
 package com.dmi.util.lang
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.internal.PairClassDesc
+import kotlinx.serialization.internal.PrimitiveDesc
+import kotlinx.serialization.internal.SerialClassDescImpl
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
@@ -60,4 +63,44 @@ interface RangeTimedMerger<T> {
     }
 
     fun merge(a: RangeTimed<T>, b: RangeTimed<T>): RangeTimed<T>
+}
+
+@Serializer(forClass = Instant::class)
+object InstantSerializer : KSerializer<Instant> {
+    override val serialClassDesc: KSerialClassDesc = object : SerialClassDescImpl("java.time.Instant") {
+        init {
+            addElement("seconds")
+            addElement("nanos")
+        }
+    }
+
+    override fun save(output: KOutput, obj: Instant) {
+        output.writeLongValue(obj.epochSecond)
+        output.writeIntValue(obj.nano)
+    }
+
+    override fun load(input: KInput): Instant = Instant.ofEpochSecond(
+            input.readLongValue(),
+            input.readIntValue().toLong()
+    )
+}
+
+@Serializer(forClass = Duration::class)
+object DurationSerializer : KSerializer<Duration> {
+    override val serialClassDesc: KSerialClassDesc = object : SerialClassDescImpl("java.time.Duration") {
+        init {
+            addElement("seconds")
+            addElement("nanos")
+        }
+    }
+
+    override fun save(output: KOutput, obj: Duration) {
+        output.writeLongValue(obj.seconds)
+        output.writeIntValue(obj.nano)
+    }
+
+    override fun load(input: KInput): Duration = Duration.ofSeconds(
+            input.readLongValue(),
+            input.readIntValue().toLong()
+    )
 }

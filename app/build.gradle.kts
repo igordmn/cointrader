@@ -15,7 +15,7 @@ buildscript {
     var kotlinVersion: String by extra
     kotlinVersion = "1.2.20"
     var serializationVersion: String by extra
-    serializationVersion = "0.4"
+    serializationVersion = "0.4.1"
     var objectboxVersion: String by extra
     objectboxVersion = "1.4.1"
 

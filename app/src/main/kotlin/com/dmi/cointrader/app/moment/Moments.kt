@@ -11,6 +11,8 @@ import com.dmi.util.concurrent.*
 import com.dmi.util.io.RestorableSource
 import com.dmi.util.io.SyncList
 import com.dmi.util.io.syncFileList
+import com.dmi.util.lang.DurationSerializer
+import com.dmi.util.lang.InstantSerializer
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
 import main.test.Config
@@ -20,7 +22,11 @@ import java.time.Duration
 import java.time.Instant
 
 @Serializable
-data class MomentsConfig(val startTime: Instant, val period: Duration, val coins: List<String>)
+data class MomentsConfig(
+        @Serializable(with=InstantSerializer::class) val startTime: Instant,
+        @Serializable(with=DurationSerializer::class) val period: Duration,
+        val coins: List<String>
+)
 
 @Serializable
 data class CandleState(val lastTradeIndex: Long)
@@ -83,7 +89,8 @@ suspend fun cachedMoments(
         altCoins: List<String>,
         path: Path,
         coinToTrades: List<SuspendList<Trade>>,
-        currentTime: ReadAtom<Instant>
+        currentTime: ReadAtom<Instant>,
+        reloadCount: Int = 10
 ): SyncList<Moment> {
     return syncFileList(
             path,
@@ -92,6 +99,6 @@ suspend fun cachedMoments(
             MomentFixedSerializer(altCoins.size),
             MomentsConfig(startTime, period, altCoins),
             TradeMoments(startTime, period, coinToTrades, currentTime),
-            reloadCount = 10
+            reloadCount = reloadCount
     )
 }

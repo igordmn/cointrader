@@ -35,7 +35,7 @@ class BinanceConstants {
         }
     }
 
-    fun marketInfo(coin: String, mainCoin: String): MarketInfo {
+    fun marketInfo(mainCoin: String, coin: String): MarketInfo {
         val name = marketName(coin, mainCoin)
         val reversedName = marketName(mainCoin, coin)
 
