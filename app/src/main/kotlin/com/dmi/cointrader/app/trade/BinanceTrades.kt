@@ -110,7 +110,8 @@ suspend fun cachedBinanceTrades(
             BinanceTradeState.serializer(),
             TradeFixedSerializer,
             BinanceTradeConfig(market),
-            source
+            source,
+            log
     )
 
     return if (marketInfo.isReversed) {
