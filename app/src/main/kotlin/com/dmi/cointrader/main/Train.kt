@@ -4,6 +4,8 @@ import adviser.net.DEFAULT_NET_PATH
 import adviser.net.NeuralAgent
 import com.dmi.cointrader.app.candle.candleNum
 import com.dmi.cointrader.app.moment.cachedMoments
+import com.dmi.cointrader.app.neural.NeuralNetwork
+import com.dmi.cointrader.app.neural.NeuralTrainer
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
@@ -15,6 +17,7 @@ import jep.Jep
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.Config
 import python.jep
+import sun.management.resources.agent
 import java.nio.file.Files
 
 fun main(args: Array<String>) {
@@ -28,7 +31,7 @@ fun main(args: Array<String>) {
         val constants = BinanceConstants()
         val currentTime = MemoryAtom(config.trainEndTime)
 
-        fun coinLog(coin: String) = object: SyncList.Log<Trade> {
+        fun coinLog(coin: String) = object : SyncList.Log<Trade> {
             override fun itemsAppended(items: List<Trade>, indices: LongRange) {
                 val lastTradeTime = items.last().time
                 println("$coin $lastTradeTime")
@@ -50,20 +53,21 @@ fun main(args: Array<String>) {
         val endPeriodNum = candleNum(config.startTime, config.period, config.trainEndTime)
 
         jep().use { jep ->
-            agent(jep, config).use { agent ->
-
+            network(jep, config).use { net ->
+                trainer(jep, config, net)
             }
         }
     }
 }
 
-private fun agent(jep: Jep, config: Config): NeuralAgent {
-    return NeuralAgent(
-            jep,
-            config.indicators.count,
-            config.altCoins.size + 1,
-            config.historyCount,
-            config.fee,
-            config.learningRate
-    )
-}
+private fun network(jep: Jep, config: Config) = NeuralNetwork.init(
+        jep,
+        NeuralNetwork.Config(config.altCoins.size, config.historyCount, 3),
+        gpuMemoryFraction = 0.5
+)
+
+private fun trainer(jep: Jep, config: Config, net: NeuralNetwork) = NeuralTrainer(
+        jep,
+        net,
+        NeuralTrainer.Config(config.fee.toDouble())
+)

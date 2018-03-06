@@ -26,6 +26,9 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
         weight_decay=weight_decay
     )
     net = net[:, :, 0, 0]
+    main_coin_bias = tf.get_variable("main_coin_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
+    main_coin_bias = tf.tile(main_coin_bias, [batch_size, 1])
+    net = tf.concat([main_coin_bias, net], 1)
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
@@ -92,8 +95,8 @@ class NeuralNetwork:
             load_file,
     ):
         self.batch_size = tf.placeholder(tf.int32, shape=[])
-        self.history = tf.placeholder(tf.float32, shape=[None, indicator_count,  coin_count, history_count])
-        self.previous_w = tf.placeholder(tf.float32, shape=[None, coin_count])
+        self.history = tf.placeholder(tf.float32, shape=[None, indicator_count,  coin_count - 1, history_count])       # without main coin (BTC)
+        self.previous_w = tf.placeholder(tf.float32, shape=[None, coin_count - 1])      # without main coin (BTC)
         self.predict_w = build_predict_w(self.batch_size, self.history, self.previous_w)
 
         tf_config = tf.ConfigProto()
@@ -108,13 +111,11 @@ class NeuralNetwork:
 
     def best_portfolio(self, history, previous_w):
         tflearn.is_training(False, self.session)
-
         result = self.session.run(self.predict_w, feed_dict={
-            self.history: history,
-            self.previous_w: previous_w,
+            self.history: history[:, :, 1:, :],   # without main coin (BTC)
+            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.batch_size: history.shape[0]
         })
-
         return result
 
     def save(self, path):
@@ -152,9 +153,9 @@ class NeuralTrainer:
     def train(self, previous_w, history, price_incs):
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
-            self.history: history,
+            self.history: history[:, :, 1:, :],   # without main coin (BTC)
             self.price_incs: price_incs,
-            self.previous_w: previous_w,
+            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.batch_size: history.shape[0]
         })
 
