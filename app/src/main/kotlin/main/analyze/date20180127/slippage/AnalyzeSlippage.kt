@@ -1,20 +1,6 @@
 package main.analyze.date20180127.slippage
 
-import exchange.binance.BinanceConstants
-import exchange.binance.api.BinanceAPI
-import exchange.binance.api.binanceAPI
-import exchange.binance.market.PreloadedBinanceMarketHistories
-import exchange.binance.market.makeBinanceCacheDB
-import exchange.candle.LinearApproximatedPricesFactory
-import exchange.candle.approximateCandleNormalizer
-import exchange.history.NormalizedMarketHistory
-import kotlinx.coroutines.experimental.channels.asReceiveChannel
-import kotlinx.coroutines.experimental.channels.map
-import kotlinx.coroutines.experimental.channels.take
-import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
-import org.slf4j.LoggerFactory
-import com.dmi.util.lang.truncatedTo
 import com.dmi.util.math.sum
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -23,7 +9,6 @@ import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) = runBlocking {
     // config for trained net
-    val mainCoin = "BTC"
     val applyFee = 0.0005
 
     val tradeBuilder = TradeBuilder()
@@ -37,10 +22,10 @@ fun main(args: Array<String>) = runBlocking {
     val costs = trades
             .map {
                 val cost = it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP)
-                if (it.toCoin == mainCoin || it.fromCoin == mainCoin) {
-                    cost.toDouble() * (1 - applyFee)
-                } else {
+                if (it.sellMarket != null && it.buyMarket != null) {
                     Math.sqrt(cost.toDouble()) * (1 - applyFee)
+                } else {
+                    cost.toDouble() * (1 - applyFee)
                 }
             }
             .toList()
@@ -98,13 +83,17 @@ private fun parseCapitals(line: String) = Line.Capitals(
 sealed class Line {
     data class AfterGetCapitals(val time: Instant) : Line()
     data class AfterTrade(val time: Instant) : Line()
-    data class Sell(val time: Instant, val coin: String) : Line()
-    data class Buy(val time: Instant, val coin: String) : Line()
+    data class Sell(val time: Instant, val market: String) : Line()
+    data class Buy(val time: Instant, val market: String) : Line()
     data class Capitals(val map: Map<String, BigDecimal>) : Line()
     object Unknown : Line()
 }
 
-data class Trade(val time: Instant, val fromCoin: String, val toCoin: String, val capitalBefore: BigDecimal, val capitalAfter: BigDecimal)
+data class Trade(val time: Instant, val sellMarket: String?, val buyMarket: String?, val capitalBefore: BigDecimal, val capitalAfter: BigDecimal) {
+    init {
+        require(sellMarket != null || buyMarket != null)
+    }
+}
 
 class TradeBuilder {
     private var state: State = State.BeforeTrade
@@ -121,25 +110,25 @@ class TradeBuilder {
                     this.state = State.CapitalsBeforeTrade(state.time, capital(line.map))
                 }
                 is State.AfterTrade -> {
-                    val result = Trade(state.time, state.fromCoin, state.toCoin, state.capitalBefore, capital(line.map))
+                    val result = Trade(state.time, state.sellMarket, state.buyMarket, state.capitalBefore, capital(line.map))
                     this.state = State.BeforeTrade
                     return result
                 }
             }
-            is Line.Sell -> if (state is State.CapitalsBeforeTrade) {
-                this.state = State.Sell(state.time, state.capitalBefore, line.coin)
-            } else {
-                this.state = State.BeforeTrade
+            is Line.Sell -> when (state) {
+                is State.CapitalsBeforeTrade -> this.state = State.SellBuy(state.time, state.capitalBefore, line.market, null)
+                is State.SellBuy -> this.state = State.SellBuy(state.time, state.capitalBefore, line.market, state.buyMarket)
+                else -> this.state = State.BeforeTrade
             }
 
-            is Line.Buy -> if (state is State.Sell) {
-                this.state = State.Buy(state.time, state.capitalBefore, state.fromCoin, line.coin)
-            } else {
-                this.state = State.BeforeTrade
+            is Line.Buy -> when (state) {
+                is State.CapitalsBeforeTrade -> this.state = State.SellBuy(state.time, state.capitalBefore, null, line.market)
+                is State.SellBuy -> this.state = State.SellBuy(state.time, state.capitalBefore, state.sellMarket, line.market)
+                else -> this.state = State.BeforeTrade
             }
 
-            is Line.AfterTrade -> if (state is State.Buy) {
-                this.state = State.AfterTrade(state.time, state.capitalBefore, state.fromCoin, state.toCoin)
+            is Line.AfterTrade -> if (state is State.SellBuy) {
+                this.state = State.AfterTrade(state.time, state.capitalBefore, state.sellMarket, state.buyMarket)
             } else {
                 this.state = State.BeforeTrade
             }
@@ -154,8 +143,7 @@ class TradeBuilder {
         object BeforeTrade : State()
         data class AfterGetCapitals(val time: Instant) : State()
         data class CapitalsBeforeTrade(val time: Instant, val capitalBefore: BigDecimal) : State()
-        data class Sell(val time: Instant, val capitalBefore: BigDecimal, val fromCoin: String) : State()
-        data class Buy(val time: Instant, val capitalBefore: BigDecimal, val fromCoin: String, val toCoin: String) : State()
-        data class AfterTrade(val time: Instant, val capitalBefore: BigDecimal, val fromCoin: String, val toCoin: String) : State()
+        data class SellBuy(val time: Instant, val capitalBefore: BigDecimal, val sellMarket: String?, val buyMarket: String?) : State()
+        data class AfterTrade(val time: Instant, val capitalBefore: BigDecimal, val sellMarket: String?, val buyMarket: String?) : State()
     }
 }
