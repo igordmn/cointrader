@@ -10,7 +10,6 @@ import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.collection.SuspendList
-import com.dmi.util.collection.subList
 import com.dmi.util.concurrent.mapAsync
 import com.dmi.util.io.SyncList
 import com.dmi.util.collection.toInt
@@ -77,7 +76,7 @@ fun main(args: Array<String>) {
     }
 }
 
-private suspend fun train(trainer: NeuralTrainer, config: Config, moments: SuspendList<Moment>, nums: LongRange): Any {
+private suspend fun train(trainer: NeuralTrainer, config: Config, moments: SuspendList<Moment>, nums: LongRange) {
     val random = GeometricDistribution(config.trainGeometricBias)
     val portfolios = initPortfolios(moments.size().toInt(), config.altCoins.size + 1)  // with mainCoin
 
