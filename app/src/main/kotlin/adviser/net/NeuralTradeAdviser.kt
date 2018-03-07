@@ -22,7 +22,7 @@ fun neuralTradeAdviser(jep: Jep, operationScale: Int, config: Config) = NeuralTr
         config.historyCount,
         Paths.get("data/train_package/netfile"),
         config.fee,
-        config.learningRate,
+        BigDecimal(0),
         config.indicators
 )
 

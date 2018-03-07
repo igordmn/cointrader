@@ -55,10 +55,10 @@ def build_predict_w(
 
     net = eiie_dense(
         net,
-        filter_number=8,
+        filter_number=10,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-8
+        weight_decay=5e-9
     )
     net = tflearn.batch_normalization(net)
 
@@ -118,7 +118,7 @@ class NeuralNetwork:
         tflearn.is_training(False, self.session)
         result = self.session.run(self.predict_w, feed_dict={
             self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
-            self.history: history[:, :, 1:, :],   # without main coin (BTC)
+            self.history: history[:, 1:, :, :],   # without main coin (BTC)
             self.batch_count: history.shape[0]
         })
         return result
@@ -147,7 +147,7 @@ class NeuralTrainer:
 
         self.loss = -self.log_mean_profit
         self.loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train = tf.train.RMSPropOptimizer(0.00028 * 2).minimize(self.loss)
+        self.train = tf.train.RMSPropOptimizer(0.00028).minimize(self.loss)
 
         self.batch_size = network.batch_size
         self.history = network.history
@@ -165,7 +165,7 @@ class NeuralTrainer:
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
             self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
-            self.history: history[:, :, 1:, :],   # without main coin (BTC)
+            self.history: history[:, 1:, :, :],   # without main coin (BTC)
             self.price_incs: price_incs,
             self.batch_size: history.shape[0]
         })

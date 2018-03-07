@@ -13,9 +13,8 @@ data class Config(
         val initialCoins: Map<String, BigDecimal> = mapOf(
                 "BTC" to BigDecimal("1.00")
         ),
-        val historyCount: Int = 320,
+        val historyCount: Int = 160,
         val fee: BigDecimal = BigDecimal("0.0018"),
-        val learningRate: BigDecimal = BigDecimal("0.00056"),
         val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
         val backTestStartTime: Instant = Instant.now() - Duration.ofDays(5),
 
