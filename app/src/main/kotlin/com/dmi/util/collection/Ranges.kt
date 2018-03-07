@@ -8,3 +8,5 @@ fun LongRange.rangeChunked(size: Long): Sequence<LongRange> = buildSequence {
         yield(LongRange(st, nd))
     }
 }
+
+fun LongRange.toInt() = start.toInt()..endInclusive.toInt()

@@ -35,9 +35,8 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
 def build_predict_w(
         batch_size, history, previous_w
 ):
-    net = tf.transpose(history, [0, 2, 3, 1])
+    net = history
 
-    # [batch, assets, window, features]
     net = net / net[:, :, -1, 0, None, None]  # divide on last close
     net = tf.log(net)
 
@@ -94,10 +93,10 @@ class NeuralNetwork:
             gpu_memory_fraction,
             load_file,
     ):
-        self.batch_size = tf.placeholder(tf.int32, shape=[])
+        self.batch_count = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, indicator_count,  coin_count - 1, history_count])       # without main coin (BTC)
         self.previous_w = tf.placeholder(tf.float32, shape=[None, coin_count - 1])      # without main coin (BTC)
-        self.predict_w = build_predict_w(self.batch_size, self.history, self.previous_w)
+        self.predict_w = build_predict_w(self.batch_count, self.history, self.previous_w)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -109,12 +108,18 @@ class NeuralNetwork:
         else:
             self.session.run(tf.global_variables_initializer())
 
-    def best_portfolio(self, history, previous_w):
+    def best_portfolio(self, previous_w, history):
+        """
+           Args:
+             previous_w: batch_count x coin_count
+             history: batch_count x coin_count x history_count x indicator_count
+        """
+
         tflearn.is_training(False, self.session)
         result = self.session.run(self.predict_w, feed_dict={
-            self.history: history[:, :, 1:, :],   # without main coin (BTC)
             self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
-            self.batch_size: history.shape[0]
+            self.history: history[:, :, 1:, :],   # without main coin (BTC)
+            self.batch_count: history.shape[0]
         })
         return result
 
@@ -151,11 +156,17 @@ class NeuralTrainer:
         self.session = network.session
 
     def train(self, previous_w, history, price_incs):
+        """
+           Args:
+             previous_w: batch_count x coin_count
+             history: batch_count x coin_count x history_count x indicator_count
+             price_incs: batch_count x coin_count
+        """
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
+            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.history: history[:, :, 1:, :],   # without main coin (BTC)
             self.price_incs: price_incs,
-            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.batch_size: history.shape[0]
         })
 

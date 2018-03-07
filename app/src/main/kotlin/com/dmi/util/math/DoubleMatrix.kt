@@ -39,6 +39,8 @@ class DoubleMatrix2D(
                 data[k++] = value(i1, i2)
     }
 
+    operator fun get(i1: Int, i2: Int) = data[i1 * n1 + i2]
+
     fun forEach(accept: (i1: Int, i2: Int, value: Double) -> Unit) {
         var k = 0
         for (i1 in 0 until n1)

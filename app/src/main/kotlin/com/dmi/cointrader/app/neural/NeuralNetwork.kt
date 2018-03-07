@@ -7,7 +7,6 @@ import jep.NDArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.dump
 import kotlinx.serialization.cbor.CBOR.Companion.load
-import org.deeplearning4j.rl4j.network.NeuralNet
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
@@ -34,24 +33,24 @@ class NeuralNetwork private constructor(
                     network = NeuralNetwork(coin_count, history_count, indicator_count, gpu_memory_fraction, load_path)
             """.trimIndent())
         jep.eval("""
-                def best_portfolio(history, previous_w):
-                    return network.best_portfolio(history, previous_w)
+                def best_portfolio(previous_w, history):
+                    return network.best_portfolio(previous_w, history)
             """.trimIndent())
         jep.invoke("create_network", config.coinCount, config.historyCount, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun bestPortfolio(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
-        require(currentPortions.n2 == config.coinCount)
+    fun bestPortfolio(currentPortfolio: DoubleMatrix2D, history: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
+        require(currentPortfolio.n2 == config.coinCount)
         require(history.n2 == config.indicatorCount)
         require(history.n3 == config.coinCount)
         require(history.n4 == config.historyCount)
-        require(currentPortions.n1 == history.n1)
+        require(currentPortfolio.n1 == history.n1)
 
+        val npportfolio = NDArray(currentPortfolio.data, currentPortfolio.n1, currentPortfolio.n2)
         val nphistory = NDArray(history.data, history.n1, history.n2, history.n3, history.n4)
-        val npportions = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
 
-        val result = jep.invoke("best_portfolio", nphistory, npportions) as NDArray<FloatArray>
+        val result = jep.invoke("best_portfolio", npportfolio, nphistory) as NDArray<FloatArray>
 
         val dataDouble = result.data.map { it.toDouble() }.toDoubleArray()
         return DoubleMatrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
@@ -117,20 +116,20 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun train(currentPortions: DoubleMatrix2D, history: DoubleMatrix4D, priceIncs: DoubleMatrix2D): TrainResult {
-        require(currentPortions.n2 == net.config.coinCount)
+    fun train(currentPortfolio: DoubleMatrix2D, history: DoubleMatrix4D, priceIncs: DoubleMatrix2D): TrainResult {
+        require(currentPortfolio.n2 == net.config.coinCount)
         require(history.n2 == net.config.indicatorCount)
         require(history.n3 == net.config.coinCount)
         require(history.n4 == net.config.historyCount)
         require(priceIncs.n2 == net.config.coinCount)
-        require(priceIncs.n1 == currentPortions.n1)
+        require(priceIncs.n1 == currentPortfolio.n1)
         require(priceIncs.n1 == history.n1)
 
         val nphistory = NDArray(history.data, history.n1, history.n2, history.n3, history.n4)
-        val npportions = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
+        val npportfolio = NDArray(currentPortfolio.data, currentPortfolio.n1, currentPortfolio.n2)
         val npPriceIncs = NDArray(priceIncs.data, priceIncs.n1, priceIncs.n2)
 
-        val result = jep.invoke("train", nphistory, npportions, npPriceIncs) as Array<*>
+        val result = jep.invoke("train", npportfolio, nphistory, npPriceIncs) as Array<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
 
@@ -151,5 +150,5 @@ class NeuralTrainer(
             val fee: Double
     )
 
-    data class TrainResult(val newPortions: DoubleMatrix2D, val geometricMeanProfit: Double)
+    data class TrainResult(val newPortfolios: DoubleMatrix2D, val geometricMeanProfit: Double)
 }
