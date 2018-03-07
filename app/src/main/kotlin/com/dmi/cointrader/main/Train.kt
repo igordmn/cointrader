@@ -80,7 +80,7 @@ private suspend fun train(trainer: NeuralTrainer, config: Config, moments: Suspe
     val random = GeometricDistribution(config.trainGeometricBias)
     val portfolios = initPortfolios(moments.size().toInt(), config.altCoins.size + 1)  // with mainCoin
 
-    repeat(config.trainSteps) {
+    repeat(config.trainSteps) { i ->
         val batchNums = batchNums(random, config, nums)
         val batch = batch(config.historyCount, moments, portfolios, batchNums)
         val result = trainer.train(

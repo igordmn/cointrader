@@ -24,16 +24,7 @@ import java.time.format.DateTimeFormatter
 fun main(args: Array<String>) = runBlocking {
     // config for trained net
     val mainCoin = "BTC"
-    val altCoins = listOf(
-            "USDT", "ETH", "CND", "VEN", "TRX", "EOS", "XRP", "WTC", "TNT", "BNB",
-            "ICX", "NEO", "XLM", "ELF", "LEND", "ADA", "LTC", "XVG", "IOTA",
-            "HSR", "TNB", "BCH", "BCD", "CTR", "POE", "ETC", "QTUM", "MANA",
-            "OMG", "BRD", "AION", "AMB", "SUB", "ZRX", "BTS", "STRAT", "WABI",
-            "LINK", "XMR", "QSP", "LSK", "GTO", "ENG", "MCO", "POWR", "CDT",
-            "KNC", "REQ", "OST", "ENJ", "DASH", "TRIG", "NEBL", "FUEL"
-    )
-    val applyAddFee = 0.0005
-//    val applyAddFee = 0.0000
+    val applyFee = 0.0005
 
     val tradeBuilder = TradeBuilder()
 
@@ -44,52 +35,20 @@ fun main(args: Array<String>) = runBlocking {
             .filterNotNull()
 
     val costs = trades
-            .map { it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP) }
-            .map { Math.sqrt(it.toDouble()) * (1 - applyAddFee) }
+            .map {
+                val cost = it.capitalAfter.divide(it.capitalBefore, 30, RoundingMode.HALF_UP)
+                if (it.toCoin == mainCoin || it.fromCoin == mainCoin) {
+                    cost.toDouble() * (1 - applyFee)
+                } else {
+                    Math.sqrt(cost.toDouble()) * (1 - applyFee)
+                }
+            }
             .toList()
 
-    val cost = costs.geoMean()
-    val fee = 1 - cost
+    val fee = 1 - costs.geoMean()
     val count = costs.size
 
-    val joined = costs.joinToString("\n") { it.toString().replace(".", ",") }
-    println("fact commission $fee. count $count")
-
-//    val api = binanceAPI(log = LoggerFactory.getLogger(BinanceAPI::class.java))
-//    val constants = BinanceConstants()
-//    makeBinanceCacheDB().use { cache ->
-//        val preloadedHistories = PreloadedBinanceMarketHistories(cache, constants, api, mainCoin, altCoins)
-//        val serverTime = Instant.ofEpochMilli(api.serverTime().serverTime)
-//        preloadedHistories.preload(serverTime)
-//
-//        val funs = object {
-//            suspend fun closePriceAndApproximatedPrice(coinWithBtc: String, time: Instant): Pair<BigDecimal, BigDecimal> {
-//                val coin = coinWithBtc.removeSuffix("BTC").removePrefix("BTC")
-//                val marketName = constants.marketName(mainCoin, coin) ?: constants.marketName(coin, mainCoin)
-//                val approximatedPricesFactory = LinearApproximatedPricesFactory(30)
-//                val normalizer = approximateCandleNormalizer(approximatedPricesFactory)
-//                val history = NormalizedMarketHistory(preloadedHistories[marketName!!], normalizer, Duration.ofMinutes(1))
-//                val nextMinute = time.truncatedTo(Duration.ofMinutes(1)) + Duration.ofMinutes(1)
-//                val candles = history.candlesBefore(nextMinute).take(2).toList()
-//                val candle0 = candles[0]
-//                val candle1 = candles[1]
-//                val approximatedPrice = approximatedPricesFactory.forCandle(candle0.item).exactAt(Math.random())
-//                val closePrice = candle1.item.close
-//                return Pair(closePrice, approximatedPrice)
-//            }
-//        }
-//
-//        val approximatedCommissions = trades.asReceiveChannel().map {
-//            val (fromCoinClose, fromCoinApproximated) = funs.closePriceAndApproximatedPrice(it.fromCoin, it.time)
-//            val (toCoinClose, toCoinApproximated) = funs.closePriceAndApproximatedPrice(it.toCoin, it.time)
-//            val fromCommission = fromCoinApproximated / fromCoinClose
-//            val toCommission = toCoinClose / toCoinApproximated
-//            fromCommission * toCommission
-//        }.toList()
-//
-//        val meanApproximatedCommission = Math.sqrt(approximatedCommissions.geoMean())
-//        println("approximated commission $meanApproximatedCommission")
-//    }
+    println("fact fee $fee. count $count")
 }
 
 private fun List<Double>.geoMean(): Double {

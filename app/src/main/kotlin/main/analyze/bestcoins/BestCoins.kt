@@ -1,5 +1,6 @@
 package main.analyze.bestcoins
 
+import com.dmi.util.math.geoMean
 import main.analyze.date20180127.slippage.Line
 import java.math.BigDecimal
 import java.nio.file.Paths
@@ -62,7 +63,7 @@ fun main(args: Array<String>) {
 
     val profitsCombined = profits
             .groupBy { it.market }
-            .mapValues { it.value.map { it.profit }.geoMean() }
+            .mapValues { it.value.map { it.profit }.let(::geoMean) }
             .map { Profit(it.key, it.value) }
             .sortedBy { it.profit }
 
@@ -73,13 +74,6 @@ private fun OrderType.reverse(): OrderType = when(this) {
     OrderType.BUY -> OrderType.SELL
     OrderType.SELL -> OrderType.BUY
 }
-
-
-private fun List<Double>.geoMean(): Double {
-    val total = reduce { acc, item -> acc * item }
-    return Math.pow(total, 1.0 / size)
-}
-
 
 private fun parseOrder(it: String): Order {
     val values = it.split(",")
