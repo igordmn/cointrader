@@ -158,6 +158,12 @@ fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produ
     }
 }
 
+fun <T> ReceiveChannel<T>.filter(predicate: (T) -> Boolean): ReceiveChannel<T> = produce {
+    consumeEach {
+        if (predicate(it)) send(it)
+    }
+}
+
 data class CurrentAndPrevious<out A, out B>(
         val current: A,
         val previous: B

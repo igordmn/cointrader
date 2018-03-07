@@ -13,7 +13,6 @@ fun GeometricDistribution.rangeSample(range: IntRange): Int {
     return range.endInclusive + 1 - ran
 }
 
-
 fun maximumDrawdawn(profits: List<Double>): Double {
     var maxDrawdown = 0.0
     var maxCapital = 0.0

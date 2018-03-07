@@ -6,6 +6,9 @@ import com.dmi.cointrader.app.moment.Moment
 import com.dmi.cointrader.app.moment.cachedMoments
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.NeuralTrainer
+import com.dmi.cointrader.app.test.BackTest
+import com.dmi.cointrader.app.test.dayly
+import com.dmi.cointrader.app.test.hourly
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.cointrader.app.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
@@ -13,18 +16,21 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.mapAsync
 import com.dmi.util.io.SyncList
 import com.dmi.util.collection.toInt
-import com.dmi.util.math.DoubleMatrix2D
-import com.dmi.util.math.DoubleMatrix4D
-import com.dmi.util.math.rangeSample
+import com.dmi.util.concurrent.chunked
+import com.dmi.util.concurrent.map
+import com.dmi.util.lang.MILLIS_PER_DAY
+import com.dmi.util.math.*
 import exchange.binance.BinanceConstants
 import exchange.binance.api.binanceAPI
 import jep.Jep
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
 import main.test.Config
 import org.apache.commons.math3.distribution.GeometricDistribution
 import python.jep
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.math.pow
 
 private val netsPath = Paths.get("data/nets")
 
@@ -68,31 +74,99 @@ fun main(args: Array<String>) {
 
         jep().use { jep ->
             network(jep, config).use { net ->
+                val backTest1 = BackTest(net, moments, config, config.trainTest1Days)
+                val backTest2 = BackTest(net, moments, config, config.trainTest2Days)
                 trainer(jep, config, net).use { trainer ->
-                    train(trainer, config, moments, startPeriodNum until endPeriodNum)
+                    train(backTest1, backTest2, net, trainer, config, moments, startPeriodNum until endPeriodNum)
                 }
             }
         }
     }
 }
 
-private suspend fun train(trainer: NeuralTrainer, config: Config, moments: SuspendList<Moment>, nums: LongRange) {
+private suspend fun train(backTest1: BackTest, backTest2: BackTest, network: NeuralNetwork, trainer: NeuralTrainer, config: Config, moments: SuspendList<Moment>, nums: LongRange) {
     val random = GeometricDistribution(config.trainGeometricBias)
     val portfolios = initPortfolios(moments.size().toInt(), config.altCoins.size + 1)  // with mainCoin
+    val resultsFile = netsPath.resolve("results.txt")
 
-    repeat(config.trainSteps) { i ->
-        val batchNums = batchNums(random, config, nums)
-        val batch = batch(config.historyCount, moments, portfolios, batchNums)
+    fun batches(): ReceiveChannel<TrainBatch> = produce {
+        while (true) {
+            val batchNums = batchNums(random, config, nums)
+            val batch = batch(config.historyCount, moments, portfolios, batchNums)
+            send(batch)
+        }
+    }
+
+    fun train(batch: TrainBatch): Double {
         val result = trainer.train(
                 batch.portfolioMatrix(config),
                 batch.historyMatrix(config),
                 batch.futurePriceIncsMatrix(config)
         )
-        val meanProfit = result.geometricMeanProfit
+        val periodProfit = result.geometricMeanProfit
         val newPortfolios = result.newPortfolios.portfolios(config)
         setPortions(batch, newPortfolios)
+        return periodProfit
+    }
+
+    val funs = object {
+        suspend fun saveNet(info: TrainInfo) {
+            network.save(netsPath.resolve(info.step.toString()))
+            resultsFile.toFile().appendText(info.toString())
+        }
+    }
+
+    fun collectInfo(step: Int, trainProfits: List<Double>, test1Profits: List<Double>, test2Profits: List<Double>): TrainInfo {
+        val trainPeriodProfit = geoMean(trainProfits)
+        val periodsPerDay = (MILLIS_PER_DAY / config.period.toMillis()).toInt()
+        val trainDayProfit = trainPeriodProfit.pow(periodsPerDay)
+
+        val test1DayProfit = test1Profits.dayly(config).let(::geoMean)
+        val hourlyTest1Profits = test1Profits.hourly(config)
+        val test1DownsideDeviation: Double = hourlyTest1Profits.let(::downsideDeviation)
+        val test1MaximumDrawdawn: Double = hourlyTest1Profits.let(::maximumDrawdawn)
+
+        val test2DayProfit = test2Profits.dayly(config).let(::geoMean)
+        val hourlyTest2Profits = test2Profits.hourly(config)
+        val test2DownsideDeviation: Double = hourlyTest2Profits.let(::downsideDeviation)
+        val test2MaximumDrawdawn: Double = hourlyTest2Profits.let(::maximumDrawdawn)
+
+        return TrainInfo(
+                step,
+
+                trainDayProfit,
+
+                test1DayProfit,
+                test1DownsideDeviation,
+                test1MaximumDrawdawn,
+
+                test2DayProfit,
+                test2DownsideDeviation,
+                test2MaximumDrawdawn
+        )
+    }
+
+    batches().map(::train).chunked(config.trainLogSteps).withIndex().consumeEach {
+        val step = (it.index + 1) * config.trainLogSteps
+        val test1Profits = backTest1.invoke()
+        val test2Profits = backTest2.invoke()
+        funs.saveNet(collectInfo(step, it.value, test1Profits, test2Profits))
     }
 }
+
+private data class TrainInfo(
+        val step: Int,
+
+        val trainDayProfit: Double,
+
+        val test1DayProfit: Double,
+        val test1HourlyNegativeDeviation: Double,
+        val test1HourlyMaximumDrawdawn: Double,
+
+        val test2DayProfit: Double,
+        val test2HourlyNegativeDeviation: Double,
+        val test2HourlyMaximumDrawdawn: Double
+)
 
 private fun setPortions(batch: TrainBatch, newPortions: List<Portfolio>) {
     batch.moments.forEachIndexed { i, it ->

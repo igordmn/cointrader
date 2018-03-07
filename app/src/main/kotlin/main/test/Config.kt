@@ -24,11 +24,12 @@ data class Config(
 
         val trainStartTime: Instant = startTime,
         val trainEndTime: Instant = LocalDateTime.of(2018, 2, 18, 21, 50, 0).toInstant(ZoneOffset.of("+3")),
-        val trainTestDays: Int = 30,
+        val trainTest1Days: Int = 30,
+        val trainTest2Days: Int = 7,
+        val trainExcludeDays: Int = 7,
         val trainIncludeTestToTrain: Boolean = false,
         val trainGeometricBias: Double = 3e-05,
 
-        val trainSteps: Int = 40000,
-        val trainLogSteps: Int = 2000,
+        val trainLogSteps: Int = 1000,
         val trainBatchSize: Int = 100
 )

@@ -15,23 +15,24 @@ typealias Profits = List<Double>
 class BackTest(
         private val network: NeuralNetwork,
         private val moments: SuspendList<Moment>,
-        private val config: Config
+        private val config: Config,
+        private val testDays: Int
 ) {
     suspend fun invoke(): Profits {
         TODO()
     }
 }
 
-fun Profits.dayly(config: Config) {
+fun Profits.dayly(config: Config): Profits {
     val periodsPerDay = (MILLIS_PER_DAY / config.period.toMillis()).toInt()
-    chunked(periodsPerDay).map {
+    return chunked(periodsPerDay).map {
         product(it).pow(periodsPerDay.toDouble() / it.size)
     }
 }
 
-fun Profits.hourly(config: Config) {
+fun Profits.hourly(config: Config): Profits {
     val periodsPerHour = (MILLIS_PER_HOUR / config.period.toMillis()).toInt()
-    chunked(periodsPerHour).map {
+    return chunked(periodsPerHour).map {
         product(it).pow(periodsPerHour.toDouble() / it.size)
     }
 }
