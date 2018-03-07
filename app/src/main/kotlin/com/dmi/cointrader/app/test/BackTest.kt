@@ -15,8 +15,7 @@ typealias Profits = List<Double>
 class BackTest(
         private val network: NeuralNetwork,
         private val moments: SuspendList<Moment>,
-        private val config: Config,
-        private val testPeriod: Duration
+        private val config: Config
 ) {
     suspend fun invoke(): Profits {
         TODO()
