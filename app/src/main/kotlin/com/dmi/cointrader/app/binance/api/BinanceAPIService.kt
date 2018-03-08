@@ -1,4 +1,4 @@
-package old.exchange.binance.api
+package com.dmi.cointrader.app.binance.api
 
 import com.binance.api.client.constant.BinanceApiConstants
 import com.binance.api.client.domain.OrderSide
@@ -9,7 +9,7 @@ import com.binance.api.client.domain.event.ListenKey
 import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
-import old.exchange.binance.api.model.NewOrderResponse
+import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
 import kotlinx.coroutines.experimental.Deferred
 import retrofit2.http.*
 

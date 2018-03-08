@@ -1,9 +1,8 @@
 package old.exchange.binance
 
-import com.dmi.util.atom.Atom
 import com.dmi.util.atom.ReadAtom
 import old.exchange.*
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import java.time.Instant
 
 class BinanceTimeOld(

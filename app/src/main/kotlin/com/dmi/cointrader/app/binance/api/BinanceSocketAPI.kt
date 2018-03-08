@@ -1,8 +1,8 @@
-package old.exchange.binance.api
+package com.dmi.cointrader.app.binance.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import old.exchange.binance.api.model.MultiAggTradeEvent
+import com.dmi.cointrader.app.binance.api.model.MultiAggTradeEvent
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.runBlocking

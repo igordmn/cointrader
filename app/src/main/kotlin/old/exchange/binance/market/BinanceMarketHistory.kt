@@ -3,7 +3,7 @@ package old.exchange.binance.market
 import com.binance.api.client.domain.market.Candlestick
 import old.data.HistoryCache
 import old.exchange.binance.BinanceConstants
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import old.exchange.candle.Candle
 import old.exchange.candle.TimedCandle
 import old.exchange.history.MarketHistory

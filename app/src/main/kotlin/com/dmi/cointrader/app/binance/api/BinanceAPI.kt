@@ -1,4 +1,4 @@
-package old.exchange.binance.api
+package com.dmi.cointrader.app.binance.api
 
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
@@ -9,11 +9,10 @@ import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
 import com.google.common.util.concurrent.RateLimiter
-import old.exchange.binance.api.model.NewOrderResponse
+import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlin.math.ceil
 
 class BinanceAPI(
         private val service: BinanceAPIService,

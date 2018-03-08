@@ -3,8 +3,8 @@ package old.main
 import old.data.TradeCache
 import old.dataOld.DOWNLOAD_COINS
 import old.dataOld.downloadPair
-import old.exchange.binance.api.BinanceAPI
-import old.exchange.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
 import com.dmi.util.concurrent.mapAsync
 import java.nio.file.Paths

@@ -4,8 +4,8 @@ import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
 import com.binance.api.client.exception.BinanceApiException
 import old.exchange.MarketBroker
-import old.exchange.binance.api.BinanceAPI
-import old.exchange.binance.api.model.NewOrderResponse
+import com.dmi.cointrader.app.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
 import org.slf4j.Logger
 import com.dmi.util.math.sum
 import java.math.BigDecimal

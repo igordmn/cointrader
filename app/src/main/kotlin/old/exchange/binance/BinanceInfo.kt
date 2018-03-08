@@ -2,7 +2,7 @@ package old.exchange.binance
 
 import com.binance.api.client.domain.general.ExchangeInfo
 import old.exchange.MarketLimits
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import old.exchange.binance.market.BinanceMarketLimits
 
 class BinanceInfo private constructor(

@@ -8,7 +8,7 @@ import com.dmi.util.concurrent.mapAsync
 import com.dmi.util.io.SyncList
 import old.exchange.binance.BinanceConstants
 import old.exchange.binance.BinanceTime
-import old.exchange.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
 
 fun main(args: Array<String>) {

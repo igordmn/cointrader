@@ -1,7 +1,7 @@
 package old.exchange.binance.market
 
 import old.exchange.MarketPrice
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import java.math.BigDecimal
 
 class BinanceMarketPrice(

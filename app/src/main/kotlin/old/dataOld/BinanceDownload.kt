@@ -1,7 +1,7 @@
 package old.dataOld
 
 import com.binance.api.client.domain.market.Candlestick
-import old.exchange.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal

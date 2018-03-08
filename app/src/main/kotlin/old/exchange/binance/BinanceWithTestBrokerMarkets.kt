@@ -4,7 +4,7 @@ import old.exchange.LoggableMarketBroker
 import old.exchange.Market
 import old.exchange.Markets
 import old.exchange.SafeMarketBroker
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import old.exchange.binance.market.BinanceMarketBroker
 import old.exchange.binance.market.BinanceMarketPrice
 import old.exchange.binance.market.PreloadedBinanceMarketHistories

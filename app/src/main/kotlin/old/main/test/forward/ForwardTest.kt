@@ -4,8 +4,8 @@ import adviser.net.neuralTradeAdviser
 import old.exchange.binance.BinanceConstants
 import old.exchange.binance.BinanceInfo
 import old.exchange.binance.BinanceTimeOld
-import old.exchange.binance.api.BinanceAPI
-import old.exchange.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import old.exchange.binance.market.PreloadedBinanceMarketHistories
 import old.exchange.binance.market.makeBinanceCacheDB
 import old.exchange.test.BinanceWithTestBrokerMarkets

@@ -1,4 +1,4 @@
-package old.exchange.binance.api.model
+package com.dmi.cointrader.app.binance.api.model
 
 import com.binance.api.client.domain.event.AggTradeEvent
 

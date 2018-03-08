@@ -8,7 +8,7 @@ import com.dmi.util.io.SyncList
 import com.dmi.util.io.syncFileList
 import old.exchange.binance.BinanceConstants
 import old.exchange.binance.MarketInfo
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile

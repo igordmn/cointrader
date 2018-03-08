@@ -1,6 +1,5 @@
 package old.exchange.binance
 
-import old.exchange.binance.api.binanceAPI
 import old.exchange.binance.market.BinanceMarketPrice
 import io.kotlintest.matchers.beLessThan
 import io.kotlintest.matchers.should

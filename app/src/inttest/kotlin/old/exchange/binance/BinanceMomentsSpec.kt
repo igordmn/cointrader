@@ -8,7 +8,7 @@ import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import old.exchange.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import io.kotlintest.matchers.shouldBe
 import java.nio.file.Files
 import java.time.Duration

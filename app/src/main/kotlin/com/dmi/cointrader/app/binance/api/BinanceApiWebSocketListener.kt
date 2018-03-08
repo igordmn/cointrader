@@ -1,8 +1,6 @@
-package old.exchange.binance.api
+package com.dmi.cointrader.app.binance.api
 
-import com.binance.api.client.BinanceApiCallback
 import com.binance.api.client.exception.BinanceApiException
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import okhttp3.Response

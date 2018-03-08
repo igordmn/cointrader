@@ -1,6 +1,5 @@
 package old.exchange.binance
 
-import old.exchange.binance.api.binanceAPI
 import old.exchange.binance.market.BinanceMarketHistory
 import old.exchange.candle.LinearApproximatedPricesFactory
 import old.exchange.candle.approximateCandleNormalizer
@@ -10,7 +9,6 @@ import io.kotlintest.specs.StringSpec
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.runBlocking
-import org.slf4j.LoggerFactory
 import org.slf4j.helpers.NOPLogger
 import java.time.Duration
 import java.time.ZoneOffset

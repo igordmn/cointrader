@@ -1,7 +1,7 @@
 package old.exchange.binance
 
 import old.exchange.Portfolio
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import java.math.BigDecimal
 import java.time.Instant
 

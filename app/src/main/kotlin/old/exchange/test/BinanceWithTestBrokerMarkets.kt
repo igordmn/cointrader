@@ -6,7 +6,7 @@ import old.exchange.Markets
 import old.exchange.SafeMarketBroker
 import old.exchange.binance.BinanceConstants
 import old.exchange.binance.BinanceInfo
-import old.exchange.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.BinanceAPI
 import old.exchange.binance.market.BinanceMarketPrice
 import old.exchange.binance.market.PreloadedBinanceMarketHistories
 import old.exchange.candle.LinearApproximatedPricesFactory

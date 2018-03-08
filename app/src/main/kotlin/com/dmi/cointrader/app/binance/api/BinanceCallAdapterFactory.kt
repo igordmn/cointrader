@@ -1,4 +1,4 @@
-package old.exchange.binance.api
+package com.dmi.cointrader.app.binance.api
 
 import com.binance.api.client.BinanceApiError
 import com.binance.api.client.exception.BinanceApiException
