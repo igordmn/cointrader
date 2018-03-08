@@ -20,14 +20,13 @@ import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.math.*
-import exchange.binance.BinanceConstants
-import exchange.binance.api.binanceAPI
+import old.exchange.binance.BinanceConstants
+import old.exchange.binance.api.binanceAPI
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
-import main.test.Config
 import org.apache.commons.math3.distribution.GeometricDistribution
-import python.jep
+import com.dmi.cointrader.app.python.jep
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow

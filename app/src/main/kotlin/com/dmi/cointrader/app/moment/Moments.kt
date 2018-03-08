@@ -15,7 +15,7 @@ import com.dmi.util.lang.DurationSerializer
 import com.dmi.util.lang.InstantSerializer
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
-import main.test.Config
+import com.dmi.cointrader.main.Config
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -83,7 +83,7 @@ suspend fun cachedMoments(
         coinToTrades: List<SuspendList<Trade>>,
         currentTime: ReadAtom<Instant>
 ): SyncList<Moment> {
-    val path = Paths.get("data/cache/binance/moments")
+    val path = Paths.get("old/data/cache/binance/moments")
     Files.createDirectories(path.parent)
     return cachedMoments(config.startTime, config.period, config.altCoins, path, coinToTrades, currentTime)
 }

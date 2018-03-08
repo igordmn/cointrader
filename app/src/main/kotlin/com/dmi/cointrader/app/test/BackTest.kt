@@ -6,8 +6,7 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.math.product
-import main.test.Config
-import java.time.Duration
+import com.dmi.cointrader.main.Config
 import kotlin.math.pow
 
 typealias Profits = List<Double>

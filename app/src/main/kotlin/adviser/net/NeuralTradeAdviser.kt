@@ -3,11 +3,11 @@ package adviser.net
 import adviser.AdviseIndicators
 import adviser.CoinPortions
 import adviser.TradeAdviser
-import exchange.candle.Candle
+import old.exchange.candle.Candle
 import com.dmi.util.math.DoubleMatrix4D
-import exchange.candle.CoinToCandles
+import old.exchange.candle.CoinToCandles
 import jep.Jep
-import main.test.Config
+import com.dmi.cointrader.main.Config
 import com.dmi.util.lang.unsupportedOperation
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.portions
@@ -20,7 +20,7 @@ fun neuralTradeAdviser(jep: Jep, operationScale: Int, config: Config) = NeuralTr
         operationScale,
         listOf(config.mainCoin) + config.altCoins,
         config.historyCount,
-        Paths.get("data/train_package/netfile"),
+        Paths.get("old/data/train_package/netfile"),
         config.fee,
         BigDecimal(0),
         config.indicators

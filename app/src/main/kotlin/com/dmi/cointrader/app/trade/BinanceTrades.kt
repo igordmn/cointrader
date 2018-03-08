@@ -5,16 +5,15 @@ import com.dmi.util.atom.ReadAtom
 import com.dmi.util.concurrent.buildChannel
 import com.dmi.util.io.RestorableSource
 import com.dmi.util.io.SyncList
-import com.dmi.util.io.appendToFileName
 import com.dmi.util.io.syncFileList
-import exchange.binance.BinanceConstants
-import exchange.binance.MarketInfo
-import exchange.binance.api.BinanceAPI
+import old.exchange.binance.BinanceConstants
+import old.exchange.binance.MarketInfo
+import old.exchange.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
-import main.test.Config
+import com.dmi.cointrader.main.Config
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -73,7 +72,7 @@ suspend fun coinToCachedBinanceTrades(
         currentTime: ReadAtom<Instant>,
         coinLog: (coin: String) -> SyncList.Log<Trade> = { SyncList.EmptyLog() }
 ): List<SyncList<Trade>> {
-    val path = Paths.get("data/cache/binance/trades")
+    val path = Paths.get("old/data/cache/binance/trades")
     Files.createDirectories(path)
     return coinToCachedBinanceTrades(config.mainCoin, config.altCoins, path, constants, api, currentTime, coinLog)
 }

@@ -109,7 +109,7 @@ kotlin {
 val libraryPath = "D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64"
 
 application {
-    mainClassName = "main.MainKt"
+    mainClassName = "old.main.MainKt"
     applicationDefaultJvmArgs = listOf("-Djava.library.path=$libraryPath")
 }
 
