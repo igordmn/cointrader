@@ -4,16 +4,26 @@ import com.dmi.cointrader.app.trade.IndexedTrade
 import com.dmi.util.concurrent.chunkedBy
 import com.dmi.util.concurrent.insert
 import com.dmi.util.concurrent.map
+import com.dmi.util.lang.times
 import kotlinx.coroutines.experimental.channels.*
 import java.time.Duration
 import java.time.Instant
 
 data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
-fun candleNum(startTime: Instant, period: Duration, time: Instant): Long {
+data class Periods(val startTime: Instant, val period: Duration) {
+    fun numOf(time: Instant): Long = periodNum(startTime, period, time)
+    fun timeOf(num: Long): Instant = periodTime(startTime, period, num)
+}
+
+fun periodNum(startTime: Instant, period: Duration, time: Instant): Long {
     val distMillis = Duration.between(startTime, time).toMillis()
     val periodMillis = period.toMillis()
     return Math.floorDiv(distMillis, periodMillis)
+}
+
+fun periodTime(startTime: Instant, period: Duration, num: Long): Instant {
+    return startTime + period * num
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
@@ -29,7 +39,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         ), trades.last().index)
     }
 
-    fun candleNum(trade: IndexedTrade<INDEX>) = candleNum(startTime, period, trade.value.time)
+    fun candleNum(trade: IndexedTrade<INDEX>) = periodNum(startTime, period, trade.value.time)
 
     fun candlesFirst(first: CandleBillet): List<CandleBillet> = (nums.start until first.num).map {
         CandleBillet(it, listOf(first.trades.first()))

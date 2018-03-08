@@ -36,7 +36,9 @@ fun Instant.truncatedTo(duration: Duration): Instant {
     return plusNanos(result - nod)
 }
 
+operator fun Duration.div(other: Duration): Double = seconds / other.seconds.toDouble()
 operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multiplier.toLong())
+operator fun Duration.times(multiplier: Long): Duration = this.multipliedBy(multiplier)
 
 fun Duration.toNanosDouble(): Double = NANOS_PER_SECOND * seconds.toDouble() + nano.toDouble()
 

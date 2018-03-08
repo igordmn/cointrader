@@ -2,7 +2,7 @@ package com.dmi.cointrader.app.moment
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
-import com.dmi.cointrader.app.candle.candleNum
+import com.dmi.cointrader.app.candle.periodNum
 import com.dmi.cointrader.app.candle.candles
 import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.atom.ReadAtom
@@ -51,7 +51,7 @@ class TradeMoments(
         require(currentTime >= startTime)
 
         val firstNum = if (state != null) state.num + 1 else 0L
-        val lastNum = candleNum(startTime, period, currentTime)
+        val lastNum = periodNum(startTime, period, currentTime)
         val tradeStartIndices = state?.candles?.map(CandleState::lastTradeIndex) ?: indices.map { 0L }
 
         fun TradesCandle<Long>.toItem() = CandleItem(CandleState(lastTradeIndex), candle)

@@ -1,7 +1,7 @@
 package com.dmi.cointrader.main
 
 import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.candle.candleNum
+import com.dmi.cointrader.app.candle.periodNum
 import com.dmi.cointrader.app.moment.Moment
 import com.dmi.cointrader.app.moment.cachedMoments
 import com.dmi.cointrader.app.neural.NeuralNetwork
@@ -68,8 +68,8 @@ fun main(args: Array<String>) {
         println("Make moments")
         moments.sync()
 
-        val startPeriodNum = candleNum(config.startTime, config.period, config.trainStartTime)
-        val endPeriodNum = candleNum(config.startTime, config.period, config.trainEndTime).coerceAtMost(moments.size())
+        val startPeriodNum = periodNum(config.startTime, config.period, config.trainStartTime)
+        val endPeriodNum = periodNum(config.startTime, config.period, config.trainEndTime).coerceAtMost(moments.size())
 
         jep().use { jep ->
             network(jep, config).use { net ->
