@@ -11,6 +11,13 @@ data class Candle(val close: Double, val high: Double, val low: Double) {
         require(close <= high)
         require(close >= low)
     }
+
+    fun indicator(index: Int) = when (index) {
+        0 -> close
+        1 -> high
+        2 -> low
+        else -> throw UnsupportedOperationException()
+    }
 }
 
 class CandleFixedSerializer : FixedSerializer<Candle> {

@@ -33,8 +33,8 @@ import kotlin.math.pow
 
 private val netsPath = Paths.get("data/nets")
 
-private typealias History = List<Moment>
-private typealias Portfolio = List<Double>
+typealias History = List<Moment>
+typealias Portfolio = List<Double>
 private typealias SetPortfolio = (Portfolio) -> Unit
 private typealias Prices = List<Double>
 private typealias PricesIncs = List<Double>
@@ -103,7 +103,7 @@ private suspend fun train(backTest1: BackTest, backTest2: BackTest, network: Neu
                 batch.futurePriceIncsMatrix(config)
         )
         val periodProfit = result.geometricMeanProfit
-        val newPortfolios = result.newPortfolios.portfolios(config)
+        val newPortfolios = result.newPortfolios.toPortfolios()
         setPortions(batch, newPortfolios)
         return periodProfit
     }
@@ -231,13 +231,6 @@ private class TrainBatch(val moments: List<TrainMoment>)
 private class TrainMoment(val history: History, val portfolio: Portfolio, val setPortfolio: SetPortfolio, val futurePriceIncs: PricesIncs)
 
 private fun TrainBatch.historyMatrix(config: Config): DoubleMatrix4D {
-    fun Candle.indicator(index: Int) = when (index) {
-        0 -> close
-        1 -> high
-        2 -> low
-        else -> throw UnsupportedOperationException()
-    }
-
     fun value(b: Int, c: Int, h: Int, i: Int) = moments[b].history[h].coinIndexToCandle[c].indicator(i)
     return DoubleMatrix4D(config.trainBatchSize, 1 + config.altCoins.size, config.historyCount, 3, ::value)
 }
@@ -252,13 +245,38 @@ private fun TrainBatch.futurePriceIncsMatrix(config: Config): DoubleMatrix2D {
     return DoubleMatrix2D(config.trainBatchSize, 1 + config.altCoins.size, ::value)
 }
 
-private fun DoubleMatrix2D.portfolios(config: Config): List<Portfolio> {
-    val portfolios = ArrayList<Portfolio>(config.trainBatchSize)
-    (0 until config.trainBatchSize).forEach { b ->
-        val portfolio = ArrayList<Double>(1 + config.altCoins.size)
-        (0 until 1 + config.altCoins.size).forEach { c ->
+fun List<Portfolio>.listToMatrix(): DoubleMatrix2D {
+    val batchSize = size
+    val portfolioSize = first().size
+    fun value(b: Int, c: Int) = this[b][c]
+    return DoubleMatrix2D(batchSize, portfolioSize, ::value)
+}
+
+fun List<History>.listToMatrix(): DoubleMatrix4D {
+    val batchSize = size
+    val historySize = first().size
+    val coinsSize = first().first().coinIndexToCandle.size
+    val indicatorSize = 3
+    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h].coinIndexToCandle[c].indicator(i)
+    return DoubleMatrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
+}
+
+fun DoubleMatrix2D.toPortfolios(): List<Portfolio> {
+    val portfolios = ArrayList<Portfolio>(n1)
+    (0 until n1).forEach { b ->
+        val portfolio = ArrayList<Double>(n2)
+        (0 until n2).forEach { c ->
             portfolio.add(this[b, c])
         }
     }
     return portfolios
+}
+
+fun Portfolio.toMatrix(): DoubleMatrix2D = listOf(this).listToMatrix()
+fun History.toMatrix(): DoubleMatrix4D = listOf(this).listToMatrix()
+
+fun DoubleMatrix2D.toPortfolio(): Portfolio = toPortfolios().first()
+
+fun NeuralNetwork.bestPortfolio(current: Portfolio, history: History): Portfolio {
+    return bestPortfolio(current.toMatrix(), history.toMatrix()).toPortfolio()
 }

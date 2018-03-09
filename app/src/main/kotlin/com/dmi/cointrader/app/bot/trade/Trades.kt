@@ -3,15 +3,26 @@ package com.dmi.cointrader.app.bot.trade
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodContext
 import com.dmi.cointrader.app.candle.asSequence
+import com.dmi.cointrader.app.neural.NeuralNetwork
+import com.dmi.cointrader.main.History
+import com.dmi.cointrader.main.Portfolio
+import com.dmi.cointrader.main.toMatrix
+import com.dmi.cointrader.main.toPortfolio
 import com.dmi.util.collection.map
 import com.dmi.util.concurrent.delay
 import com.dmi.util.lang.InstantRange
+import com.dmi.util.lang.indexOfMax
+import com.dmi.util.lang.unsupportedOperation
+import com.dmi.util.math.DoubleMatrix2D
+import com.dmi.util.math.portions
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
+import old.exchange.candle.Candle
 import org.slf4j.Logger
 import java.awt.Toolkit
+import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 
@@ -31,12 +42,6 @@ suspend fun performRealTrades(context: PeriodContext, getCurrentTime: Property<I
     }
 }
 
-suspend fun performTestTrades(context: PeriodContext, times: InstantRange, trade: Action) {
-    testTradePeriods(context, times).consumeEach {
-        trade()
-    }
-}
-
 fun realTradePeriods(context: PeriodContext, getCurrentTime: Property<Instant>): ReceiveChannel<Period> = produce {
     var previousPeriod: Period? = null
     while (isActive) {
@@ -52,14 +57,42 @@ fun realTradePeriods(context: PeriodContext, getCurrentTime: Property<Instant>):
     }
 }
 
+suspend fun performTestTrades(context: PeriodContext, times: InstantRange, trade: Action) {
+    testTradePeriods(context, times).consumeEach {
+        trade()
+    }
+}
+
 fun testTradePeriods(context: PeriodContext, times: InstantRange): ReceiveChannel<Period> {
     return times.map(context::periodOf).asSequence().asReceiveChannel()
 }
 
-//fun <PORTFOLIO> trade(
-//        portfolio: Property<PORTFOLIO>,
-//        rebalance: Command<PORTFOLIO>,
-//        bestPortfolio: Value<PORTFOLIO, PORTFOLIO>
-//) = action {
-//    rebalance(bestPortfolio(portfolio()))
-//}
+typealias Capitals = List<Double>
+
+interface Market {
+    suspend fun buy(amount: Double)
+}
+
+interface Exchange {
+    suspend fun capitals(): Capitals
+    suspend fun transfer(fromIndex: Int, toIndex: Int, amount: Double)
+}
+
+suspend fun trade(
+        portfolio: Property<Portfolio>,
+        exchange: Exchange,
+        bestPortfolio: Value<Portfolio, Portfolio>
+) {
+    allinRebalance(exchange, bestPortfolio(portfolio()))
+}
+
+suspend fun allinRebalance(
+        exchange: Exchange,
+        newPortfolio: Portfolio
+) {
+    val capitals = exchange.capitals()
+    val portfolio = capitals.portions()
+    val currentCoin = portfolio.indexOfMax()!!
+    val buyCoin = newPortfolio.indexOfMax()!!
+    exchange.transfer(currentCoin, buyCoin, capitals[currentCoin])
+}
