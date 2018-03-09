@@ -76,7 +76,7 @@ class AdvisableTrade(
             capitals: Map<String, BigDecimal>,
             portions: CoinPortions,
             bestPortions: CoinPortions,
-            brokers: Map<String, MarketBroker>
+            brokers: Map<String, Market>
     ) {
         val currentCoin = maxCoin(portions)
         val buyCoin = maxCoin(bestPortions)
@@ -98,12 +98,12 @@ class AdvisableTrade(
     }
 
     private fun findMainMarket(coin: String): MainMarket {
-        val market: Market? = markets.of(coin, mainCoin)
-        val reversedMarket: Market? = markets.of(mainCoin, coin)
+        val market: OldMarket? = markets.of(coin, mainCoin)
+        val reversedMarket: OldMarket? = markets.of(mainCoin, coin)
 
         require(market != null || reversedMarket != null) { "Market $mainCoin -> $coin doesn't exist" }
 
-        val finalMarket: Market
+        val finalMarket: OldMarket
         val isReversed: Boolean
         if (market != null) {
             finalMarket = market
@@ -143,7 +143,7 @@ class AdvisableTrade(
     private fun maxCoin(portions: Map<String, BigDecimal>): String = portions.maxBy { it.value }!!.key
 
     private class MainMarket(
-            private val original: Market,
+            private val original: OldMarket,
             private val isReversed: Boolean,
             private val operationScale: Int
     ) {
@@ -161,7 +161,7 @@ class AdvisableTrade(
         /**
          * Amount of buy/sell main coins
          */
-        fun broker(price: BigDecimal): MarketBroker {
+        fun broker(price: BigDecimal): Market {
             return if (isReversed) ReversedMarketBroker(original.broker, price, operationScale) else original.broker
         }
     }

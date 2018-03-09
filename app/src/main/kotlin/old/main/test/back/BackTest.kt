@@ -97,7 +97,7 @@ private class TestMarkets(
         private val operationScale: Int,
         private val period: Duration
 ) : Markets {
-    override fun of(fromCoin: String, toCoin: String): Market? {
+    override fun of(fromCoin: String, toCoin: String): OldMarket? {
         val name = constants.marketName(fromCoin, toCoin)
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
@@ -120,7 +120,7 @@ private class TestMarkets(
                     fromCoin, toCoin,
                     logger(TestMarketBroker::class)
             )
-            Market(broker, history, prices)
+            OldMarket(broker, history, prices)
         } else {
             null
         }

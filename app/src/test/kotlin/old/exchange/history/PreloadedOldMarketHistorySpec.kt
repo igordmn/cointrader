@@ -15,7 +15,7 @@ import java.nio.file.Files
 import java.time.Duration
 import java.time.Instant
 
-class PreloadedMarketHistorySpec : FreeSpec({
+class PreloadedOldMarketHistorySpec : FreeSpec({
     fun instant(millis: Int) = Instant.ofEpochMilli(millis.toLong())
     fun instantRange(millis: IntRange) = instant(millis.start)..instant(millis.endInclusive)
 

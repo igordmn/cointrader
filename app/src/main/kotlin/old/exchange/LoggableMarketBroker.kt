@@ -5,11 +5,11 @@ import com.dmi.util.math.round
 import java.math.BigDecimal
 
 class LoggableMarketBroker(
-        private val original: MarketBroker,
+        private val original: Market,
         private val fromCoin: String,
         private val toCoin: String,
         private val log: Logger
-) : MarketBroker {
+) : Market {
     override suspend fun buy(amount: BigDecimal) {
         val amountR = amount.round(10)
         log.debug("buying $amountR $toCoin from $fromCoin")

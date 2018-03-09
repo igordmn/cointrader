@@ -1,13 +1,13 @@
 package old.exchange.test
 
-import old.exchange.MarketBroker
+import old.exchange.Market
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldThrow
 import io.kotlintest.specs.FreeSpec
 import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
-class TestMarketBrokerSpec : FreeSpec({
+class TestOldMarketBrokerSpec : FreeSpec({
     val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
     val ethInBtcPrice = TestMarketPrice(BigDecimal("0.1"))
 
@@ -59,16 +59,16 @@ class TestMarketBrokerSpec : FreeSpec({
 
         "cannot buy/sell zero/negative amount" {
             runBlocking {
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.buy(BigDecimal("0.0"))
                 }
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.sell(BigDecimal("0.0"))
                 }
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.buy(BigDecimal("-10.0"))
                 }
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.sell(BigDecimal("-10.0"))
                 }
             }
@@ -76,10 +76,10 @@ class TestMarketBrokerSpec : FreeSpec({
 
         "sell/buy LTC greater than can sell/buy" {
             runBlocking {
-                shouldThrow<MarketBroker.Error.InsufficientBalance> {
+                shouldThrow<Market.Error.InsufficientBalance> {
                     btcToLtc.sell(BigDecimal("21.0"))
                 }
-                shouldThrow<MarketBroker.Error.InsufficientBalance> {
+                shouldThrow<Market.Error.InsufficientBalance> {
                     btcToLtc.buy(BigDecimal("101.0"))
                 }
             }
@@ -146,7 +146,7 @@ class TestMarketBrokerSpec : FreeSpec({
 
         "cannot buy LTC less than min limit" {
             runBlocking {
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.buy(BigDecimal("0.08"))
                 }
             }
@@ -154,10 +154,10 @@ class TestMarketBrokerSpec : FreeSpec({
 
         "cannot buy/sell LTC that not multiple of step" {
             runBlocking {
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.buy(BigDecimal("0.11"))
                 }
-                shouldThrow<MarketBroker.Error.WrongAmount> {
+                shouldThrow<Market.Error.WrongAmount> {
                     btcToLtc.sell(BigDecimal("0.11"))
                 }
             }

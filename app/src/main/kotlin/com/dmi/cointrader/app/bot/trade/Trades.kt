@@ -69,10 +69,6 @@ fun testTradePeriods(context: PeriodContext, times: InstantRange): ReceiveChanne
 
 typealias Capitals = List<Double>
 
-interface Market {
-    suspend fun buy(amount: Double)
-}
-
 interface Exchange {
     suspend fun capitals(): Capitals
     suspend fun transfer(fromIndex: Int, toIndex: Int, amount: Double)

@@ -1,5 +1,13 @@
 package old.exchange
 
-import old.exchange.history.MarketHistory
+import java.math.BigDecimal
 
-class Market(val broker: MarketBroker, val history: MarketHistory, val price: MarketPrice)
+interface Market {
+    suspend fun buy(amount: BigDecimal)
+    suspend fun sell(amount: BigDecimal)
+
+    sealed class Error : Exception() {
+        class InsufficientBalance: Error()
+        class WrongAmount: Error()
+    }
+}

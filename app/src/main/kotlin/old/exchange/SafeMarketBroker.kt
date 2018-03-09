@@ -5,12 +5,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class SafeMarketBroker(
-        private val original: MarketBroker,
+        private val original: Market,
         private val limits: MarketLimits,
         private val attemptCount: Int,
         private val attemptAmountDecay: BigDecimal,
         private val log: Logger
-) : MarketBroker {
+) : Market {
     suspend override fun buy(amount: BigDecimal) {
         processAmount(amount, "buy") { newAmount ->
             original.buy(newAmount)
@@ -29,7 +29,7 @@ class SafeMarketBroker(
         while (true) {
             try {
                 limitAmount(currentAmount, action)
-            } catch (e: MarketBroker.Error.InsufficientBalance) {
+            } catch (e: Market.Error.InsufficientBalance) {
                 log.info("InsufficientBalance ($logMethod). Attempt $attempt   amount $currentAmount")
                 if (attempt == attemptCount - 1) {
                     throw e
@@ -45,7 +45,7 @@ class SafeMarketBroker(
 
     private suspend fun limitAmount(amount: BigDecimal, action: suspend (newAmount: BigDecimal) -> Unit) {
         if (amount < BigDecimal.ZERO) {
-            throw MarketBroker.Error.WrongAmount()
+            throw Market.Error.WrongAmount()
         }
 
         val limits = limits.get()

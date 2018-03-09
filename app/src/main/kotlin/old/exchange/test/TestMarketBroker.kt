@@ -1,14 +1,12 @@
 package old.exchange.test
 
-import old.exchange.MarketBroker
+import old.exchange.Market
 import old.exchange.MarketLimits
 import old.exchange.MarketPrice
 import org.slf4j.Logger
-import com.dmi.util.math.equalsWithoutScale
 import com.dmi.util.math.notEqualsWithoutScale
 import com.dmi.util.math.round
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class TestMarketBroker(
         private val fromCoin: String,
@@ -18,7 +16,7 @@ class TestMarketBroker(
         private val fee: BigDecimal,
         private val limits: MarketLimits,
         private val listener: Listener
-) : MarketBroker {
+) : Market {
     override suspend fun buy(amount: BigDecimal) {
         checkAmount(amount)
         val currentPrice = price.current()
@@ -31,7 +29,7 @@ class TestMarketBroker(
                 it[fromCoin] = it[fromCoin] - fromSellAmount
                 it[toCoin] = it[toCoin] + amount * (BigDecimal.ONE - fee)
             } else {
-                throw MarketBroker.Error.InsufficientBalance()
+                throw Market.Error.InsufficientBalance()
             }
         }
     }
@@ -47,7 +45,7 @@ class TestMarketBroker(
                 it[fromCoin] = it[fromCoin] + amount * currentPrice * (BigDecimal.ONE - fee)
                 it[toCoin] = it[toCoin] - amount
             } else {
-                throw MarketBroker.Error.InsufficientBalance()
+                throw Market.Error.InsufficientBalance()
             }
         }
     }
@@ -58,7 +56,7 @@ class TestMarketBroker(
         val tooSmall = amount <= BigDecimal.ZERO || amount < limits.minAmount
         val notMultiplyOfStep = limits.amountStep != BigDecimal.ZERO && (amount % limits.amountStep) notEqualsWithoutScale BigDecimal.ZERO
         if (tooSmall || notMultiplyOfStep) {
-            throw MarketBroker.Error.WrongAmount()
+            throw Market.Error.WrongAmount()
         }
     }
 

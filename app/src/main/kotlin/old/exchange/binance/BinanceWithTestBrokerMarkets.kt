@@ -1,7 +1,7 @@
 package old.exchange.binance
 
 import old.exchange.LoggableMarketBroker
-import old.exchange.Market
+import old.exchange.OldMarket
 import old.exchange.Markets
 import old.exchange.SafeMarketBroker
 import com.dmi.cointrader.app.binance.api.BinanceAPI
@@ -23,7 +23,7 @@ class BinanceMarkets(
         private val operationScale: Int,
         private val period: Duration
 ) : Markets {
-    override fun of(fromCoin: String, toCoin: String): Market? {
+    override fun of(fromCoin: String, toCoin: String): OldMarket? {
         val name = constants.marketName(fromCoin, toCoin)
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
@@ -45,7 +45,7 @@ class BinanceMarkets(
                     fromCoin, toCoin,
                     logger(BinanceMarketBroker::class)
             )
-            Market(broker, history, prices)
+            OldMarket(broker, history, prices)
         } else {
             null
         }

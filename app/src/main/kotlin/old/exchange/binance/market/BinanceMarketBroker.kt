@@ -3,7 +3,7 @@ package old.exchange.binance.market
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
 import com.binance.api.client.exception.BinanceApiException
-import old.exchange.MarketBroker
+import old.exchange.Market
 import com.dmi.cointrader.app.binance.api.BinanceAPI
 import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
 import org.slf4j.Logger
@@ -16,7 +16,7 @@ class BinanceMarketBroker(
         private val name: String,
         private val api: BinanceAPI,
         private val log: Logger
-) : MarketBroker {
+) : Market {
     override suspend fun buy(amount: BigDecimal) {
         val result = newMarketOrder(OrderSide.BUY, amount)
         val slippage = buySlippage(amount, result)
@@ -31,7 +31,7 @@ class BinanceMarketBroker(
 
     private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal): NewOrderResponse {
         if (amount < BigDecimal.ZERO) {
-            throw MarketBroker.Error.WrongAmount()
+            throw Market.Error.WrongAmount()
         }
         return  try {
             // todo брать время с сервера
@@ -39,9 +39,9 @@ class BinanceMarketBroker(
         } catch (e: BinanceApiException) {
             val msg = e.error.msg
             val newException = when {
-                msg.startsWith("Invalid quantity") -> MarketBroker.Error.WrongAmount()
-                msg.startsWith("Filter failure: LOT_SIZE") -> MarketBroker.Error.WrongAmount()
-                msg.startsWith("Account has insufficient balance for requested action") -> MarketBroker.Error.InsufficientBalance()
+                msg.startsWith("Invalid quantity") -> Market.Error.WrongAmount()
+                msg.startsWith("Filter failure: LOT_SIZE") -> Market.Error.WrongAmount()
+                msg.startsWith("Account has insufficient balance for requested action") -> Market.Error.InsufficientBalance()
                 else -> e
             }
             throw newException

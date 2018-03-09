@@ -1,7 +1,7 @@
 package old.exchange.test
 
 import old.exchange.LoggableMarketBroker
-import old.exchange.Market
+import old.exchange.OldMarket
 import old.exchange.Markets
 import old.exchange.SafeMarketBroker
 import old.exchange.binance.BinanceConstants
@@ -26,7 +26,7 @@ class BinanceWithTestBrokerMarkets(
         private val operationScale: Int,
         private val period: Duration
 ) : Markets {
-    override fun of(fromCoin: String, toCoin: String): Market? {
+    override fun of(fromCoin: String, toCoin: String): OldMarket? {
         val name = constants.marketName(fromCoin, toCoin)
         return if (name != null) {
             val approximatedPricesFactory = LinearApproximatedPricesFactory(operationScale)
@@ -48,7 +48,7 @@ class BinanceWithTestBrokerMarkets(
                     fromCoin, toCoin,
                     logger(TestMarketBroker::class)
             )
-            Market(broker, history, prices)
+            OldMarket(broker, history, prices)
         } else {
             null
         }

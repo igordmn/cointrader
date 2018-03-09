@@ -1,6 +1,5 @@
 package old.exchange
 
-import old.exchange.MarketBroker
 import old.exchange.test.TestMarketBroker
 import old.exchange.test.TestMarketLimits
 import old.exchange.test.TestMarketPrice
@@ -13,7 +12,7 @@ import org.slf4j.helpers.NOPLogger
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class SafeMarketBrokerSpec : FreeSpec({
+class SafeOldMarketBrokerSpec : FreeSpec({
     val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
 
     val portfolio = TestPortfolio(mapOf(
@@ -102,7 +101,7 @@ class SafeMarketBrokerSpec : FreeSpec({
 
     "fourth attempt not allowed when first, second and third buy unsuccessful with insufficient balance" {
         runBlocking {
-            shouldThrow<MarketBroker.Error.InsufficientBalance> {
+            shouldThrow<Market.Error.InsufficientBalance> {
                 safeBroker.buy(BigDecimal("103")) // 101 * 0.99 * 0.99 = 100.9503 > 100
             }
         }
@@ -130,19 +129,19 @@ class SafeMarketBrokerSpec : FreeSpec({
 
     "fourth attempt not allowed when first, second and third sell unsuccessful with insufficient balance" {
         runBlocking {
-            shouldThrow<MarketBroker.Error.InsufficientBalance> {
+            shouldThrow<Market.Error.InsufficientBalance> {
                 safeBroker.sell(BigDecimal("20.5")) // 20.5 * 0.99 * 0.99 = 20.09205 > 20
             }
         }
     }
 
     "amount cannot be negative" {
-        shouldThrow<MarketBroker.Error.WrongAmount> {
+        shouldThrow<Market.Error.WrongAmount> {
             runBlocking {
                 safeBroker.buy(BigDecimal("-1.0"))
             }
         }
-        shouldThrow<MarketBroker.Error.WrongAmount> {
+        shouldThrow<Market.Error.WrongAmount> {
             runBlocking {
                 safeBroker.sell(BigDecimal("-1.0"))
             }

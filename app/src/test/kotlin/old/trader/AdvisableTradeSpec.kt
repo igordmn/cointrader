@@ -67,9 +67,9 @@ class AdvisableTradeSpec : StringSpec({
         }
     }
     
-    fun market(portfolio: TestPortfolio, fromCoin: String, toCoin: String): Market {
+    fun market(portfolio: TestPortfolio, fromCoin: String, toCoin: String): OldMarket {
         val price = price(fromCoin, toCoin)
-        return Market(
+        return OldMarket(
                 TestMarketBroker(
                         fromCoin, toCoin, portfolio, price, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
                         TestMarketBroker.EmptyListener()),
@@ -84,7 +84,7 @@ class AdvisableTradeSpec : StringSpec({
             "NEO" to BigDecimal("0.0")
     ))
     val markets = object : Markets {
-        override fun of(fromCoin: String, toCoin: String): Market? = when {
+        override fun of(fromCoin: String, toCoin: String): OldMarket? = when {
             fromCoin == "USDT" && toCoin == "BTC" -> market(portfolio, fromCoin, toCoin)
             fromCoin == "BTC" && toCoin == "LTC" -> market(portfolio, fromCoin, toCoin)
             fromCoin == "BTC" && toCoin == "ETH" -> market(portfolio, fromCoin, toCoin)
