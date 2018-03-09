@@ -10,3 +10,5 @@ fun LongRange.rangeChunked(size: Long): Sequence<LongRange> = buildSequence {
 }
 
 fun LongRange.toInt() = start.toInt()..endInclusive.toInt()
+
+fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.map(transform: (T) -> R): ClosedRange<R> = transform(start)..transform(endInclusive)

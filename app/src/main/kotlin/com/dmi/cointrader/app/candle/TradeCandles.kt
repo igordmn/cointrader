@@ -11,9 +11,18 @@ import java.time.Instant
 
 data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
-data class Periods(val startTime: Instant, val period: Duration) {
-    fun numOf(time: Instant): Long = periodNum(startTime, period, time)
-    fun timeOf(num: Long): Instant = periodTime(startTime, period, num)
+data class Period(val num: Long) : Comparable<Period> {
+    override fun compareTo(other: Period): Int = num.compareTo(other.num)
+    fun next(): Period = Period(num + 1)
+}
+
+fun ClosedRange<Period>.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
+
+data class PeriodContext(val start: Instant, val duration: Duration) {
+    fun periodOf(time: Instant) = Period(numOf(time))
+    fun timeOf(period: Period): Instant = timeOf(period.num)
+    fun numOf(time: Instant): Long = periodNum(start, duration, time)
+    fun timeOf(num: Long): Instant = periodTime(start, duration, num)
 }
 
 fun periodNum(startTime: Instant, period: Duration, time: Instant): Long {

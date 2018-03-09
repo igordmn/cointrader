@@ -1,9 +1,13 @@
 package com.dmi.cointrader.app.bot.trade
 
-import com.dmi.cointrader.app.candle.Periods
+import com.dmi.cointrader.app.candle.Period
+import com.dmi.cointrader.app.candle.PeriodContext
+import com.dmi.cointrader.app.candle.asSequence
+import com.dmi.util.collection.map
 import com.dmi.util.concurrent.delay
 import com.dmi.util.lang.InstantRange
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import org.slf4j.Logger
@@ -16,8 +20,8 @@ typealias Action = suspend () -> Unit
 typealias Property<OUT> = suspend () -> OUT
 typealias Value<IN, OUT> = suspend (IN) -> OUT
 
-suspend fun performRealTrades(periods: Periods, getCurrentTime: Property<Instant>, trade: Action, log: Logger) {
-    realTradeSignals(periods, getCurrentTime).consumeEach {
+suspend fun performRealTrades(context: PeriodContext, getCurrentTime: Property<Instant>, trade: Action, log: Logger) {
+    realTradePeriods(context, getCurrentTime).consumeEach {
         try {
             trade()
         } catch (e: Exception) {
@@ -27,41 +31,35 @@ suspend fun performRealTrades(periods: Periods, getCurrentTime: Property<Instant
     }
 }
 
-suspend fun performTestTrades(periods: Periods, timeRange: InstantRange, trade: Action) {
-    testTradeSignals(periods, timeRange).consumeEach {
+suspend fun performTestTrades(context: PeriodContext, times: InstantRange, trade: Action) {
+    testTradePeriods(context, times).consumeEach {
         trade()
     }
 }
 
-fun realTradeSignals(periods: Periods, getCurrentTime: Property<Instant>): ReceiveChannel<Unit> = produce {
+fun realTradePeriods(context: PeriodContext, getCurrentTime: Property<Instant>): ReceiveChannel<Period> = produce {
+    var previousPeriod: Period? = null
     while (isActive) {
         val currentTime = getCurrentTime().apply {
-            require(this > periods.startTime)
+            require(this >= context.start)
         }
-        val timeForNextTrade = timeForNextTrade(periods, currentTime)
-        delay(timeForNextTrade)
-        send(Unit)
+        val nextPeriod = context.periodOf(currentTime).next()
+        delay(Duration.between(currentTime, context.timeOf(nextPeriod)))
+        if (previousPeriod == null || nextPeriod > previousPeriod) {
+            send(nextPeriod)
+        }
+        previousPeriod = nextPeriod
     }
 }
 
-fun testTradeSignals(periods: Periods, timeRange: InstantRange): ReceiveChannel<Unit> = produce {
-    var t = timeRange.start + timeForNextTrade(periods, timeRange.start)
-    while (t <= timeRange.endInclusive) {
-        send(Unit)
-        t += periods.period
-    }
+fun testTradePeriods(context: PeriodContext, times: InstantRange): ReceiveChannel<Period> {
+    return times.map(context::periodOf).asSequence().asReceiveChannel()
 }
 
-private fun timeForNextTrade(periods: Periods, currentTime: Instant): Duration {
-    val periodNum = periods.numOf(currentTime)
-    val nextStart = periods.timeOf(periodNum + 1)
-    return Duration.between(currentTime, nextStart)
-}
-
-fun <PORTFOLIO> trade(
-        portfolio: Property<PORTFOLIO>,
-        rebalance: Command<PORTFOLIO>,
-        bestPortfolio: Value<PORTFOLIO, PORTFOLIO>
-) = action {
-    rebalance(bestPortfolio(portfolio()))
-}
+//fun <PORTFOLIO> trade(
+//        portfolio: Property<PORTFOLIO>,
+//        rebalance: Command<PORTFOLIO>,
+//        bestPortfolio: Value<PORTFOLIO, PORTFOLIO>
+//) = action {
+//    rebalance(bestPortfolio(portfolio()))
+//}
