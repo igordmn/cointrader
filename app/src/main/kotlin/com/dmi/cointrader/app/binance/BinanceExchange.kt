@@ -5,19 +5,16 @@ import com.binance.api.client.domain.OrderType
 import com.binance.api.client.domain.market.AggTrade
 import com.binance.api.client.exception.BinanceApiException
 import com.dmi.cointrader.app.binance.api.BinanceAPI
-import com.dmi.cointrader.app.binance.api.binanceAPI
 import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
 import com.dmi.util.math.sum
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
-import org.slf4j.Logger
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
 
 class BinanceExchange(
-        private val api: BinanceAPI,
-        private val log: Logger
+        private val api: BinanceAPI
 ) {
     private val constants = BinanceConstants()
 
@@ -66,23 +63,21 @@ class BinanceExchange(
                 price.toBigDecimal()
         )
 
-        suspend fun buy(amount: BigDecimal) {
+        suspend fun buy(amount: BigDecimal): OrderResult {
             val result = newMarketOrder(OrderSide.BUY, amount)
-            val slippage = buySlippage(amount, result)
-            log.info("Buy $amount $name:\n$result\nslippage $slippage")
+            return OrderResult(buySlippage(amount, result))
         }
 
-        suspend fun sell(amount: BigDecimal) {
+        suspend fun sell(amount: BigDecimal): OrderResult {
             val result = newMarketOrder(OrderSide.SELL, amount)
-            val slippage = sellSlippage(amount, result)
-            log.info("Sell $amount $name:\n$result\nslippage $slippage")
+            return OrderResult(sellSlippage(amount, result))
         }
 
         private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal): NewOrderResponse {
             if (amount < BigDecimal.ZERO) {
                 throw Error.WrongAmount
             }
-            return  try {
+            return try {
                 // todo брать время с сервера
                 api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 10000, Instant.now().toEpochMilli())
             } catch (e: BinanceApiException) {
@@ -97,16 +92,16 @@ class BinanceExchange(
             }
         }
 
-        private fun buySlippage(amount: BigDecimal, result: NewOrderResponse): BigDecimal {
-            val desiredSellingAmount = BigDecimal(result.fills.first().price) * amount
-            val factSellingAmount = result.fills.map { BigDecimal(it.qty) * BigDecimal(it.price) }.sum()
-            return desiredSellingAmount.divide(factSellingAmount, 30, RoundingMode.HALF_UP).setScale(10, RoundingMode.HALF_UP)
+        private fun buySlippage(amount: BigDecimal, result: NewOrderResponse): Double {
+            val desiredSellingAmount = result.fills.first().price!!.toDouble() * amount.toDouble()
+            val factSellingAmount = result.fills.map { it.qty!!.toDouble() * it.price!!.toDouble() }.sum()
+            return desiredSellingAmount / factSellingAmount
         }
 
-        private fun sellSlippage(amount: BigDecimal, result: NewOrderResponse): BigDecimal {
-            val desiredBuyingAmount = BigDecimal(result.fills.first().price) * amount
-            val factBuyingAmount = result.fills.map { BigDecimal(it.qty) * BigDecimal(it.price) }.sum()
-            return factBuyingAmount.divide(desiredBuyingAmount, 30, RoundingMode.HALF_UP).setScale(10, RoundingMode.HALF_UP)
+        private fun sellSlippage(amount: BigDecimal, result: NewOrderResponse): Double {
+            val desiredSellingAmount = result.fills.first().price!!.toDouble() * amount.toDouble()
+            val factSellingAmount = result.fills.map { it.qty!!.toDouble() * it.price!!.toDouble() }.sum()
+            return factSellingAmount / desiredSellingAmount
         }
     }
 
@@ -116,4 +111,5 @@ class BinanceExchange(
     }
 
     data class Trade(val time: Instant, val aggTradeId: Long, val amount: BigDecimal, val price: BigDecimal)
+    data class OrderResult(val slippage: Double)
 }
