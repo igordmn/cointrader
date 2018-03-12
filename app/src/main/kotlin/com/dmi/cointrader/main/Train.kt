@@ -26,7 +26,7 @@ import jep.Jep
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.commons.math3.distribution.GeometricDistribution
-import com.dmi.cointrader.app.python.jep
+import com.dmi.cointrader.app.neural.jep
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow

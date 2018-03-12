@@ -1,4 +1,4 @@
-package com.dmi.cointrader.app.python
+package com.dmi.cointrader.app.neural
 
 import jep.Jep
 import java.nio.file.Paths
