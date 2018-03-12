@@ -1,4 +1,4 @@
-package old.main.info
+package com.dmi.cointrader.app.info
 
 import com.dmi.cointrader.app.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking

@@ -20,7 +20,7 @@ import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.math.*
-import old.exchange.binance.BinanceConstants
+import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.binance.api.binanceAPI
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.*

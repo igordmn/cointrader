@@ -1,4 +1,4 @@
-package old.exchange.binance
+package com.dmi.cointrader.app.binance
 
 class BinanceConstants {
     val btcMarkets = setOf(

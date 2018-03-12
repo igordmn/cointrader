@@ -1,5 +1,6 @@
 package old.exchange.binance
 
+import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.moment.Moment
 import com.dmi.cointrader.app.moment.cachedMoments

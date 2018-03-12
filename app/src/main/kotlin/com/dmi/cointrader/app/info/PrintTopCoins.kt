@@ -1,7 +1,7 @@
-package old.main.info
+package com.dmi.cointrader.app.info
 
 import com.binance.api.client.domain.general.SymbolInfo
-import old.exchange.binance.BinanceConstants
+import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.binance.api.BinanceAPI
 import com.dmi.cointrader.app.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking

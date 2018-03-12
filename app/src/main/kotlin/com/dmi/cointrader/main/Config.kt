@@ -1,6 +1,5 @@
 package com.dmi.cointrader.main
 
-import adviser.AdviseIndicators
 import java.math.BigDecimal
 import java.time.*
 
@@ -15,7 +14,6 @@ data class Config(
         ),
         val historyCount: Int = 160,
         val fee: BigDecimal = BigDecimal("0.0018"),
-        val indicators: AdviseIndicators = AdviseIndicators.CLOSE_HIGH_LOW,
         val backTestStartTime: Instant = Instant.now() - Duration.ofDays(5),
 
         val startTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
