@@ -6,11 +6,9 @@ import com.binance.api.client.domain.market.AggTrade
 import com.binance.api.client.exception.BinanceApiException
 import com.dmi.cointrader.app.binance.api.BinanceAPI
 import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
-import com.dmi.util.math.sum
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 
 class BinanceExchange(
