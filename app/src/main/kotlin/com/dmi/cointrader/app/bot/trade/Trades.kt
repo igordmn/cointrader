@@ -1,15 +1,16 @@
 package com.dmi.cointrader.app.bot.trade
 
+import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodContext
-import com.dmi.cointrader.app.candle.asSequence
+import com.dmi.cointrader.app.moment.Moment
+import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.main.Portfolio
-import com.dmi.util.collection.rangeMap
+import com.dmi.cointrader.main.toMatrix
+import com.dmi.cointrader.main.toPortfolio
 import com.dmi.util.concurrent.delay
-import com.dmi.util.lang.InstantRange
+import com.dmi.util.io.SyncList
 import com.dmi.util.lang.indexOfMax
-import com.dmi.util.math.portions
-import com.dmi.util.math.times
 import kotlinx.coroutines.experimental.channels.*
 import org.slf4j.Logger
 import java.awt.Toolkit
@@ -20,8 +21,9 @@ typealias CoinAmounts = List<Double>
 typealias Prices = List<Double>
 
 class RealTrades(
-        private val exchange: Exchange,
-        private val adviser: Adviser,
+        private val exchange: BinanceExchange,
+        private val network: NeuralNetwork,
+        private val moments: SyncList<Moment>,
         private val periodContext: PeriodContext,
         private val log: Logger
 ) {
@@ -29,7 +31,7 @@ class RealTrades(
         periods().consumeEach { period ->
             try {
 //                loadInfo(period)
-                val capitals = exchange.coinAmounts()
+                val coins = exchange.assets()
                 val capital = capitals.sum()
                 log.info("$capital ($capitals)")
             } catch (e: Exception) {
@@ -55,14 +57,18 @@ class RealTrades(
     }
 
     private suspend fun trade() {
-        val coinAmounts = exchange.coinAmounts()
+        val coinAmounts = exchange.assets()
         val prices = exchange.prices()
         val capitals = coinAmounts * prices
         val currentPortfolio = capitals.portions()
-        val bestPortfolio = adviser.bestPortfolio(currentPortfolio)
+        val bestPortfolio = bestPortfolio(currentPortfolio)
         val currentCoin = currentPortfolio.indexOfMax()
         val buyCoin = bestPortfolio.indexOfMax()
         exchange.sell(currentCoin, buyCoin, coinAmounts[currentCoin])
+    }
+
+    private fun bestPortfolio(currentPortfolio: Portfolio): Portfolio {
+        return network.bestPortfolio(currentPortfolio.toMatrix(), TODO()).toPortfolio()
     }
 
     interface Exchange {
@@ -72,26 +78,8 @@ class RealTrades(
         suspend fun prices(): Prices
         suspend fun sell(fromIndex: Int, toIndex: Int, amount: Double)
     }
-
-    interface Adviser {
-        suspend fun bestPortfolio(current: Portfolio): Portfolio
-    }
 }
 
-
-//suspend fun performTestTrades(
-//        context: PeriodContext,
-//        times: InstantRange
-//): ReceiveChannel<Double> = produce {
-//    testTradePeriods(context, times).map {
-//        loadInfo()
-//        trade()
-//        val capitals = getCapitals()
-//        val capital = capitals.sum()
-//        capital
-//    }
+//fun testTradePeriods(context: PeriodContext, times: InstantRange): ReceiveChannel<Period> {
+//    return times.rangeMap(context::periodOf).asSequence().asReceiveChannel()
 //}
-
-fun testTradePeriods(context: PeriodContext, times: InstantRange): ReceiveChannel<Period> {
-    return times.rangeMap(context::periodOf).asSequence().asReceiveChannel()
-}

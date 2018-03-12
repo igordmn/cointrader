@@ -2,7 +2,7 @@ package com.dmi.cointrader.app.binance
 
 class BinanceConstants {
     val btcMarkets = setOf(
-            "ETH", "LTC", "BNB", "NEO", "BCH", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM",
+            "ETH", "LTC", "BNB", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM",
             "YOYO", "OMG", "ZRX", "STRAT", "SNGLS", "BQX", "KNC", "FUN", "SNM", "IOTA",
             "LINK", "XVG", "CTR", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC",
             "MTH", "ENG", "DNT", "ZEC", "BNT", "AST", "DASH", "OAX", "ICN",
@@ -18,20 +18,10 @@ class BinanceConstants {
 
     val btcReversedMarkets = setOf("USDT")
 
-    val standardNameToBinance = mapOf(
-            "BCH" to "BCC"
-    )
-
-    val binanceNameToStandard = mapOf(
-            "BCC" to "BCH"
-    )
-
-    fun marketName(fromCoin: String, toCoin: String): String? {
-        val fromCoinBinanceName = standardNameToBinance[fromCoin]?: fromCoin
-        val toCoinBinanceName = standardNameToBinance[toCoin]?: toCoin
+    fun marketName(fromAsset: String, toAsset: String): String? {
         return when {
-            fromCoin == "BTC" && toCoin in btcMarkets -> "${toCoinBinanceName}BTC"
-            toCoin == "BTC" && fromCoin in btcReversedMarkets -> "BTC$fromCoinBinanceName"
+            fromAsset == "BTC" && toAsset in btcMarkets -> "${toAsset}BTC"
+            toAsset == "BTC" && fromAsset in btcReversedMarkets -> "BTC$fromAsset"
             else -> null
         }
     }

@@ -7,6 +7,7 @@ import com.dmi.util.io.RestorableSource
 import com.dmi.util.io.SyncList
 import com.dmi.util.io.syncFileList
 import com.dmi.cointrader.app.binance.BinanceConstants
+import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.binance.MarketInfo
 import com.dmi.cointrader.app.binance.api.BinanceAPI
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
 import com.dmi.cointrader.main.Config
+import com.dmi.util.concurrent.map
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -28,39 +30,21 @@ typealias BinanceTradeItem = RestorableSource.Item<BinanceTradeState, Trade>
 data class BinanceTradeConfig(val market: String)
 
 class BinanceTrades(
-        private val api: BinanceAPI,
-        private var currentTime: ReadAtom<Instant>,
-        private val market: String,
-        private val chunkLoadCount: Int = 500
+        private val market: BinanceExchange.Market,
+        private var currentTime: ReadAtom<Instant>
 ) : RestorableSource<BinanceTradeState, Trade> {
     override fun restore(state: BinanceTradeState?): ReceiveChannel<BinanceTradeItem> = buildChannel {
         val currentTime = currentTime()
         val startId = if (state != null) state.id + 1L else 0L
-        binanceTrades(startId).takeWhile { it.value.time <= currentTime }
+        market.trades(startId).map(::convert).takeWhile { it.value.time <= currentTime }
     }
 
-    private fun binanceTrades(startId: Long): ReceiveChannel<BinanceTradeItem> = produce {
-        var id = startId
-
-        while (true) {
-            val trades = api.getAggTrades(market, id.toString(), chunkLoadCount, null, null)
-            if (trades.isNotEmpty()) {
-                trades.forEach {
-                    send(it.toItem())
-                }
-                id = trades.last().aggregatedTradeId + 1
-            } else {
-                break
-            }
-        }
-    }
-
-    private fun AggTrade.toItem() = BinanceTradeItem(
-            BinanceTradeState(aggregatedTradeId),
+    private fun convert(trade: BinanceExchange.Trade) = BinanceTradeItem(
+            BinanceTradeState(trade.aggTradeId),
             Trade(
-                    Instant.ofEpochMilli(tradeTime),
-                    quantity.toDouble(),
-                    price.toDouble()
+                    trade.time,
+                    trade.amount.toDouble(),
+                    trade.price.toDouble()
             )
     )
 }
@@ -102,7 +86,7 @@ suspend fun cachedBinanceTrades(
         chunkLoadCount: Int
 ): SyncList<Trade> {
     val market = marketInfo.name
-    val source = BinanceTrades(api, currentTime, market, chunkLoadCount)
+    val source = BinanceTrades(TODO(), currentTime)
     val original: SyncList<Trade> = syncFileList(
             path,
             BinanceTradeConfig.serializer(),
