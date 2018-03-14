@@ -35,3 +35,7 @@ fun Profits.hourly(config: Config): Profits {
         product(it).pow(periodsPerHour.toDouble() / it.size)
     }
 }
+
+suspend fun backTest(days: Double) {
+
+}

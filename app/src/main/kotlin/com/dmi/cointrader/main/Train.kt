@@ -39,6 +39,10 @@ private typealias SetPortfolio = (Portions) -> Unit
 private typealias Prices = List<Double>
 private typealias PricesIncs = List<Double>
 
+suspend fun train() {
+
+}
+
 fun main(args: Array<String>) {
     runBlocking {
         netsPath.toFile().deleteRecursively()

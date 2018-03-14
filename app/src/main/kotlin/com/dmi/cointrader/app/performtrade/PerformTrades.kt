@@ -20,6 +20,9 @@ import java.time.Duration
 import java.time.Instant
 
 suspend fun performRealTrades() = resourceContext {
+    if (!askForRealTrade())
+        return@resourceContext
+
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = productionBinanceExchange()
@@ -32,6 +35,17 @@ suspend fun performRealTrades() = resourceContext {
                 config, exchange, history, period, clock, network
         )
     }.performPeriodicTrades()
+}
+
+private fun askForRealTrade(): Boolean {
+    println("Run trading real money? enter 'yes' if yes")
+    val answer = readLine()
+    return if (answer != "yes") {
+        println("Answer not 'yes', so exit")
+        false
+    } else {
+        true
+    }
 }
 
 suspend fun performTestTrades(config: TradeConfig, network: NeuralNetwork, times: InstantRange) = resourceContext {
