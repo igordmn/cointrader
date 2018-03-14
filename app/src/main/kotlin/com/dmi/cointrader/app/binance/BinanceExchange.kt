@@ -5,36 +5,54 @@ import com.binance.api.client.domain.OrderType
 import com.binance.api.client.domain.market.AggTrade
 import com.binance.api.client.exception.BinanceApiException
 import com.dmi.cointrader.app.binance.api.BinanceAPI
+import com.dmi.cointrader.app.binance.api.binanceAPI
 import com.dmi.cointrader.app.binance.api.model.NewOrderResponse
+import com.dmi.util.log.logger
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
+import java.io.File
 import java.math.BigDecimal
 import java.time.Instant
+
+typealias Asset = String
+typealias Portfolio = Map<Asset, BigDecimal>
+
+fun prodBinanceExchange(): BinanceExchange {
+    val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
+    val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
+    val api = binanceAPI(apiKey, secret, logger("BinanceAPI"), maxRequestsPerSecond = 10)
+    return BinanceExchange(api)
+}
+
+fun testBinanceExchange(): BinanceExchange {
+    val api = binanceAPI()
+    return BinanceExchange(api)
+}
 
 class BinanceExchange(
         private val api: BinanceAPI
 ) {
-    private val constants = BinanceConstants()
+    private val btcReversedMarkets = setOf("USDT")
 
-    suspend fun currentTime(): Instant = TODO()
+    suspend fun currentTime(): Instant = Instant.ofEpochSecond(api.serverTime().serverTime)
 
-    suspend fun assets(): Assets {
-        // todo брать время с сервера
-        val result = api.getAccount(10000, Instant.now().toEpochMilli())
-        return Assets(
-                map = result.balances.associate {
-                    it.asset to BigDecimal(it.free)
-                }
-        )
+    suspend fun portfolio(timestamp: Instant): Portfolio {
+        val result = api.getAccount(5000, timestamp.toEpochMilli())
+        return result.balances.associate {
+            it.asset to BigDecimal(it.free)
+        }
     }
 
-    suspend fun market(fromAsset: String, toAsset: String, chunkLoadCount: Int = 500): Market? {
-        val name = constants.marketName(fromAsset, toAsset)
+    suspend fun market(fromAsset: Asset, toAsset: Asset, chunkLoadCount: Int = 500): Market? {
+        val name = marketName(fromAsset, toAsset)
         return name?.let { Market(it, chunkLoadCount) }
     }
 
-    inner class Assets(private val map: Map<String, BigDecimal>) {
-        fun amountOf(coin: String): BigDecimal = map[coin]!!
+    private fun marketName(fromAsset: Asset, toAsset: Asset): String? {
+        return when {
+            toAsset == "BTC" && fromAsset in btcReversedMarkets -> "BTC$fromAsset"
+            else -> "${toAsset}BTC"
+        }
     }
 
     inner class Market(private val name: String, private val chunkLoadCount: Int) {
@@ -61,23 +79,22 @@ class BinanceExchange(
                 price.toBigDecimal()
         )
 
-        suspend fun buy(amount: BigDecimal): OrderResult {
-            val result = newMarketOrder(OrderSide.BUY, amount)
+        suspend fun buy(amount: BigDecimal, timestamp: Instant): OrderResult {
+            val result = newMarketOrder(OrderSide.BUY, amount, timestamp)
             return OrderResult(buySlippage(amount, result))
         }
 
-        suspend fun sell(amount: BigDecimal): OrderResult {
-            val result = newMarketOrder(OrderSide.SELL, amount)
+        suspend fun sell(amount: BigDecimal, timestamp: Instant): OrderResult {
+            val result = newMarketOrder(OrderSide.SELL, amount, timestamp)
             return OrderResult(sellSlippage(amount, result))
         }
 
-        private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal): NewOrderResponse {
+        private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal, timestamp: Instant): NewOrderResponse {
             if (amount < BigDecimal.ZERO) {
                 throw Error.WrongAmount
             }
             return try {
-                // todo брать время с сервера
-                api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 10000, Instant.now().toEpochMilli())
+                api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, timestamp.toEpochMilli())
             } catch (e: BinanceApiException) {
                 val msg = e.error.msg
                 val newException = when {

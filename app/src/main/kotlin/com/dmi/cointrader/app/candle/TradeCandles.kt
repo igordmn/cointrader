@@ -18,11 +18,12 @@ data class Period(val num: Long) : Comparable<Period> {
 
 fun ClosedRange<Period>.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
 
-data class PeriodContext(val start: Instant, val duration: Duration) {
-    fun periodOf(time: Instant) = Period(numOf(time))
-    fun timeOf(period: Period): Instant = timeOf(period.num)
-    fun numOf(time: Instant): Long = periodNum(start, duration, time)
-    fun timeOf(num: Long): Instant = periodTime(start, duration, num)
+data class Periods(val start: Instant, val duration: Duration) {
+    fun of(time: Instant) = Period(numOf(time))
+    private fun numOf(time: Instant): Long = periodNum(start, duration, time)
+
+    fun startOf(period: Period): Instant = startOf(period.num)
+    private fun startOf(num: Long): Instant = periodTime(start, duration, num)
 }
 
 fun periodNum(startTime: Instant, period: Duration, time: Instant): Long {

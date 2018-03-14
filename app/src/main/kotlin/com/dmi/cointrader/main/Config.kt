@@ -1,7 +1,29 @@
 package com.dmi.cointrader.main
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.CBOR.Companion.dump
+import kotlinx.serialization.cbor.CBOR.Companion.load
 import java.math.BigDecimal
-import java.time.*
+import java.nio.file.Paths
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+
+fun loadTradeConfig(): TradeConfig = load(Paths.get("data/tradeConfig").toFile().readBytes())
+fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile().writeBytes(dump(config))
+
+@Serializable
+data class TradeConfig(
+        val mainCoin: String = "BTC",
+        val altCoins: List<String> = listOf(
+                "USDT", "ETH", "NANO", "TRX", "ETC", "LTC", "XRP", "DGD", "VEN", "NEO", "ICX", "ADA", "BCPT", "XVG", "XLM", "EOS", "HSR", "LSK", "BCC",
+                "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD", "STRAT", "GXS", "OST"
+        ),
+        val historyCount: Int = 160,
+        val startTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
+        val period: Duration = Duration.ofMinutes(5)
+)
 
 data class Config(
         val mainCoin: String = "BTC",

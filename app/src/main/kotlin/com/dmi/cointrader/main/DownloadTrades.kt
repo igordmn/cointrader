@@ -6,9 +6,7 @@ import com.dmi.cointrader.app.trade.coinToCachedBinanceTrades
 import com.dmi.util.concurrent.mapAsync
 import com.dmi.util.io.SyncList
 import com.dmi.cointrader.app.binance.BinanceConstants
-import com.dmi.cointrader.app.binance.BinanceTime
 import com.dmi.cointrader.app.binance.api.binanceAPI
-import com.dmi.util.atom.synchronizable
 import kotlinx.coroutines.experimental.runBlocking
 
 fun main(args: Array<String>) {

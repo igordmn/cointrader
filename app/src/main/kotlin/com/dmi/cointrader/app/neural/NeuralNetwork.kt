@@ -1,5 +1,6 @@
 package com.dmi.cointrader.app.neural
 
+import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D
 import jep.Jep
@@ -9,10 +10,16 @@ import kotlinx.serialization.cbor.CBOR.Companion.dump
 import kotlinx.serialization.cbor.CBOR.Companion.load
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 
 private val neuralNetworkCreated = AtomicBoolean(false)
 private val neuralTrainerCreated = AtomicBoolean(false)
+
+suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
+    val jep = jep().use()
+    return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
+}
 
 class NeuralNetwork private constructor(
         private val jep: Jep,
