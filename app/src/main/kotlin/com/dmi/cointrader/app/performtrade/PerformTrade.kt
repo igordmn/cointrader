@@ -13,10 +13,10 @@ import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.Portions
 import com.dmi.cointrader.main.TradeConfig
 import com.dmi.util.lang.indexOfMax
+import com.dmi.util.log.logger
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
-import org.slf4j.Logger
 import java.awt.Toolkit
 import java.math.BigDecimal
 import java.time.Clock
@@ -26,11 +26,19 @@ suspend fun performRealTrade(
         exchange: BinanceExchange,
         history: History.Window,
         clock: Clock,
-        network: NeuralNetwork,
-        log: Logger
+        network: NeuralNetwork
 ) {
+    val log = logger("realTrades")
     try {
+        object : PerformTradeContext {
+            override val mainAsset = config.mainAsset
+            override val altAssets = config.altAssets
 
+            suspend override fun history() = history
+            suspend override fun portfolio() = exchange.portfolio(clock.instant())
+            suspend override fun bestPortfolio(current: Portions, history: History.Window) = network.bestPortfolio(current, history)
+            override fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.market(baseAsset, quoteAsset)?.broker(clock)
+        }.performTrade()
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()
@@ -43,7 +51,7 @@ interface PerformTradeContext {
     suspend fun history(): History.Window
     suspend fun portfolio(): Portfolio
     suspend fun bestPortfolio(current: Portions, history: History.Window): Portions
-    fun broker(baseAsset: Asset, toAsset: Asset): Broker?
+    fun broker(baseAsset: Asset, quoteAsset: Asset): Broker?
 }
 
 suspend fun PerformTradeContext.performTrade() = with(object {

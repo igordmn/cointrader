@@ -7,6 +7,7 @@ import com.dmi.cointrader.app.history.binanceHistory
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.broker.OrderAttempts
+import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.main.*
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
@@ -21,41 +22,45 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val history = binanceHistory(exchange)
-    fun realTrade(clock: Clock) = RealTrade(config, exchange, history, clock, network)
-    val realTrades = PerformRealTrades(config, exchange, ::realTrade)
-    realTrades()
+
+    object : PerformPeriodicTradesContext {
+        override val periods = config.periods
+        suspend override fun syncClock(): Clock = binanceClock(exchange)
+        suspend override fun trade(clock: Clock, period: Period) = performRealTrade(
+                config, exchange, history.window(period, config.historyCount), clock, network
+        )
+    }.performPeriodicTrades()
 }
 
 suspend fun performTestTrades(config: TradeConfig, network: NeuralNetwork) = resourceContext {
 
 }
 
-class PerformRealTrades(
-        private val config: TradeConfig,
-        private val exchange: BinanceExchange,
-        private val trade: suspend (Clock, period: Period) -> Unit
-) {
-    suspend operator fun invoke() {
-        val periods = Periods(config.startTime, config.period)
-        val periodIterator = PeriodIterator(periods)
-        while (isActive) {
-            val clock = binanceClock(exchange)
-            val currentTime = clock.instant()
-            val nextPeriod = periodIterator.nextAfter(currentTime)
-            delay(Duration.between(currentTime, periods.startOf(nextPeriod)))
-            trade(clock, nextPeriod)
-        }
-    }
+interface PerformPeriodicTradesContext {
+    val periods: Periods
+    suspend fun syncClock(): Clock
+    suspend fun trade(clock: Clock, period: Period)
 }
 
-class PeriodIterator(private val periods: Periods) {
-    private var previousPeriod = Period(Long.MIN_VALUE)
+suspend fun PerformPeriodicTradesContext.performPeriodicTrades() {
+    class PeriodIterator(private val periods: Periods) {
+        private var previousPeriod = Period(Long.MIN_VALUE)
 
-    fun nextAfter(time: Instant): Period {
-        val timePeriod = periods.of(time)
-        return max(previousPeriod, timePeriod).next().also {
-            previousPeriod = it
+        fun nextAfter(time: Instant): Period {
+            val timePeriod = periods.of(time)
+            return max(previousPeriod, timePeriod).next().also {
+                previousPeriod = it
+            }
         }
+    }
+
+    val iterator = PeriodIterator(periods)
+    while (isActive) {
+        val clock = syncClock()
+        val currentTime = clock.instant()
+        val nextPeriod = iterator.nextAfter(currentTime)
+        delay(Duration.between(currentTime, periods.startOf(nextPeriod)))
+        trade(clock, nextPeriod)
     }
 }
 

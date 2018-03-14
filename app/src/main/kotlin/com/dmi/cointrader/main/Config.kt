@@ -1,5 +1,6 @@
 package com.dmi.cointrader.main
 
+import com.dmi.cointrader.app.candle.Periods
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.dump
 import kotlinx.serialization.cbor.CBOR.Companion.load
@@ -21,8 +22,10 @@ data class TradeConfig(
                 "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD", "STRAT", "GXS", "OST"
         ),
         val historyCount: Int = 160,
-        val startTime: Instant = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
-        val period: Duration = Duration.ofMinutes(5)
+        val periods: Periods = Periods(
+                start = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
+                duration = Duration.ofMinutes(5)
+        )
 )
 
 data class Config(
