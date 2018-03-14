@@ -1,6 +1,9 @@
 package com.dmi.cointrader.app.neural
 
 import com.dmi.cointrader.app.history.History
+import com.dmi.cointrader.app.moment.Moment
+import com.dmi.cointrader.main.Config
+import com.dmi.cointrader.main.TrainBatch
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D
@@ -24,7 +27,8 @@ suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
 
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias HistoryBatch = List<History.Window>
+typealias HistoryMoments = List<Moment>
+typealias HistoryBatch = List<HistoryMoments>
 
 class NeuralNetwork private constructor(
         private val jep: Jep,
@@ -51,7 +55,7 @@ class NeuralNetwork private constructor(
         jep.invoke("create_network", config.coinCount, config.historyCount, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
     }
 
-    fun bestPortfolio(currentPortions: Portions, history: History.Window): Portions {
+    fun bestPortfolio(currentPortions: Portions, history: Moments): Portions {
 
     }
 
@@ -172,4 +176,55 @@ class NeuralTrainer(
 
     data class ResultMatrix(val newPortions: DoubleMatrix2D, val geometricMeanProfit: Double)
     data class Result(val newPortions: PortionsBatch, val geometricMeanProfit: Double)
+}
+
+private fun TrainBatch.historyMatrix(config: Config): DoubleMatrix4D {
+    fun value(b: Int, c: Int, h: Int, i: Int) = moments[b].history[h].coinIndexToCandle[c].indicator(i)
+    return DoubleMatrix4D(config.trainBatchSize, 1 + config.altCoins.size, config.historyCount, 3, ::value)
+}
+
+private fun TrainBatch.portfolioMatrix(config: Config): DoubleMatrix2D {
+    fun value(b: Int, c: Int) = moments[b].portfolio[c]
+    return DoubleMatrix2D(config.trainBatchSize, 1 + config.altCoins.size, ::value)
+}
+
+private fun TrainBatch.futurePriceIncsMatrix(config: Config): DoubleMatrix2D {
+    fun value(b: Int, c: Int) = moments[b].futurePriceIncs[c]
+    return DoubleMatrix2D(config.trainBatchSize, 1 + config.altCoins.size, ::value)
+}
+
+fun List<Portions>.listToMatrix(): DoubleMatrix2D {
+    val batchSize = size
+    val portfolioSize = first().size
+    fun value(b: Int, c: Int) = this[b][c]
+    return DoubleMatrix2D(batchSize, portfolioSize, ::value)
+}
+
+fun List<History>.listToMatrix(): DoubleMatrix4D {
+    val batchSize = size
+    val historySize = first().size
+    val coinsSize = first().first().coinIndexToCandle.size
+    val indicatorSize = 3
+    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h].coinIndexToCandle[c].indicator(i)
+    return DoubleMatrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
+}
+
+fun DoubleMatrix2D.toPortfolios(): List<Portions> {
+    val portfolios = ArrayList<Portions>(n1)
+    (0 until n1).forEach { b ->
+        val portfolio = ArrayList<Double>(n2)
+        (0 until n2).forEach { c ->
+            portfolio.add(this[b, c])
+        }
+    }
+    return portfolios
+}
+
+fun Portions.toMatrix(): DoubleMatrix2D = listOf(this).listToMatrix()
+fun History.toMatrix(): DoubleMatrix4D = listOf(this).listToMatrix()
+
+fun DoubleMatrix2D.toPortfolio(): Portions = toPortfolios().first()
+
+fun NeuralNetwork.bestPortfolio(current: Portions, history: History): Portions {
+    return bestPortfolio(current.toMatrix(), history.toMatrix()).toPortfolio()
 }

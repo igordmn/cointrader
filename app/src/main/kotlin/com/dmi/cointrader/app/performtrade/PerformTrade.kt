@@ -33,7 +33,7 @@ suspend fun performRealTrade(
 ) {
     val log = logger("realTrades")
     try {
-        history.loadBefore(clock.instant())
+        history.load(clock.instant())
         object : PerformTradeContext {
             override val mainAsset = config.mainAsset
             override val altAssets = config.altAssets
