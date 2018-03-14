@@ -53,15 +53,15 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         }
     }
 
-    fun market(mainAsset: Asset, toAsset: Asset): Market? {
-        val name = marketName(mainAsset, toAsset)
+    fun market(baseAsset: Asset, quoteAsset: Asset): Market? {
+        val name = marketName(baseAsset, quoteAsset)
         return name?.let(::Market)
     }
 
-    private fun marketName(mainAsset: Asset, toAsset: Asset): String? {
+    private fun marketName(baseAsset: Asset, quoteAsset: Asset): String? {
         return when {
-            toAsset == "BTC" && mainAsset in info.reversedMarkets -> "BTC$mainAsset"
-            else -> "${toAsset}BTC"
+            quoteAsset == "BTC" && baseAsset in info.reversedMarkets -> "BTC$baseAsset"
+            else -> "${quoteAsset}BTC"
         }
     }
 
@@ -93,14 +93,14 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
             override val limits: Limits
                 get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-            override suspend fun buy(amount: BigDecimal): OrderResult {
-                val result = newMarketOrder(OrderSide.BUY, amount, clock.instant())
-                return OrderResult(buySlippage(amount, result))
+            override suspend fun buy(baseAmount: BigDecimal): OrderResult {
+                val result = newMarketOrder(OrderSide.BUY, baseAmount, clock.instant())
+                return OrderResult(buySlippage(baseAmount, result))
             }
 
-            override suspend fun sell(amount: BigDecimal): OrderResult {
-                val result = newMarketOrder(OrderSide.SELL, amount, clock.instant())
-                return OrderResult(sellSlippage(amount, result))
+            override suspend fun sell(baseAmount: BigDecimal): OrderResult {
+                val result = newMarketOrder(OrderSide.SELL, baseAmount, clock.instant())
+                return OrderResult(sellSlippage(baseAmount, result))
             }
 
             private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal, timestamp: Instant): NewOrderResponse {
