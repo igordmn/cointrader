@@ -227,5 +227,4 @@ private fun trainer(jep: Jep, config: Config, net: NeuralNetwork) = NeuralTraine
 )
 
 private class TrainBatch(val moments: List<TrainMoment>)
-
 private class TrainMoment(val history: History, val portfolio: Portions, val setPortfolio: SetPortfolio, val futurePriceIncs: PricesIncs)

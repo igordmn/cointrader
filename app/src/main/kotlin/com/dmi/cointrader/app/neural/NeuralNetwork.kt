@@ -1,9 +1,6 @@
 package com.dmi.cointrader.app.neural
 
-import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.moment.Moment
-import com.dmi.cointrader.main.Config
-import com.dmi.cointrader.main.TrainBatch
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D
@@ -25,10 +22,13 @@ suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
     return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
 }
 
+// todo data class?
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias HistoryMoments = List<Moment>
-typealias HistoryBatch = List<HistoryMoments>
+typealias History = List<Moment>
+typealias HistoryBatch = List<History>
+data class PriceIncs(val values: List<Double>)
+typealias PriceIncsBatch = List<PriceIncs>
 
 class NeuralNetwork private constructor(
         private val jep: Jep,
@@ -55,8 +55,8 @@ class NeuralNetwork private constructor(
         jep.invoke("create_network", config.coinCount, config.historyCount, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
     }
 
-    fun bestPortfolio(currentPortions: Portions, history: Moments): Portions {
-
+    fun bestPortfolio(currentPortions: Portions, history: History): Portions {
+        return bestPortfolio(currentPortions.toMatrix(), history.toMatrix()).toPortions()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -135,22 +135,26 @@ class NeuralTrainer(
         jep.invoke("create_trainer", config.fee)
     }
 
-    fun train(currentPortions: PortionsBatch, histories: HistoryBatch): Result {
-
+    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, priceIncs: PriceIncsBatch): Result {
+        val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), priceIncs.toMatrix())
+        return Result(
+                resultMatrix.newPortions.toPortionsBatch(),
+                resultMatrix.geometricMeanProfit
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun train(currentPortfolios: DoubleMatrix2D, histories: DoubleMatrix4D, priceIncs: DoubleMatrix2D): ResultMatrix {
-        require(currentPortfolios.n2 == net.config.coinCount)
+    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, priceIncs: DoubleMatrix2D): ResultMatrix {
+        require(currentPortions.n2 == net.config.coinCount)
         require(histories.n2 == net.config.indicatorCount)
         require(histories.n3 == net.config.coinCount)
         require(histories.n4 == net.config.historyCount)
         require(priceIncs.n2 == net.config.coinCount)
-        require(priceIncs.n1 == currentPortfolios.n1)
+        require(priceIncs.n1 == currentPortions.n1)
         require(priceIncs.n1 == histories.n1)
 
         val nphistory = NDArray(histories.data, histories.n1, histories.n2, histories.n3, histories.n4)
-        val npportfolio = NDArray(currentPortfolios.data, currentPortfolios.n1, currentPortfolios.n2)
+        val npportfolio = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
         val npPriceIncs = NDArray(priceIncs.data, priceIncs.n1, priceIncs.n2)
 
         val result = jep.invoke("train", npportfolio, nphistory, npPriceIncs) as Array<*>
@@ -178,29 +182,16 @@ class NeuralTrainer(
     data class Result(val newPortions: PortionsBatch, val geometricMeanProfit: Double)
 }
 
-private fun TrainBatch.historyMatrix(config: Config): DoubleMatrix4D {
-    fun value(b: Int, c: Int, h: Int, i: Int) = moments[b].history[h].coinIndexToCandle[c].indicator(i)
-    return DoubleMatrix4D(config.trainBatchSize, 1 + config.altCoins.size, config.historyCount, 3, ::value)
-}
-
-private fun TrainBatch.portfolioMatrix(config: Config): DoubleMatrix2D {
-    fun value(b: Int, c: Int) = moments[b].portfolio[c]
-    return DoubleMatrix2D(config.trainBatchSize, 1 + config.altCoins.size, ::value)
-}
-
-private fun TrainBatch.futurePriceIncsMatrix(config: Config): DoubleMatrix2D {
-    fun value(b: Int, c: Int) = moments[b].futurePriceIncs[c]
-    return DoubleMatrix2D(config.trainBatchSize, 1 + config.altCoins.size, ::value)
-}
-
-fun List<Portions>.listToMatrix(): DoubleMatrix2D {
+@JvmName("PortionsBatch_toMatrix")
+fun PortionsBatch.toMatrix(): DoubleMatrix2D {
     val batchSize = size
     val portfolioSize = first().size
     fun value(b: Int, c: Int) = this[b][c]
     return DoubleMatrix2D(batchSize, portfolioSize, ::value)
 }
 
-fun List<History>.listToMatrix(): DoubleMatrix4D {
+@JvmName("HistoryBatch_toMatrix")
+fun HistoryBatch.toMatrix(): DoubleMatrix4D {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().coinIndexToCandle.size
@@ -209,7 +200,15 @@ fun List<History>.listToMatrix(): DoubleMatrix4D {
     return DoubleMatrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
 }
 
-fun DoubleMatrix2D.toPortfolios(): List<Portions> {
+@JvmName("PriceIncsBatch_toMatrix")
+fun PriceIncsBatch.toMatrix(): DoubleMatrix2D {
+    val batchSize = size
+    val portfolioSize = first().values.size
+    fun value(b: Int, c: Int) = this[b].values[c]
+    return DoubleMatrix2D(batchSize, portfolioSize, ::value)
+}
+
+fun DoubleMatrix2D.toPortionsBatch(): PortionsBatch {
     val portfolios = ArrayList<Portions>(n1)
     (0 until n1).forEach { b ->
         val portfolio = ArrayList<Double>(n2)
@@ -220,11 +219,6 @@ fun DoubleMatrix2D.toPortfolios(): List<Portions> {
     return portfolios
 }
 
-fun Portions.toMatrix(): DoubleMatrix2D = listOf(this).listToMatrix()
-fun History.toMatrix(): DoubleMatrix4D = listOf(this).listToMatrix()
-
-fun DoubleMatrix2D.toPortfolio(): Portions = toPortfolios().first()
-
-fun NeuralNetwork.bestPortfolio(current: Portions, history: History): Portions {
-    return bestPortfolio(current.toMatrix(), history.toMatrix()).toPortfolio()
-}
+fun Portions.toMatrix(): DoubleMatrix2D = listOf(this).toMatrix()
+fun History.toMatrix(): DoubleMatrix4D = listOf(this).toMatrix()
+fun DoubleMatrix2D.toPortions(): Portions = toPortionsBatch().first()
