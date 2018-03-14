@@ -8,6 +8,8 @@ import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.coroutines.experimental.CoroutineContext
 
+fun suspend(action: suspend ()-> Unit) : suspend ()-> Unit = action
+
 suspend fun <T, R> Iterable<T>.mapAsync(transform: suspend (T) -> R): Iterable<R> = map { value ->
     async {
         transform(value)

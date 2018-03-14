@@ -15,8 +15,8 @@ fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile(
 
 @Serializable
 data class TradeConfig(
-        val mainCoin: String = "BTC",
-        val altCoins: List<String> = listOf(
+        val mainAsset: String = "BTC",
+        val altAssets: List<String> = listOf(
                 "USDT", "ETH", "NANO", "TRX", "ETC", "LTC", "XRP", "DGD", "VEN", "NEO", "ICX", "ADA", "BCPT", "XVG", "XLM", "EOS", "HSR", "LSK", "BCC",
                 "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD", "STRAT", "GXS", "OST"
         ),

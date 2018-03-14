@@ -41,9 +41,6 @@ plugins {
 
 apply {
     plugin("kotlinx-serialization")
-//    plugin("kotlin-kapt")
-//    plugin("net.ltgt.apt-idea")
-//    plugin("io.objectbox")
 }
 
 val kotlinVersion: String by extra
@@ -77,8 +74,6 @@ dependencies {
     compile("org.deeplearning4j:deeplearning4j-core:0.9.1")
     compile("org.deeplearning4j:rl4j-core:0.9.1")
     compile("org.nd4j:nd4j-cuda-8.0:0.9.1")
-//    compile("io.objectbox:objectbox-kotlin:$objectboxVersion")
-//    compile("io.objectbox:objectbox-windows:$objectboxVersion")
     compile("com.sleepycat:je:5.0.73")
     compile("org.deephacks.lmdbjni:lmdbjni:0.4.6")
     compile("org.deephacks.lmdbjni:lmdbjni-win64:0.4.6")
@@ -88,7 +83,11 @@ dependencies {
     compile("org.jetbrains.xodus:xodus-environment:1.2.0")
     compile("org.rocksdb:rocksdbjni:5.5.1")
     compile("org.apache.commons:commons-math3:3.6.1")
-//    kapt("io.objectbox:objectbox-processor:$objectboxVersion")
+    compile("io.arrow-kt:arrow-typeclasses:0.6.1")
+    compile("io.arrow-kt:arrow-data:0.6.1")
+    compile("io.arrow-kt:arrow-instances:0.6.1")
+    compile("io.arrow-kt:arrow-syntax:0.6.1")
+    kapt("io.arrow-kt:arrow-annotations-processor:0.6.1")
     testCompile("io.kotlintest:kotlintest:2.0.7")
     testCompile("com.google.jimfs:jimfs:1.1")
 }

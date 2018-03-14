@@ -1,21 +1,24 @@
 package com.dmi.cointrader.app.trade
 
-import com.dmi.cointrader.app.binance.BinanceClock
-import com.dmi.cointrader.app.binance.BinanceExchange
-import com.dmi.cointrader.app.binance.binanceClock
-import com.dmi.cointrader.app.binance.productionBinanceExchange
+import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.Periods
+import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.history.binanceHistory
 import com.dmi.cointrader.app.neural.NeuralNetwork
+import com.dmi.cointrader.app.neural.Portions
 import com.dmi.cointrader.app.neural.trainedNetwork
+import com.dmi.cointrader.app.broker.OrderAttempts
 import com.dmi.cointrader.main.*
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
-import com.dmi.util.log.logger
+import com.dmi.util.math.portions
+import com.dmi.util.math.times
+import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
+import org.slf4j.Logger
 import java.awt.Toolkit
 import java.time.Clock
 import java.time.Duration
@@ -26,59 +29,31 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val history = binanceHistory(exchange)
-    val realTrades = RealTrades(config, exchange, network, history)
+    fun realTrade(clock: Clock) = RealTrade(config, exchange, history, clock, network)
+    val realTrades = RealTrades(config, exchange, ::realTrade)
     realTrades()
+}
+
+suspend fun performTestTrades(config: TradeConfig, network: NeuralNetwork) = resourceContext {
+
 }
 
 class RealTrades(
         private val config: TradeConfig,
         private val exchange: BinanceExchange,
-        private val network: NeuralNetwork,
-        private val history: X
+        private val trade: suspend (Clock, period: Period) -> Unit
 ) {
-    private val log = logger(RealTrades::class)
-
     suspend operator fun invoke() {
         val periods = Periods(config.startTime, config.period)
         val periodIterator = PeriodIterator(periods)
         while (isActive) {
-            val info = preloadInfo()
-            val currentTime = info.clock.instant()
+            val clock = binanceClock(exchange)
+            val currentTime = clock.instant()
             val nextPeriod = periodIterator.nextAfter(currentTime)
             delay(Duration.between(currentTime, periods.startOf(nextPeriod)))
-            safeTrade(info)
+            trade(clock, nextPeriod)
         }
     }
-
-    private suspend fun preloadInfo() = PreloadedInfo(
-            binanceClock(exchange)
-    )
-
-    private suspend fun safeTrade(info: PreloadedInfo) = try {
-        trade(info)
-    } catch (e: Exception) {
-        log.debug("exception", e)
-        Toolkit.getDefaultToolkit().beep()
-    }
-
-    private suspend fun trade(info: PreloadedInfo) {
-        val coinAmounts = exchange.portfolio()
-        val prices = exchange.prices()
-        val capitals = coinAmounts * prices
-        val currentPortfolio = capitals.portions()
-        val bestPortfolio = bestPortfolio(currentPortfolio)
-        val currentCoin = currentPortfolio.indexOfMax()
-        val buyCoin = bestPortfolio.indexOfMax()
-        exchange.sell(currentCoin, buyCoin, coinAmounts[currentCoin])
-    }
-
-    private fun bestPortfolio(currentPortfolio: Portfolio): Portfolio {
-        return network.bestPortfolio(currentPortfolio.toMatrix(), TODO()).toPortfolio()
-    }
-
-    class PreloadedInfo(
-            val clock: Clock
-    )
 }
 
 class PeriodIterator(private val periods: Periods) {
@@ -89,6 +64,60 @@ class PeriodIterator(private val periods: Periods) {
         return max(previousPeriod, timePeriod).next().also {
             previousPeriod = it
         }
+    }
+}
+
+suspend fun realTrade(
+        config: TradeConfig,
+        exchange: BinanceExchange,
+        history: History.Window,
+        clock: Clock,
+        network: NeuralNetwork,
+        log: Logger
+) {
+    try {
+
+    } catch (e: Exception) {
+        log.error("exception", e)
+        Toolkit.getDefaultToolkit().beep()
+    }
+}
+
+interface TradeContext {
+    val mainAsset: Asset
+    val altAssets: List<Asset>
+    suspend fun history(): History.Window
+    suspend fun portfolio(): Portfolio
+    suspend fun bestPortfolio(current: Portions, history: History.Window): Portions
+    suspend fun market(mainAsset: Asset, toAsset: Asset)
+}
+
+suspend fun TradeContext.trade() {
+    val allAssets = listOf(mainAsset) + altAssets
+    val amounts = portfolio()
+            .amountsOf(allAssets)
+            .toDouble()
+    val history = history()
+    val prices = history.prices
+    val mainAmounts = amounts * prices
+    val currentPortions = mainAmounts.portions()
+    val bestPortions = bestPortfolio(currentPortions, history)
+    val currentIndex = currentPortions.indexOfMax()
+    val buyIndex = bestPortions.indexOfMax()
+    val currentAsset = allAssets[currentIndex]
+    val buyAsset = allAssets[buyIndex]
+
+    val attempts = OrderAttempts(count = 10, amountMultiplier = 0.99)
+    val currentCapital = mainAmounts[currentIndex].toBigDecimal()
+    if (currentAsset != mainAsset) {
+        val currentPrice = prices[currentIndex].toBigDecimal()
+        val currentMarket = exchange.market(mainAsset, currentAsset, currentPrice)
+        currentMarket.safeBuy(attempts, currentCapital, clock.instant())
+    }
+    if (currentAsset != mainAsset) {
+        val buyPrice = prices[buyIndex].toBigDecimal()
+        val buyMarket = exchange.market(mainAsset, buyAsset, buyPrice)
+        buyMarket.safeSell(attempts, currentCapital, clock.instant())
     }
 }
 
