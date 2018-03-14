@@ -10,7 +10,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-fun loadTradeConfig(): TradeConfig = load(Paths.get("data/tradeConfig").toFile().readBytes())
+fun savedTradeConfig(): TradeConfig = load(Paths.get("data/tradeConfig").toFile().readBytes())
 fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile().writeBytes(dump(config))
 
 @Serializable

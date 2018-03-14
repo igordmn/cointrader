@@ -17,7 +17,7 @@ import java.time.Instant
 typealias Asset = String
 typealias Portfolio = Map<Asset, BigDecimal>
 
-fun prodBinanceExchange(): BinanceExchange {
+fun productionBinanceExchange(): BinanceExchange {
     val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
     val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
     val api = binanceAPI(apiKey, secret, logger("BinanceAPI"), maxRequestsPerSecond = 10)
