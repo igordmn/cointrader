@@ -2,6 +2,9 @@ package com.dmi.cointrader.app.binance
 
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
+import com.binance.api.client.domain.general.ExchangeInfo
+import com.binance.api.client.domain.general.FilterType
+import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.AggTrade
 import com.binance.api.client.exception.BinanceApiException
 import com.dmi.cointrader.app.binance.api.BinanceAPI
@@ -11,11 +14,7 @@ import com.dmi.cointrader.app.broker.Broker
 import com.dmi.cointrader.app.broker.Broker.Limits
 import com.dmi.cointrader.app.broker.Broker.OrderError
 import com.dmi.cointrader.app.broker.Broker.OrderResult
-import com.dmi.cointrader.app.broker.OrderError
-import com.dmi.cointrader.app.broker.OrderLimits
-import com.dmi.cointrader.app.broker.OrderResult
 import com.dmi.util.log.logger
-import com.google.common.collect.BiMap
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import java.io.File
@@ -33,14 +32,30 @@ suspend fun productionBinanceExchange(): BinanceExchange {
     val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
     val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
     val api = binanceAPI(apiKey, secret, logger("BinanceAPI"), maxRequestsPerSecond = 10)
-    val info = api.exchangeInfo()
-    info.symbols.
-            return BinanceExchange(api)
+    val info = info(api)
+    return BinanceExchange(api, info)
 }
 
-fun testBinanceExchange(): BinanceExchange {
+suspend fun testBinanceExchange(): BinanceExchange {
     val api = binanceAPI()
-    return BinanceExchange(api)
+    val info = info(api)
+    return BinanceExchange(api, info)
+}
+
+private suspend fun info(api: BinanceAPI): BinanceExchange.Info {
+    fun SymbolInfo.limits(): Limits {
+        val lotSizeFilter = filters.find { it.filterType == FilterType.LOT_SIZE }!!
+        return Limits(
+                minAmount = BigDecimal(lotSizeFilter.minQty),
+                amountStep = BigDecimal(lotSizeFilter.stepSize)
+        )
+    }
+
+    val info = api.exchangeInfo()
+    return BinanceExchange.Info(
+            markets = info.symbols.map(SymbolInfo::getSymbol).toSet(),
+            marketToLimits =  info.symbols.associate { it.symbol to it.limits() }
+    )
 }
 
 class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
@@ -54,14 +69,12 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
     }
 
     fun market(baseAsset: Asset, quoteAsset: Asset): Market? {
-        val name = marketName(baseAsset, quoteAsset)
-        return name?.let(::Market)
-    }
-
-    private fun marketName(baseAsset: Asset, quoteAsset: Asset): String? {
-        return when {
-            quoteAsset == "BTC" && baseAsset in info.reversedMarkets -> "BTC$baseAsset"
-            else -> "${quoteAsset}BTC"
+        val normalName = "$baseAsset$quoteAsset"
+        val reversedName = "$quoteAsset$baseAsset"
+        return when  {
+            info.markets.contains(normalName) -> Market(normalName)
+            info.markets.contains(reversedName) -> Market(reversedName)
+            else -> null
         }
     }
 
@@ -90,8 +103,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         )
 
         fun broker(clock: Clock) = object : Broker {
-            override val limits: Limits
-                get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+            override val limits: Limits = info.marketToLimits[name]!!
 
             override suspend fun buy(baseAmount: BigDecimal): OrderResult {
                 val result = newMarketOrder(OrderSide.BUY, baseAmount, clock.instant())
@@ -136,6 +148,5 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
     }
 
     data class Trade(val time: Instant, val aggTradeId: Long, val amount: BigDecimal, val price: BigDecimal)
-    data class Info(val markets: BiMap<Asset, Asset>, val precisions: Map<Asset, Int>)
-    private data class MarketInfo(val precisions: Map<Asset, Int>)
+    data class Info(val markets: Set<String>, val marketToLimits: Map<String, Limits>)
 }
