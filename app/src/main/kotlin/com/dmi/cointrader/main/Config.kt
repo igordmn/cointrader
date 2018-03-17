@@ -1,6 +1,7 @@
 package com.dmi.cointrader.main
 
 import com.dmi.cointrader.app.candle.Periods
+import com.dmi.cointrader.app.performtrade.TradeAssets
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.dump
 import kotlinx.serialization.cbor.CBOR.Companion.load
@@ -16,10 +17,13 @@ fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile(
 
 @Serializable
 data class TradeConfig(
-        val mainAsset: String = "BTC",
-        val altAssets: List<String> = listOf(
-                "USDT", "ETH", "NANO", "TRX", "ETC", "LTC", "XRP", "DGD", "VEN", "NEO", "ICX", "ADA", "BCPT", "XVG", "XLM", "EOS", "HSR", "LSK", "BCC",
-                "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD", "STRAT", "GXS", "OST"
+        val assets: TradeAssets = TradeAssets(
+                main = "BTC",
+                alts = listOf(
+                        "USDT", "ETH", "NANO", "TRX", "ETC", "LTC", "XRP", "DGD", "VEN", "NEO", "ICX", "ADA", "BCPT", "XVG", "XLM",
+                        "EOS", "HSR", "LSK", "BCC", "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD",
+                        "STRAT", "GXS", "OST"
+                )
         ),
         val historyCount: Int = 160,
         val periods: Periods = Periods(
