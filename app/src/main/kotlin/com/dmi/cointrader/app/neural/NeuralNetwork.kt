@@ -1,5 +1,6 @@
 package com.dmi.cointrader.app.neural
 
+import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.moment.Moment
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
@@ -22,12 +23,10 @@ suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
     return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
 }
 
-// todo data class?
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias History = List<Moment>
 typealias HistoryBatch = List<History>
-data class PriceIncs(val values: List<Double>)
+data class PriceIncs(private val list: List<Double>): List<Double> by list
 typealias PriceIncsBatch = List<PriceIncs>
 
 class NeuralNetwork private constructor(
@@ -135,8 +134,8 @@ class NeuralTrainer(
         jep.invoke("create_trainer", config.fee)
     }
 
-    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, priceIncs: PriceIncsBatch): Result {
-        val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), priceIncs.toMatrix())
+    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch): Result {
+        val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), futurePriceIncs.toMatrix())
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
                 resultMatrix.geometricMeanProfit
@@ -144,18 +143,18 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, priceIncs: DoubleMatrix2D): ResultMatrix {
+    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, futurePriceIncs: DoubleMatrix2D): ResultMatrix {
         require(currentPortions.n2 == net.config.coinCount)
         require(histories.n2 == net.config.indicatorCount)
         require(histories.n3 == net.config.coinCount)
         require(histories.n4 == net.config.historyCount)
-        require(priceIncs.n2 == net.config.coinCount)
-        require(priceIncs.n1 == currentPortions.n1)
-        require(priceIncs.n1 == histories.n1)
+        require(futurePriceIncs.n2 == net.config.coinCount)
+        require(futurePriceIncs.n1 == currentPortions.n1)
+        require(futurePriceIncs.n1 == histories.n1)
 
         val nphistory = NDArray(histories.data, histories.n1, histories.n2, histories.n3, histories.n4)
         val npportfolio = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
-        val npPriceIncs = NDArray(priceIncs.data, priceIncs.n1, priceIncs.n2)
+        val npPriceIncs = NDArray(futurePriceIncs.data, futurePriceIncs.n1, futurePriceIncs.n2)
 
         val result = jep.invoke("train", npportfolio, nphistory, npPriceIncs) as Array<*>
         val newPortions = result[0] as NDArray<FloatArray>
@@ -203,8 +202,8 @@ fun HistoryBatch.toMatrix(): DoubleMatrix4D {
 @JvmName("PriceIncsBatch_toMatrix")
 fun PriceIncsBatch.toMatrix(): DoubleMatrix2D {
     val batchSize = size
-    val portfolioSize = first().values.size
-    fun value(b: Int, c: Int) = this[b].values[c]
+    val portfolioSize = first().size
+    fun value(b: Int, c: Int) = this[b][c]
     return DoubleMatrix2D(batchSize, portfolioSize, ::value)
 }
 

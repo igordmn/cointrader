@@ -3,7 +3,7 @@ package com.dmi.cointrader.app.performtrade
 import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.Periods
-import com.dmi.cointrader.app.history.binanceHistory
+import com.dmi.cointrader.app.history.binanceArchive
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.candle.asSequence
@@ -26,7 +26,7 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = productionBinanceExchange()
-    val history = binanceHistory(exchange)
+    val history = binanceArchive(exchange)
 
     object : PerformPeriodicTradesContext {
         override val periods = config.periods
@@ -51,13 +51,13 @@ private fun askForRealTrade(): Boolean {
 suspend fun performTestTrades(config: TradeConfig, network: NeuralNetwork, times: InstantRange) = resourceContext {
     val binanceExchange = testBinanceExchange()
     val exchange = TestExchange()
-    val history = binanceHistory(binanceExchange)
+    val archive = binanceArchive(binanceExchange)
 
     object : PerformPastTradesContext {
         override val periods = config.periods
         override val times = times
         suspend override fun trade(period: Period) = performTestTrade(
-                config, exchange, history.window(period, config.historyCount), network
+                config, exchange, archive.historyAt(period, config.historyCount), network
         )
     }.performPastTrades()
 }

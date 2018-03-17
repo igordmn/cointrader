@@ -5,20 +5,18 @@ import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.moment.Moment
 import java.time.Instant
 
-typealias Prices = List<Double>
+typealias History = List<Moment>
 
-suspend fun binanceHistory(exchange: BinanceExchange): History {
+suspend fun binanceArchive(exchange: BinanceExchange): Archive {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates
 }
 
-class History {
-    suspend fun window(period: Period, size: Int): Window {
+class Archive {
+    suspend fun historyAt(period: Period, size: Int): History {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates
     }
 
     fun load(currentTime: Instant) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
-    class Window(val prices: Prices, val moments: List<Moment>)
 }

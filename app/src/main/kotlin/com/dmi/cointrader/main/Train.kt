@@ -4,8 +4,6 @@ import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.periodNum
 import com.dmi.cointrader.app.moment.Moment
 import com.dmi.cointrader.app.moment.cachedMoments
-import com.dmi.cointrader.app.neural.NeuralNetwork
-import com.dmi.cointrader.app.neural.NeuralTrainer
 import com.dmi.cointrader.app.test.BackTest
 import com.dmi.cointrader.app.test.dayly
 import com.dmi.cointrader.app.test.hourly
@@ -20,24 +18,20 @@ import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.math.*
-import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.binance.api.binanceAPI
-import com.dmi.cointrader.app.neural.Portions
+import com.dmi.cointrader.app.history.Prices
+import com.dmi.cointrader.app.neural.*
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
 import org.apache.commons.math3.distribution.GeometricDistribution
-import com.dmi.cointrader.app.neural.jep
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow
 
 private val netsPath = Paths.get("data/nets")
 
-typealias History = List<Moment>
-private typealias SetPortfolio = (Portions) -> Unit
-private typealias Prices = List<Double>
-private typealias PricesIncs = List<Double>
+private typealias SetPortfolioBatch = (PortionsBatch) -> Unit
 
 suspend fun train() {
 
@@ -230,5 +224,9 @@ private fun trainer(jep: Jep, config: Config, net: NeuralNetwork) = NeuralTraine
         NeuralTrainer.Config(config.fee.toDouble())
 )
 
-private class TrainBatch(val moments: List<TrainMoment>)
-private class TrainMoment(val history: History, val portfolio: Portions, val setPortfolio: SetPortfolio, val futurePriceIncs: PricesIncs)
+private class TrainBatch(
+        val history: HistoryBatch,
+        val portfolio: PortionsBatch,
+        val futurePriceIncs: PriceIncsBatch,
+        val setPortfolio: SetPortfolioBatch
+)
