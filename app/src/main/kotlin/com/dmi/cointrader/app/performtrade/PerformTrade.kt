@@ -19,6 +19,7 @@ import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
+import org.slf4j.Logger
 import java.awt.Toolkit
 import java.math.BigDecimal
 import java.time.Clock
@@ -29,15 +30,16 @@ suspend fun performRealTrade(
         archive: Archive,
         period: Period,
         clock: Clock,
-        network: NeuralNetwork
+        network: NeuralNetwork,
+        log: Logger
 ) {
-    val log = appLog("realTrade")
     try {
         archive.load(clock.instant())
         fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.market(baseAsset, quoteAsset)?.broker(clock)
         val history = archive.historyAt(period, config.historyCount)
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
         val info = info(config.assets, exchange.portfolio(clock), history)
+        log.info(info.toString())
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()

@@ -14,13 +14,18 @@ import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.max
+import com.dmi.util.log.rootLog
 import kotlinx.coroutines.experimental.NonCancellable.isActive
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 
 suspend fun performRealTrades() = resourceContext {
     if (!askForRealTrade())
         return@resourceContext
+
+    val log = rootLog()
 
     val config = savedTradeConfig()
     val network = trainedNetwork()
@@ -44,7 +49,7 @@ suspend fun performRealTrades() = resourceContext {
         val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
         delay(Duration.between(currentTime, config.periods.startOf(nextPeriod)))
-        performRealTrade(config, exchange, history, nextPeriod, clock, network)
+        performRealTrade(config, exchange, history, nextPeriod, clock, network, log)
     }
 }
 
