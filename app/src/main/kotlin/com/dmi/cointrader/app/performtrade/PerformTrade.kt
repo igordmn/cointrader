@@ -13,9 +13,7 @@ import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.moment.prices
 import com.dmi.cointrader.app.neural.NeuralNetwork
-import com.dmi.cointrader.app.neural.Portions
 import com.dmi.cointrader.app.test.TestExchange
-import com.dmi.cointrader.main.TradeConfig
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.log.logger
 import com.dmi.util.math.portions

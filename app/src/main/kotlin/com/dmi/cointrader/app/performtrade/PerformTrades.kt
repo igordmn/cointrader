@@ -9,7 +9,6 @@ import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.candle.asSequence
 import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.test.TestExchange
-import com.dmi.cointrader.main.*
 import com.dmi.util.collection.rangeMap
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext

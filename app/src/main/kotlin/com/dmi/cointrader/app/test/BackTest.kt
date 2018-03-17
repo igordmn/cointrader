@@ -11,17 +11,6 @@ import kotlin.math.pow
 
 typealias Profits = List<Double>
 
-class BackTest(
-        private val network: NeuralNetwork,
-        private val moments: SuspendList<Moment>,
-        private val config: Config,
-        private val testDays: Int
-) {
-    suspend fun invoke(): Profits {
-        TODO()
-    }
-}
-
 fun Profits.dayly(config: Config): Profits {
     val periodsPerDay = (MILLIS_PER_DAY / config.period.toMillis()).toInt()
     return chunked(periodsPerDay).map {

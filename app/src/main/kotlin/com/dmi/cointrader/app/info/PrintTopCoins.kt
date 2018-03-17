@@ -12,7 +12,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-// todo https://api.coinmarketcap.com/v1/ticker/?limit=100
 fun printTopCoins() = runBlocking {
     val beforeTime = LocalDateTime.of(2018, 2, 15, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
     val minVolume = BigDecimal(180)
@@ -21,7 +20,6 @@ fun printTopCoins() = runBlocking {
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
-    val constants = BinanceConstants()
 
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
 
@@ -69,7 +67,7 @@ fun printTopCoins() = runBlocking {
 
                 val name = it.removeSuffix("BTC")
                 CoinInfo(
-                        constants.binanceNameToStandard[name] ?: name,
+                        name,
                         volumeMonthBeforeTime,
                         volumeMonth1,
                         volumeMonth2,
@@ -80,7 +78,6 @@ fun printTopCoins() = runBlocking {
                         volumeDay3
                 )
             }
-    infos.forEach(::println)
 
     val printList = listOf("USDT") + infos.map { it.name }
     println(printList.joinToString(", ") { "\"$it\"" })
