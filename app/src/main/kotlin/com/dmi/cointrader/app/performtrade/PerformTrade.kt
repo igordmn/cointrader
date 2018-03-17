@@ -13,9 +13,9 @@ import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.moment.prices
 import com.dmi.cointrader.app.neural.NeuralNetwork
+import com.dmi.cointrader.app.platform.appLog
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.util.lang.indexOfMax
-import com.dmi.util.log.logger
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
@@ -31,15 +31,32 @@ suspend fun performRealTrade(
         clock: Clock,
         network: NeuralNetwork
 ) {
-    val log = logger("realTrades")
+    val log = appLog("realTrade")
     try {
         archive.load(clock.instant())
         fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.market(baseAsset, quoteAsset)?.broker(clock)
         val history = archive.historyAt(period, config.historyCount)
-        performTrade(config.assets, network, exchange.portfolio(clock.instant()), history, ::broker)
+        performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
+        val info = info(config.assets, exchange.portfolio(clock), history)
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()
+    }
+}
+
+private fun info(assets: TradeAssets, portfolio: Portfolio, history: History): TradeInfo {
+    val amounts = portfolio.amountsOf(assets.all).toDouble()
+    val maxIndex = amounts.indexOfMax()
+    val asset = assets.all[maxIndex]
+    val prices = history.last().prices()
+    val capital = (amounts * prices).sum()
+    return TradeInfo(asset, capital)
+}
+
+data class TradeInfo(private val asset: Asset, private val capital: Double) {
+    override fun toString(): String {
+        val capital = "%.5f".format(capital)
+        return "$capital in $asset"
     }
 }
 
@@ -87,8 +104,8 @@ suspend fun performTrade(
 }) {
     val amounts = portfolio.amountsOf(assets.all).toDouble()
     val prices = history.last().prices()
-    val mainAmounts = amounts * prices
-    val currentPortions = mainAmounts.portions()
+    val capitals = amounts * prices
+    val currentPortions = capitals.portions()
     val currentIndex = currentPortions.indexOfMax()
     val currentAsset = assets.all[currentIndex]
 
@@ -96,7 +113,7 @@ suspend fun performTrade(
     val buyIndex = bestPortions.indexOfMax()
     val buyAsset = assets.all[buyIndex]
 
-    val tradeAmount = mainAmounts[currentIndex].toBigDecimal()
+    val tradeAmount = capitals[currentIndex].toBigDecimal()
     if (currentAsset != assets.main) {
         val currentPrice = prices[currentIndex].toBigDecimal()
         sell(currentAsset, currentPrice, tradeAmount)

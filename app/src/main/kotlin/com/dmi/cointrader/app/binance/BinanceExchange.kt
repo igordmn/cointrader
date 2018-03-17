@@ -61,8 +61,8 @@ private suspend fun info(api: BinanceAPI): BinanceExchange.Info {
 class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
     suspend fun currentTime(): Instant = Instant.ofEpochSecond(api.serverTime().serverTime)
 
-    suspend fun portfolio(timestamp: Instant): Portfolio {
-        val result = api.getAccount(5000, timestamp.toEpochMilli())
+    suspend fun portfolio(clock: Clock): Portfolio {
+        val result = api.getAccount(5000, clock.instant().toEpochMilli())
         return result.balances.associate {
             it.asset to BigDecimal(it.free)
         }

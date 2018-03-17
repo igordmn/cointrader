@@ -1,0 +1,54 @@
+Configutation:
+  name: Default
+  Appenders:
+    Console:
+      name: SystemOutAppender
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n"
+      Filters:
+        ThresholdFilter:
+          - level: fatal
+          - onMatch: DENY
+          - onMismatch: NEUTRAL
+        ThresholdFilter:
+          - level: err
+          - onMatch: DENY
+          - onMismatch: NEUTRAL
+        ThresholdFilter:
+          - level: warn
+          - onMatch: ACCEPT
+          - onMismatch: DENY
+    Console:
+      name: SystemErrAppender
+      target: SYSTEM_ERR
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n"
+      Filters:
+        ThresholdFilter:
+          - level: fatal
+          - onMatch: ACCEPT
+          - onMismatch: NEUTRAL
+        ThresholdFilter:
+          - level: err
+          - onMatch: ACCEPT
+          - onMismatch: DENY
+    RollingFile:
+      name: RollingFileAppender
+      fileName: log/main.log
+      filePattern: log/archive/main.%d{yyyy-MM-dd}.log.zip
+      Policies:
+        TimeBasedTriggeringPolicy:
+          - interval: 1
+          - modulate: true
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %msg%n"
+  Loggers:
+    Root:
+      level: trace
+      AppenderRef:
+        - ref: SystemOutAppender
+      AppenderRef:
+        - ref: SystemErrAppender
+      AppenderRef:
+        - ref: RollingFileAppender
