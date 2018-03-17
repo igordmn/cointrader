@@ -7,6 +7,7 @@ import com.dmi.cointrader.app.history.binanceArchive
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.candle.asSequence
+import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.main.*
 import com.dmi.util.collection.rangeMap
@@ -15,7 +16,6 @@ import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.max
 import kotlinx.coroutines.experimental.NonCancellable.isActive
-import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 
@@ -28,13 +28,25 @@ suspend fun performRealTrades() = resourceContext {
     val exchange = productionBinanceExchange()
     val history = binanceArchive(exchange)
 
-    object : PerformPeriodicTradesContext {
-        override val periods = config.periods
-        suspend override fun syncClock(): Clock = binanceClock(exchange)
-        suspend override fun trade(clock: Clock, period: Period) = performRealTrade(
-                config, exchange, history, period, clock, network
-        )
-    }.performPeriodicTrades()
+    class PeriodIterator(private val periods: Periods) {
+        private var previousPeriod = Period(Long.MIN_VALUE)
+
+        fun nextAfter(time: Instant): Period {
+            val timePeriod = periods.of(time)
+            return max(previousPeriod, timePeriod).next().also {
+                previousPeriod = it
+            }
+        }
+    }
+
+    val iterator = PeriodIterator(config.periods)
+    while (isActive) {
+        val clock = binanceClock(exchange)
+        val currentTime = clock.instant()
+        val nextPeriod = iterator.nextAfter(currentTime)
+        delay(Duration.between(currentTime, config.periods.startOf(nextPeriod)))
+        performRealTrade(config, exchange, history, nextPeriod, clock, network)
+    }
 }
 
 private fun askForRealTrade(): Boolean {
@@ -48,56 +60,14 @@ private fun askForRealTrade(): Boolean {
     }
 }
 
-suspend fun performTestTrades(config: TradeConfig, network: NeuralNetwork, times: InstantRange) = resourceContext {
-    val binanceExchange = testBinanceExchange()
-    val exchange = TestExchange()
-    val archive = binanceArchive(binanceExchange)
-
-    object : PerformPastTradesContext {
-        override val periods = config.periods
-        override val times = times
-        suspend override fun trade(period: Period) = performTestTrade(
-                config, exchange, archive.historyAt(period, config.historyCount), network
-        )
-    }.performPastTrades()
-}
-
-interface PerformPeriodicTradesContext {
-    val periods: Periods
-    suspend fun syncClock(): Clock
-    suspend fun trade(clock: Clock, period: Period)
-}
-
-suspend fun PerformPeriodicTradesContext.performPeriodicTrades() {
-    class PeriodIterator(private val periods: Periods) {
-        private var previousPeriod = Period(Long.MIN_VALUE)
-
-        fun nextAfter(time: Instant): Period {
-            val timePeriod = periods.of(time)
-            return max(previousPeriod, timePeriod).next().also {
-                previousPeriod = it
-            }
-        }
-    }
-
-    val iterator = PeriodIterator(periods)
-    while (isActive) {
-        val clock = syncClock()
-        val currentTime = clock.instant()
-        val nextPeriod = iterator.nextAfter(currentTime)
-        delay(Duration.between(currentTime, periods.startOf(nextPeriod)))
-        trade(clock, nextPeriod)
-    }
-}
-
-interface PerformPastTradesContext {
-    val periods: Periods
-    val times: InstantRange
-    suspend fun trade(period: Period)
-}
-
-suspend fun PerformPastTradesContext.performPastTrades() {
-    times.rangeMap(periods::of).asSequence().forEach {
-        trade(it)
+suspend fun performPastTrades(
+        config: TradeConfig,
+        exchange: TestExchange,
+        archive: Archive,
+        network: NeuralNetwork,
+        times: InstantRange
+) {
+    times.rangeMap(config.periods::of).asSequence().forEach {
+        performTestTrade(config, exchange, archive, it, network)
     }
 }
