@@ -2,10 +2,10 @@ package com.dmi.cointrader.app.binance
 
 import com.binance.api.client.domain.OrderSide
 import com.binance.api.client.domain.OrderType
-import com.binance.api.client.domain.general.ExchangeInfo
 import com.binance.api.client.domain.general.FilterType
 import com.binance.api.client.domain.general.SymbolInfo
 import com.binance.api.client.domain.market.AggTrade
+import com.binance.api.client.domain.market.TickerPrice
 import com.binance.api.client.exception.BinanceApiException
 import com.dmi.cointrader.app.binance.api.BinanceAPI
 import com.dmi.cointrader.app.binance.api.binanceAPI
@@ -17,6 +17,7 @@ import com.dmi.cointrader.app.broker.Broker.OrderResult
 import com.dmi.util.log.logger
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
+import org.slf4j.Logger
 import java.io.File
 import java.math.BigDecimal
 import java.time.Clock
@@ -24,14 +25,15 @@ import java.time.Instant
 
 typealias Asset = String
 typealias Portfolio = Map<Asset, BigDecimal>
+typealias AssetPrices = Map<Asset, BigDecimal>
 typealias Amounts = List<BigDecimal>
 
 fun Portfolio.amountsOf(assets: List<Asset>): Amounts = assets.map { this[it]!! }
 
-suspend fun productionBinanceExchange(): BinanceExchange {
+suspend fun productionBinanceExchange(log: Logger): BinanceExchange {
     val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
     val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
-    val api = binanceAPI(apiKey, secret, logger("BinanceAPI"), maxRequestsPerSecond = 10)
+    val api = binanceAPI(apiKey, secret, log, maxRequestsPerSecond = 10)
     val info = info(api)
     return BinanceExchange(api, info)
 }
@@ -66,6 +68,21 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         return result.balances.associate {
             it.asset to BigDecimal(it.free)
         }
+    }
+
+    suspend fun btcPrices(): AssetPrices {
+        fun TickerPrice.toAssetPrice(): Pair<Asset, BigDecimal> {
+            val isReversed = symbol.endsWith("BTC")
+            val price = price.toBigDecimal()
+            val btcPrice = if (isReversed) BigDecimal.ONE.divide(price, 8) else price
+            val asset = if (isReversed) symbol.removeSuffix("BTC") else symbol.removePrefix("BTC")
+            return asset to btcPrice
+        }
+
+        return api
+                .allPrices()
+                .filter { it.symbol.startsWith("BTC") || it.symbol.endsWith("BTC") }
+                .associate(TickerPrice::toAssetPrice)
     }
 
     fun market(baseAsset: Asset, quoteAsset: Asset): Market? {

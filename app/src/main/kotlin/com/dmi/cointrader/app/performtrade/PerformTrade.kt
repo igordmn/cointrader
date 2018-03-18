@@ -1,22 +1,16 @@
 package com.dmi.cointrader.app.performtrade
 
-import com.dmi.cointrader.app.binance.Asset
-import com.dmi.cointrader.app.binance.BinanceExchange
-import com.dmi.cointrader.app.binance.Portfolio
-import com.dmi.cointrader.app.binance.amountsOf
-import com.dmi.cointrader.app.broker.Broker
-import com.dmi.cointrader.app.broker.SafeBroker
-import com.dmi.cointrader.app.broker.reversed
-import com.dmi.cointrader.app.broker.safe
+import com.dmi.cointrader.app.binance.*
+import com.dmi.cointrader.app.broker.*
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.moment.prices
 import com.dmi.cointrader.app.neural.NeuralNetwork
-import com.dmi.cointrader.app.platform.appLog
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
+import com.dmi.util.math.sum
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import org.slf4j.Logger
@@ -33,12 +27,16 @@ suspend fun performRealTrade(
         network: NeuralNetwork,
         log: Logger
 ) {
+    fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange
+            .market(baseAsset, quoteAsset)
+            ?.broker(clock)
+            ?.log(log, baseAsset, quoteAsset)
+
     try {
         archive.load(clock.instant())
-        fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.market(baseAsset, quoteAsset)?.broker(clock)
         val history = archive.historyAt(period, config.historyCount)
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
-        val info = info(config.assets, exchange.portfolio(clock), history)
+        val info = binanceInfo(config.assets, exchange, clock)
         log.info(info.toString())
     } catch (e: Exception) {
         log.error("exception", e)
@@ -46,19 +44,34 @@ suspend fun performRealTrade(
     }
 }
 
-private fun info(assets: TradeAssets, portfolio: Portfolio, history: History): TradeInfo {
-    val amounts = portfolio.amountsOf(assets.all).toDouble()
-    val maxIndex = amounts.indexOfMax()
-    val asset = assets.all[maxIndex]
-    val prices = history.last().prices()
-    val capital = (amounts * prices).sum()
-    return TradeInfo(asset, capital)
+private suspend fun binanceInfo(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeInfo {
+    val infoAsset = "BTC"
+    val minBtc = 0.0001
+    val portfolio = exchange.portfolio(clock)
+    val btcPrices = exchange.btcPrices()
+    val assetCapitals = assets.all
+            .associate {
+                val capital = if (it == infoAsset) {
+                    portfolio[it]!!
+                } else {
+                    portfolio[it]!! * btcPrices[it]!!
+                }
+                it to capital.toDouble()
+            }
+            .filter { it.value > minBtc }
+    val totalCapital = assetCapitals.values.sum()
+    return TradeInfo(assetCapitals, totalCapital, infoAsset)
 }
 
-data class TradeInfo(private val asset: Asset, private val capital: Double) {
+data class TradeInfo(private val assetCapitals: Map<Asset, Double>, private val totalCapital: Double, private val mainAsset: Asset) {
     override fun toString(): String {
-        val capital = "%.5f".format(capital)
-        return "$capital in $asset"
+        val totalCapital = "%.4f".format(totalCapital)
+        val assetCapitals = assetCapitals.toList().joinToString(", ") {
+            val asset = it.first
+            val capital = "%.4f".format(it.second)
+            "$asset=$capital"
+        }
+        return "$totalCapital $mainAsset ($assetCapitals)"
     }
 }
 
