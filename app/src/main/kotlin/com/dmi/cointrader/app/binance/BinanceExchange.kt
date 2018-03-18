@@ -14,7 +14,6 @@ import com.dmi.cointrader.app.broker.Broker
 import com.dmi.cointrader.app.broker.Broker.Limits
 import com.dmi.cointrader.app.broker.Broker.OrderError
 import com.dmi.cointrader.app.broker.Broker.OrderResult
-import com.dmi.util.log.logger
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import org.slf4j.Logger
