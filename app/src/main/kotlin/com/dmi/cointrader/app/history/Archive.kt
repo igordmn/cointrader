@@ -21,7 +21,7 @@ class Archive {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates
     }
 
-    fun load(currentTime: Instant) {
+    suspend fun load(currentTime: Instant) {
         fun coinLog(coin: String) = object: SyncList.Log<Trade> {
             override fun itemsAppended(items: List<Trade>, indices: LongRange) {
                 val lastTradeTime = items.last().time

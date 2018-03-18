@@ -1,13 +1,14 @@
 package com.dmi.cointrader.app.performtrade
 
-import com.dmi.cointrader.app.binance.*
+import com.dmi.cointrader.app.binance.binanceClock
+import com.dmi.cointrader.app.binance.productionBinanceExchange
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.Periods
+import com.dmi.cointrader.app.candle.asSequence
+import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.history.binanceArchive
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
-import com.dmi.cointrader.app.candle.asSequence
-import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.util.collection.rangeMap
 import com.dmi.util.concurrent.delay
@@ -16,8 +17,6 @@ import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog
 import kotlinx.coroutines.experimental.NonCancellable.isActive
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
 
@@ -29,7 +28,7 @@ suspend fun performRealTrades() = resourceContext {
 
     val config = savedTradeConfig()
     val network = trainedNetwork()
-    val exchange = productionBinanceExchange()
+    val exchange = productionBinanceExchange(log)
     val history = binanceArchive(exchange)
 
     class PeriodIterator(private val periods: Periods) {
