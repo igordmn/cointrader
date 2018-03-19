@@ -79,22 +79,22 @@ suspend fun performRealTrade(
         archive.sync(clock.instant())
         val history = archive.historyAt(period.previous(config.historySize - 1)..period)
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
-        val info = binanceInfo(config.assets, exchange, clock)
-        log.info(info.toString())
+        val result = tradeResult(config.assets, exchange, clock)
+        log.info(result.toString())
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()
     }
 }
 
-private suspend fun binanceInfo(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeInfo {
-    val infoAsset = "BTC"
+private suspend fun tradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
+    val resultAsset = "BTC"
     val minBtc = 0.0001
     val portfolio = exchange.portfolio(clock)
     val btcPrices = exchange.btcPrices()
     val assetCapitals = assets.all
             .associate {
-                val capital = if (it == infoAsset) {
+                val capital = if (it == resultAsset) {
                     portfolio[it]!!
                 } else {
                     portfolio[it]!! * btcPrices[it]!!
@@ -103,7 +103,11 @@ private suspend fun binanceInfo(assets: TradeAssets, exchange: BinanceExchange, 
             }
             .filter { it.value > minBtc }
     val totalCapital = assetCapitals.values.sum()
-    return TradeInfo(assetCapitals, totalCapital, infoAsset)
+    return TradeResult(assetCapitals, totalCapital, resultAsset)
+}
+
+suspend fun performTestTrades(range: PeriodRange): List<TradeResult> {
+
 }
 
 suspend fun performTrade(
@@ -156,11 +160,7 @@ suspend fun performTrade(
     }
 }
 
-suspend fun performTestTrades(range: PeriodRange): List<TradeInfo> {
-
-}
-
-data class TradeInfo(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
+data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
     override fun toString(): String {
         val totalCapital = "%.4f".format(totalCapital)
         val assetCapitals = assetCapitals.toList().joinToString(", ") {
@@ -172,4 +172,4 @@ data class TradeInfo(private val assetCapitals: Map<Asset, Double>, val totalCap
     }
 }
 
-fun Collection<TradeInfo>.capitals() = map(TradeInfo::totalCapital)
+fun Collection<TradeResult>.capitals() = map(TradeResult::totalCapital)
