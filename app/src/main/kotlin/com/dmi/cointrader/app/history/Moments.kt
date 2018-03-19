@@ -31,14 +31,14 @@ typealias MomentItem = RestorableSource.Item<MomentState, Moment>
 class TradeMoments(
         private val periods: Periods,
         private val trades: List<SuspendList<Trade>>,
-        private val currentTime: ReadAtom<Instant>
+        private val currentTime: Instant
 ) : RestorableSource<MomentState, Moment> {
-    override fun restore(state: MomentState?): ReceiveChannel<MomentItem> = buildChannel {
-        val currentTime = currentTime()
-        val indices = trades.indices
-
+    init {
         require(currentTime >= periods.start)
+    }
 
+    override fun restore(state: MomentState?): ReceiveChannel<MomentItem> = buildChannel {
+        val indices = trades.indices
         val firstNum = if (state != null) state.num + 1 else 0L
         val lastNum = periods.of(currentTime).num
         val tradeStartIndices = state?.candles?.map(CandleState::lastTradeIndex) ?: indices.map { 0L }
@@ -66,10 +66,3 @@ class TradeMoments(
                 .map(::moment)
     }
 }
-
-//val path = Paths.get("old/data/cache/binance/moments")
-//Files.createDirectories(path.parent)
-//MomentsConfig.serializer(),
-//MomentState.serializer(),
-//MomentFixedSerializer(altCoins.size),
-//MomentsConfig(startTime, period, altCoins),

@@ -1,9 +1,6 @@
 package com.dmi.cointrader.app.history
 
-import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.binance.BinanceExchange
-import com.dmi.cointrader.app.binance.MarketInfo
-import com.dmi.util.atom.ReadAtom
 import com.dmi.util.concurrent.buildChannel
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.RestorableSource
@@ -22,10 +19,9 @@ data class BinanceTradeConfig(val market: String)
 
 class BinanceTrades(
         private val market: BinanceExchange.Market,
-        private var currentTime: ReadAtom<Instant>
+        private var currentTime: Instant
 ) : RestorableSource<BinanceTradeState, Trade> {
     override fun restore(state: BinanceTradeState?): ReceiveChannel<BinanceTradeItem> = buildChannel {
-        val currentTime = currentTime()
         val startId = if (state != null) state.id + 1L else 0L
         market.trades(startId).map(::convert).takeWhile { it.value.time <= currentTime }
     }
@@ -39,14 +35,3 @@ class BinanceTrades(
             )
     )
 }
-
-//val path = Paths.get("old/data/cache/binance/trades")
-//Files.createDirectories(path)
-//BinanceTradeConfig.serializer(),
-//BinanceTradeState.serializer(),
-//TradeFixedSerializer,
-//return if (marketInfo.isReversed) {
-//    original.map(Trade::reverse)
-//} else {
-//    original
-//}

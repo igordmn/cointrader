@@ -9,7 +9,36 @@ import java.time.Instant
 
 typealias History = List<Moment>
 
-class Archive(
+interface Archive {
+    suspend fun historyAt(period: Period): History
+}
+
+suspend fun archive(exchange: BinanceExchange) {
+
+
+    //val path = Paths.get("old/data/cache/binance/trades")
+    //Files.createDirectories(path)
+    //BinanceTradeConfig.serializer(),
+    //BinanceTradeState.serializer(),
+    //TradeFixedSerializer,
+    //return if (marketInfo.isReversed) {
+    //    original.map(Trade::reverse)
+    //} else {
+    //    original
+    //}
+
+
+
+    //val path = Paths.get("old/data/cache/binance/moments")
+    //Files.createDirectories(path.parent)
+    //MomentsConfig.serializer(),
+    //MomentState.serializer(),
+    //MomentFixedSerializer(altCoins.size),
+    //MomentsConfig(startTime, period, altCoins),
+
+}
+
+class Archifve(
         private val exchange: BinanceExchange
 ) {
     suspend fun historyAt(period: Period, size: Int): History {
