@@ -56,7 +56,7 @@ suspend fun performRealTrades() = resourceContext {
 }
 
 private fun askForRealTrade(): Boolean {
-    println("Run trading real money? enter 'yes' if yes")
+    println("Run trading real money? Enter 'yes' if yes")
     val answer = readLine()
     return if (answer != "yes") {
         println("Answer isn't 'yes', so exit")
