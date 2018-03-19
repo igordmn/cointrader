@@ -42,7 +42,7 @@ fun main(args: Array<String>) {
         netsPath.toFile().deleteRecursively()
         Files.createDirectory(netsPath)
 
-        val config = Config()
+        val config = TrainConfig()
 
         val api = binanceAPI()
         val constants = BinanceConstants()
