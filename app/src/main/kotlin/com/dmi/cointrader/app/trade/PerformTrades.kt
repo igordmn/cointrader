@@ -81,8 +81,8 @@ suspend fun performRealTrade(
             ?.log(log, baseAsset, quoteAsset)
 
     try {
-        archive.load(clock.instant())
-        val history = archive.historyAt(period, config.historySize)
+        archive.sync(clock.instant())
+        val history = archive.historyAt(period.previous(config.historySize - 1)..period)
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
         val info = binanceInfo(config.assets, exchange, clock)
         log.info(info.toString())
