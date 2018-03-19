@@ -14,16 +14,16 @@ class LogBroker(
 ) : Broker {
     override val limits: Broker.Limits = original.limits
 
-    override suspend fun buy(baseAmount: BigDecimal): Broker.OrderResult {
-        log.debug("Buy $baseAmount $baseAsset from $quoteAsset")
-        return original.buy(baseAmount).also {
+    override suspend fun buy(amount: BigDecimal): Broker.OrderResult {
+        log.debug("Buy $amount $baseAsset from $quoteAsset")
+        return original.buy(amount).also {
             log.debug("Result $it")
         }
     }
 
-    override suspend fun sell(baseAmount: BigDecimal): Broker.OrderResult {
-        log.debug("Sell $baseAmount $baseAsset to $quoteAsset")
-        return original.sell(baseAmount).also {
+    override suspend fun sell(amount: BigDecimal): Broker.OrderResult {
+        log.debug("Sell $amount $baseAsset to $quoteAsset")
+        return original.sell(amount).also {
             log.debug("Result $it")
         }
     }

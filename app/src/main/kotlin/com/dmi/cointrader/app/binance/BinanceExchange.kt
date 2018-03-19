@@ -121,14 +121,14 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         fun broker(clock: Clock) = object : Broker {
             override val limits: Limits = info.marketToLimits[name]!!
 
-            override suspend fun buy(baseAmount: BigDecimal): OrderResult {
-                val result = newMarketOrder(OrderSide.BUY, baseAmount, clock.instant())
-                return OrderResult(buySlippage(baseAmount, result))
+            override suspend fun buy(amount: BigDecimal): OrderResult {
+                val result = newMarketOrder(OrderSide.BUY, amount, clock.instant())
+                return OrderResult(buySlippage(amount, result))
             }
 
-            override suspend fun sell(baseAmount: BigDecimal): OrderResult {
-                val result = newMarketOrder(OrderSide.SELL, baseAmount, clock.instant())
-                return OrderResult(sellSlippage(baseAmount, result))
+            override suspend fun sell(amount: BigDecimal): OrderResult {
+                val result = newMarketOrder(OrderSide.SELL, amount, clock.instant())
+                return OrderResult(sellSlippage(amount, result))
             }
 
             private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal, timestamp: Instant): NewOrderResponse {

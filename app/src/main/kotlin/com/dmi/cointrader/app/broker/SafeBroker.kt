@@ -13,11 +13,11 @@ fun Broker.safe(attempts: Attempts): Broker = SafeBroker(this, attempts)
 class SafeBroker(private val original: Broker, private val attempts: Attempts) : Broker {
     override val limits: Broker.Limits = original.limits
 
-    suspend override fun buy(baseAmount: BigDecimal): OrderResult = processAmount(baseAmount) {
+    suspend override fun buy(amount: BigDecimal): OrderResult = processAmount(amount) {
         original.buy(it)
     }
 
-    suspend override fun sell(baseAmount: BigDecimal): OrderResult = processAmount(baseAmount) {
+    suspend override fun sell(amount: BigDecimal): OrderResult = processAmount(amount) {
         original.sell(it)
     }
 

@@ -11,30 +11,30 @@ class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal)
 
     fun portfolio(): Portfolio = HashMap(portfolio)
 
-    fun broker(baseAsset: Asset, quoteAsset: Asset, askPrice: BigDecimal, bidPrice: BigDecimal): Broker? {
+    fun broker(baseAsset: Asset, quoteAsset: Asset, ask: BigDecimal, bid: BigDecimal): Broker? {
         fun broker() = object : Broker {
             override val limits = Broker.Limits(BigDecimal.ZERO, BigDecimal.ZERO)
 
-            suspend override fun buy(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+            suspend override fun buy(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
                 val currentBaseAmount = portfolio[baseAsset]!!
                 val currentQuoteAmount = portfolio[quoteAsset]!!
-                val quoteAmount = baseAmount * askPrice
+                val quoteAmount = amount * ask
                 if (quoteAmount > currentQuoteAmount) {
                     throw Broker.OrderError.InsufficientBalance
                 }
-                portfolio[baseAsset] = currentBaseAmount + baseAmount * (BigDecimal.ONE - fee)
+                portfolio[baseAsset] = currentBaseAmount + amount * (BigDecimal.ONE - fee)
                 portfolio[quoteAsset] = currentQuoteAmount - quoteAmount
                 return Broker.OrderResult(1.0)
             }
 
-            suspend override fun sell(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+            suspend override fun sell(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
                 val currentBaseAmount = portfolio[baseAsset]!!
                 val currentQuoteAmount = portfolio[quoteAsset]!!
-                val quoteAmount = baseAmount * bidPrice
-                if (baseAmount > currentBaseAmount) {
+                val quoteAmount = amount * bid
+                if (amount > currentBaseAmount) {
                     throw Broker.OrderError.InsufficientBalance
                 }
-                portfolio[baseAsset] = currentBaseAmount - baseAmount
+                portfolio[baseAsset] = currentBaseAmount - amount
                 portfolio[quoteAsset] = currentQuoteAmount + quoteAmount * (BigDecimal.ONE - fee)
                 return Broker.OrderResult(1.0)
             }

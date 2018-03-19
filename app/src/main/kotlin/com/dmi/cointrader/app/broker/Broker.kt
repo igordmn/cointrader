@@ -4,8 +4,8 @@ import java.math.BigDecimal
 
 interface Broker {
     val limits: Limits
-    suspend fun buy(baseAmount: BigDecimal): OrderResult
-    suspend fun sell(baseAmount: BigDecimal): OrderResult
+    suspend fun buy(amount: BigDecimal): OrderResult
+    suspend fun sell(amount: BigDecimal): OrderResult
 
     data class Limits(val minAmount: BigDecimal, val amountStep: BigDecimal)
 

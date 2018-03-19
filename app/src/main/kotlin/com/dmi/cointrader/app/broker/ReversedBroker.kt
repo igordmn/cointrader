@@ -12,6 +12,6 @@ class ReversedBroker(
 ) : Broker {
     override val limits: Broker.Limits = original.limits
 
-    override suspend fun buy(baseAmount: BigDecimal) = original.sell(baseAmount.divide(price, operationScale, RoundingMode.DOWN))
-    override suspend fun sell(baseAmount: BigDecimal) = original.buy(baseAmount.divide(price, operationScale, RoundingMode.DOWN))
+    override suspend fun buy(amount: BigDecimal) = original.sell(amount.divide(price, operationScale, RoundingMode.DOWN))
+    override suspend fun sell(amount: BigDecimal) = original.buy(amount.divide(price, operationScale, RoundingMode.DOWN))
 }
