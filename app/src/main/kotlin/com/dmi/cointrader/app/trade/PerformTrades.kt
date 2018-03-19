@@ -27,7 +27,6 @@ suspend fun performRealTrades() = resourceContext {
     askForRealTrade()
 
     val log = rootLog()
-
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = productionBinanceExchange(log)
