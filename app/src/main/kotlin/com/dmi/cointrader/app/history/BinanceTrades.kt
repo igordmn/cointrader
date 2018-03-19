@@ -19,11 +19,12 @@ data class BinanceTradeConfig(val market: String)
 
 class BinanceTrades(
         private val market: BinanceExchange.Market,
-        private var currentTime: Instant
+        private var currentTime: Instant,
+        private val chunkLoadCount: Int
 ) : RestorableSource<BinanceTradeState, Trade> {
     override fun restore(state: BinanceTradeState?): ReceiveChannel<BinanceTradeItem> = buildChannel {
         val startId = if (state != null) state.id + 1L else 0L
-        market.trades(startId).map(::convert).takeWhile { it.value.time <= currentTime }
+        market.trades(startId, chunkLoadCount).map(::convert).takeWhile { it.value.time <= currentTime }
     }
 
     private fun convert(trade: BinanceExchange.Trade) = BinanceTradeItem(
