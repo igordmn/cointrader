@@ -14,9 +14,8 @@ import java.time.Instant
 
 @Serializable
 data class MomentsConfig(
-        @Serializable(with=InstantSerializer::class) val startTime: Instant,
-        @Serializable(with=DurationSerializer::class) val period: Duration,
-        val coins: List<String>
+        val periods: Periods,
+        val assets: List<String>
 )
 
 @Serializable

@@ -10,27 +10,21 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
 
-interface SyncList<out T> : SuspendList<T> {
-    suspend fun sync()
-
-    override fun <R> map(transform: (T) -> R): SyncList<R> = object : SyncList<R> {
-        suspend override fun sync() = this@SyncList.sync()
-        override suspend fun size(): Long = this@SyncList.size()
-        override suspend fun get(range: LongRange): List<R> = this@SyncList.get(range).map(transform)
-    }
-
-    interface Log<in T> {
-        fun itemsAppended(items: List<T>, indices: LongRange) {}
-    }
-
-    class EmptyLog<in T>: Log<T>
-}
-
 interface RestorableSource<STATE : Any, out VALUE> {
     fun restore(state: STATE?): ReceiveChannel<Item<STATE, VALUE>>
 
     @Serializable
     data class Item<out STATE, out VALUE>(val state: STATE, val value: VALUE)
+}
+
+interface SyncFileList<SOURCE_STATE : Any, ITEM> : SuspendList<ITEM> {
+    suspend fun sync(source: RestorableSource<SOURCE_STATE, ITEM>, log: Log<ITEM> = EmptyLog())
+
+    interface Log<in T> {
+        fun itemsAppended(items: List<T>, indices: LongRange) {}
+    }
+
+    class EmptyLog<in T> : Log<T>
 }
 
 suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
@@ -39,11 +33,9 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
         stateSerializer: KSerializer<SOURCE_STATE>,
         itemSerializer: FixedSerializer<ITEM>,
         config: CONFIG,
-        source: RestorableSource<SOURCE_STATE, ITEM>,
-        log: SyncList.Log<ITEM> = SyncList.EmptyLog(),
         bufferSize: Int = 100,
         reloadCount: Int = 0
-): SyncList<ITEM> {
+): SyncFileList<SOURCE_STATE, ITEM> {
     val configStore = NullableFileAtom(file.appendToFileName(".config"), configSerializer).cached()
     val lastInfoStore = NullableFileAtom(file.appendToFileName(".lastInfo"), SyncInfo.serializer(stateSerializer)).cached()
     val fileArray = FileArray(file.appendToFileName(".array"), itemSerializer)
@@ -57,7 +49,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
 
     fun Long?.plusOneOrZero() = 1 + (this ?: -1)
 
-    return object : SyncList<ITEM> {
+    return object : SyncFileList<SOURCE_STATE, ITEM> {
         suspend override fun size(): Long = fileArray.size
 
         suspend override fun get(range: LongRange): List<ITEM> {
@@ -67,7 +59,7 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
             return fileArray.get(range)
         }
 
-        suspend override fun sync() {
+        override suspend fun sync(source: RestorableSource<SOURCE_STATE, ITEM>, log: SyncFileList.Log<ITEM>) {
             val lastInfo = lastInfoStore()
 
             val startIndex = lastInfo?.index.plusOneOrZero()

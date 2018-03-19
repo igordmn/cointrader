@@ -8,7 +8,7 @@ import java.time.Instant
 
 @Serializable
 data class Trade(val time: Instant, val amount: Double, val price: Double) {
-    fun reverse() = Trade(time, amount * price, 1 / price)
+    fun reverse() = Trade(time, amount * price, 1.0 / price)
 }
 
 typealias IndexedTrade<INDEX> = Indexed<INDEX, Trade>
