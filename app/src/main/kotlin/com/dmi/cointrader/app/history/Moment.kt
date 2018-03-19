@@ -19,4 +19,5 @@ class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
     override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
 }
 
-fun Moment.prices(): Prices = coinIndexToCandle.map(Candle::close)
+fun Moment.closeAsks(): Prices = coinIndexToCandle.map(Candle::closeAsk)
+fun Moment.closeBids(): Prices = coinIndexToCandle.map(Candle::closeBid)

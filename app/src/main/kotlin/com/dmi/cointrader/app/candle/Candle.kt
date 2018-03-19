@@ -9,9 +9,10 @@ data class Candle(
         val close: Double,
         val high: Double,
         val low: Double
-//        val sellPrice: Double = 0.0,
-//        val buyPrice: Double = 0.0
 ) {
+    val closeAsk: Double get() = close
+    val closeBid: Double get() = close
+
     init {
         require(high >= low)
         require(close <= high)

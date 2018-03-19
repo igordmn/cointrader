@@ -147,8 +147,9 @@ suspend fun performTrade(
     }
 }) {
     val amounts = portfolio.amountsOf(assets.all).toDouble()
-    val prices = history.last().prices()
-    val capitals = amounts * prices
+    val asks = history.last().closeAsks()
+    val bids = history.last().closeBids()
+    val capitals = amounts * bids
     val currentPortions = capitals.portions()
     val currentIndex = currentPortions.indexOfMax()
     val currentAsset = assets.all[currentIndex]
@@ -159,11 +160,11 @@ suspend fun performTrade(
 
     val tradeAmount = capitals[currentIndex].toBigDecimal()
     if (currentAsset != assets.main) {
-        val currentPrice = prices[currentIndex].toBigDecimal()
+        val currentPrice = bids[currentIndex].toBigDecimal()
         sell(currentAsset, currentPrice, tradeAmount)
     }
     if (currentAsset != assets.main) {
-        val buyPrice = prices[buyIndex].toBigDecimal()
+        val buyPrice = asks[buyIndex].toBigDecimal()
         buy(buyAsset, buyPrice, tradeAmount)
     }
 }
