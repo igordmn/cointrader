@@ -24,8 +24,7 @@ import java.time.Duration
 import java.time.Instant
 
 suspend fun performRealTrades() = resourceContext {
-    if (!askForRealTrade())
-        return@resourceContext
+    askForRealTrade()
 
     val log = rootLog()
 
@@ -55,14 +54,10 @@ suspend fun performRealTrades() = resourceContext {
     }
 }
 
-private fun askForRealTrade(): Boolean {
-    println("Run trading real money? If so, enter 'yes'")
-    val answer = readLine()
-    return if (answer != "yes") {
-        println("Answer isn't 'yes', so exit")
-        false
-    } else {
-        true
+private fun askForRealTrade() {
+    println("Run trading real money? Enter 'yes'")
+    while (readLine() != "yes") {
+        println("Answer is not 'yes'")
     }
 }
 
