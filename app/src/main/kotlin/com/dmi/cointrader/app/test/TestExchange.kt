@@ -12,34 +12,36 @@ class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal)
     fun portfolio(): Portfolio = HashMap(portfolio)
 
     fun broker(baseAsset: Asset, quoteAsset: Asset, quotePrice: BigDecimal): Broker? {
-        return if (baseAsset == assets.main && quoteAsset in assets.alts) {
-            object: Broker {
-                override val limits = Broker.Limits(BigDecimal.ZERO, BigDecimal.ZERO)
+        fun broker() = object : Broker {
+            override val limits = Broker.Limits(BigDecimal.ZERO, BigDecimal.ZERO)
 
-                suspend override fun buy(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
-                    val currentBaseAmount = portfolio[baseAsset]!!
-                    val currentQuoteAmount = portfolio[quoteAsset]!!
-                    val quoteAmount = baseAmount * quotePrice
-                    if (quoteAmount > currentQuoteAmount) {
-                        throw Broker.OrderError.InsufficientBalance
-                    }
-                    portfolio[baseAsset] = currentBaseAmount + baseAmount * (BigDecimal.ONE - fee)
-                    portfolio[quoteAsset] = currentQuoteAmount - quoteAmount
-                    return Broker.OrderResult(1.0)
+            suspend override fun buy(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+                val currentBaseAmount = portfolio[baseAsset]!!
+                val currentQuoteAmount = portfolio[quoteAsset]!!
+                val quoteAmount = baseAmount * quotePrice
+                if (quoteAmount > currentQuoteAmount) {
+                    throw Broker.OrderError.InsufficientBalance
                 }
-
-                suspend override fun sell(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
-                    val currentBaseAmount = portfolio[baseAsset]!!
-                    val currentQuoteAmount = portfolio[quoteAsset]!!
-                    val quoteAmount = baseAmount * quotePrice
-                    if (baseAmount > currentBaseAmount) {
-                        throw Broker.OrderError.InsufficientBalance
-                    }
-                    portfolio[baseAsset] = currentBaseAmount - baseAmount
-                    portfolio[quoteAsset] = currentQuoteAmount + quoteAmount * (BigDecimal.ONE - fee)
-                    return Broker.OrderResult(1.0)
-                }
+                portfolio[baseAsset] = currentBaseAmount + baseAmount * (BigDecimal.ONE - fee)
+                portfolio[quoteAsset] = currentQuoteAmount - quoteAmount
+                return Broker.OrderResult(1.0)
             }
+
+            suspend override fun sell(baseAmount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+                val currentBaseAmount = portfolio[baseAsset]!!
+                val currentQuoteAmount = portfolio[quoteAsset]!!
+                val quoteAmount = baseAmount * quotePrice
+                if (baseAmount > currentBaseAmount) {
+                    throw Broker.OrderError.InsufficientBalance
+                }
+                portfolio[baseAsset] = currentBaseAmount - baseAmount
+                portfolio[quoteAsset] = currentQuoteAmount + quoteAmount * (BigDecimal.ONE - fee)
+                return Broker.OrderResult(1.0)
+            }
+        }
+
+        return if (baseAsset == assets.main && quoteAsset in assets.alts) {
+            broker()
         } else {
             null
         }
