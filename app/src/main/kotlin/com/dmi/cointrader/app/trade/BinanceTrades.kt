@@ -4,7 +4,6 @@ import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.binance.MarketInfo
 import com.dmi.cointrader.app.binance.api.BinanceAPI
-import com.dmi.cointrader.main.Config
 import com.dmi.util.atom.ReadAtom
 import com.dmi.util.concurrent.buildChannel
 import com.dmi.util.concurrent.map

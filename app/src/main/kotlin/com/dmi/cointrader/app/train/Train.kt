@@ -1,4 +1,4 @@
-package com.dmi.cointrader.main
+package com.dmi.cointrader.app.train
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.periodNum

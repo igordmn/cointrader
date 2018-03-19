@@ -7,6 +7,7 @@ import kotlinx.serialization.internal.SerialClassDescImpl
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.time.temporal.UnsupportedTemporalTypeException
 
@@ -35,6 +36,9 @@ fun Instant.truncatedTo(duration: Duration): Instant {
     val result = (nod / dur) * dur
     return plusNanos(result - nod)
 }
+
+fun DateTimeFormatter.parseInstant(text: CharSequence): Instant = parse(text, Instant::from)
+fun DateTimeFormatter.parseInstantRange(from: CharSequence, to: CharSequence): InstantRange = parseInstant(from)..parseInstant(to)
 
 operator fun Duration.div(other: Duration): Double = seconds / other.seconds.toDouble()
 operator fun Duration.times(multiplier: Int): Duration = this.multipliedBy(multiplier.toLong())

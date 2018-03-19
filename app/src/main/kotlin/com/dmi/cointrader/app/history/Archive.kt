@@ -12,10 +12,6 @@ import java.time.Instant
 
 typealias History = List<Moment>
 
-suspend fun binanceArchive(exchange: BinanceExchange): Archive {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates
-}
-
 class Archive(
         private val exchange: BinanceExchange
 ) {

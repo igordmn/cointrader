@@ -1,12 +1,8 @@
 package com.dmi.cointrader.app.test
 
-import com.dmi.cointrader.app.moment.Moment
-import com.dmi.cointrader.app.neural.NeuralNetwork
-import com.dmi.util.collection.SuspendList
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.math.product
-import com.dmi.cointrader.main.Config
 import kotlin.math.pow
 
 typealias Profits = List<Double>
@@ -23,8 +19,4 @@ fun Profits.hourly(config: Config): Profits {
     return chunked(periodsPerHour).map {
         product(it).pow(periodsPerHour.toDouble() / it.size)
     }
-}
-
-suspend fun backTest(days: Double) {
-
 }

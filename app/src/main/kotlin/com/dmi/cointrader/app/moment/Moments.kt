@@ -15,7 +15,6 @@ import com.dmi.util.lang.DurationSerializer
 import com.dmi.util.lang.InstantSerializer
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
-import com.dmi.cointrader.main.Config
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
