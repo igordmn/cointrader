@@ -4,10 +4,7 @@ import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.broker.*
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.Periods
-import com.dmi.cointrader.app.history.Archive
-import com.dmi.cointrader.app.history.History
-import com.dmi.cointrader.app.history.binanceArchive
-import com.dmi.cointrader.app.history.prices
+import com.dmi.cointrader.app.history.*
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.util.concurrent.delay
@@ -35,7 +32,7 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = productionBinanceExchange(log)
-    val history = binanceArchive(exchange)
+    val history = archive(config, exchange, exchange.currentTime())
 
     class PeriodIterator(private val periods: Periods) {
         private var previousPeriod = Period(Long.MIN_VALUE)

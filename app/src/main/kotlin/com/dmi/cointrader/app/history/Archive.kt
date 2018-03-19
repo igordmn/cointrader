@@ -1,19 +1,17 @@
 package com.dmi.cointrader.app.history
 
-import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodRange
 import com.dmi.cointrader.app.candle.numRange
 import com.dmi.cointrader.app.trade.TradeConfig
-import com.dmi.util.collection.rangeMap
 import com.dmi.util.io.SyncFileList
-import com.dmi.util.io.syncFileList
-import java.nio.file.Files.createDirectories
-import java.time.Instant
 import com.dmi.util.io.SyncFileList.EmptyLog
+import com.dmi.util.io.syncFileList
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
+import java.nio.file.Files.createDirectories
+import java.time.Instant
 
 typealias History = List<Moment>
 typealias HistoryBatch = List<History>
