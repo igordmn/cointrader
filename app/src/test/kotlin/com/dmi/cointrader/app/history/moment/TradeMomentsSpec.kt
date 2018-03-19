@@ -1,15 +1,13 @@
-package com.dmi.cointrader.app.moment
+package com.dmi.cointrader.app.history.moment
 
 import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.trade.Trade
-import com.dmi.util.atom.Atom
+import com.dmi.cointrader.app.history.*
+import com.dmi.cointrader.app.history.Trade
 import com.dmi.util.atom.MemoryAtom
-import com.dmi.util.atom.SyncAtom
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.test.Spec
 import com.dmi.util.test.instant
 import com.dmi.util.test.period
-import io.kotlintest.matchers.should
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 

@@ -1,21 +1,17 @@
-package com.dmi.cointrader.app.performtrade
+package com.dmi.cointrader.app.trade
 
 import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.broker.*
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.Periods
-import com.dmi.cointrader.app.candle.asSequence
 import com.dmi.cointrader.app.history.Archive
 import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.history.binanceArchive
-import com.dmi.cointrader.app.moment.prices
+import com.dmi.cointrader.app.history.prices
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
-import com.dmi.cointrader.app.test.TestExchange
-import com.dmi.util.collection.rangeMap
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
-import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog

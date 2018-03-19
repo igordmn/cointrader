@@ -1,4 +1,4 @@
-package com.dmi.cointrader.app.trade
+package com.dmi.cointrader.app.history
 
 import com.dmi.util.concurrent.Indexed
 import com.dmi.util.io.FixedSerializer

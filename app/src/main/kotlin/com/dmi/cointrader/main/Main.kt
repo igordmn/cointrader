@@ -1,7 +1,7 @@
 package com.dmi.cointrader.main
 
 import com.dmi.cointrader.app.info.printTopCoins
-import com.dmi.cointrader.app.performtrade.performRealTrades
+import com.dmi.cointrader.app.trade.performRealTrades
 import com.dmi.cointrader.app.train.train
 import kotlinx.coroutines.experimental.runBlocking
 

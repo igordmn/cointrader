@@ -2,16 +2,15 @@ package com.dmi.cointrader.app.train
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.periodNum
-import com.dmi.cointrader.app.moment.Moment
-import com.dmi.cointrader.app.moment.cachedMoments
+import com.dmi.cointrader.app.history.Moment
+import com.dmi.cointrader.app.history.moment.cachedMoments
 import com.dmi.cointrader.app.test.BackTest
 import com.dmi.cointrader.app.test.dayly
 import com.dmi.cointrader.app.test.hourly
-import com.dmi.cointrader.app.trade.Trade
-import com.dmi.cointrader.app.trade.coinToCachedBinanceTrades
+import com.dmi.cointrader.app.history.Trade
+import com.dmi.cointrader.app.history.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.collection.SuspendList
-import com.dmi.util.concurrent.mapAsync
 import com.dmi.util.io.SyncList
 import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked

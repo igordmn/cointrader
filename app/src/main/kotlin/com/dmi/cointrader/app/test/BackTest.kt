@@ -1,6 +1,5 @@
 package com.dmi.cointrader.app.test
 
-import com.dmi.cointrader.app.performtrade.TradeConfig
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.math.product

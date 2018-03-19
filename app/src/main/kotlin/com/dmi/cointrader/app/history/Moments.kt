@@ -1,23 +1,17 @@
-package com.dmi.cointrader.app.moment
+package com.dmi.cointrader.app.history
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.TradesCandle
 import com.dmi.cointrader.app.candle.periodNum
 import com.dmi.cointrader.app.candle.candles
-import com.dmi.cointrader.app.trade.Trade
 import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.*
 import com.dmi.util.io.RestorableSource
-import com.dmi.util.io.SyncList
-import com.dmi.util.io.syncFileList
 import com.dmi.util.lang.DurationSerializer
 import com.dmi.util.lang.InstantSerializer
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 
@@ -77,32 +71,9 @@ class TradeMoments(
     }
 }
 
-suspend fun cachedMoments(
-        config: Config,
-        coinToTrades: List<SuspendList<Trade>>,
-        currentTime: ReadAtom<Instant>
-): SyncList<Moment> {
-    val path = Paths.get("old/data/cache/binance/moments")
-    Files.createDirectories(path.parent)
-    return cachedMoments(config.startTime, config.period, config.altCoins, path, coinToTrades, currentTime)
-}
-
-suspend fun cachedMoments(
-        startTime: Instant,
-        period: Duration,
-        altCoins: List<String>,
-        path: Path,
-        coinToTrades: List<SuspendList<Trade>>,
-        currentTime: ReadAtom<Instant>,
-        reloadCount: Int = 10
-): SyncList<Moment> {
-    return syncFileList(
-            path,
-            MomentsConfig.serializer(),
-            MomentState.serializer(),
-            MomentFixedSerializer(altCoins.size),
-            MomentsConfig(startTime, period, altCoins),
-            TradeMoments(startTime, period, coinToTrades, currentTime),
-            reloadCount = reloadCount
-    )
-}
+//val path = Paths.get("old/data/cache/binance/moments")
+//Files.createDirectories(path.parent)
+//MomentsConfig.serializer(),
+//MomentState.serializer(),
+//MomentFixedSerializer(altCoins.size),
+//MomentsConfig(startTime, period, altCoins),

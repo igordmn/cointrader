@@ -1,7 +1,6 @@
 package com.dmi.cointrader.app.neural
 
 import com.dmi.cointrader.app.history.History
-import com.dmi.cointrader.app.moment.Moment
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D

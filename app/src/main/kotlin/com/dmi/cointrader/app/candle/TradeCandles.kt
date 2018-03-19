@@ -1,11 +1,14 @@
 package com.dmi.cointrader.app.candle
 
-import com.dmi.cointrader.app.trade.IndexedTrade
+import com.dmi.cointrader.app.history.IndexedTrade
 import com.dmi.util.concurrent.chunkedBy
 import com.dmi.util.concurrent.insert
 import com.dmi.util.concurrent.map
+import com.dmi.util.lang.DurationSerializer
+import com.dmi.util.lang.InstantSerializer
 import com.dmi.util.lang.times
 import kotlinx.coroutines.experimental.channels.*
+import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
 
@@ -18,7 +21,11 @@ data class Period(val num: Long) : Comparable<Period> {
 
 fun ClosedRange<Period>.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
 
-data class Periods(val start: Instant, val duration: Duration) {
+@Serializable
+data class Periods(
+        @Serializable(with = InstantSerializer::class) val start: Instant,
+        @Serializable(with = DurationSerializer::class) val duration: Duration
+) {
     fun of(time: Instant) = Period(numOf(time))
     private fun numOf(time: Instant): Long = periodNum(start, duration, time)
 
