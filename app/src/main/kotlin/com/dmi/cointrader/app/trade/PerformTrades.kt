@@ -59,7 +59,7 @@ private fun askForRealTrade(): Boolean {
     println("Run trading real money? enter 'yes' if yes")
     val answer = readLine()
     return if (answer != "yes") {
-        println("Answer not 'yes', so exit")
+        println("Answer isn't 'yes', so exit")
         false
     } else {
         true
