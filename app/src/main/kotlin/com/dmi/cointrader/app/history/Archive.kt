@@ -3,7 +3,9 @@ package com.dmi.cointrader.app.history
 import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.candle.Period
+import com.dmi.cointrader.app.candle.PeriodRange
 import com.dmi.cointrader.app.trade.TradeConfig
+import com.dmi.util.collection.rangeMap
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.syncFileList
 import java.nio.file.Files.createDirectories
@@ -12,9 +14,10 @@ import com.dmi.util.io.SyncFileList.EmptyLog
 import java.nio.file.FileSystem
 
 typealias History = List<Moment>
+typealias HistoryBatch = List<History>
 
 interface Archive {
-    suspend fun historyAt(period: Period, size: Int): History
+    suspend fun historyAt(range: PeriodRange): History
     suspend fun sync(currentTime: Instant)
 }
 
@@ -94,9 +97,7 @@ suspend fun archive(
     )
 
     return object : Archive {
-        suspend override fun historyAt(period: Period, size: Int): History {
-            momentsList
-        }
+        suspend override fun historyAt(range: PeriodRange): History = momentsList.get(range.start.num..range.endInclusive.num)
 
         suspend override fun sync(currentTime: Instant) {
             trades.forEach {

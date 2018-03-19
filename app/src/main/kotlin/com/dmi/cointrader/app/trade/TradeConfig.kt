@@ -27,7 +27,7 @@ data class TradeConfig(
                         "STRAT", "GXS", "OST"
                 )
         ),
-        val historyCount: Int = 160,
+        val historySize: Int = 160,
         val periods: Periods = Periods(
                 start = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
                 duration = Duration.ofMinutes(5)

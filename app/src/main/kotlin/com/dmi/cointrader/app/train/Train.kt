@@ -88,7 +88,7 @@ private suspend fun train(backTest1: BackTest, backTest2: BackTest, network: Neu
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
             val batchNums = batchNums(random, config, nums)
-            val batch = batch(config.historyCount, moments, portfolios, batchNums)
+            val batch = batch(config.historySize, moments, portfolios, batchNums)
             send(batch)
         }
     }
@@ -174,18 +174,18 @@ fun initPortfolio(coinCount: Int): Portions = Array(coinCount) { 1.0 / coinCount
 fun initPortfolios(size: Int, coinCount: Int) = Array(size) { initPortfolio(coinCount) }
 
 private suspend fun batchNums(random: GeometricDistribution, config: Config, limits: LongRange): LongRange {
-    val firstNum = limits.first.coerceAtLeast(config.historyCount + config.trainBatchSize - 2L)
+    val firstNum = limits.first.coerceAtLeast(config.historySize + config.trainBatchSize - 2L)
     val lastNum = limits.last
     val lastBatchNum = random.rangeSample((firstNum..lastNum).toInt()).toLong() - 1
     val firstBatchNum = lastBatchNum - config.trainBatchSize + 1
 
-    val firstBatchFirstHistoryNum = firstBatchNum - config.historyCount + 1
+    val firstBatchFirstHistoryNum = firstBatchNum - config.historySize + 1
     val lastBatchFutureMomentNum = lastBatchNum + 1
 
     return firstBatchFirstHistoryNum..lastBatchFutureMomentNum
 }
 
-private suspend fun batch(historyCount: Int, moments: SuspendList<Moment>, portfolios: Array<Portions>, nums: LongRange): TrainBatch {
+private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfolios: Array<Portions>, nums: LongRange): TrainBatch {
     fun Moment.prices(): Prices = coinIndexToCandle.map(Candle::low)
     fun priceInc(previousPrice: Double, nextPrice: Double) = nextPrice / previousPrice
     fun priceIncs(currentPrices: List<Double>, nextPrices: List<Double>): List<Double> = currentPrices.zip(nextPrices, ::priceInc)
@@ -199,10 +199,10 @@ private suspend fun batch(historyCount: Int, moments: SuspendList<Moment>, portf
     val batchSetPortfolios = nums.toInt().map(::setPortfolioFun)
     val batchPrices = batchMoments.map(Moment::prices)
     val batchPriceIncs = batchPrices.zipWithNext(::priceIncs)
-    val indices = historyCount - 1..batchMoments.size - 2
+    val indices = historySize - 1..batchMoments.size - 2
 
     fun trainMoment(index: Int) = TrainMoment(
-            history = batchMoments.slice(index - historyCount + 1..index),
+            history = batchMoments.slice(index - historySize + 1..index),
             portfolio = batchPortfolios[index],
             setPortfolio = batchSetPortfolios[index],
             futurePriceIncs = batchPriceIncs[index]
@@ -213,7 +213,7 @@ private suspend fun batch(historyCount: Int, moments: SuspendList<Moment>, portf
 
 private fun network(jep: Jep, config: Config) = NeuralNetwork.init(
         jep,
-        NeuralNetwork.Config(1 + config.altCoins.size, config.historyCount, 3),
+        NeuralNetwork.Config(1 + config.altCoins.size, config.historySize, 3),
         gpuMemoryFraction = 0.5
 )
 

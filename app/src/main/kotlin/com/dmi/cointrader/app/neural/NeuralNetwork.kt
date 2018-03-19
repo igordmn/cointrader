@@ -1,6 +1,7 @@
 package com.dmi.cointrader.app.neural
 
 import com.dmi.cointrader.app.history.History
+import com.dmi.cointrader.app.history.HistoryBatch
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D
@@ -24,7 +25,6 @@ suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
 
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias HistoryBatch = List<History>
 data class PriceIncs(private val list: List<Double>): List<Double> by list
 typealias PriceIncsBatch = List<PriceIncs>
 
@@ -50,7 +50,7 @@ class NeuralNetwork private constructor(
                 def best_portfolio(previous_w, history):
                     return network.best_portfolio(previous_w, history)
             """.trimIndent())
-        jep.invoke("create_network", config.coinCount, config.historyCount, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
+        jep.invoke("create_network", config.coinCount, config.historySize, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
     }
 
     fun bestPortfolio(currentPortions: Portions, history: History): Portions {
@@ -62,7 +62,7 @@ class NeuralNetwork private constructor(
         require(currentPortions.n2 == config.coinCount)
         require(histories.n2 == config.indicatorCount)
         require(histories.n3 == config.coinCount)
-        require(histories.n4 == config.historyCount)
+        require(histories.n4 == config.historySize)
         require(currentPortions.n1 == histories.n1)
 
         val npportfolio = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
@@ -89,7 +89,7 @@ class NeuralNetwork private constructor(
     @Serializable
     data class Config(
             val coinCount: Int,
-            val historyCount: Int,
+            val historySize: Int,
             val indicatorCount: Int
     )
 
@@ -146,7 +146,7 @@ class NeuralTrainer(
         require(currentPortions.n2 == net.config.coinCount)
         require(histories.n2 == net.config.indicatorCount)
         require(histories.n3 == net.config.coinCount)
-        require(histories.n4 == net.config.historyCount)
+        require(histories.n4 == net.config.historySize)
         require(futurePriceIncs.n2 == net.config.coinCount)
         require(futurePriceIncs.n1 == currentPortions.n1)
         require(futurePriceIncs.n1 == histories.n1)

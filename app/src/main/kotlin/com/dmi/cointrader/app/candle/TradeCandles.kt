@@ -19,7 +19,9 @@ data class Period(val num: Long) : Comparable<Period> {
     fun next(): Period = Period(num + 1)
 }
 
-fun ClosedRange<Period>.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
+typealias PeriodRange = ClosedRange<Period>
+
+fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
 
 @Serializable
 data class Periods(
