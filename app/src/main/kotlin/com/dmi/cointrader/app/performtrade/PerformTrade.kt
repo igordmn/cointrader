@@ -63,7 +63,7 @@ private suspend fun binanceInfo(assets: TradeAssets, exchange: BinanceExchange, 
     return TradeInfo(assetCapitals, totalCapital, infoAsset)
 }
 
-data class TradeInfo(private val assetCapitals: Map<Asset, Double>, private val totalCapital: Double, private val mainAsset: Asset) {
+data class TradeInfo(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
     override fun toString(): String {
         val totalCapital = "%.4f".format(totalCapital)
         val assetCapitals = assetCapitals.toList().joinToString(", ") {
@@ -74,6 +74,8 @@ data class TradeInfo(private val assetCapitals: Map<Asset, Double>, private val 
         return "$totalCapital $mainAsset ($assetCapitals)"
     }
 }
+
+fun Collection<TradeInfo>.capitals() = map(TradeInfo::totalCapital)
 
 suspend fun performTestTrade(
         config: TradeConfig,
