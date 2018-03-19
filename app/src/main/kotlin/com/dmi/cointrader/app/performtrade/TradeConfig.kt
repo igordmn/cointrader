@@ -1,5 +1,6 @@
 package com.dmi.cointrader.app.performtrade
 
+import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.candle.Periods
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR
@@ -8,9 +9,12 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-
 fun savedTradeConfig(): TradeConfig = CBOR.load(Paths.get("data/tradeConfig").toFile().readBytes())
 fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile().writeBytes(CBOR.dump(config))
+
+data class TradeAssets(val main: Asset, val alts: List<Asset>) {
+    val all = listOf(main) + alts
+}
 
 @Serializable
 data class TradeConfig(

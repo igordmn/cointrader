@@ -16,9 +16,11 @@ suspend fun binanceArchive(exchange: BinanceExchange): Archive {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates
 }
 
-class Archive {
+class Archive(
+        private val exchange: BinanceExchange
+) {
     suspend fun historyAt(period: Period, size: Int): History {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates
+
     }
 
     suspend fun load(currentTime: Instant) {
@@ -32,13 +34,10 @@ class Archive {
         val coinToTrades = coinToCachedBinanceTrades(config, constants, api, currentTime, ::coinLog)
         val moments = cachedMoments(config, coinToTrades, currentTime)
 
-        println("Download trades")
         currentTime.sync()
         coinToTrades.mapAsync {
             it.sync()
         }
-
-        println("Make moments")
         moments.sync()
     }
 }
