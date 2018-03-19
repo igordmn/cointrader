@@ -27,25 +27,20 @@ data class Periods(
         @Serializable(with = DurationSerializer::class) val duration: Duration
 ) {
     fun of(time: Instant) = Period(numOf(time))
-    private fun numOf(time: Instant): Long = periodNum(start, duration, time)
 
-    fun startOf(period: Period): Instant = startOf(period.num)
-    private fun startOf(num: Long): Instant = periodTime(start, duration, num)
-}
+    private fun numOf(time: Instant) : Long {
+        val distMillis = Duration.between(start, time).toMillis()
+        val periodMillis = duration.toMillis()
+        return Math.floorDiv(distMillis, periodMillis)
+    }
 
-fun periodNum(startTime: Instant, period: Duration, time: Instant): Long {
-    val distMillis = Duration.between(startTime, time).toMillis()
-    val periodMillis = period.toMillis()
-    return Math.floorDiv(distMillis, periodMillis)
-}
-
-fun periodTime(startTime: Instant, period: Duration, num: Long): Instant {
-    return startTime + period * num
+    fun startOf(period: Period): Instant {
+        return start + duration * period.num
+    }
 }
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
-        startTime: Instant,
-        period: Duration,
+        periods: Periods,
         nums: LongRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
     class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
@@ -56,7 +51,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         ), trades.last().index)
     }
 
-    fun candleNum(trade: IndexedTrade<INDEX>) = periodNum(startTime, period, trade.value.time)
+    fun candleNum(trade: IndexedTrade<INDEX>) = periods.of(trade.value.time).num
 
     fun candlesFirst(first: CandleBillet): List<CandleBillet> = (nums.start until first.num).map {
         CandleBillet(it, listOf(first.trades.first()))

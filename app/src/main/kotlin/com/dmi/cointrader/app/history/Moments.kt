@@ -1,9 +1,6 @@
 package com.dmi.cointrader.app.history
 
-import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.candle.TradesCandle
-import com.dmi.cointrader.app.candle.periodNum
-import com.dmi.cointrader.app.candle.candles
+import com.dmi.cointrader.app.candle.*
 import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.*
@@ -32,8 +29,7 @@ typealias CandleItem = RestorableSource.Item<CandleState, Candle>
 typealias MomentItem = RestorableSource.Item<MomentState, Moment>
 
 class TradeMoments(
-        private val startTime: Instant,
-        private val period: Duration,
+        private val periods: Periods,
         private val trades: List<SuspendList<Trade>>,
         private val currentTime: ReadAtom<Instant>
 ) : RestorableSource<MomentState, Moment> {
@@ -41,10 +37,10 @@ class TradeMoments(
         val currentTime = currentTime()
         val indices = trades.indices
 
-        require(currentTime >= startTime)
+        require(currentTime >= periods.start)
 
         val firstNum = if (state != null) state.num + 1 else 0L
-        val lastNum = periodNum(startTime, period, currentTime)
+        val lastNum = periods.of(currentTime).num
         val tradeStartIndices = state?.candles?.map(CandleState::lastTradeIndex) ?: indices.map { 0L }
 
         fun TradesCandle<Long>.toItem() = CandleItem(CandleState(lastTradeIndex), candle)
@@ -52,7 +48,7 @@ class TradeMoments(
         fun candles(i: Int) = trades[i]
                 .channel(tradeStartIndices[i])
                 .withLongIndex(tradeStartIndices[i])
-                .candles(startTime, period, firstNum..lastNum)
+                .candles(periods, firstNum..lastNum)
                 .map(TradesCandle<Long>::toItem)
 
         fun moment(candles: LongIndexed<List<CandleItem>>): MomentItem {
