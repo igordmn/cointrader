@@ -3,6 +3,7 @@ package com.dmi.cointrader.app.trade
 import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.broker.*
 import com.dmi.cointrader.app.candle.Period
+import com.dmi.cointrader.app.candle.PeriodRange
 import com.dmi.cointrader.app.candle.Periods
 import com.dmi.cointrader.app.history.*
 import com.dmi.cointrader.app.neural.NeuralNetwork
@@ -105,20 +106,6 @@ private suspend fun binanceInfo(assets: TradeAssets, exchange: BinanceExchange, 
     return TradeInfo(assetCapitals, totalCapital, infoAsset)
 }
 
-data class TradeInfo(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
-    override fun toString(): String {
-        val totalCapital = "%.4f".format(totalCapital)
-        val assetCapitals = assetCapitals.toList().joinToString(", ") {
-            val asset = it.first
-            val capital = "%.4f".format(it.second)
-            "$asset=$capital"
-        }
-        return "$totalCapital $mainAsset ($assetCapitals)"
-    }
-}
-
-fun Collection<TradeInfo>.capitals() = map(TradeInfo::totalCapital)
-
 suspend fun performTrade(
         assets: TradeAssets,
         network: NeuralNetwork,
@@ -168,3 +155,21 @@ suspend fun performTrade(
         buy(buyAsset, buyPrice, tradeAmount)
     }
 }
+
+suspend fun performTestTrades(range: PeriodRange): List<TradeInfo> {
+
+}
+
+data class TradeInfo(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
+    override fun toString(): String {
+        val totalCapital = "%.4f".format(totalCapital)
+        val assetCapitals = assetCapitals.toList().joinToString(", ") {
+            val asset = it.first
+            val capital = "%.4f".format(it.second)
+            "$asset=$capital"
+        }
+        return "$totalCapital $mainAsset ($assetCapitals)"
+    }
+}
+
+fun Collection<TradeInfo>.capitals() = map(TradeInfo::totalCapital)
