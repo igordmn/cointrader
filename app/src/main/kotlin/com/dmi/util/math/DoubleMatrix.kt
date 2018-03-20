@@ -1,6 +1,6 @@
 package com.dmi.util.math
 
-class DoubleMatrix4D(
+class Matrix4D(
         val n1: Int,
         val n2: Int,
         val n3: Int,
@@ -19,7 +19,7 @@ class DoubleMatrix4D(
     }
 }
 
-class DoubleMatrix2D(
+class Matrix2D(
         val n1: Int,
         val n2: Int,
         val data: DoubleArray

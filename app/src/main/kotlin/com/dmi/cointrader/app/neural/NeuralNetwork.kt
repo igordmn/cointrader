@@ -3,10 +3,9 @@ package com.dmi.cointrader.app.neural
 import com.dmi.cointrader.app.archive.History
 import com.dmi.cointrader.app.archive.HistoryBatch
 import com.dmi.cointrader.app.trade.TradeConfig
-import com.dmi.cointrader.app.train.TrainConfig
 import com.dmi.util.io.ResourceContext
-import com.dmi.util.math.DoubleMatrix2D
-import com.dmi.util.math.DoubleMatrix4D
+import com.dmi.util.math.Matrix2D
+import com.dmi.util.math.Matrix4D
 import jep.Jep
 import jep.NDArray
 import kotlinx.serialization.Serializable
@@ -29,14 +28,16 @@ fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwor
     return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.all.size, config.historySize, 3), gpuMemoryFraction = 0.5).use()
 }
 
-fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, config: TrainConfig): NeuralTrainer {
-    return NeuralTrainer(jep, net, NeuralTrainer.Config(config.fee))
+fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork): NeuralTrainer {
+    return NeuralTrainer(jep, net)
 }
 
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-data class PriceIncs(private val list: List<Double>): List<Double> by list
+typealias PriceIncs = List<Double>
 typealias PriceIncsBatch = List<PriceIncs>
+typealias Fees = List<Double>
+typealias FeesBatch = List<PriceIncs>
 
 class NeuralNetwork private constructor(
         private val jep: Jep,
@@ -68,7 +69,7 @@ class NeuralNetwork private constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun bestPortfolio(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
+    fun bestPortfolio(currentPortions: Matrix2D, histories: Matrix4D): Matrix2D = synchronized(this) {
         require(currentPortions.n2 == config.coinNumber)
         require(histories.n2 == config.indicatorCount)
         require(histories.n3 == config.coinNumber)
@@ -81,7 +82,7 @@ class NeuralNetwork private constructor(
         val result = jep.invoke("best_portfolio", npportfolio, nphistory) as NDArray<FloatArray>
 
         val dataDouble = result.data.map { it.toDouble() }.toDoubleArray()
-        return DoubleMatrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
+        return Matrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
     }
 
     fun save(directory: Path) {
@@ -142,7 +143,7 @@ class NeuralTrainer(
         jep.invoke("create_trainer")
     }
 
-    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch, fees: X): Result {
+    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch, fees: FeesBatch): Result {
         val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), futurePriceIncs.toMatrix(), fees.toMatrix())
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
@@ -151,7 +152,7 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, futurePriceIncs: DoubleMatrix2D, fees: DoubleMatrix2D): ResultMatrix {
+    fun train(currentPortions: Matrix2D, histories: Matrix4D, futurePriceIncs: Matrix2D, fees: Matrix2D): ResultMatrix {
         require(currentPortions.n2 == net.config.coinNumber)
         require(histories.n2 == net.config.indicatorCount)
         require(histories.n3 == net.config.coinNumber)
@@ -172,7 +173,7 @@ class NeuralTrainer(
         val portionsDataDouble = newPortions.data.map { it.toDouble() }.toDoubleArray()
 
         return ResultMatrix(
-                DoubleMatrix2D(newPortions.dimensions[0], newPortions.dimensions[1], portionsDataDouble),
+                Matrix2D(newPortions.dimensions[0], newPortions.dimensions[1], portionsDataDouble),
                 geometricMeanProfit
         )
     }
@@ -182,37 +183,29 @@ class NeuralTrainer(
         neuralTrainerCreated.set(false)
     }
 
-    data class ResultMatrix(val newPortions: DoubleMatrix2D, val geometricMeanProfit: Double)
+    data class ResultMatrix(val newPortions: Matrix2D, val geometricMeanProfit: Double)
     data class Result(val newPortions: PortionsBatch, val geometricMeanProfit: Double)
 }
 
-@JvmName("PortionsBatch_toMatrix")
-fun PortionsBatch.toMatrix(): DoubleMatrix2D {
-    val batchSize = size
-    val portfolioSize = first().size
-    fun value(b: Int, c: Int) = this[b][c]
-    return DoubleMatrix2D(batchSize, portfolioSize, ::value)
-}
-
 @JvmName("HistoryBatch_toMatrix")
-fun HistoryBatch.toMatrix(): DoubleMatrix4D {
+fun HistoryBatch.toMatrix(): Matrix4D {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().coinIndexToCandle.size
     val indicatorSize = 3
     fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h].coinIndexToCandle[c].indicator(i)
-    return DoubleMatrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
+    return Matrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
 }
 
-@JvmName("PriceIncsBatch_toMatrix")
-fun PriceIncsBatch.toMatrix(): DoubleMatrix2D {
+@JvmName("toMatrix2D")
+fun List<List<Double>>.toMatrix(): Matrix2D {
     val batchSize = size
     val portfolioSize = first().size
     fun value(b: Int, c: Int) = this[b][c]
-    return DoubleMatrix2D(batchSize, portfolioSize, ::value)
+    return Matrix2D(batchSize, portfolioSize, ::value)
 }
 
-fun DoubleMatrix2D.toPortionsBatch(): PortionsBatch {
+fun Matrix2D.toPortionsBatch(): PortionsBatch {
     val portfolios = ArrayList<Portions>(n1)
     (0 until n1).forEach { b ->
         val portfolio = ArrayList<Double>(n2)
@@ -223,6 +216,6 @@ fun DoubleMatrix2D.toPortionsBatch(): PortionsBatch {
     return portfolios
 }
 
-fun Portions.toMatrix(): DoubleMatrix2D = listOf(this).toMatrix()
-fun History.toMatrix(): DoubleMatrix4D = listOf(this).toMatrix()
-fun DoubleMatrix2D.toPortions(): Portions = toPortionsBatch().first()
+fun Portions.toMatrix(): Matrix2D = listOf(this).toMatrix()
+fun History.toMatrix(): Matrix4D = listOf(this).toMatrix()
+fun Matrix2D.toPortions(): Portions = toPortionsBatch().first()

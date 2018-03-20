@@ -8,20 +8,25 @@ import java.nio.ByteBuffer
 data class Candle(
         val close: Double,
         val high: Double,
-        val low: Double
+        val low: Double,
+        val closeAsk: Double,
+        val closeBid: Double,
+        val tradeTimeAsk: Double,
+        val tradeTimeBid: Double
 ) {
-    val closeAsk: Double get() = close
-    val closeBid: Double get() = close
 
     init {
         require(high >= low)
-        require(close <= high)
         require(close >= low)
-//
-//        require(sellPrice >= low)
-//        require(buyPrice >= low)
-//        require(sellPrice <= high)
-//        require(buyPrice <= high)
+        require(closeAsk >= low)
+        require(closeBid >= low)
+        require(tradeTimeAsk >= low)
+        require(tradeTimeBid >= low)
+        require(close <= high)
+        require(closeAsk <= high)
+        require(closeBid <= high)
+        require(tradeTimeAsk <= high)
+        require(tradeTimeBid <= high)
     }
 
     fun indicator(index: Int) = when (index) {
@@ -33,21 +38,25 @@ data class Candle(
 }
 
 class CandleFixedSerializer : FixedSerializer<Candle> {
-    override val itemBytes: Int = 3 * 8
+    override val itemBytes: Int = 7 * 8
 
     override fun serialize(item: Candle, data: ByteBuffer) {
         data.putDouble(item.close)
         data.putDouble(item.high)
         data.putDouble(item.low)
-//        data.putDouble(item.sellPrice)
-//        data.putDouble(item.buyPrice)
+        data.putDouble(item.closeAsk)
+        data.putDouble(item.closeBid)
+        data.putDouble(item.tradeTimeAsk)
+        data.putDouble(item.tradeTimeBid)
     }
 
     override fun deserialize(data: ByteBuffer): Candle = Candle(
             data.double,
             data.double,
+            data.double,
+            data.double,
+            data.double,
+            data.double,
             data.double
-//            data.double,
-//            data.double
     )
 }
