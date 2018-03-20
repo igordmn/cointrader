@@ -1,15 +1,11 @@
 package com.dmi.cointrader.app.train
 
-import com.dmi.cointrader.app.archive.HistoryBatch
+import com.dmi.cointrader.app.archive.*
 import com.dmi.cointrader.app.binance.publicBinanceExchange
-import com.dmi.cointrader.app.archive.Moment
-import com.dmi.cointrader.app.archive.Prices
-import com.dmi.cointrader.app.archive.archive
 import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*
-import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
@@ -19,7 +15,7 @@ import com.dmi.util.io.resourceContext
 import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
-import com.dmi.util.math.rangeSample
+import com.dmi.util.math.sampleIn
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
@@ -61,9 +57,7 @@ suspend fun train() = resourceContext {
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
-            val batchPeriods = random.batchPeriods(tradeConfig.historySize, trainConfig.batchSize, trainRange)
-            val batch = batch(tradeConfig.historySize, moments, portfolios, batchPeriods)
-            send(batch)
+            send(batch(random, tradeConfig.historySize, trainConfig.batchSize, archive, portfolios))
         }
     }
 
@@ -100,12 +94,16 @@ suspend fun train() = resourceContext {
         )
     }
 
-    batches().map(::train).chunked(trainConfig.logSteps).withIndex().consumeEach {
-        val step = (it.index + 1) * trainConfig.logSteps
-        val testProfits = performTestTrades(testRange, tradeConfig, net, archive, testExchange)
-        val validationProfits = performTestTrades(validationRange, tradeConfig, net, archive, testExchange)
-        saveNet(trainResult(step, it.value, testProfits, validationProfits))
-    }
+    batches()
+            .map(::train)
+            .chunked(trainConfig.logSteps)
+            .withIndex()
+            .consumeEach {
+                val step = (it.index + 1) * trainConfig.logSteps
+                val testProfits = performTestTrades(testRange, tradeConfig, net, archive, testExchange)
+                val validationProfits = performTestTrades(validationRange, tradeConfig, net, archive, testExchange)
+                saveNet(trainResult(step, it.value, testProfits, validationProfits))
+            }
 }
 
 private data class TrainResult(
@@ -120,10 +118,10 @@ private data class TrainResult(
 fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
 
-private fun GeometricDistribution.batchPeriods(historySize: Int, batchSize: Int, allRange: PeriodRange): PeriodRange {
+private fun GeometricDistribution.batchAllPeriods(historySize: Int, batchSize: Int, allRange: PeriodRange): PeriodRange {
     val firstNum = allRange.start.num.coerceAtLeast(historySize + batchSize - 2L)
     val lastNum = allRange.endInclusive.num
-    val lastBatchNum = rangeSample((firstNum..lastNum).toInt()).toLong() - 1
+    val lastBatchNum = sampleIn((firstNum..lastNum).toInt()).toLong() - 1
     val firstBatchNum = lastBatchNum - batchSize + 1
 
     val firstBatchFirstHistoryNum = firstBatchNum - historySize + 1
@@ -132,27 +130,41 @@ private fun GeometricDistribution.batchPeriods(historySize: Int, batchSize: Int,
     return Period(firstBatchFirstHistoryNum)..Period(lastBatchFutureMomentNum)
 }
 
-private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfolios: Array<Portions>, periods: PeriodRange): TrainBatch {
-    fun Moment.prices(): Prices = coinIndexToCandle.map(Candle::low)
-    fun priceInc(previousPrice: Double, nextPrice: Double) = nextPrice / previousPrice
-    fun priceIncs(currentPrices: List<Double>, nextPrices: List<Double>): List<Double> = currentPrices.zip(nextPrices, ::priceInc)
+private suspend fun batch(
+        random: GeometricDistribution,
+        range: PeriodRange,
+        historySize: Int,
+        batchSize: Int,
+        archive: Archive,
+        portfolios: Array<Portions>
+): TrainBatch {
+    val firstNum = range.start.num.coerceAtLeast(historySize + batchSize - 2L)
+    val lastNum = range.endInclusive.num
+    val lastBatchNum = random.sampleIn((firstNum..lastNum).toInt()).toLong() - 1
+    val firstBatchNum = lastBatchNum - batchSize + 1
 
-    val nums = periods.nums()
-    val batchMoments = moments.get(nums)
+    val firstBatchFirstHistoryNum = firstBatchNum - historySize + 1
+    val lastBatchFutureMomentNum = lastBatchNum + 1
+
+    val allNums = allPeriods.nums()
+    val batchHistory = archive.historyAt(allPeriods)
     val batchPortfolios = portfolios.sliceArray(nums.toInt())
-    val batchPrices = batchMoments.map(Moment::prices)
+    val batchPrices = batchHistory.map(Moment::prices)
     val batchPriceIncs = batchPrices.zipWithNext(::priceIncs)
-    val indices = historySize - 1..batchMoments.size - 2
+    val indices = historySize - 1..batchHistory.size - 2
 
     fun trainMoment(index: Int) = TrainMoment(
-            history = batchMoments.slice(index - historySize + 1..index),
+            history = batchHistory.slice(index - historySize + 1..index),
             portfolio = batchPortfolios[index],
             setPortfolio = batchSetPortfolios[index],
             futurePriceIncs = batchPriceIncs[index]
     )
 
-    return TrainBatch(periodsindices.map(::trainMoment))
+    return TrainBatch()
 }
+
+private fun Candle.tradeTimePrice() = (tradeTimeAsk + tradeTimeBid) / 2
+private fun Candle.tradeTimeFee(exchangeFee: Double) = 1 - (1 - exchangeFee) * (tradeTimeBid / tradeTimePrice())
 
 private class TrainBatch(
         val periods: PeriodRange,

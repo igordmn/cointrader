@@ -2,6 +2,8 @@ package com.dmi.cointrader.app.neural
 
 import com.dmi.cointrader.app.archive.History
 import com.dmi.cointrader.app.archive.HistoryBatch
+import com.dmi.cointrader.app.archive.PriceIncs
+import com.dmi.cointrader.app.archive.PriceIncsBatch
 import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.Matrix2D
@@ -34,8 +36,6 @@ fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork): NeuralTrainer 
 
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias PriceIncs = List<Double>
-typealias PriceIncsBatch = List<PriceIncs>
 typealias Fees = List<Double>
 typealias FeesBatch = List<PriceIncs>
 

@@ -5,7 +5,7 @@ import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-fun GeometricDistribution.rangeSample(range: IntRange): Int {
+fun GeometricDistribution.sampleIn(range: IntRange): Int {
     var ran = sample()
     while(ran > range.endInclusive + 1 - range.start) {
         ran = sample()
