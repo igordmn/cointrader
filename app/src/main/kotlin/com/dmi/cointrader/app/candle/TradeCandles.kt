@@ -6,6 +6,7 @@ import com.dmi.util.concurrent.insert
 import com.dmi.util.concurrent.map
 import com.dmi.util.lang.DurationSerializer
 import com.dmi.util.lang.InstantSerializer
+import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.times
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.Serializable
@@ -18,13 +19,8 @@ data class Period(val num: Long) : Comparable<Period> {
     override fun compareTo(other: Period): Int = num.compareTo(other.num)
     fun next(): Period = Period(num + 1)
     fun previous(count: Int): Period = Period(num - count)
+    infix fun until(end: Period): PeriodRange = this..Period(end.num - 1)
 }
-
-typealias PeriodRange = ClosedRange<Period>
-fun PeriodRange.numRange(): LongRange = start.num..endInclusive.num
-fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
-fun PeriodRange.size() = endInclusive.num - start.num + 1
-infix fun Period.until(end: Period) = this..Period(end.num - 1)
 
 @Serializable
 data class Periods(
@@ -42,7 +38,14 @@ data class Periods(
     fun startOf(period: Period): Instant {
         return start + duration * period.num
     }
+
+    fun perDay(): Double = MILLIS_PER_DAY / duration.toMillis()
 }
+
+typealias PeriodRange = ClosedRange<Period>
+fun PeriodRange.numRange(): LongRange = start.num..endInclusive.num
+fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
+fun PeriodRange.size() = endInclusive.num - start.num + 1
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         periods: Periods,

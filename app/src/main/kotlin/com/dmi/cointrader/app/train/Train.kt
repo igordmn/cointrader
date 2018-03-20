@@ -16,7 +16,6 @@ import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.resourceContext
-import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
@@ -36,6 +35,7 @@ suspend fun train() = resourceContext {
     val networksFolder = Paths.get("data/networks")
     networksFolder.toFile().deleteRecursively()
     Files.createDirectory(networksFolder)
+    fun netFolder(step: Int) = networksFolder.resolve(step.toString())
 
     val tradeConfig = TradeConfig().apply {
         saveTradeConfig(this)
@@ -74,29 +74,29 @@ suspend fun train() = resourceContext {
         return periodProfit
     }
 
-    val funs = object {
-        suspend fun saveNet(info: TrainInfo) {
-            network.save(networksFolder.resolve(info.step.toString()))
-            resultsFile.toFile().appendText(info.toString())
-        }
+    fun saveNet(result: TrainResult) {
+        net.save(netFolder(result.step))
+        resultsFile.toFile().appendText(result.toString())
     }
 
-    fun collectInfo(step: Int, trainProfits: Profits, test1Profits: Profits, test2Profits: Profits): TrainInfo {
+    fun trainResult(step: Int, trainProfits: Profits, test1Profits: Profits, test2Profits: Profits): TrainResult {
+        val period = tradeConfig.periods.duration
+        val periodsPerDay = tradeConfig.periods.perDay().toInt()
+
         val trainPeriodProfit = geoMean(trainProfits)
-        val periodsPerDay = (MILLIS_PER_DAY / config.period.toMillis()).toInt()
         val trainDayProfit = trainPeriodProfit.pow(periodsPerDay)
 
-        val test1DayProfit = test1Profits.dayly(config).let(::geoMean)
-        val hourlyTest1Profits = test1Profits.hourly(config)
+        val test1DayProfit = test1Profits.dayly(period).let(::geoMean)
+        val hourlyTest1Profits = test1Profits.hourly(period)
         val test1DownsideDeviation: Double = hourlyTest1Profits.let(::downsideDeviation)
         val test1MaximumDrawdawn: Double = hourlyTest1Profits.let(::maximumDrawdawn)
 
-        val test2DayProfit = test2Profits.dayly(config).let(::geoMean)
-        val hourlyTest2Profits = test2Profits.hourly(config)
+        val test2DayProfit = test2Profits.dayly(period).let(::geoMean)
+        val hourlyTest2Profits = test2Profits.hourly(period)
         val test2DownsideDeviation: Double = hourlyTest2Profits.let(::downsideDeviation)
         val test2MaximumDrawdawn: Double = hourlyTest2Profits.let(::maximumDrawdawn)
 
-        return TrainInfo(
+        return TrainResult(
                 step,
 
                 trainDayProfit,
@@ -111,15 +111,15 @@ suspend fun train() = resourceContext {
         )
     }
 
-    batches().map(::train).chunked(config.trainLogSteps).withIndex().consumeEach {
-        val step = (it.index + 1) * config.trainLogSteps
+    batches().map(::train).chunked(trainConfig.logSteps).withIndex().consumeEach {
+        val step = (it.index + 1) * trainConfig.logSteps
         val test1Profits = backTest1.invoke()
         val test2Profits = backTest2.invoke()
-        funs.saveNet(collectInfo(step, it.value, test1Profits, test2Profits))
+        saveNet(trainResult(step, it.value, test1Profits, test2Profits))
     }
 }
 
-private data class TrainInfo(
+private data class TrainResult(
         val step: Int,
 
         val trainDayProfit: Double,
