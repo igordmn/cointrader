@@ -17,8 +17,8 @@ data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val 
 
 data class Period(val num: Long) : Comparable<Period> {
     override fun compareTo(other: Period): Int = num.compareTo(other.num)
-    fun next(): Period = Period(num + 1)
-    fun previous(count: Int): Period = Period(num - count)
+    fun next(count: Int = 1): Period = Period(num + count)
+    fun previous(count: Int = 1): Period = Period(num - count)
     infix fun until(end: Period): PeriodRange = this..Period(end.num - 1)
 }
 
@@ -43,7 +43,7 @@ data class Periods(
 }
 
 typealias PeriodRange = ClosedRange<Period>
-fun PeriodRange.numRange(): LongRange = start.num..endInclusive.num
+fun PeriodRange.nums(): LongRange = start.num..endInclusive.num
 fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
 fun PeriodRange.size() = endInclusive.num - start.num + 1
 

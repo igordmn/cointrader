@@ -3,7 +3,7 @@ package com.dmi.cointrader.app.archive
 import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodRange
-import com.dmi.cointrader.app.candle.numRange
+import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
@@ -100,7 +100,7 @@ suspend fun archive(
     )
 
     return object : Archive {
-        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.numRange())
+        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.nums())
 
         override suspend fun sync(currentTime: Instant) {
             trades.forEach {
