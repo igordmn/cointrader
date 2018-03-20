@@ -2,12 +2,10 @@ package com.dmi.cointrader.app.train
 
 import com.dmi.cointrader.app.archive.HistoryBatch
 import com.dmi.cointrader.app.binance.publicBinanceExchange
-import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.archive.Moment
 import com.dmi.cointrader.app.archive.Prices
 import com.dmi.cointrader.app.archive.archive
-import com.dmi.cointrader.app.candle.size
+import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*
@@ -15,6 +13,8 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
+import com.dmi.util.io.appendText
+import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
@@ -29,11 +29,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow
 
-private typealias SetPortfolioBatch = (PortionsBatch) -> Unit
-
 suspend fun train() = resourceContext {
     val networksFolder = Paths.get("data/networks")
-    networksFolder.toFile().deleteRecursively()
+    networksFolder.deleteRecursively()
     Files.createDirectory(networksFolder)
     fun netFolder(step: Int) = networksFolder.resolve(step.toString())
     val resultsFile = networksFolder.resolve("results.txt")
@@ -63,27 +61,23 @@ suspend fun train() = resourceContext {
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
-            val batchNums = batchNums(random, tradeConfig.historySize, trainConfig.batchSize, trainRange.nums())
-            val batch = batch(config.historySize, moments, portfolios, batchNums)
+            val batchPeriods = random.batchPeriods(tradeConfig.historySize, trainConfig.batchSize, trainRange)
+            val batch = batch(tradeConfig.historySize, moments, portfolios, batchPeriods)
             send(batch)
         }
     }
 
     fun train(batch: TrainBatch): Double {
-        val result = trainer.train(
-                batch.portfolioMatrix(config),
-                batch.historyMatrix(config),
-                batch.futurePriceIncsMatrix(config)
-        )
-        val periodProfit = result.geometricMeanProfit
-        val newPortfolios = result.newPortions.toPortfolios()
-        setPortions(batch, newPortfolios)
-        return periodProfit
+        val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history, batch.futurePriceIncs, batch.fees)
+        batch.periods.nums().toInt().forEach {
+            portfolios[it] = newPortions[it]
+        }
+        return geometricMeanProfit
     }
 
     fun saveNet(result: TrainResult) {
         net.save(netFolder(result.step))
-        resultsFile.toFile().appendText(result.toString())
+        resultsFile.appendText(result.toString())
     }
 
     fun trainResult(step: Int, trainProfits: Profits, testResults: List<TradeResult>, validationResults: List<TradeResult>): TrainResult {
@@ -123,39 +117,29 @@ private data class TrainResult(
     data class Test(val dayProfit: Double, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double)
 }
 
-private fun setPortions(batch: TrainBatch, newPortions: List<Portions>) {
-    batch.moments.forEachIndexed { i, it ->
-        it.setPortfolio(newPortions[i])
-    }
-}
-
 fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
 
-private fun batchNums(random: GeometricDistribution, historySize: Int, batchSize: Int, allRange: LongRange): LongRange {
-    val firstNum = allRange.first.coerceAtLeast(historySize + batchSize - 2L)
-    val lastNum = allRange.last
-    val lastBatchNum = random.rangeSample((firstNum..lastNum).toInt()).toLong() - 1
+private fun GeometricDistribution.batchPeriods(historySize: Int, batchSize: Int, allRange: PeriodRange): PeriodRange {
+    val firstNum = allRange.start.num.coerceAtLeast(historySize + batchSize - 2L)
+    val lastNum = allRange.endInclusive.num
+    val lastBatchNum = rangeSample((firstNum..lastNum).toInt()).toLong() - 1
     val firstBatchNum = lastBatchNum - batchSize + 1
 
     val firstBatchFirstHistoryNum = firstBatchNum - historySize + 1
     val lastBatchFutureMomentNum = lastBatchNum + 1
 
-    return firstBatchFirstHistoryNum..lastBatchFutureMomentNum
+    return Period(firstBatchFirstHistoryNum)..Period(lastBatchFutureMomentNum)
 }
 
-private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfolios: Array<Portions>, nums: LongRange): TrainBatch {
+private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfolios: Array<Portions>, periods: PeriodRange): TrainBatch {
     fun Moment.prices(): Prices = coinIndexToCandle.map(Candle::low)
     fun priceInc(previousPrice: Double, nextPrice: Double) = nextPrice / previousPrice
     fun priceIncs(currentPrices: List<Double>, nextPrices: List<Double>): List<Double> = currentPrices.zip(nextPrices, ::priceInc)
 
-    fun setPortfolioFun(index: Int): SetPortfolio = { portfolio: Portions ->
-        portfolios[index] = portfolio
-    }
-
+    val nums = periods.nums()
     val batchMoments = moments.get(nums)
     val batchPortfolios = portfolios.sliceArray(nums.toInt())
-    val batchSetPortfolios = nums.toInt().map(::setPortfolioFun)
     val batchPrices = batchMoments.map(Moment::prices)
     val batchPriceIncs = batchPrices.zipWithNext(::priceIncs)
     val indices = historySize - 1..batchMoments.size - 2
@@ -167,12 +151,13 @@ private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfo
             futurePriceIncs = batchPriceIncs[index]
     )
 
-    return TrainBatch(indices.map(::trainMoment))
+    return TrainBatch(periodsindices.map(::trainMoment))
 }
 
 private class TrainBatch(
-        val currentPortions: PortionsBatch,
+        val periods: PeriodRange,
+        val currentPortfolio: PortionsBatch,
         val history: HistoryBatch,
         val futurePriceIncs: PriceIncsBatch,
-        val setPortfolio: SetPortfolioBatch
+        val fees: FeesBatch
 )

@@ -39,7 +39,7 @@ data class Periods(
         return start + duration * period.num
     }
 
-    fun perDay(): Double = MILLIS_PER_DAY / duration.toMillis()
+    fun perDay(): Double = MILLIS_PER_DAY / duration.toMillis().toDouble()
 }
 
 typealias PeriodRange = ClosedRange<Period>

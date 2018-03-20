@@ -2,15 +2,17 @@ package com.dmi.cointrader.app.trade
 
 import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.candle.Periods
+import com.dmi.util.io.readBytes
+import com.dmi.util.io.writeBytes
+import com.dmi.util.lang.parseInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR
 import java.nio.file.Paths
 import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-fun savedTradeConfig(): TradeConfig = CBOR.load(Paths.get("data/tradeConfig").toFile().readBytes())
-fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").toFile().writeBytes(CBOR.dump(config))
+fun savedTradeConfig(): TradeConfig = CBOR.load(Paths.get("data/tradeConfig").readBytes())
+fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").writeBytes(CBOR.dump(config))
 
 @Serializable
 data class TradeAssets(val main: Asset, val alts: List<Asset>) {
@@ -22,14 +24,14 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "NANO", "TRX", "ETC", "LTC", "XRP", "DGD", "VEN", "NEO", "ICX", "ADA", "BCPT", "XVG", "XLM",
-                        "EOS", "HSR", "LSK", "BCC", "MTL", "NEBL", "OMG", "XMR", "GVT", "WTC", "IOTA", "INS", "IOST", "ARN", "BRD",
-                        "STRAT", "GXS", "OST"
+                        "USDT", "ETH", "TRX", "NANO", "NCASH", "XRP", "DGD", "VEN", "NEO", "LTC", "ADA", "ETC", "ICX", "BCPT", "EOS", "WTC", "XLM", "XMR", "GVT",
+                        "MTL", "BCH", "IOST", "IOTA", "OMG", "NEBL", "BCD", "AION", "XVG", "INS", "SUB", "LSK", "QTUM", "CND", "WAVES", "ELF", "DASH",
+                        "STRAT", "GXS", "BQX", "BTG", "CTR"
                 )
         ),
         val historySize: Int = 160,
         val periods: Periods = Periods(
-                start = LocalDateTime.of(2017, 8, 1, 0, 0, 0).toInstant(ZoneOffset.of("+3")),
+                start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00"),
                 duration = Duration.ofMinutes(5)
         )
 )
