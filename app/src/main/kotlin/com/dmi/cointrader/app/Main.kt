@@ -1,4 +1,4 @@
-package com.dmi.cointrader.main
+package com.dmi.cointrader.app
 
 import com.dmi.cointrader.app.info.printTopCoins
 import com.dmi.cointrader.app.trade.performRealTrades

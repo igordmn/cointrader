@@ -1,25 +1,22 @@
 package com.dmi.cointrader.app.train
 
 import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.candle.periodNum
 import com.dmi.cointrader.app.history.Moment
-import com.dmi.cointrader.app.history.moment.cachedMoments
-import com.dmi.cointrader.app.test.BackTest
-import com.dmi.cointrader.app.test.dayly
-import com.dmi.cointrader.app.test.hourly
 import com.dmi.cointrader.app.history.Trade
-import com.dmi.cointrader.app.history.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.collection.SuspendList
-import com.dmi.util.io.SyncList
 import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.math.*
 import com.dmi.cointrader.app.binance.api.binanceAPI
+import com.dmi.cointrader.app.binance.testBinanceExchange
 import com.dmi.cointrader.app.history.Prices
+import com.dmi.cointrader.app.history.archive
 import com.dmi.cointrader.app.neural.*
+import com.dmi.cointrader.app.test.TestExchange
+import com.dmi.cointrader.app.trade.TradeConfig
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
@@ -33,48 +30,27 @@ private val netsPath = Paths.get("data/nets")
 private typealias SetPortfolioBatch = (PortionsBatch) -> Unit
 
 suspend fun train() {
+    netsPath.toFile().deleteRecursively()
+    Files.createDirectory(netsPath)
 
-}
+    val tradeConfig = TradeConfig()
+    val trainConfig = TrainConfig()
 
-fun main(args: Array<String>) {
-    runBlocking {
-        netsPath.toFile().deleteRecursively()
-        Files.createDirectory(netsPath)
+    val binanceExchange = testBinanceExchange()
+    require(trainConfig.range.endInclusive <= binanceExchange.currentTime())
 
-        val config = TrainConfig()
+    val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
+    val archive = archive(tradeConfig, binanceExchange, trainConfig.range.endInclusive)
 
-        val api = binanceAPI()
-        val constants = BinanceConstants()
-        val currentTime = MemoryAtom(config.trainEndTime)
+    val startPeriodNum = periodNum(trainConfig.startTime, trainConfig.period, trainConfig.trainStartTime)
+    val endPeriodNum = periodNum(trainConfig.startTime, trainConfig.period, trainConfig.trainEndTime).coerceAtMost(moments.size())
 
-        fun coinLog(coin: String) = object : SyncList.Log<Trade> {
-            override fun itemsAppended(items: List<Trade>, indices: LongRange) {
-                val lastTradeTime = items.last().time
-                println("$coin $lastTradeTime")
-            }
-        }
-
-        val coinToTrades = coinToCachedBinanceTrades(config, constants, api, currentTime, ::coinLog)
-        val moments = cachedMoments(config, coinToTrades, currentTime)
-
-        println("Download trades")
-        coinToTrades.mapAsync {
-            it.sync()
-        }
-
-        println("Make moments")
-        moments.sync()
-
-        val startPeriodNum = periodNum(config.startTime, config.period, config.trainStartTime)
-        val endPeriodNum = periodNum(config.startTime, config.period, config.trainEndTime).coerceAtMost(moments.size())
-
-        jep().use { jep ->
-            network(jep, config).use { net ->
-                val backTest1 = BackTest(net, moments, config, config.trainTest1Days)
-                val backTest2 = BackTest(net, moments, config, config.trainTest2Days)
-                trainer(jep, config, net).use { trainer ->
-                    train(backTest1, backTest2, net, trainer, config, moments, startPeriodNum until endPeriodNum)
-                }
+    jep().use { jep ->
+        network(jep, trainConfig).use { net ->
+            val backTest1 = BackTest(net, moments, trainConfig, trainConfig.trainTest1Days)
+            val backTest2 = BackTest(net, moments, trainConfig, trainConfig.trainTest2Days)
+            trainer(jep, trainConfig, net).use { trainer ->
+                train(backTest1, backTest2, net, trainer, trainConfig, moments, startPeriodNum until endPeriodNum)
             }
         }
     }
