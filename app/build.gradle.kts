@@ -13,11 +13,9 @@ import java.net.URI
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.20"
+    kotlinVersion = "1.2.30"
     var serializationVersion: String by extra
     serializationVersion = "0.4.1"
-    var objectboxVersion: String by extra
-    objectboxVersion = "1.4.1"
 
     repositories {
         mavenCentral()
@@ -28,15 +26,13 @@ buildscript {
 
     dependencies {
         classpath("org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serializationVersion")
-//        classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
-//        classpath("net.ltgt.gradle:gradle-apt-plugin:0.13")
     }
 }
 
 plugins {
     application
     java
-    kotlin("jvm") version "1.2.20"
+    kotlin("jvm") version "1.2.30"
 }
 
 apply {
