@@ -80,7 +80,7 @@ class NeuralNetwork:
             history_count,
             indicator_count,
             gpu_memory_fraction,
-            load_file,
+            saved_file,
     ):
         self.batch_count = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, indicator_count,  coin_count - 1, history_count])       # without main coin (BTC)
@@ -92,8 +92,8 @@ class NeuralNetwork:
         self.session = tf.Session(config=tf_config)
         self.saver = tf.train.Saver()
 
-        if load_file:
-            self.saver.restore(self.session, load_file)
+        if saved_file:
+            self.saver.restore(self.session, saved_file)
         else:
             self.session.run(tf.global_variables_initializer())
 
