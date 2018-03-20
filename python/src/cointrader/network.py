@@ -73,17 +73,6 @@ def build_predict_w(
     return net
 
 
-def compute_profits(batch_size, predict_w, price_inc, fee):
-    future_portfolio = price_inc * predict_w
-    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
-
-    w0 = future_w[:batch_size - 1]
-    w1 = predict_w[1:batch_size]
-    cost = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
-
-    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), cost], axis=0)
-
-
 class NeuralNetwork:
     def __init__(
             self,
@@ -131,6 +120,17 @@ class NeuralNetwork:
         self.session.close()
 
 
+def compute_profits(batch_size, predict_w, price_inc, fee):
+    future_portfolio = price_inc * predict_w
+    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
+
+    w0 = future_w[:batch_size - 1]
+    w1 = predict_w[1:batch_size]
+    cost = 1 - tf.reduce_sum(tf.abs(w1 - w0), axis=1) * fee  # w0 -> w1 commission for all steps except first step
+
+    return tf.reduce_sum(future_portfolio, axis=[1]) * tf.concat([tf.ones(1), cost], axis=0)
+
+
 class NeuralTrainer:
     def __init__(
             self,
@@ -139,20 +139,18 @@ class NeuralTrainer:
     ):
         self.price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number])
 
-        self.profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, fee)
-        self.log_profits = tf.log(self.profits)
-        self.capital = tf.reduce_prod(self.profits)
-        self.geometric_mean_profit = tf.pow(tf.reduce_prod(self.capital), 1 / tf.to_float(network.batch_size))
-        self.log_mean_profit = tf.reduce_mean(self.log_profits)
+        profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, fee)
+        capital = tf.reduce_prod(profits)
+        self.geometric_mean_profit = tf.pow(capital, 1 / tf.to_float(network.batch_size))
 
-        self.loss = -self.log_mean_profit
+        self.loss = -tf.reduce_mean(tf.log(profits))
         self.loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train = tf.train.RMSPropOptimizer(0.00028).minimize(self.loss)
+        self.train = tf.train.AdamOptimizer(0.00028).minimize(self.loss)
 
         self.batch_size = network.batch_size
         self.history = network.history
         self.previous_w = network.previous_w
-        self.predict_w = network.previous_w
+        self.predict_w = network.predict_w
         self.session = network.session
 
     def train(self, previous_w, history, price_incs):
