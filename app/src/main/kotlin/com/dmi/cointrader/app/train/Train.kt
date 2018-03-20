@@ -98,16 +98,9 @@ suspend fun train() = resourceContext {
 
         return TrainResult(
                 step,
-
                 trainDayProfit,
-
-                test1DayProfit,
-                test1DownsideDeviation,
-                test1MaximumDrawdawn,
-
-                test2DayProfit,
-                test2DownsideDeviation,
-                test2MaximumDrawdawn
+                TrainResult.Test(test1DayProfit, test1DownsideDeviation, test1MaximumDrawdawn),
+                TrainResult.Test(test2DayProfit, test2DownsideDeviation, test2MaximumDrawdawn)
         )
     }
 
@@ -121,17 +114,12 @@ suspend fun train() = resourceContext {
 
 private data class TrainResult(
         val step: Int,
-
         val trainDayProfit: Double,
-
-        val test1DayProfit: Double,
-        val test1HourlyNegativeDeviation: Double,
-        val test1HourlyMaximumDrawdawn: Double,
-
-        val test2DayProfit: Double,
-        val test2HourlyNegativeDeviation: Double,
-        val test2HourlyMaximumDrawdawn: Double
-)
+        val test1: Test,
+        val test2: Test
+) {
+    data class Test(val dayProfit: Double, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double)
+}
 
 private fun setPortions(batch: TrainBatch, newPortions: List<Portions>) {
     batch.moments.forEachIndexed { i, it ->
