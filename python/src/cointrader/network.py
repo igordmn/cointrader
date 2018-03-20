@@ -121,17 +121,14 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, predict_w, price_inc, buy_fees, sell_fees):
+def compute_profits(batch_size, predict_w, price_inc, fees):
     pure_profits = price_inc * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
     future_w = pure_profits / pure_profit[:, None]
 
     w0 = future_w[:batch_size - 1]
     w1 = predict_w[1:batch_size]
-    diffs = w1 - w0
-    buys = tf.nn.relu(diffs)
-    sells = tf.nn.relu(-diffs)
-    cost = 1 - tf.reduce_sum(buys * buy_fees, axis=1) - tf.reduce_sum(sells * sell_fees, axis=1)  # w0 -> w1 commission for all steps except first step
+    cost = 1 - tf.reduce_sum(tf.abs(w1 - w0) * fees, axis=1)  # w0 -> w1 commission for all steps except first step
 
     return pure_profit * tf.concat([tf.ones(1), cost], axis=0)
 
@@ -142,10 +139,9 @@ class NeuralTrainer:
             network
     ):
         self.price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number - 1])        # without main coin (BTC)
-        self.buy_fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
-        self.sell_fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
+        self.fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
 
-        profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, self.buy_fees, self.sell_fees)
+        profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, self.fees)
         capital = tf.reduce_prod(profits)
         self.geometric_mean_profit = tf.pow(capital, 1 / tf.to_float(network.batch_size))
 
@@ -159,7 +155,7 @@ class NeuralTrainer:
         self.predict_w = network.predict_w
         self.session = network.session
 
-    def train(self, previous_w, history, price_incs, buy_fees, sell_fees):
+    def train(self, previous_w, history, price_incs, fees):
         """
            Args:
              previous_w: batch_count x coin_number
@@ -173,8 +169,7 @@ class NeuralTrainer:
             self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.history: history[:, 1:, :, :],   # without main coin (BTC)
             self.price_incs: price_incs,
-            self.buy_fees: buy_fees,
-            self.sell_fees: sell_fees,
+            self.fees: fees,
             self.batch_size: history.shape[0]
         })
 
