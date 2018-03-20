@@ -2,12 +2,11 @@ package com.dmi.cointrader.app.trade
 
 import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.broker.*
-import com.dmi.cointrader.app.candle.Period
-import com.dmi.cointrader.app.candle.PeriodRange
-import com.dmi.cointrader.app.candle.Periods
+import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.history.*
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
+import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
@@ -17,6 +16,9 @@ import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.toList
 import org.slf4j.Logger
 import java.awt.Toolkit
 import java.math.BigDecimal
@@ -77,9 +79,9 @@ suspend fun performRealTrade(
 
     try {
         archive.sync(clock.instant())
-        val history = archive.historyAt(period.previous(config.historySize - 1)..period)
+        val history = archive.historyAt(period.previous(config.historySize) until period)
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
-        val result = tradeResult(config.assets, exchange, clock)
+        val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
     } catch (e: Exception) {
         log.error("exception", e)
@@ -87,7 +89,7 @@ suspend fun performRealTrade(
     }
 }
 
-private suspend fun tradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
+private suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
     val resultAsset = "BTC"
     val minBtc = 0.0001
     val portfolio = exchange.portfolio(clock)
@@ -106,9 +108,37 @@ private suspend fun tradeResult(assets: TradeAssets, exchange: BinanceExchange, 
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
-suspend fun performTestTrades(range: PeriodRange): List<TradeResult> {
-
+private suspend fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: Prices): TradeResult {
+    val resultAsset = "BTC"
+    val minBtc = 0.0001
+    val portfolio = exchange.portfolio()
+    val amounts = portfolio.amountsOf(assets.all).toDouble()
+    val capitals = bids * amounts
+    val assetCapitals = assets.all.withIndex().associate {
+        it.value to capitals[it.index]
+    }.filter { it.value > minBtc }
+    val totalCapital = capitals.sum()
+    return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
+
+suspend fun performTestTrades(
+        range: PeriodRange,
+        config: TradeConfig,
+        network: NeuralNetwork,
+        archive: Archive,
+        exchange: TestExchange
+): List<TradeResult> = range.asSequence().asReceiveChannel().map { period ->
+    val portfolio = exchange.portfolio()
+    val history = archive.historyAt(period.previous(config.historySize) until period)
+    val asks = history.last().closeAsks()
+    val bids = history.last().closeBids()
+    fun indexOf(asset: Asset) = config.assets.all.indexOf(asset)
+    fun askOf(asset: Asset) = asks[indexOf(asset)].toBigDecimal()
+    fun bidOf(asset: Asset) = bids[indexOf(asset)].toBigDecimal()
+    fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
+    performTrade(config.assets, network, portfolio, history, ::broker)
+    testTradeResult(config.assets, exchange, bids)
+}.toList()
 
 suspend fun performTrade(
         assets: TradeAssets,

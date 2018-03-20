@@ -22,8 +22,8 @@ data class Period(val num: Long) : Comparable<Period> {
 
 typealias PeriodRange = ClosedRange<Period>
 fun PeriodRange.numRange(): LongRange = start.num..endInclusive.num
-
 fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
+infix fun Period.until(end: Period) = this..Period(end.num - 1)
 
 @Serializable
 data class Periods(
