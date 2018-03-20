@@ -1,5 +1,6 @@
 package com.dmi.cointrader.app.train
 
+import com.dmi.cointrader.app.archive.HistoryBatch
 import com.dmi.cointrader.app.binance.publicBinanceExchange
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.nums
@@ -131,9 +132,9 @@ private fun setPortions(batch: TrainBatch, newPortions: List<Portions>) {
 fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
 
-private fun batchNums(random: GeometricDistribution, historySize: Int, batchSize: Int, limits: LongRange): LongRange {
-    val firstNum = limits.first.coerceAtLeast(historySize + batchSize - 2L)
-    val lastNum = limits.last
+private fun batchNums(random: GeometricDistribution, historySize: Int, batchSize: Int, allRange: LongRange): LongRange {
+    val firstNum = allRange.first.coerceAtLeast(historySize + batchSize - 2L)
+    val lastNum = allRange.last
     val lastBatchNum = random.rangeSample((firstNum..lastNum).toInt()).toLong() - 1
     val firstBatchNum = lastBatchNum - batchSize + 1
 
@@ -170,8 +171,8 @@ private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfo
 }
 
 private class TrainBatch(
+        val currentPortions: PortionsBatch,
         val history: HistoryBatch,
-        val portfolio: PortionsBatch,
         val futurePriceIncs: PriceIncsBatch,
         val setPortfolio: SetPortfolioBatch
 )

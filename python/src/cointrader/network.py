@@ -11,12 +11,12 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
     )
 
 
-def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
+def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay):
     width = net.get_shape()[2]
     height = net.get_shape()[1]
     features = net.get_shape()[3]
     net = tf.reshape(net, [batch_size, int(height), 1, int(width * features)])
-    w = tf.reshape(previous_w, [-1, int(height), 1, 1])
+    w = tf.reshape(previous_portfolio, [-1, int(height), 1, 1])
     net = tf.concat([net, w], axis=3)
     net = tflearn.layers.conv_2d(
         net, 1, [1, 1],
@@ -31,8 +31,8 @@ def eiie_output_withw(net, batch_size, previous_w, regularizer, weight_decay):
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
-def build_predict_w(
-        batch_size, history, previous_w
+def build_best_portfolio(
+        batch_size, history, current_portfolio
 ):
     # [batch, asset, history, indicator]
     net = history
@@ -65,7 +65,7 @@ def build_predict_w(
     net = eiie_output_withw(
         net,
         batch_size,
-        previous_w,
+        current_portfolio,
         regularizer="L2",
         weight_decay=5e-8
     )
@@ -85,8 +85,8 @@ class NeuralNetwork:
         self.coin_number = coin_number
         self.batch_count = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, indicator_number,  coin_number - 1, history_size])       # without main coin (BTC)
-        self.previous_w = tf.placeholder(tf.float32, shape=[None, coin_number - 1])      # without main coin (BTC)
-        self.predict_w = build_predict_w(self.batch_count, self.history, self.previous_w)
+        self.current_portfolio = tf.placeholder(tf.float32, shape=[None, coin_number - 1])      # without main coin (BTC)
+        self.best_portfolio = build_best_portfolio(self.batch_count, self.history, self.current_portfolio)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -98,16 +98,16 @@ class NeuralNetwork:
         else:
             self.session.run(tf.global_variables_initializer())
 
-    def best_portfolio(self, previous_w, history):
+    def best_portfolio(self, current_portfolio, history):
         """
            Args:
-             previous_w: batch_count x coin_number
+             current_portfolio: batch_count x coin_number
              history: batch_count x coin_number x history_size x indicator_number
         """
 
         tflearn.is_training(False, self.session)
-        result = self.session.run(self.predict_w, feed_dict={
-            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
+        result = self.session.run(self.best_portfolio, feed_dict={
+            self.current_portfolio: current_portfolio[:, 1:],   # without main coin (BTC)
             self.history: history[:, 1:, :, :],   # without main coin (BTC)
             self.batch_count: history.shape[0]
         })
@@ -121,13 +121,13 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, predict_w, future_price_incs, fees):
-    pure_profits = future_price_incs * predict_w
+def compute_profits(batch_size, best_portfolio, future_price_incs, fees):
+    pure_profits = future_price_incs * best_portfolio
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
     future_w = pure_profits / pure_profit[:, None]
 
     w0 = future_w[:batch_size - 1]
-    w1 = predict_w[1:batch_size]
+    w1 = best_portfolio[1:batch_size]
     cost = 1 - tf.reduce_sum(tf.abs(w1 - w0) * fees, axis=1)  # w0 -> w1 commission for all steps except first step
 
     return pure_profit * tf.concat([tf.ones(1), cost], axis=0)
@@ -141,7 +141,7 @@ class NeuralTrainer:
         self.future_price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number - 1])        # without main coin (BTC)
         self.fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
 
-        profits = compute_profits(network.batch_size, network.predict_w, self.future_price_incs, self.fees)
+        profits = compute_profits(network.batch_size, network.best_portfolio, self.future_price_incs, self.fees)
         capital = tf.reduce_prod(profits)
         self.geometric_mean_profit = tf.pow(capital, 1 / tf.to_float(network.batch_size))
 
@@ -151,21 +151,21 @@ class NeuralTrainer:
 
         self.batch_size = network.batch_size
         self.history = network.history
-        self.previous_w = network.previous_w
-        self.predict_w = network.predict_w
+        self.current_portfolio = network.current_portfolio
+        self.best_portfolio = network.best_portfolio
         self.session = network.session
 
-    def train(self, previous_w, history, future_price_incs, fees):
+    def train(self, current_portfolio, history, future_price_incs, fees):
         """
            Args:
-             previous_w: batch_count x coin_number
+             current_portfolio: batch_count x coin_number
              history: batch_count x coin_number x history_size x indicator_number
              future_price_incs: batch_count x coin_number
              fees: batch_count x coin_number
         """
         tflearn.is_training(True, self.session)
-        results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
-            self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
+        results = self.session.run([self.train, self.best_portfolio, self.geometric_mean_profit], feed_dict={
+            self.current_portfolio: current_portfolio[:, 1:],   # without main coin (BTC)
             self.history: history[:, 1:, :, :],   # without main coin (BTC)
             self.future_price_incs: future_price_incs,
             self.fees: fees,
