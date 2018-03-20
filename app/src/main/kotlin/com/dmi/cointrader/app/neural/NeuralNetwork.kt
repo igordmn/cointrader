@@ -1,7 +1,7 @@
 package com.dmi.cointrader.app.neural
 
-import com.dmi.cointrader.app.history.History
-import com.dmi.cointrader.app.history.HistoryBatch
+import com.dmi.cointrader.app.archive.History
+import com.dmi.cointrader.app.archive.HistoryBatch
 import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.cointrader.app.train.TrainConfig
 import com.dmi.util.io.ResourceContext

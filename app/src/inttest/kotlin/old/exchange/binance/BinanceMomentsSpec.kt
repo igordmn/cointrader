@@ -2,9 +2,9 @@ package old.exchange.binance
 
 import com.dmi.cointrader.app.binance.BinanceConstants
 import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.history.Moment
-import com.dmi.cointrader.app.history.moment.cachedMoments
-import com.dmi.cointrader.app.history.trade.coinToCachedBinanceTrades
+import com.dmi.cointrader.app.archive.Moment
+import com.dmi.cointrader.app.archive.moment.cachedMoments
+import com.dmi.cointrader.app.archive.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration

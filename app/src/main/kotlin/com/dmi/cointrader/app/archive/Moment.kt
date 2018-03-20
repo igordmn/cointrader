@@ -1,4 +1,4 @@
-package com.dmi.cointrader.app.history
+package com.dmi.cointrader.app.archive
 
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.CandleFixedSerializer

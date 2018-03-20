@@ -1,15 +1,11 @@
-package com.dmi.cointrader.app.history
+package com.dmi.cointrader.app.archive
 
 import com.dmi.cointrader.app.candle.*
-import com.dmi.util.atom.ReadAtom
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.*
 import com.dmi.util.io.RestorableSource
-import com.dmi.util.lang.DurationSerializer
-import com.dmi.util.lang.InstantSerializer
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
-import java.time.Duration
 import java.time.Instant
 
 @Serializable

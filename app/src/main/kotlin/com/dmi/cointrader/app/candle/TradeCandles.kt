@@ -1,6 +1,6 @@
 package com.dmi.cointrader.app.candle
 
-import com.dmi.cointrader.app.history.IndexedTrade
+import com.dmi.cointrader.app.archive.IndexedTrade
 import com.dmi.util.concurrent.chunkedBy
 import com.dmi.util.concurrent.insert
 import com.dmi.util.concurrent.map

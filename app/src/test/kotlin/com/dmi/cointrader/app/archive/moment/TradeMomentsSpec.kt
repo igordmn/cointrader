@@ -1,8 +1,8 @@
-package com.dmi.cointrader.app.history.moment
+package com.dmi.cointrader.app.archive.moment
 
 import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.history.*
-import com.dmi.cointrader.app.history.Trade
+import com.dmi.cointrader.app.archive.*
+import com.dmi.cointrader.app.archive.Trade
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.test.Spec

@@ -4,9 +4,9 @@ import com.dmi.cointrader.app.binance.testBinanceExchange
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.numRange
 import com.dmi.cointrader.app.candle.size
-import com.dmi.cointrader.app.history.Moment
-import com.dmi.cointrader.app.history.Prices
-import com.dmi.cointrader.app.history.archive
+import com.dmi.cointrader.app.archive.Moment
+import com.dmi.cointrader.app.archive.Prices
+import com.dmi.cointrader.app.archive.archive
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*

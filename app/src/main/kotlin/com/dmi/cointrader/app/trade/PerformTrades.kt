@@ -3,7 +3,7 @@ package com.dmi.cointrader.app.trade
 import com.dmi.cointrader.app.binance.*
 import com.dmi.cointrader.app.broker.*
 import com.dmi.cointrader.app.candle.*
-import com.dmi.cointrader.app.history.*
+import com.dmi.cointrader.app.archive.*
 import com.dmi.cointrader.app.neural.NeuralNetwork
 import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.test.TestExchange
