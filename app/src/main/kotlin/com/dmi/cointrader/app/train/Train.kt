@@ -1,6 +1,6 @@
 package com.dmi.cointrader.app.train
 
-import com.dmi.cointrader.app.binance.testBinanceExchange
+import com.dmi.cointrader.app.binance.publicBinanceExchange
 import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.archive.Moment
@@ -41,7 +41,7 @@ suspend fun train() = resourceContext {
         saveTradeConfig(this)
     }
     val trainConfig = TrainConfig()
-    val binanceExchange = testBinanceExchange().apply {
+    val binanceExchange = publicBinanceExchange().apply {
         require(trainConfig.range.endInclusive <= currentTime())
     }
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())

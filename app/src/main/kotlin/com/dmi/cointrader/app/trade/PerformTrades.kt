@@ -36,7 +36,7 @@ suspend fun performRealTrades() = resourceContext {
     val log = rootLog()
     val config = savedTradeConfig()
     val network = trainedNetwork()
-    val exchange = productionBinanceExchange(log)
+    val exchange = privateBinanceExchange(log)
     val history = archive(config, exchange, exchange.currentTime())
 
     class PeriodIterator(private val periods: Periods) {
