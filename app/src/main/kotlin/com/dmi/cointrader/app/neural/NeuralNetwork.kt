@@ -2,6 +2,8 @@ package com.dmi.cointrader.app.neural
 
 import com.dmi.cointrader.app.history.History
 import com.dmi.cointrader.app.history.HistoryBatch
+import com.dmi.cointrader.app.trade.TradeConfig
+import com.dmi.cointrader.app.train.TrainConfig
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.math.DoubleMatrix2D
 import com.dmi.util.math.DoubleMatrix4D
@@ -21,6 +23,14 @@ private val neuralTrainerCreated = AtomicBoolean(false)
 suspend fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
     return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
+}
+
+fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwork {
+    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.all.size, config.historySize, 3), gpuMemoryFraction = 0.5).use()
+}
+
+fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, config: TrainConfig): NeuralTrainer {
+    return NeuralTrainer(jep, net, NeuralTrainer.Config(config.fee))
 }
 
 typealias Portions = List<Double>
@@ -74,7 +84,7 @@ class NeuralNetwork private constructor(
         return DoubleMatrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
     }
 
-    suspend fun save(directory: Path) {
+    fun save(directory: Path) {
         val fileStr = directory.resolve("net").toAbsolutePath().toString()
         jep.eval("network.save(\"$fileStr\")")
         Files.write(directory.resolve("config"), dump(config))

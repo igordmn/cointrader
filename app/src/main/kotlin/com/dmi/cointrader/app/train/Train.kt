@@ -1,69 +1,62 @@
 package com.dmi.cointrader.app.train
 
-import com.dmi.cointrader.app.candle.Candle
-import com.dmi.cointrader.app.history.Moment
-import com.dmi.cointrader.app.history.Trade
-import com.dmi.util.atom.MemoryAtom
-import com.dmi.util.collection.SuspendList
-import com.dmi.util.collection.toInt
-import com.dmi.util.concurrent.chunked
-import com.dmi.util.concurrent.map
-import com.dmi.util.lang.MILLIS_PER_DAY
-import com.dmi.util.math.*
-import com.dmi.cointrader.app.binance.api.binanceAPI
 import com.dmi.cointrader.app.binance.testBinanceExchange
+import com.dmi.cointrader.app.candle.Candle
+import com.dmi.cointrader.app.candle.numRange
+import com.dmi.cointrader.app.candle.size
+import com.dmi.cointrader.app.history.Moment
 import com.dmi.cointrader.app.history.Prices
 import com.dmi.cointrader.app.history.archive
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
-import com.dmi.cointrader.app.trade.TradeConfig
-import jep.Jep
-import kotlinx.coroutines.experimental.channels.*
-import kotlinx.coroutines.experimental.runBlocking
+import com.dmi.cointrader.app.trade.*
+import com.dmi.util.collection.SuspendList
+import com.dmi.util.collection.rangeMap
+import com.dmi.util.collection.toInt
+import com.dmi.util.concurrent.chunked
+import com.dmi.util.concurrent.map
+import com.dmi.util.io.resourceContext
+import com.dmi.util.lang.MILLIS_PER_DAY
+import com.dmi.util.math.downsideDeviation
+import com.dmi.util.math.geoMean
+import com.dmi.util.math.maximumDrawdawn
+import com.dmi.util.math.rangeSample
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.consumeEach
+import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.channels.withIndex
 import org.apache.commons.math3.distribution.GeometricDistribution
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow
 
-private val netsPath = Paths.get("data/nets")
-
 private typealias SetPortfolioBatch = (PortionsBatch) -> Unit
 
-suspend fun train() {
-    netsPath.toFile().deleteRecursively()
-    Files.createDirectory(netsPath)
+suspend fun train() = resourceContext {
+    val networksFolder = Paths.get("data/networks")
+    networksFolder.toFile().deleteRecursively()
+    Files.createDirectory(networksFolder)
 
-    val tradeConfig = TradeConfig()
+    val tradeConfig = TradeConfig().apply {
+        saveTradeConfig(this)
+    }
     val trainConfig = TrainConfig()
-
-    val binanceExchange = testBinanceExchange()
-    require(trainConfig.range.endInclusive <= binanceExchange.currentTime())
-
+    val binanceExchange = testBinanceExchange().apply {
+        require(trainConfig.range.endInclusive <= currentTime())
+    }
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
     val archive = archive(tradeConfig, binanceExchange, trainConfig.range.endInclusive)
-
-    val startPeriodNum = periodNum(trainConfig.startTime, trainConfig.period, trainConfig.trainStartTime)
-    val endPeriodNum = periodNum(trainConfig.startTime, trainConfig.period, trainConfig.trainEndTime).coerceAtMost(moments.size())
-
-    jep().use { jep ->
-        network(jep, trainConfig).use { net ->
-            val backTest1 = BackTest(net, moments, trainConfig, trainConfig.trainTest1Days)
-            val backTest2 = BackTest(net, moments, trainConfig, trainConfig.trainTest2Days)
-            trainer(jep, trainConfig, net).use { trainer ->
-                train(backTest1, backTest2, net, trainer, trainConfig, moments, startPeriodNum until endPeriodNum)
-            }
-        }
-    }
-}
-
-private suspend fun train(backTest1: BackTest, backTest2: BackTest, network: NeuralNetwork, trainer: NeuralTrainer, config: Config, moments: SuspendList<Moment>, nums: LongRange) {
-    val random = GeometricDistribution(config.trainGeometricBias)
-    val portfolios = initPortfolios(moments.size().toInt(), config.altCoins.size + 1)  // with mainCoin
-    val resultsFile = netsPath.resolve("results.txt")
+    val jep = jep()
+    val net = trainingNetwork(jep, tradeConfig)
+    val trainer = networkTrainer(jep, net, trainConfig)
+    val periodRange = trainConfig.range.rangeMap(tradeConfig.periods::of)
+    val random = GeometricDistribution(trainConfig.geometricBias)
+    val portfolios = initPortfolios(periodRange.size().toInt(), tradeConfig.assets.all.size)
+    val resultsFile = networksFolder.resolve("results.txt")
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
-            val batchNums = batchNums(random, config, nums)
+            val batchNums = batchNums(random, tradeConfig.historySize, trainConfig.batchSize, periodRange.numRange())
             val batch = batch(config.historySize, moments, portfolios, batchNums)
             send(batch)
         }
@@ -83,12 +76,12 @@ private suspend fun train(backTest1: BackTest, backTest2: BackTest, network: Neu
 
     val funs = object {
         suspend fun saveNet(info: TrainInfo) {
-            network.save(netsPath.resolve(info.step.toString()))
+            network.save(networksFolder.resolve(info.step.toString()))
             resultsFile.toFile().appendText(info.toString())
         }
     }
 
-    fun collectInfo(step: Int, trainProfits: List<Double>, test1Profits: List<Double>, test2Profits: List<Double>): TrainInfo {
+    fun collectInfo(step: Int, trainProfits: Profits, test1Profits: Profits, test2Profits: Profits): TrainInfo {
         val trainPeriodProfit = geoMean(trainProfits)
         val periodsPerDay = (MILLIS_PER_DAY / config.period.toMillis()).toInt()
         val trainDayProfit = trainPeriodProfit.pow(periodsPerDay)
@@ -149,13 +142,13 @@ private fun setPortions(batch: TrainBatch, newPortions: List<Portions>) {
 fun initPortfolio(coinCount: Int): Portions = Array(coinCount) { 1.0 / coinCount }.toList()
 fun initPortfolios(size: Int, coinCount: Int) = Array(size) { initPortfolio(coinCount) }
 
-private suspend fun batchNums(random: GeometricDistribution, config: Config, limits: LongRange): LongRange {
-    val firstNum = limits.first.coerceAtLeast(config.historySize + config.trainBatchSize - 2L)
+private fun batchNums(random: GeometricDistribution, historySize: Int, batchSize: Int, limits: LongRange): LongRange {
+    val firstNum = limits.first.coerceAtLeast(historySize + batchSize - 2L)
     val lastNum = limits.last
     val lastBatchNum = random.rangeSample((firstNum..lastNum).toInt()).toLong() - 1
-    val firstBatchNum = lastBatchNum - config.trainBatchSize + 1
+    val firstBatchNum = lastBatchNum - batchSize + 1
 
-    val firstBatchFirstHistoryNum = firstBatchNum - config.historySize + 1
+    val firstBatchFirstHistoryNum = firstBatchNum - historySize + 1
     val lastBatchFutureMomentNum = lastBatchNum + 1
 
     return firstBatchFirstHistoryNum..lastBatchFutureMomentNum
@@ -186,18 +179,6 @@ private suspend fun batch(historySize: Int, moments: SuspendList<Moment>, portfo
 
     return TrainBatch(indices.map(::trainMoment))
 }
-
-private fun network(jep: Jep, config: Config) = NeuralNetwork.init(
-        jep,
-        NeuralNetwork.Config(1 + config.altCoins.size, config.historySize, 3),
-        gpuMemoryFraction = 0.5
-)
-
-private fun trainer(jep: Jep, config: Config, net: NeuralNetwork) = NeuralTrainer(
-        jep,
-        net,
-        NeuralTrainer.Config(config.fee.toDouble())
-)
 
 private class TrainBatch(
         val history: HistoryBatch,

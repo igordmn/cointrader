@@ -112,7 +112,7 @@ private suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchan
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
-private suspend fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: Prices): TradeResult {
+private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: Prices): TradeResult {
     val resultAsset = "BTC"
     val minBtc = 0.0001
     val portfolio = exchange.portfolio()
