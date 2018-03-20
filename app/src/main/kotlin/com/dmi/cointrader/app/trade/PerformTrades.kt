@@ -9,10 +9,13 @@ import com.dmi.cointrader.app.neural.trainedNetwork
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
+import com.dmi.util.lang.MILLIS_PER_DAY
+import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog
 import com.dmi.util.math.portions
+import com.dmi.util.math.product
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
@@ -25,6 +28,7 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.pow
 
 suspend fun performRealTrades() = resourceContext {
     askForRealTrade()
@@ -202,4 +206,21 @@ data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalC
     }
 }
 
-fun Collection<TradeResult>.capitals() = map(TradeResult::totalCapital)
+typealias Capitals = List<Double>
+typealias Profits = List<Double>
+fun Collection<TradeResult>.capitals(): Capitals = map(TradeResult::totalCapital)
+fun Capitals.profits(): Profits = zipWithNext { c, n -> n / c }
+
+fun Profits.dayly(period: Duration): Profits {
+    val periodsPerDay = (MILLIS_PER_DAY / period.toMillis()).toInt()
+    return chunked(periodsPerDay).map {
+        product(it).pow(periodsPerDay.toDouble() / it.size)
+    }
+}
+
+fun Profits.hourly(period: Duration): Profits {
+    val periodsPerHour = (MILLIS_PER_HOUR / period.toMillis()).toInt()
+    return chunked(periodsPerHour).map {
+        product(it).pow(periodsPerHour.toDouble() / it.size)
+    }
+}
