@@ -15,7 +15,7 @@ buildscript {
     var kotlinVersion: String by extra
     kotlinVersion = "1.2.30"
     var serializationVersion: String by extra
-    serializationVersion = "0.4.1"
+    serializationVersion = "0.4.2"
 
     repositories {
         mavenCentral()

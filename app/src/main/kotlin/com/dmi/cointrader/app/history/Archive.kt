@@ -100,9 +100,9 @@ suspend fun archive(
     )
 
     return object : Archive {
-        suspend override fun historyAt(range: PeriodRange): History = momentsList.get(range.numRange())
+        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.numRange())
 
-        suspend override fun sync(currentTime: Instant) {
+        override suspend fun sync(currentTime: Instant) {
             trades.forEach {
                 it.list.sync(
                         BinanceTrades(it.market, currentTime, tradeLoadChunk),
