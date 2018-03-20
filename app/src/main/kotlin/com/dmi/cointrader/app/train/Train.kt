@@ -127,8 +127,8 @@ private fun setPortions(batch: TrainBatch, newPortions: List<Portions>) {
     }
 }
 
-fun initPortfolio(coinCount: Int): Portions = Array(coinCount) { 1.0 / coinCount }.toList()
-fun initPortfolios(size: Int, coinCount: Int) = Array(size) { initPortfolio(coinCount) }
+fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
+fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 
 private fun batchNums(random: GeometricDistribution, historySize: Int, batchSize: Int, limits: LongRange): LongRange {
     val firstNum = limits.first.coerceAtLeast(historySize + batchSize - 2L)

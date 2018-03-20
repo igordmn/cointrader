@@ -52,15 +52,15 @@ class NeuralNetwork private constructor(
         jep.eval("from cointrader.network import NeuralNetwork")
         jep.eval("network = None")
         jep.eval("""
-                def create_network(coin_count, history_count, indicator_count, gpu_memory_fraction, load_path):
+                def create_network(coin_number, history_size, indicator_number, gpu_memory_fraction, load_path):
                     global network
-                    network = NeuralNetwork(coin_count, history_count, indicator_count, gpu_memory_fraction, load_path)
+                    network = NeuralNetwork(coin_number, history_size, indicator_number, gpu_memory_fraction, load_path)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(previous_w, history):
                     return network.best_portfolio(previous_w, history)
             """.trimIndent())
-        jep.invoke("create_network", config.coinCount, config.historySize, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
+        jep.invoke("create_network", config.coinNumber, config.historySize, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
     }
 
     fun bestPortfolio(currentPortions: Portions, history: History): Portions {
@@ -69,9 +69,9 @@ class NeuralNetwork private constructor(
 
     @Suppress("UNCHECKED_CAST")
     fun bestPortfolio(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D): DoubleMatrix2D = synchronized(this) {
-        require(currentPortions.n2 == config.coinCount)
+        require(currentPortions.n2 == config.coinNumber)
         require(histories.n2 == config.indicatorCount)
-        require(histories.n3 == config.coinCount)
+        require(histories.n3 == config.coinNumber)
         require(histories.n4 == config.historySize)
         require(currentPortions.n1 == histories.n1)
 
@@ -98,7 +98,7 @@ class NeuralNetwork private constructor(
 
     @Serializable
     data class Config(
-            val coinCount: Int,
+            val coinNumber: Int,
             val historySize: Int,
             val indicatorCount: Int
     )
@@ -153,11 +153,11 @@ class NeuralTrainer(
 
     @Suppress("UNCHECKED_CAST")
     fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, futurePriceIncs: DoubleMatrix2D): ResultMatrix {
-        require(currentPortions.n2 == net.config.coinCount)
+        require(currentPortions.n2 == net.config.coinNumber)
         require(histories.n2 == net.config.indicatorCount)
-        require(histories.n3 == net.config.coinCount)
+        require(histories.n3 == net.config.coinNumber)
         require(histories.n4 == net.config.historySize)
-        require(futurePriceIncs.n2 == net.config.coinCount)
+        require(futurePriceIncs.n2 == net.config.coinNumber)
         require(futurePriceIncs.n1 == currentPortions.n1)
         require(futurePriceIncs.n1 == histories.n1)
 
