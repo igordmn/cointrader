@@ -121,8 +121,8 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, predict_w, price_inc, fees):
-    pure_profits = price_inc * predict_w
+def compute_profits(batch_size, predict_w, future_price_incs, fees):
+    pure_profits = future_price_incs * predict_w
     pure_profit = tf.reduce_sum(pure_profits, axis=1)
     future_w = pure_profits / pure_profit[:, None]
 
@@ -138,10 +138,10 @@ class NeuralTrainer:
             self,
             network
     ):
-        self.price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number - 1])        # without main coin (BTC)
+        self.future_price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number - 1])        # without main coin (BTC)
         self.fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
 
-        profits = compute_profits(network.batch_size, network.predict_w, self.price_incs, self.fees)
+        profits = compute_profits(network.batch_size, network.predict_w, self.future_price_incs, self.fees)
         capital = tf.reduce_prod(profits)
         self.geometric_mean_profit = tf.pow(capital, 1 / tf.to_float(network.batch_size))
 
@@ -155,20 +155,19 @@ class NeuralTrainer:
         self.predict_w = network.predict_w
         self.session = network.session
 
-    def train(self, previous_w, history, price_incs, fees):
+    def train(self, previous_w, history, future_price_incs, fees):
         """
            Args:
              previous_w: batch_count x coin_number
              history: batch_count x coin_number x history_size x indicator_number
-             price_incs: batch_count x coin_number
-             sell_fees: batch_count x coin_number
-             buy_fees: batch_count x coin_number
+             future_price_incs: batch_count x coin_number
+             fees: batch_count x coin_number
         """
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train, self.predict_w, self.geometric_mean_profit], feed_dict={
             self.previous_w: previous_w[:, 1:],   # without main coin (BTC)
             self.history: history[:, 1:, :, :],   # without main coin (BTC)
-            self.price_incs: price_incs,
+            self.future_price_incs: future_price_incs,
             self.fees: fees,
             self.batch_size: history.shape[0]
         })

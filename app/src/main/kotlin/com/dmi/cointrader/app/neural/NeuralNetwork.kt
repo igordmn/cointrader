@@ -117,8 +117,7 @@ class NeuralNetwork private constructor(
 
 class NeuralTrainer(
         private val jep: Jep,
-        private val net: NeuralNetwork,
-        config: Config
+        private val net: NeuralNetwork
 ): AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
@@ -131,20 +130,20 @@ class NeuralTrainer(
         jep.eval("from cointrader.network import NeuralTrainer")
         jep.eval("trainer = None")
         jep.eval("""
-                def create_trainer(fee):
+                def create_trainer():
                     global trainer
                     global network
-                    trainer = NeuralTrainer(fee, network)
+                    trainer = NeuralTrainer(network)
             """.trimIndent())
         jep.eval("""
-                def train(previous_w, history, price_incs):
-                    return trainer.train(previous_w, history, price_incs)
+                def train(previous_w, history, future_price_incs, fees):
+                    return trainer.train(previous_w, history, future_price_incs, fees)
             """.trimIndent())
-        jep.invoke("create_trainer", config.fee)
+        jep.invoke("create_trainer")
     }
 
-    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch): Result {
-        val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), futurePriceIncs.toMatrix())
+    fun train(currentPortions: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch, fees: X): Result {
+        val resultMatrix = train(currentPortions.toMatrix(), histories.toMatrix(), futurePriceIncs.toMatrix(), fees.toMatrix())
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
                 resultMatrix.geometricMeanProfit
@@ -152,7 +151,7 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, futurePriceIncs: DoubleMatrix2D): ResultMatrix {
+    fun train(currentPortions: DoubleMatrix2D, histories: DoubleMatrix4D, futurePriceIncs: DoubleMatrix2D, fees: DoubleMatrix2D): ResultMatrix {
         require(currentPortions.n2 == net.config.coinNumber)
         require(histories.n2 == net.config.indicatorCount)
         require(histories.n3 == net.config.coinNumber)
@@ -163,9 +162,10 @@ class NeuralTrainer(
 
         val nphistory = NDArray(histories.data, histories.n1, histories.n2, histories.n3, histories.n4)
         val npportfolio = NDArray(currentPortions.data, currentPortions.n1, currentPortions.n2)
-        val npPriceIncs = NDArray(futurePriceIncs.data, futurePriceIncs.n1, futurePriceIncs.n2)
+        val npFuturePriceIncs = NDArray(futurePriceIncs.data, futurePriceIncs.n1, futurePriceIncs.n2)
+        val npFees = NDArray(fees.data, fees.n1, fees.n2)
 
-        val result = jep.invoke("train", npportfolio, nphistory, npPriceIncs) as Array<*>
+        val result = jep.invoke("train", npportfolio, nphistory, npFuturePriceIncs, npFees) as Array<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
 
@@ -181,10 +181,6 @@ class NeuralTrainer(
         jep.eval("del trainer")
         neuralTrainerCreated.set(false)
     }
-
-    data class Config(
-            val fee: Double
-    )
 
     data class ResultMatrix(val newPortions: DoubleMatrix2D, val geometricMeanProfit: Double)
     data class Result(val newPortions: PortionsBatch, val geometricMeanProfit: Double)
