@@ -21,9 +21,9 @@ class NullableFileAtom<T : Any>(
 ) : Atom<T?> {
     private val store = AtomicFileDataStore(file)
 
-    suspend override fun invoke(): T? = if (store.exists()) load(serializer, store.read()) else null
+    override suspend fun invoke(): T? = if (store.exists()) load(serializer, store.read()) else null
 
-    suspend override fun set(value: T?) {
+    override suspend fun set(value: T?) {
         if (value != null) {
             store.write(dump(serializer, value))
         } else {

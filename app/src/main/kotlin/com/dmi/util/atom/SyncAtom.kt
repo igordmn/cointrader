@@ -7,9 +7,9 @@ interface SyncAtom<out T> : ReadAtom<T> {
 suspend fun <T> ReadAtom<T>.synchronizable(): SyncAtom<T> {
     var cached = this()
     return object : SyncAtom<T> {
-        suspend override fun invoke(): T = cached
+        override suspend fun invoke(): T = cached
 
-        suspend override fun sync() {
+        override suspend fun sync() {
             cached = this@synchronizable()
         }
     }

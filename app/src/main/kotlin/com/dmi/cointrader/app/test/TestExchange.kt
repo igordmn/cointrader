@@ -15,7 +15,7 @@ class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal)
         fun broker() = object : Broker {
             override val limits = Broker.Limits(BigDecimal.ZERO, BigDecimal.ZERO)
 
-            suspend override fun buy(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+            override suspend fun buy(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
                 val currentBaseAmount = portfolio[baseAsset]!!
                 val currentQuoteAmount = portfolio[quoteAsset]!!
                 val quoteAmount = amount * ask
@@ -27,7 +27,7 @@ class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal)
                 return Broker.OrderResult(1.0)
             }
 
-            suspend override fun sell(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
+            override suspend fun sell(amount: BigDecimal): Broker.OrderResult = synchronized(portfolio) {
                 val currentBaseAmount = portfolio[baseAsset]!!
                 val currentQuoteAmount = portfolio[quoteAsset]!!
                 val quoteAmount = amount * bid

@@ -50,9 +50,9 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
     fun Long?.plusOneOrZero() = 1 + (this ?: -1)
 
     return object : SyncFileList<SOURCE_STATE, ITEM> {
-        suspend override fun size(): Long = fileArray.size
+        override suspend fun size(): Long = fileArray.size
 
-        suspend override fun get(range: LongRange): List<ITEM> {
+        override suspend fun get(range: LongRange): List<ITEM> {
             val size = size()
             require(range.start in 0 until size)
             require(range.endInclusive in 0 until size)

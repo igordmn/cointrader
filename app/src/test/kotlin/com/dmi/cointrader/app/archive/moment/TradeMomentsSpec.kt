@@ -149,9 +149,9 @@ class TradeMomentsSpec : Spec({
 private class TradeList(vararg trades: Trade) : SuspendList<Trade> {
     private val trades = trades.toList()
 
-    suspend override fun size(): Long = trades.size.toLong()
+    override suspend fun size(): Long = trades.size.toLong()
 
-    suspend override fun get(range: LongRange): List<Trade> = if (range.isEmpty()) {
+    override suspend fun get(range: LongRange): List<Trade> = if (range.isEmpty()) {
             emptyList()
         } else {
             trades.subList(range.start.toInt(), range.endInclusive.toInt() + 1)
