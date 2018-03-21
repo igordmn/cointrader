@@ -50,7 +50,7 @@ suspend fun train() = resourceContext {
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
-            send(batch(random, tradeConfig.historySize, trainConfig.batchSize, archive, portfolios))
+            send(batch(random, trainRange, tradeConfig.historySize, trainConfig.batchSize, trainConfig.fee, archive, portfolios))
         }
     }
 
@@ -91,7 +91,7 @@ suspend fun train() = resourceContext {
             .chunked(trainConfig.logSteps)
             .withIndex()
             .consumeEach {
-                val step = (it.index + 1) * trainConfig.logSteps
+                val step = it.index * trainConfig.logSteps
                 val testProfits = performTestTrades(testRange, tradeConfig, net, archive, testExchange)
                 val validationProfits = performTestTrades(validationRange, tradeConfig, net, archive, testExchange)
                 saveNet(trainResult(step, it.value, testProfits, validationProfits))
@@ -145,29 +145,26 @@ private suspend fun batch(
         return first..last
     }
 
-    fun IntRange.all() = start - historySize + 1..endInclusive + 2
-
-    class TrainItem(val history: History, val futurePriceIncs: PriceIncs, val fees: Fees)
-
     val lastNums = lastNums()
+    val allNums = lastNums.start - historySize + 1..lastNums.endInclusive + 2
+    val moments = archive.historyAt(allNums.toPeriods())
+    val indices = (0 until batchSize).map { it + historySize - 1 }
 
-    fun setCurrentPortfolio(portfolio: PortionsBatch) = portfolios.set(lastNums, portfolio)
-    val currentPortfolio: PortionsBatch = portfolios.slice(lastNums)
-    val allMoments = archive.historyAt(lastNums.all().toPeriods())
-
-    (0 until batchSize).map { batchIndex ->
-        val lastMomentIndex = batchIndex + historySize - 1
-        val history = allMoments.slice(lastMomentIndex - historySize + 1..lastMomentIndex)
-        val prices = allMoments[lastMomentIndex + 1].coinIndexToCandle.map(Candle::tradeTimePrice)
-        val nextPrices = allMoments[lastMomentIndex + 2].coinIndexToCandle.map(Candle::tradeTimePrice)
-        val priceIncs = prices.zip(nextPrices, ::priceInc)
-        val fees =
-    }
-
-    val batchPrices = historySize..batchSize +
-    val batchPriceIncs =
-
-            return TrainBatch(::setCurrentPortfolio, currentPortfolio)
+    return TrainBatch(
+            setCurrentPortfolio = { portfolios.set(lastNums, it) },
+            currentPortfolio = portfolios.slice(lastNums),
+            history = indices.map {
+                moments.slice(it - historySize + 1..it)
+            },
+            futurePriceIncs = indices.map {
+                val prices = moments[it + 1].coinIndexToCandle.map(Candle::tradeTimePrice)
+                val nextPrices = moments[it + 2].coinIndexToCandle.map(Candle::tradeTimePrice)
+                prices.zip(nextPrices, ::priceInc)
+            },
+            fees = indices.map {
+                moments[it + 1].coinIndexToCandle.map(Candle::tradeTimeFee)
+            }
+    )
 }
 
 private class TrainBatch(
