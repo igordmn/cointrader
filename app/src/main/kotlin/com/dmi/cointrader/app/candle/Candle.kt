@@ -30,9 +30,10 @@ data class Candle(
     }
 
     fun indicator(index: Int) = when (index) {
-        0 -> close
-        1 -> high
-        2 -> low
+        0 -> closeAsk
+        1 -> closeBid
+        2 -> high
+        3 -> low
         else -> throw UnsupportedOperationException()
     }
 }
