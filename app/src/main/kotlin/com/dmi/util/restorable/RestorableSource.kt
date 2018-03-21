@@ -19,7 +19,7 @@ interface RestorableSource<STATE, out VALUE> {
 
 fun <STATE : Any, VALUE> RestorableSource<STATE, VALUE>.initialOrRestored(state: STATE?) = state?.let(::restored) ?: initial()
 
-fun <STATE : Any, VALUE> List<RestorableSource<STATE, VALUE>>.zip() = object : RestorableSource<List<STATE>, List<VALUE>> {
+fun <STATE, VALUE> List<RestorableSource<STATE, VALUE>>.zip() = object : RestorableSource<List<STATE>, List<VALUE>> {
     override fun initial() = this@zip
             .map { it.initial() }
             .zip()
@@ -38,10 +38,29 @@ fun <STATE : Any, VALUE> List<RestorableSource<STATE, VALUE>>.zip() = object : R
     }
 }
 
-fun <STATE : Any, IN, OUT> RestorableSource<STATE, IN>.map(transform: (IN) -> OUT) = object : RestorableSource<STATE, OUT> {
+fun <STATE, T, R> RestorableSource<STATE, T>.map(transform: (T) -> R) = object : RestorableSource<STATE, R> {
     override fun initial() = this@map.initial().map(this::transform)
     override fun restored(state: STATE) = this@map.restored(state).map(this::transform)
-    private fun transform(item: Item<STATE, IN>) = Item(item.state, transform(item.value))
+    private fun transform(item: Item<STATE, T>) = Item(item.state, transform(item.value))
+}
+
+@Serializable
+data class ScanState<out SOURCE_STATE, out R>(val source: SOURCE_STATE, val acc: R)
+
+fun <STATE, T, R> RestorableSource<STATE, T>.scan(
+        initial: R,
+        operation: (T, acc: R) -> R
+) = object : RestorableSource<ScanState<STATE, R>, R> {
+    override fun initial() = this@scan.initial().scan(initial)
+    override fun restored(state: ScanState<STATE, R>) = this@scan.restored(state.source).scan(state.acc)
+
+    private fun ReceiveChannel<Item<STATE, T>>.scan(initial: R) = produce {
+        var acc = initial
+        consumeEach {
+            acc = operation(it.value, acc)
+            send(Item(ScanState(it.state, acc), acc))
+        }
+    }
 }
 
 fun <T> SuspendList<T>.asRestorableSource() = object : RestorableSource<Long, T> {
