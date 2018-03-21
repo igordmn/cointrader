@@ -84,6 +84,11 @@ suspend fun performRealTrade(
     try {
         archive.sync(clock.instant())
         val history = archive.historyAt(period.previous(config.historySize) until period)
+        val tradeTime = config.periods.startOf(period) + config.tradeDelay
+        val timeForTrade = Duration.between(clock.instant(), tradeTime)
+        if (timeForTrade >= Duration.ZERO) {
+            delay(timeForTrade)
+        }
         performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
@@ -208,6 +213,7 @@ data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalC
 
 typealias Capitals = List<Double>
 typealias Profits = List<Double>
+
 fun Collection<TradeResult>.capitals(): Capitals = map(TradeResult::totalCapital)
 fun Capitals.profits(): Profits = zipWithNext { c, n -> n / c }
 

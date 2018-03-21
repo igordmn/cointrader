@@ -15,11 +15,11 @@ import java.time.Instant
 
 data class TradesCandle<out TRADE_INDEX>(val num: Int, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
-fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
+fun <TRADE_INDEX> ReceiveChannel<IndexedTrade<TRADE_INDEX>>.candles(
         periods: Periods,
         nums: IntRange
-): ReceiveChannel<TradesCandle<INDEX>> {
-    class CandleBillet(val num: Int, val trades: List<IndexedTrade<INDEX>>) {
+): ReceiveChannel<TradesCandle<TRADE_INDEX>> {
+    class CandleBillet(val num: Int, val trades: List<IndexedTrade<TRADE_INDEX>>) {
         fun build() = TradesCandle(num, Candle(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,
@@ -27,7 +27,7 @@ fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         ), trades.last().index)
     }
 
-    fun candleNum(trade: IndexedTrade<INDEX>) = periods.of(trade.value.time).num
+    fun candleNum(trade: IndexedTrade<TRADE_INDEX>) = periods.of(trade.value.time).num
 
     fun candlesFirst(first: CandleBillet): List<CandleBillet> = (nums.start until first.num).map {
         CandleBillet(it, listOf(first.trades.first()))
