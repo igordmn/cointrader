@@ -42,7 +42,7 @@ def build_best_portfolio(
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=3,
+        nb_filter=4,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
