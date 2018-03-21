@@ -13,46 +13,13 @@ import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
 
-data class TradesCandle<out TRADE_INDEX>(val num: Long, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
-
-data class Period(val num: Long) : Comparable<Period> {
-    override fun compareTo(other: Period): Int = num.compareTo(other.num)
-    fun next(count: Int = 1): Period = Period(num + count)
-    fun previous(count: Int = 1): Period = Period(num - count)
-    infix fun until(end: Period): PeriodRange = this..Period(end.num - 1)
-}
-
-@Serializable
-data class Periods(
-        @Serializable(with = InstantSerializer::class) val start: Instant,
-        @Serializable(with = DurationSerializer::class) val duration: Duration
-) {
-    fun of(time: Instant) = Period(numOf(time))
-
-    private fun numOf(time: Instant) : Long {
-        val distMillis = Duration.between(start, time).toMillis()
-        val periodMillis = duration.toMillis()
-        return Math.floorDiv(distMillis, periodMillis)
-    }
-
-    fun startOf(period: Period): Instant {
-        return start + duration * period.num
-    }
-
-    fun perDay(): Double = MILLIS_PER_DAY / duration.toMillis().toDouble()
-}
-
-typealias PeriodRange = ClosedRange<Period>
-fun PeriodRange.nums(): LongRange = start.num..endInclusive.num
-fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
-fun PeriodRange.size() = endInclusive.num - start.num + 1
-fun LongRange.toPeriods(): PeriodRange = Period(start)..Period(endInclusive)
+data class TradesCandle<out TRADE_INDEX>(val num: Int, val candle: Candle, val lastTradeIndex: TRADE_INDEX)
 
 fun <INDEX> ReceiveChannel<IndexedTrade<INDEX>>.candles(
         periods: Periods,
-        nums: LongRange
+        nums: IntRange
 ): ReceiveChannel<TradesCandle<INDEX>> {
-    class CandleBillet(val num: Long, val trades: List<IndexedTrade<INDEX>>) {
+    class CandleBillet(val num: Int, val trades: List<IndexedTrade<INDEX>>) {
         fun build() = TradesCandle(num, Candle(
                 trades.last().value.price,
                 trades.maxBy { it.value.price }!!.value.price,

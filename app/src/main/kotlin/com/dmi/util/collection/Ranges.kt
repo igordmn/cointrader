@@ -9,4 +9,8 @@ fun LongRange.rangeChunked(size: Long): Sequence<LongRange> = buildSequence {
     }
 }
 
-fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(transform: (T) -> R): ClosedRange<R> = transform(start)..transform(endInclusive)
+fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(
+        transform: (T) -> R
+): ClosedRange<R> = transform(start)..transform(endInclusive)
+
+fun IntRange.toLong() = start.toLong()..endInclusive.toLong()

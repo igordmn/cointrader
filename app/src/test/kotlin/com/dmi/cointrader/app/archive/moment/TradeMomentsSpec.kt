@@ -152,8 +152,8 @@ private class TradeList(vararg trades: Trade) : SuspendList<Trade> {
     override suspend fun size(): Long = trades.size.toLong()
 
     override suspend fun get(range: LongRange): List<Trade> = if (range.isEmpty()) {
-            emptyList()
-        } else {
-            trades.subList(range.start.toInt(), range.endInclusive.toInt() + 1)
-        }
+        emptyList()
+    } else {
+        trades.subList(range.start.toInt(), range.endInclusive.toInt() + 1)
+    }
 }

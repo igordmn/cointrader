@@ -6,7 +6,6 @@ import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*
-import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.appendText
@@ -140,7 +139,7 @@ private suspend fun batch(
     fun priceInc(currentPrice: Double, nextPrice: Double) = nextPrice / currentPrice
 
     fun lastNums(): LongRange {
-        val lastBatchNum = random.sampleIn(range.nums().toInt()).toLong()
+        val lastBatchNum = random.sampleIn(range.nums()).toLong()
         val firstBatchNum = lastBatchNum - batchSize + 1
         return firstBatchNum..lastBatchNum
     }
@@ -151,12 +150,12 @@ private suspend fun batch(
 
     val lastNums = lastNums()
     fun setCurrentPortfolio(portfolio: PortionsBatch) {
-        lastNums.toInt().forEach {
+        lastNums.forEach {
             portfolios[it] = portfolio[it]
         }
     }
 
-    val currentPortfolios = portfolios.sliceArray(lastNums.toInt())
+    val currentPortfolios = portfolios.sliceArray(lastNums)
     val allMoments = archive.historyAt(lastNums.all().toPeriods())
 
     (0 until batchSize).map { batchIndex ->

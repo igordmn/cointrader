@@ -5,6 +5,7 @@ import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodRange
 import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.trade.TradeConfig
+import com.dmi.util.collection.toLong
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
@@ -38,7 +39,7 @@ suspend fun archive(
 
     fun momentAppendLog() = object : SyncFileList.Log<Moment> {
         override fun itemsAppended(items: List<Moment>, indices: LongRange) {
-            val endPeriod = Period(indices.last).next()
+            val endPeriod = Period(indices.last.toInt()).next()
             val time = config.periods.startOf(endPeriod)
             println("Moment cached: $time")
         }
@@ -100,7 +101,7 @@ suspend fun archive(
     )
 
     return object : Archive {
-        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.nums())
+        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.nums().toLong())
 
         override suspend fun sync(currentTime: Instant) {
             trades.forEach {
