@@ -115,7 +115,7 @@ private fun ranges(tradeConfig: TradeConfig, trainConfig: TrainConfig): Triple<P
     val timeRange = trainConfig.range
     val periodsPerDay = periods.perDay()
     val extraNeededFirstNums = tradeConfig.historySize + trainConfig.batchSize - 2
-    val extraNeededLastNums = 2  // -2st period for current tradeTimePrice, -1st period for next tradeTimePrice
+    val extraNeededLastNums = 2  // -2nd period for current tradeTimePrice, -1st period for next tradeTimePrice
     val start = periods.of(timeRange.start).next(extraNeededFirstNums)
     val end = periods.of(timeRange.endInclusive).previous(extraNeededLastNums)
     val testStart = end.previous((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
