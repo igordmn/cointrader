@@ -2,6 +2,8 @@ package com.dmi.util.io
 
 import com.dmi.util.atom.cached
 import com.dmi.util.collection.SuspendList
+import com.dmi.util.restorable.RestorableSource
+import com.dmi.util.restorable.initialOrRestored
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.withLongIndex
 import com.dmi.util.concurrent.withPrevious
@@ -9,13 +11,6 @@ import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
-
-interface RestorableSource<STATE : Any, out VALUE> {
-    fun restore(state: STATE?): ReceiveChannel<Item<STATE, VALUE>>
-
-    @Serializable
-    data class Item<out STATE, out VALUE>(val state: STATE, val value: VALUE)
-}
 
 interface SyncFileList<SOURCE_STATE : Any, ITEM> : SuspendList<ITEM> {
     suspend fun sync(source: RestorableSource<SOURCE_STATE, ITEM>, log: Log<ITEM> = EmptyLog())
@@ -61,12 +56,10 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
 
         override suspend fun sync(source: RestorableSource<SOURCE_STATE, ITEM>, log: SyncFileList.Log<ITEM>) {
             val lastInfo = lastInfoStore()
-
             val startIndex = lastInfo?.index.plusOneOrZero()
             fileArray.truncate(startIndex)
 
-            source
-                    .restore(lastInfo?.state)
+            source.initialOrRestored(lastInfo?.state)
                     .withLongIndex(startIndex)
                     .withPrevious(reloadCount)
                     .chunked(bufferSize)

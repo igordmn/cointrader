@@ -13,7 +13,6 @@ data class Moment(val coinIndexToCandle: List<Candle>)
 typealias Prices = List<Double>
 typealias PriceIncs = List<Double>
 typealias PriceIncsBatch = List<PriceIncs>
-fun Prices.incs(): PriceIncs = zipWithNext { c, n -> n / c }
 
 class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
     private val listSerializer = FixedListSerializer(size, CandleFixedSerializer())
