@@ -125,7 +125,9 @@ private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: P
     val capitals = bids * amounts
     val assetCapitals = assets.all.withIndex().associate {
         it.value to capitals[it.index]
-    }.filter { it.value > minBtc }
+    }.filter {
+        it.value > minBtc
+    }
     val totalCapital = capitals.sum()
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
@@ -138,9 +140,10 @@ suspend fun performTestTrades(
         exchange: TestExchange
 ): List<TradeResult> = range.asSequence().asReceiveChannel().map { period ->
     val portfolio = exchange.portfolio()
-    val history = archive.historyAt(period.previous(config.historySize) until period)
-    val asks = history.last().closeAsks()
-    val bids = history.last().closeBids()
+    val historyWithNext = archive.historyAt(period.previous(config.historySize)..period)
+    val history = historyWithNext.subList(0, historyWithNext.size - 1)
+    val asks = historyWithNext.last().tradeTimeAsks()
+    val bids = historyWithNext.last().tradeTimeBids()
     fun indexOf(asset: Asset) = config.assets.all.indexOf(asset)
     fun askOf(asset: Asset) = asks[indexOf(asset)].toBigDecimal()
     fun bidOf(asset: Asset) = bids[indexOf(asset)].toBigDecimal()

@@ -24,3 +24,5 @@ class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
 
 fun Moment.closeAsks(): Prices = coinIndexToCandle.map(Candle::closeAsk)
 fun Moment.closeBids(): Prices = coinIndexToCandle.map(Candle::closeBid)
+fun Moment.tradeTimeAsks(): Prices = coinIndexToCandle.map(Candle::tradeTimeAsk)
+fun Moment.tradeTimeBids(): Prices = coinIndexToCandle.map(Candle::tradeTimeBid)
