@@ -101,7 +101,12 @@ suspend fun archive(
     )
 
     return object : Archive {
-        override suspend fun historyAt(range: PeriodRange): History = momentsList.get(range.nums().toLong())
+        var lastPeriod = config.periods.of(currentTime)
+
+        override suspend fun historyAt(range: PeriodRange): History {
+            require(range.endInclusive <= lastPeriod)
+            return momentsList.get(range.nums().toLong())
+        }
 
         override suspend fun sync(currentTime: Instant) {
             trades.forEach {
@@ -114,6 +119,7 @@ suspend fun archive(
                     TradeMoments(config.periods, tradeLists, currentTime),
                     EmptyLog()
             )
+            lastPeriod = config.periods.of(currentTime)
         }
     }
 }

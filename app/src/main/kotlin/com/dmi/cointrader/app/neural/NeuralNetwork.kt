@@ -69,7 +69,7 @@ class NeuralNetwork private constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun bestPortfolio(currentPortfolio: Matrix2D, histories: Matrix4D): Matrix2D = synchronized(this) {
+    private fun bestPortfolio(currentPortfolio: Matrix2D, histories: Matrix4D): Matrix2D {
         require(currentPortfolio.n2 == config.coinNumber)
         require(histories.n2 == config.indicatorCount)
         require(histories.n3 == config.coinNumber)

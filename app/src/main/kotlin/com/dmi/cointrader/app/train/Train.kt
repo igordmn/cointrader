@@ -6,6 +6,7 @@ import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*
+import com.dmi.util.collection.set
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.appendText
@@ -45,7 +46,7 @@ suspend fun train() = resourceContext {
     val trainer = networkTrainer(jep, net)
     val (trainRange, testRange, validationRange) = ranges(tradeConfig, trainConfig)
     val random = GeometricDistribution(trainConfig.geometricBias)
-    val portfolios = initPortfolios(trainRange.size().toInt(), tradeConfig.assets.all.size)
+    val portfolios = initPortfolios(trainRange.endInclusive.num + 1, tradeConfig.assets.all.size)
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
@@ -138,24 +139,20 @@ private suspend fun batch(
     fun Candle.tradeTimeFee() = 1 - (1 - exchangeFee) * (tradeTimeBid / tradeTimePrice())
     fun priceInc(currentPrice: Double, nextPrice: Double) = nextPrice / currentPrice
 
-    fun lastNums(): LongRange {
-        val lastBatchNum = random.sampleIn(range.nums()).toLong()
-        val firstBatchNum = lastBatchNum - batchSize + 1
-        return firstBatchNum..lastBatchNum
+    fun lastNums(): IntRange {
+        val last = random.sampleIn(range.nums())
+        val first = last - batchSize + 1
+        return first..last
     }
 
-    fun LongRange.all() = start - historySize + 1..endInclusive + 2
+    fun IntRange.all() = start - historySize + 1..endInclusive + 2
 
     class TrainItem(val history: History, val futurePriceIncs: PriceIncs, val fees: Fees)
 
     val lastNums = lastNums()
-    fun setCurrentPortfolio(portfolio: PortionsBatch) {
-        lastNums.forEach {
-            portfolios[it] = portfolio[it]
-        }
-    }
 
-    val currentPortfolios = portfolios.sliceArray(lastNums)
+    fun setCurrentPortfolio(portfolio: PortionsBatch) = portfolios.set(lastNums, portfolio)
+    val currentPortfolio: PortionsBatch = portfolios.slice(lastNums)
     val allMoments = archive.historyAt(lastNums.all().toPeriods())
 
     (0 until batchSize).map { batchIndex ->
@@ -170,7 +167,7 @@ private suspend fun batch(
     val batchPrices = historySize..batchSize +
     val batchPriceIncs =
 
-            return TrainBatch(::setCurrentPortfolio, currentPortfolios)
+            return TrainBatch(::setCurrentPortfolio, currentPortfolio)
 }
 
 private class TrainBatch(
