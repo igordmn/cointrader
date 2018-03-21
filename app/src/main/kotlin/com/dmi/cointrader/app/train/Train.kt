@@ -44,16 +44,7 @@ suspend fun train() = resourceContext {
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net)
-
-    val periodsPerDay = tradeConfig.periods.perDay()
-    val startPeriod = tradeConfig.periods.of(trainConfig.range.start)
-    val endPeriod = tradeConfig.periods.of(trainConfig.range.endInclusive)
-    val testStart = endPeriod.previous((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
-    val validationStart = endPeriod.previous((periodsPerDay * trainConfig.validationDays).toInt())
-    val trainRange = startPeriod until validationStart
-    val testRange = testStart until validationStart
-    val validationRange = validationStart until endPeriod
-
+    val (trainRange, testRange, validationRange) = ranges(tradeConfig, trainConfig)
     val random = GeometricDistribution(trainConfig.geometricBias)
     val portfolios = initPortfolios(trainRange.size().toInt(), tradeConfig.assets.all.size)
 
@@ -65,9 +56,7 @@ suspend fun train() = resourceContext {
 
     fun train(batch: TrainBatch): Double {
         val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history, batch.futurePriceIncs, batch.fees)
-        batch.periods.nums().toInt().forEach {
-            portfolios[it] = newPortions[it]
-        }
+        batch.setCurrentPortfolio(newPortions)
         return geometricMeanProfit
     }
 
@@ -77,6 +66,7 @@ suspend fun train() = resourceContext {
     }
 
     fun trainResult(step: Int, trainProfits: Profits, testResults: List<TradeResult>, validationResults: List<TradeResult>): TrainResult {
+        val periodsPerDay = tradeConfig.periods.perDay()
         val period = tradeConfig.periods.duration
 
         fun trainTestResult(tradeResults: List<TradeResult>): TrainResult.Test {
@@ -120,41 +110,72 @@ private data class TrainResult(
 fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
 
+private fun ranges(tradeConfig: TradeConfig, trainConfig: TrainConfig): Triple<PeriodRange, PeriodRange, PeriodRange> {
+    val periods = tradeConfig.periods
+    val timeRange = trainConfig.range
+    val periodsPerDay = periods.perDay()
+    val extraNeededFirstNums = tradeConfig.historySize + trainConfig.batchSize - 2
+    val extraNeededLastNums = 2  // -2st period for current tradeTimePrice, -1st period for next tradeTimePrice
+    val start = periods.of(timeRange.start).next(extraNeededFirstNums)
+    val end = periods.of(timeRange.endInclusive).previous(extraNeededLastNums)
+    val testStart = end.previous((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
+    val validationStart = end.previous((periodsPerDay * trainConfig.validationDays).toInt())
+    val trainRange = start until validationStart
+    val testRange = testStart until validationStart
+    val validationRange = validationStart until end
+    return Triple(trainRange, testRange, validationRange)
+}
 
 private suspend fun batch(
         random: GeometricDistribution,
         range: PeriodRange,
         historySize: Int,
         batchSize: Int,
+        exchangeFee: Double,
         archive: Archive,
         portfolios: Array<Portions>
 ): TrainBatch {
-    val firstNum = range.start.num.coerceAtLeast(historySize + batchSize - 2L)
-    val lastNum = range.endInclusive.num - 1
-    val lastBatchLastMomentNum = random.sampleIn((firstNum..lastNum).toInt()).toLong() - 1
-    val firstBatchLastMomentNum = lastBatchLastMomentNum - batchSize + 1
+    fun Candle.tradeTimePrice() = (tradeTimeAsk + tradeTimeBid) / 2
+    fun Candle.tradeTimeFee() = 1 - (1 - exchangeFee) * (tradeTimeBid / tradeTimePrice())
+    fun priceInc(currentPrice: Double, nextPrice: Double) = nextPrice / currentPrice
 
-    val firstBatchFirstMomentNum = firstBatchLastMomentNum - historySize + 1
-    val lastBatchFutureNum = lastBatchLastMomentNum + 1
+    fun lastNums(): LongRange {
+        val lastBatchNum = random.sampleIn(range.nums().toInt()).toLong()
+        val firstBatchNum = lastBatchNum - batchSize + 1
+        return firstBatchNum..lastBatchNum
+    }
 
-    val batchAllNums = firstBatchFirstMomentNum..lastBatchFutureNum
-    val batchAllPeriods = batchAllNums.toPeriods()
-    val batchLastNums = firstBatchLastMomentNum..lastBatchLastMomentNum
-    val batchLastPeriods = Period(firstBatchLastMomentNum)..Period(lastBatchLastMomentNum)
+    fun LongRange.all() = start - historySize + 1..endInclusive + 2
 
-    val batchPortfolios = portfolios.sliceArray(batchLastNums.toInt())
-    val batchAllMoments = archive.historyAt(batchAllPeriods)
-    val batchPrices =
+    class TrainItem(val history: History, val futurePriceIncs: PriceIncs, val fees: Fees)
+
+    val lastNums = lastNums()
+    fun setCurrentPortfolio(portfolio: PortionsBatch) {
+        lastNums.toInt().forEach {
+            portfolios[it] = portfolio[it]
+        }
+    }
+
+    val currentPortfolios = portfolios.sliceArray(lastNums.toInt())
+    val allMoments = archive.historyAt(lastNums.all().toPeriods())
+
+    (0 until batchSize).map { batchIndex ->
+        val lastMomentIndex = batchIndex + historySize - 1
+        val history = allMoments.slice(lastMomentIndex - historySize + 1..lastMomentIndex)
+        val prices = allMoments[lastMomentIndex + 1].coinIndexToCandle.map(Candle::tradeTimePrice)
+        val nextPrices = allMoments[lastMomentIndex + 2].coinIndexToCandle.map(Candle::tradeTimePrice)
+        val priceIncs = prices.zip(nextPrices, ::priceInc)
+        val fees =
+    }
+
+    val batchPrices = historySize..batchSize +
     val batchPriceIncs =
 
-    return TrainBatch(batchLastPeriods, batchPortfolios)
+            return TrainBatch(::setCurrentPortfolio, currentPortfolios)
 }
 
-private fun Candle.tradeTimePrice() = (tradeTimeAsk + tradeTimeBid) / 2
-private fun Candle.tradeTimeFee(exchangeFee: Double) = 1 - (1 - exchangeFee) * (tradeTimeBid / tradeTimePrice())
-
 private class TrainBatch(
-        val periods: PeriodRange,
+        val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val currentPortfolio: PortionsBatch,
         val history: HistoryBatch,
         val futurePriceIncs: PriceIncsBatch,
