@@ -71,7 +71,7 @@ suspend fun train() = resourceContext {
 
         fun trainTestResult(tradeResults: List<TradeResult>): TrainResult.Test {
             val profits = tradeResults.capitals().profits()
-            val dayProfit = profits.dayly(period).let(::geoMean)
+            val dayProfit = profits.daily(period).let(::geoMean)
             val hourlyProfits = profits.hourly(period)
             val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
             val maximumDrawdawn: Double = hourlyProfits.let(::maximumDrawdawn)

@@ -40,7 +40,7 @@ suspend fun performRealTrades() = resourceContext {
     val history = archive(config, exchange, exchange.currentTime())
 
     class PeriodIterator(private val periods: Periods) {
-        private var previousPeriod = Period(Long.MIN_VALUE)
+        private var previousPeriod = Period(Int.MIN_VALUE)
 
         fun nextAfter(time: Instant): Period {
             val timePeriod = periods.of(time)
@@ -211,7 +211,7 @@ typealias Profits = List<Double>
 fun Collection<TradeResult>.capitals(): Capitals = map(TradeResult::totalCapital)
 fun Capitals.profits(): Profits = zipWithNext { c, n -> n / c }
 
-fun Profits.dayly(period: Duration): Profits {
+fun Profits.daily(period: Duration): Profits {
     val periodsPerDay = (MILLIS_PER_DAY / period.toMillis()).toInt()
     return chunked(periodsPerDay).map {
         product(it).pow(periodsPerDay.toDouble() / it.size)
