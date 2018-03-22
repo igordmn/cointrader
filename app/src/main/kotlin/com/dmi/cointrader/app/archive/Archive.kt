@@ -34,12 +34,6 @@ private data class BinanceTradeConfig(val market: String)
 @Serializable
 private data class MomentsConfig(val periods: Periods, val assets: List<Asset>)
 
-private typealias AskBidsState = ScanState<Long, AskBidTrade>
-private typealias MomentsState = List<CandlesState<AskBidsState?>>
-private val askBidsStateSerializer = ScanState.serializer(LongSerializer, AskBidTrade.serializer())
-private val candlesStateSerializer = CandlesState.serializer(askBidsStateSerializer)
-private val momentsStateSerializer = candlesStateSerializer.list
-
 suspend fun archive(
         config: TradeConfig,
         exchange: BinanceExchange,
@@ -95,15 +89,6 @@ suspend fun archive(
         }
     }
 
-    val momentsList = syncFileList(
-            momentsFile,
-            MomentsConfig.serializer(),
-            momentsStateSerializer,
-            MomentFixedSerializer(config.assets.alts.size),
-            MomentsConfig(config.periods, config.assets.alts),
-            reloadCount = momentsReloadCount
-    )
-
     fun momentsSource() = trades
             .map {
                 it.list.asRestorableSource()
@@ -113,6 +98,20 @@ suspend fun archive(
             }
             .zip()
             .map(::Moment)
+
+    val momentsList = syncFileList(
+            momentsFile,
+            MomentsConfig.serializer(),
+            CandlesState.serializer(
+                    ScanState.serializer(
+                            LongSerializer,
+                            AskBidTrade.serializer()
+                    )
+            ).list,
+            MomentFixedSerializer(config.assets.alts.size),
+            MomentsConfig(config.periods, config.assets.alts),
+            reloadCount = momentsReloadCount
+    )
 
     trades.forEach {
         it.sync(
