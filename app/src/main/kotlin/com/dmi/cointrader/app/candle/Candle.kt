@@ -36,7 +36,7 @@ data class Candle(
 }
 
 class CandleFixedSerializer : FixedSerializer<Candle> {
-    override val itemBytes: Int = 7 * 8
+    override val itemBytes: Int = 6 * 8
 
     override fun serialize(item: Candle, data: ByteBuffer) {
         data.putDouble(item.closeAsk)

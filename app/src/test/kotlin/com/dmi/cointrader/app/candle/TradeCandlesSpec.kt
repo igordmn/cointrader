@@ -2,12 +2,12 @@ package com.dmi.cointrader.app.candle
 
 import com.dmi.cointrader.app.archive.IndexedTrade
 import com.dmi.cointrader.app.archive.Trade
+import com.dmi.cointrader.app.archive.TradesCandle
+import com.dmi.cointrader.app.archive.candles
 import com.dmi.util.test.Spec
 import com.dmi.util.test.channelOf
 import com.dmi.util.test.instant
 import com.dmi.util.test.period
-import io.kotlintest.matchers.shouldBe
-import kotlinx.coroutines.experimental.channels.toList
 import java.time.Instant
 
 class TradeCandlesSpec : Spec() {

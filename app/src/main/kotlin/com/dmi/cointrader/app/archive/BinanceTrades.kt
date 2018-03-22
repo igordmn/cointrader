@@ -12,9 +12,6 @@ class BinanceTradeState(val id: Long)
 
 typealias BinanceTradeItem = RestorableSource.Item<BinanceTradeState, Trade>
 
-@Serializable
-data class BinanceTradeConfig(val market: String)
-
 class BinanceTrades(
         private val market: BinanceExchange.Market,
         private val currentTime: Instant,

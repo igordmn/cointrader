@@ -1,14 +1,20 @@
 package com.dmi.cointrader.app.archive
 
+import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.binance.BinanceExchange
 import com.dmi.cointrader.app.candle.Period
 import com.dmi.cointrader.app.candle.PeriodRange
+import com.dmi.cointrader.app.candle.Periods
 import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.util.collection.toLong
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
+import com.dmi.util.restorable.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.internal.LongSerializer
+import kotlinx.serialization.list
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
@@ -21,6 +27,18 @@ interface Archive {
     suspend fun historyAt(range: PeriodRange): History
     suspend fun sync(currentTime: Instant)
 }
+
+@Serializable
+private data class BinanceTradeConfig(val market: String)
+
+@Serializable
+private data class MomentsConfig(val periods: Periods, val assets: List<Asset>)
+
+private typealias AskBidsState = ScanState<Long, AskBidTrade>
+private typealias MomentsState = List<CandlesState<AskBidsState?>>
+private val askBidsStateSerializer = ScanState.serializer(LongSerializer, AskBidTrade.serializer())
+private val candlesStateSerializer = CandlesState.serializer(askBidsStateSerializer)
+private val momentsStateSerializer = candlesStateSerializer.list
 
 suspend fun archive(
         config: TradeConfig,
@@ -67,36 +85,43 @@ suspend fun archive(
         )
         object {
             val asset = asset
-            val isReversed = isReversed
             val market = market
-            val list = list
+            val list = if (isReversed) {
+                list
+            } else {
+                list.map(Trade::reverse)
+            }
+            suspend fun sync(source: RestorableSource<BinanceTradeState, Trade>, log: SyncFileList.Log<Trade>) = list.sync(source, log)
         }
     }
 
-    val tradeLists = trades.map {
-        if (it.isReversed) {
-            it.list
-        } else {
-            it.list.map(Trade::reverse)
-        }
-    }
     val momentsList = syncFileList(
             momentsFile,
             MomentsConfig.serializer(),
-            MomentState.serializer(),
+            momentsStateSerializer,
             MomentFixedSerializer(config.assets.alts.size),
             MomentsConfig(config.periods, config.assets.alts),
             reloadCount = momentsReloadCount
     )
 
+    fun momentsSource() = trades
+            .map {
+                it.list.asRestorableSource()
+                        .scan(null, Trade::toAskBid)
+                        .map { it!! }
+                        .candles(config.periods, config.tradeDelay)
+            }
+            .zip()
+            .map(::Moment)
+
     trades.forEach {
-        it.list.sync(
+        it.sync(
                 BinanceTrades(it.market, currentTime, tradeLoadChunk),
                 tradeAppendLog(it.asset)
         )
     }
     momentsList.sync(
-            TradeMoments(config.periods, tradeLists, currentTime),
+            momentsSource(),
             momentAppendLog()
     )
 
@@ -110,13 +135,13 @@ suspend fun archive(
 
         override suspend fun sync(currentTime: Instant) {
             trades.forEach {
-                it.list.sync(
+                it.sync(
                         BinanceTrades(it.market, currentTime, tradeLoadChunk),
                         EmptyLog()
                 )
             }
             momentsList.sync(
-                    TradeMoments(config.periods, tradeLists, currentTime),
+                    momentsSource(),
                     EmptyLog()
             )
             lastPeriod = config.periods.of(currentTime)
