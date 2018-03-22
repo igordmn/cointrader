@@ -92,7 +92,7 @@ suspend fun archive(
     fun momentsSource() = trades
             .map {
                 it.list.asRestorableSource()
-                        .scan(null, Trade::toAskBid)
+                        .scan(null, Trade::toSpread)
                         .map { it!! }
                         .candles(config.periods, config.tradeDelay)
             }
@@ -105,7 +105,7 @@ suspend fun archive(
             CandlesState.serializer(
                     ScanState.serializer(
                             LongSerializer,
-                            AskBidTrade.serializer()
+                            TimeSpread.serializer()
                     )
             ).list,
             MomentFixedSerializer(config.assets.alts.size),

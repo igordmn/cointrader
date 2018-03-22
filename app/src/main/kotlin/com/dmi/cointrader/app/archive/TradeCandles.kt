@@ -10,7 +10,7 @@ import java.time.Duration
 @Serializable
 data class CandlesState<out TRADE_STATE>(val lastTrade: TRADE_STATE)
 
-fun <TRADE_STATE> RestorableSource<TRADE_STATE, AskBidTrade>.candles(
+fun <TRADE_STATE> RestorableSource<TRADE_STATE, TimeSpread>.candles(
         periods: Periods,
         tradeDelay: Duration
 ) = object : RestorableSource<CandlesState<TRADE_STATE>, Candle> {

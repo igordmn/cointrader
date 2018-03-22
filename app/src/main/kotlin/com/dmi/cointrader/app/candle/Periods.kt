@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
 
+@Serializable
 data class Period(val num: Int) : Comparable<Period> {
     override fun compareTo(other: Period): Int = num.compareTo(other.num)
     fun next(count: Int = 1): Period = Period(num + count)
@@ -22,7 +23,7 @@ data class Periods(
 ) {
     fun of(time: Instant) = Period(numOf(time))
 
-    private fun numOf(time: Instant) : Int {
+    private fun numOf(time: Instant): Int {
         val distMillis = Duration.between(start, time).toMillis()
         val periodMillis = duration.toMillis()
         return Math.floorDiv(distMillis, periodMillis).toInt()
@@ -36,7 +37,10 @@ data class Periods(
 }
 
 typealias PeriodRange = ClosedRange<Period>
+
 fun PeriodRange.nums(): IntRange = start.num..endInclusive.num
 fun PeriodRange.asSequence(): Sequence<Period> = (start.num..endInclusive.num).asSequence().map(::Period)
 fun PeriodRange.size() = endInclusive.num - start.num + 1
 fun IntRange.toPeriods(): PeriodRange = Period(start)..Period(endInclusive)
+
+fun periodSequence(start: Period = Period(0)): Sequence<Period> = generateSequence(start) { it.next() }
