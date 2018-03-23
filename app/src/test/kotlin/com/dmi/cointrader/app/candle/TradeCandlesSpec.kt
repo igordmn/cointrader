@@ -1,9 +1,9 @@
 package com.dmi.cointrader.app.candle
 
-import com.dmi.cointrader.app.archive.IndexedTrade
-import com.dmi.cointrader.app.archive.Trade
-import com.dmi.cointrader.app.archive.TradesCandle
-import com.dmi.cointrader.app.archive.candles
+import com.dmi.cointrader.archive.IndexedTrade
+import com.dmi.cointrader.archive.Trade
+import com.dmi.cointrader.archive.TradesCandle
+import com.dmi.cointrader.archive.candles
 import com.dmi.util.test.Spec
 import com.dmi.util.test.channelOf
 import com.dmi.util.test.instant

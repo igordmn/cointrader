@@ -1,14 +1,14 @@
 package old.exchange.binance
 
-import com.dmi.cointrader.app.binance.BinanceConstants
-import com.dmi.cointrader.app.archive.Moment
-import com.dmi.cointrader.app.archive.moment.cachedMoments
-import com.dmi.cointrader.app.archive.trade.coinToCachedBinanceTrades
+import com.dmi.cointrader.binance.BinanceConstants
+import com.dmi.cointrader.archive.Moment
+import com.dmi.cointrader.archive.moment.cachedMoments
+import com.dmi.cointrader.archive.trade.coinToCachedBinanceTrades
 import com.dmi.util.atom.MemoryAtom
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import com.dmi.cointrader.app.binance.api.binanceAPI
+import com.dmi.cointrader.binance.api.binanceAPI
 import java.nio.file.Files
 import java.time.Duration
 import java.time.LocalDateTime
