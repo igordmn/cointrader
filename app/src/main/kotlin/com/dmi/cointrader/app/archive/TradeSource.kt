@@ -8,25 +8,23 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 
 @Serializable
-class BinanceTradeState(val id: Long)
+class TradeState(val id: Long)
 
-typealias BinanceTradeItem = RestorableSource.Item<BinanceTradeState, Trade>
-
-class BinanceTrades(
+class TradeSource(
         private val market: BinanceExchange.Market,
         private val currentTime: Instant,
         private val chunkLoadCount: Int
-) : RestorableSource<BinanceTradeState, Trade> {
+) : RestorableSource<TradeState, Trade> {
     override fun initial() = trades(0)
-    override fun restored(state: BinanceTradeState) = trades(state.id + 1L)
+    override fun restored(state: TradeState) = trades(state.id + 1L)
 
     private fun trades(startId: Long) = market
             .trades(startId, chunkLoadCount)
             .map(::convert)
             .takeWhile { it.value.time <= currentTime }
 
-    private fun convert(trade: BinanceExchange.Trade) = BinanceTradeItem(
-            BinanceTradeState(trade.aggTradeId),
+    private fun convert(trade: BinanceExchange.Trade) = RestorableSource.Item(
+            TradeState(trade.aggTradeId),
             Trade(
                     trade.time,
                     trade.amount.toDouble(),

@@ -28,10 +28,10 @@ interface Archive {
 }
 
 @Serializable
-private data class BinanceTradeConfig(val market: String)
+private data class TradeSourceConfig(val market: String)
 
 @Serializable
-private data class HistoryConfig(val periods: Periods, val assets: List<Asset>)
+private data class SpreadsSourceConfig(val periods: Periods, val assets: List<Asset>)
 
 suspend fun archive(
         config: TradeConfig,
@@ -74,10 +74,10 @@ suspend fun archive(
         val name = if (isReversed) "$asset$mainAsset" else "$mainAsset$asset"
         val list = syncFileList(
                 tradesDir.resolve(name),
-                BinanceTradeConfig.serializer(),
-                BinanceTradeState.serializer(),
+                TradeSourceConfig.serializer(),
+                TradeState.serializer(),
                 TradeFixedSerializer,
-                BinanceTradeConfig(name)
+                TradeSourceConfig(name)
         )
         object {
             val asset = asset
@@ -87,7 +87,7 @@ suspend fun archive(
             } else {
                 list.map(Trade::reverse)
             }
-            suspend fun sync(source: RestorableSource<BinanceTradeState, Trade>, log: SyncFileList.Log<Trade>) = list.sync(source, log)
+            suspend fun sync(source: RestorableSource<TradeState, Trade>, log: SyncFileList.Log<Trade>) = list.sync(source, log)
         }
     }
 
@@ -103,7 +103,7 @@ suspend fun archive(
 
     val spreadsList = syncFileList(
             momentsFile,
-            HistoryConfig.serializer(),
+            SpreadsSourceConfig.serializer(),
             PeriodicalState.serializer(
                     ScanState.serializer(
                             LongSerializer,
@@ -111,13 +111,13 @@ suspend fun archive(
                     )
             ).list,
             FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
-            HistoryConfig(config.periods, config.assets.alts),
+            SpreadsSourceConfig(config.periods, config.assets.alts),
             reloadCount = momentsReloadCount
     )
 
     trades.forEach {
         it.sync(
-                BinanceTrades(it.market, currentPeriod.time(), tradeLoadChunk),
+                TradeSource(it.market, currentPeriod.time(), tradeLoadChunk),
                 tradeAppendedLog(it.asset)
         )
     }
@@ -137,7 +137,7 @@ suspend fun archive(
         override suspend fun sync(currentPeriod: Period) {
             trades.forEach {
                 it.sync(
-                        BinanceTrades(it.market, currentPeriod.time(), tradeLoadChunk),
+                        TradeSource(it.market, currentPeriod.time(), tradeLoadChunk),
                         EmptyLog()
                 )
             }
