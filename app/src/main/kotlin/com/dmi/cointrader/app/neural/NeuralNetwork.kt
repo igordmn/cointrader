@@ -43,6 +43,9 @@ fun jep() = Jep(false, Paths.get("python/src").toAbsolutePath().toString()).appl
     }
 }
 
+typealias Prices = List<Double>
+typealias PriceIncs = List<Double>
+typealias PriceIncsBatch = List<PriceIncs>
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
 typealias Fees = List<Double>
