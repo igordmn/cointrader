@@ -52,7 +52,7 @@ suspend fun archive(
     fun momentAppendLog() = object : SyncFileList.Log<Moment> {
         override fun itemsAppended(items: List<Moment>, indices: LongRange) {
             val endPeriod = Period(indices.last.toInt()).next()
-            val time = config.periods.startOf(endPeriod)
+            val time = config.periods.timeOf(endPeriod)
             println("Moment cached: $time")
         }
     }

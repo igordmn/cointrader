@@ -55,7 +55,7 @@ suspend fun performRealTrades() = resourceContext {
         val clock = binanceClock(exchange)
         val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
-        delay(Duration.between(currentTime, config.periods.startOf(nextPeriod)))
+        delay(Duration.between(currentTime, config.periods.timeOf(nextPeriod)))
         performRealTrade(config, exchange, history, nextPeriod, clock, network, log)
     }
 }
@@ -84,7 +84,7 @@ suspend fun performRealTrade(
     try {
         archive.sync(clock.instant())
         val history = archive.historyAt(period.previous(config.historySize) until period)
-        val tradeTime = config.periods.startOf(period) + config.tradeDelay
+        val tradeTime = config.periods.timeOf(period) + config.tradeDelay
         val timeForTrade = Duration.between(clock.instant(), tradeTime)
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)

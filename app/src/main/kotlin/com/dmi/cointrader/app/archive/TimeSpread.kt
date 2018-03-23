@@ -48,7 +48,7 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
                 var lastBefore = it.next()
                 periodSequence(startPeriod).forEach { period ->
                     var firstAfter = lastBefore
-                    val startTime = periods.startOf(period)
+                    val startTime = periods.timeOf(period)
                     while (it.hasNext() && firstAfter.value.time <= startTime) {
                         lastBefore = firstAfter
                         firstAfter = it.next()

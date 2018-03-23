@@ -29,7 +29,7 @@ data class Periods(
         return Math.floorDiv(distMillis, periodMillis).toInt()
     }
 
-    fun startOf(period: Period): Instant {
+    fun timeOf(period: Period): Instant {
         return start + duration * period.num
     }
 
