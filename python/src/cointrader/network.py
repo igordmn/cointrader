@@ -42,7 +42,7 @@ def build_best_portfolio(
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=4,
+        nb_filter=2,
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
@@ -74,18 +74,11 @@ def build_best_portfolio(
 
 
 class NeuralNetwork:
-    def __init__(
-            self,
-            coin_number,
-            history_size,
-            indicator_number,
-            gpu_memory_fraction,
-            saved_file,
-    ):
-        self.coin_number = coin_number
+    def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
+        self.alt_asset_number = alt_asset_number
         self.batch_count = tf.placeholder(tf.int32, shape=[])
-        self.history = tf.placeholder(tf.float32, shape=[None, indicator_number,  coin_number - 1, history_size])       # without main coin (BTC)
-        self.current_portfolio = tf.placeholder(tf.float32, shape=[None, coin_number - 1])      # without main coin (BTC)
+        self.history = tf.placeholder(tf.float32, shape=[None, history_indicator_number, alt_asset_number, history_size])
+        self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
         self.best_portfolio = build_best_portfolio(self.batch_count, self.history, self.current_portfolio)
 
         tf_config = tf.ConfigProto()
@@ -100,15 +93,18 @@ class NeuralNetwork:
 
     def best_portfolio(self, current_portfolio, history):
         """
-           Args:
-             current_portfolio: batch_count x coin_number
-             history: batch_count x coin_number x history_size x indicator_number
+            Args:
+                current_portfolio: batch_count x alt_asset_number
+                history: batch_count x alt_asset_number x history_size x history_indicator_number
+
+            Returns:
+                best_portfolio: batch_count x (1 + alt_asset_number)
         """
 
         tflearn.is_training(False, self.session)
         result = self.session.run(self.best_portfolio, feed_dict={
-            self.current_portfolio: current_portfolio[:, 1:],   # without main coin (BTC)
-            self.history: history[:, 1:, :, :],   # without main coin (BTC)
+            self.current_portfolio: current_portfolio,
+            self.history: history,
             self.batch_count: history.shape[0]
         })
         return result
@@ -121,29 +117,33 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, best_portfolio, future_price_incs, fees):
-    pure_profits = future_price_incs * best_portfolio
-    pure_profit = tf.reduce_sum(pure_profits, axis=1)
-    future_w = pure_profits / pure_profit[:, None]
+def compute_profits(best_portfolio, asks, bids, fee):
+    asks = tf.concat([tf.ones([asks.shape[0], 1]), asks], axis=1)  # add main asset price
+    bids = tf.concat([tf.ones([bids.shape[0], 1]), bids], axis=1)  # add main asset price
+    prices = (asks + bids) / 2.0
+    costs = (1.0 - fee) * (bids / prices)
+    
+    price_incs = prices[1:] / prices[:-1]
+    costs = costs[:-1]
+    best_portfolio = best_portfolio[:-1]
+    future_portfolio = price_incs * best_portfolio / tf.reduce_sum(price_incs * best_portfolio, axis=1)[:, None]
+    
+    price_incs = price_incs[1:]
+    costs = costs[1:]
+    best_portfolio = best_portfolio[1:]
+    current_portfolio = future_portfolio[:-1]
+    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * costs, axis=1)
 
-    w0 = future_w[:batch_size - 1]
-    w1 = best_portfolio[1:batch_size]
-    cost = 1 - tf.reduce_sum(tf.abs(w1 - w0) * fees, axis=1)  # w0 -> w1 commission for all steps except first step
-
-    return pure_profit * tf.concat([tf.ones(1), cost], axis=0)
+    return price_incs * best_portfolio * cost
 
 
 class NeuralTrainer:
-    def __init__(
-            self,
-            network
-    ):
-        self.future_price_incs = tf.placeholder(tf.float32, shape=[None, network.coin_number - 1])        # without main coin (BTC)
-        self.fees = tf.placeholder(tf.float32, shape=[None, network.coin_number])
+    def __init__(self, network, fee):
+        self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
+        self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 
-        profits = compute_profits(network.batch_size, network.best_portfolio, self.future_price_incs, self.fees)
-        capital = tf.reduce_prod(profits)
-        self.geometric_mean_profit = tf.pow(capital, 1 / tf.to_float(network.batch_size))
+        profits = compute_profits(network.best_portfolio, self.asks, self.bids, fee)
+        self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / profits.shape[0])
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
@@ -155,20 +155,24 @@ class NeuralTrainer:
         self.best_portfolio = network.best_portfolio
         self.session = network.session
 
-    def train(self, current_portfolio, history, future_price_incs, fees):
+    def train(self, current_portfolio, history, asks, bids):
         """
-           Args:
-             current_portfolio: batch_count x coin_number
-             history: batch_count x coin_number x history_size x indicator_number
-             future_price_incs: batch_count x coin_number
-             fees: batch_count x coin_number
+            Args:
+                current_portfolio: batch_count x alt_asset_number
+                history: batch_count x alt_asset_number x history_size x history_indicator_number
+                asks: batch_count x alt_asset_number
+                bids: batch_count x alt_asset_number
+
+            Returns:
+                best_portfolio: batch_count x (1 + alt_asset_number)
+                geometric_mean_profit
         """
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train, self.best_portfolio, self.geometric_mean_profit], feed_dict={
-            self.current_portfolio: current_portfolio[:, 1:],   # without main coin (BTC)
-            self.history: history[:, 1:, :, :],   # without main coin (BTC)
-            self.future_price_incs: future_price_incs,
-            self.fees: fees,
+            self.current_portfolio: current_portfolio,
+            self.history: history,
+            self.asks: asks,
+            self.bids: bids,
             self.batch_size: history.shape[0]
         })
 

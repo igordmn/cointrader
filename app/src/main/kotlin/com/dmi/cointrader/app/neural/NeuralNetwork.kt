@@ -1,11 +1,9 @@
 package com.dmi.cointrader.app.neural
 
-import com.dmi.cointrader.app.archive.History
-import com.dmi.cointrader.app.archive.HistoryBatch
-import com.dmi.cointrader.app.archive.PriceIncs
-import com.dmi.cointrader.app.archive.PriceIncsBatch
+import com.dmi.cointrader.app.archive.*
 import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.util.io.ResourceContext
+import com.dmi.util.lang.unsupportedOperation
 import com.dmi.util.math.Matrix2D
 import com.dmi.util.math.Matrix4D
 import jep.Jep
@@ -26,11 +24,11 @@ fun ResourceContext.trainedNetwork(): NeuralNetwork {
 }
 
 fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwork {
-    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.all.size, config.historySize, 4), gpuMemoryFraction = 0.5).use()
+    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.all.size, config.historySize), gpuMemoryFraction = 0.5).use()
 }
 
-fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork): NeuralTrainer {
-    return NeuralTrainer(jep, net).use()
+fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double): NeuralTrainer {
+    return NeuralTrainer(jep, net, fee).use()
 }
 
 fun jep() = Jep(false, Paths.get("python/src").toAbsolutePath().toString()).apply {
@@ -43,37 +41,49 @@ fun jep() = Jep(false, Paths.get("python/src").toAbsolutePath().toString()).appl
     }
 }
 
-typealias Prices = List<Double>
-typealias PriceIncs = List<Double>
-typealias PriceIncsBatch = List<PriceIncs>
+private fun Matrix2D.toJep(): NDArray<DoubleArray> = NDArray(data, n1, n2)
+private fun Matrix4D.toJep(): NDArray<DoubleArray> = NDArray(data, n1, n2, n3, n4)
+
+private fun NDArray<FloatArray>.toMatrix2D() = Matrix2D(dimensions[0], dimensions[1], data.map { it.toDouble() }.toDoubleArray())
+
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
-typealias Fees = List<Double>
-typealias FeesBatch = List<PriceIncs>
+
+private const val historyIndicatorNumber = 2
+
+private fun Spread.historyIndicator(index: Int) = when (index) {
+    0 -> ask
+    1 -> bid
+    else -> unsupportedOperation()
+}
 
 class NeuralNetwork private constructor(
         private val jep: Jep,
         val config: Config,
         gpuMemoryFraction: Double,
-        loadFile: Path?
+        savedFile: Path?
 ): AutoCloseable {
     init {
         if (neuralNetworkCreated.getAndSet(true)) {
-            throw UnsupportedOperationException("Two created neural networks doesn't support")
+            unsupportedOperation("Two created neural networks doesn't support")
         }
 
         jep.eval("from cointrader.network import NeuralNetwork")
         jep.eval("network = None")
         jep.eval("""
-                def create_network(coin_number, history_size, indicator_number, gpu_memory_fraction, load_path):
+                def create_network(alt_asset_number, history_size, gpu_memory_fraction, saved_file):
                     global network
-                    network = NeuralNetwork(coin_number, history_size, indicator_number, gpu_memory_fraction, load_path)
+                    network = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(current_portfolio, history):
                     return network.best_portfolio(current_portfolio, history)
             """.trimIndent())
-        jep.invoke("create_network", config.coinNumber, config.historySize, config.indicatorCount, gpuMemoryFraction, loadFile?.toAbsolutePath()?.toString())
+        jep.invoke(
+                "create_network",
+                config.altAssetNumber, config.historySize,
+                gpuMemoryFraction, savedFile?.toAbsolutePath()?.toString()
+        )
     }
 
     fun bestPortfolio(currentPortfolio: Portions, history: History): Portions {
@@ -82,19 +92,14 @@ class NeuralNetwork private constructor(
 
     @Suppress("UNCHECKED_CAST")
     private fun bestPortfolio(currentPortfolio: Matrix2D, histories: Matrix4D): Matrix2D {
-        require(currentPortfolio.n2 == config.coinNumber)
-        require(histories.n2 == config.indicatorCount)
-        require(histories.n3 == config.coinNumber)
+        require(currentPortfolio.n2 == config.altAssetNumber)
+        require(histories.n1 == currentPortfolio.n1)
+        require(histories.n2 == historyIndicatorNumber)
+        require(histories.n3 == config.altAssetNumber)
         require(histories.n4 == config.historySize)
-        require(currentPortfolio.n1 == histories.n1)
 
-        val npportfolio = NDArray(currentPortfolio.data, currentPortfolio.n1, currentPortfolio.n2)
-        val nphistory = NDArray(histories.data, histories.n1, histories.n2, histories.n3, histories.n4)
-
-        val result = jep.invoke("best_portfolio", npportfolio, nphistory) as NDArray<FloatArray>
-
-        val dataDouble = result.data.map { it.toDouble() }.toDoubleArray()
-        return Matrix2D(result.dimensions[0], result.dimensions[1], dataDouble)
+        val result = jep.invoke("best_portfolio", currentPortfolio.toJep(), histories.toJep()) as NDArray<FloatArray>
+        return result.toMatrix2D()
     }
 
     fun save(directory: Path) {
@@ -111,9 +116,8 @@ class NeuralNetwork private constructor(
 
     @Serializable
     data class Config(
-            val coinNumber: Int,
-            val historySize: Int,
-            val indicatorCount: Int
+            val altAssetNumber: Int,
+            val historySize: Int
     )
 
     companion object {
@@ -130,14 +134,15 @@ class NeuralNetwork private constructor(
 
 class NeuralTrainer(
         private val jep: Jep,
-        private val net: NeuralNetwork
+        private val net: NeuralNetwork,
+        fee: Double
 ): AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
-            throw UnsupportedOperationException("Two created neural trainers doesn't support")
+            unsupportedOperation("Two created neural trainers doesn't support")
         }
         if (!neuralNetworkCreated.get()) {
-            throw UnsupportedOperationException("Neural network should be created")
+            unsupportedOperation("Neural network should be created")
         }
 
         jep.eval("from cointrader.network import NeuralTrainer")
@@ -146,17 +151,20 @@ class NeuralTrainer(
                 def create_trainer():
                     global trainer
                     global network
-                    trainer = NeuralTrainer(network)
+                    trainer = NeuralTrainer(network, $fee)
             """.trimIndent())
         jep.eval("""
-                def train(current_portfolio, history, future_price_incs, fees):
-                    return trainer.train(current_portfolio, history, future_price_incs, fees)
+                def train(current_portfolio, history, asks, bids):
+                    return trainer.train(current_portfolio, history, asks, bids)
             """.trimIndent())
         jep.invoke("create_trainer")
     }
 
-    fun train(currentPortfolio: PortionsBatch, histories: HistoryBatch, futurePriceIncs: PriceIncsBatch, fees: FeesBatch): Result {
-        val resultMatrix = train(currentPortfolio.toMatrix(), histories.toMatrix(), futurePriceIncs.toMatrix(), fees.toMatrix())
+    fun train(currentPortfolio: PortionsBatch, histories: HistoryBatch, spreads: SpreadsBatch): Result {
+        val resultMatrix = train(
+                currentPortfolio.toMatrix(), histories.toMatrix(),
+                spreads.toMatrix(Spread::ask), spreads.toMatrix(Spread::bid)
+        )
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
                 resultMatrix.geometricMeanProfit
@@ -164,30 +172,21 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun train(currentPortfolio: Matrix2D, histories: Matrix4D, futurePriceIncs: Matrix2D, fees: Matrix2D): ResultMatrix {
-        require(currentPortfolio.n2 == net.config.coinNumber)
-        require(histories.n2 == net.config.indicatorCount)
-        require(histories.n3 == net.config.coinNumber)
+    private fun train(currentPortfolio: Matrix2D, histories: Matrix4D, asks: Matrix2D, bids: Matrix2D): ResultMatrix {
+        require(currentPortfolio.n2 == net.config.altAssetNumber)
+        require(histories.n1 == currentPortfolio.n1)
+        require(histories.n2 == historyIndicatorNumber)
+        require(histories.n3 == net.config.altAssetNumber)
         require(histories.n4 == net.config.historySize)
-        require(futurePriceIncs.n2 == net.config.coinNumber)
-        require(futurePriceIncs.n1 == currentPortfolio.n1)
-        require(futurePriceIncs.n1 == histories.n1)
+        require(asks.n1 == currentPortfolio.n1)
+        require(asks.n2 == net.config.altAssetNumber)
+        require(bids.n1 == currentPortfolio.n1)
+        require(bids.n2 == net.config.altAssetNumber)
 
-        val nphistory = NDArray(histories.data, histories.n1, histories.n2, histories.n3, histories.n4)
-        val npportfolio = NDArray(currentPortfolio.data, currentPortfolio.n1, currentPortfolio.n2)
-        val npFuturePriceIncs = NDArray(futurePriceIncs.data, futurePriceIncs.n1, futurePriceIncs.n2)
-        val npFees = NDArray(fees.data, fees.n1, fees.n2)
-
-        val result = jep.invoke("train", npportfolio, nphistory, npFuturePriceIncs, npFees) as Array<*>
+        val result = jep.invoke("train", currentPortfolio.toJep(), histories.toJep(), asks.toJep(), bids.toJep()) as Array<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
-
-        val portionsDataDouble = newPortions.data.map { it.toDouble() }.toDoubleArray()
-
-        return ResultMatrix(
-                Matrix2D(newPortions.dimensions[0], newPortions.dimensions[1], portionsDataDouble),
-                geometricMeanProfit
-        )
+        return ResultMatrix(newPortions.toMatrix2D(), geometricMeanProfit)
     }
 
     override fun close() {
@@ -204,16 +203,18 @@ fun HistoryBatch.toMatrix(): Matrix4D {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
-    val indicatorSize = 3
-    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h][c].indicator(i)
-    return Matrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
+    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h][c].historyIndicator(i)
+    return Matrix4D(batchSize, historySize, coinsSize, historyIndicatorNumber, ::value)
 }
 
 @JvmName("toMatrix2D")
-fun List<List<Double>>.toMatrix(): Matrix2D {
+fun List<List<Double>>.toMatrix(): Matrix2D = toMatrix({ it })
+
+@JvmName("toMatrix2D")
+fun <T> List<List<T>>.toMatrix(value: (T) -> Double): Matrix2D {
     val batchSize = size
     val portfolioSize = first().size
-    fun value(b: Int, c: Int) = this[b][c]
+    fun value(b: Int, c: Int) = value(this[b][c])
     return Matrix2D(batchSize, portfolioSize, ::value)
 }
 
@@ -227,7 +228,6 @@ fun Matrix2D.toPortionsBatch(): PortionsBatch {
     }
     return portfolios
 }
-
 fun Portions.toMatrix(): Matrix2D = listOf(this).toMatrix()
 fun History.toMatrix(): Matrix4D = listOf(this).toMatrix()
 fun Matrix2D.toPortions(): Portions = toPortionsBatch().first()

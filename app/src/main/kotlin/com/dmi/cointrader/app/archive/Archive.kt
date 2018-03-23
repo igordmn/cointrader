@@ -19,6 +19,7 @@ import java.nio.file.Files.createDirectories
 import java.time.Instant
 
 typealias Spreads = List<Spread>
+typealias SpreadsBatch = List<Spreads>
 typealias History = List<Spreads>
 typealias HistoryBatch = List<History>
 
