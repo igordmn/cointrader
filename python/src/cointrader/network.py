@@ -1,7 +1,6 @@
 import tflearn
 import tensorflow as tf
 
-#  todo solve problem with main coin
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
     width = net.get_shape()[2]
