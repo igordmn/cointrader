@@ -9,7 +9,7 @@ import java.math.BigDecimal
 class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal) {
     private val portfolio = HashMap(mapOf(assets.main to BigDecimal.ONE) + assets.alts.associate { it to BigDecimal.ZERO })
 
-    fun portfolio(): Portfolio = HashMap(portfolio)
+    fun portfolio(): Portfolio = portfolio
 
     fun broker(baseAsset: Asset, quoteAsset: Asset, ask: BigDecimal, bid: BigDecimal): Broker? {
         fun broker() = object : Broker {

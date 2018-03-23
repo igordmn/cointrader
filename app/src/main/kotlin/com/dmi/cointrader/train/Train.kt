@@ -167,6 +167,8 @@ private suspend fun batch(
     )
 }
 
+data class TrainHistory()
+
 private class TrainBatch(
         val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val currentPortfolio: PortionsBatch,

@@ -3,10 +3,7 @@ package com.dmi.cointrader.trade
 import com.dmi.cointrader.binance.*
 import com.dmi.cointrader.broker.*
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.neural.NeuralNetwork
-import com.dmi.cointrader.neural.Portions
-import com.dmi.cointrader.neural.neuralHistory
-import com.dmi.cointrader.neural.trainedNetwork
+import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.resourceContext
@@ -143,26 +140,26 @@ suspend fun performTestTrades(
         network: NeuralNetwork,
         archive: Archive,
         exchange: TestExchange
-): List<TradeResult> = range.asSequence().asReceiveChannel().map { period ->
-    val portfolio = exchange.portfolio()
-    val historyWithNext = archive.historyAt(period.previous(config.historySize)..period)
-    val history = historyWithNext.subList(0, historyWithNext.size - 1)
-    val spreads = historyWithNext.last().withMainAsset()
-    val asks = spreads.map { it.ask }
-    val bids = spreads.map { it.bid }
-    fun indexOf(asset: Asset) = config.assets.all.indexOf(asset)
-    fun askOf(asset: Asset) = asks[indexOf(asset)].toBigDecimal()
-    fun bidOf(asset: Asset) = bids[indexOf(asset)].toBigDecimal()
-    fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
-    performTrade(config.assets, network, portfolio, history, ::broker)
-    testTradeResult(config.assets, exchange, bids)
-}.toList()
+): List<TradeResult> {
+    val indices = config.assets.all.withIndex().associate { it.value to it.index }
+    return range.asSequence().asReceiveChannel().map { period ->
+        val portfolio = exchange.portfolio()
+        val tradedHistory = tradedHistory(config, archive, period)
+        val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
+        val bids = tradedHistory.tradeTimeSpreads.map { it.bid }
+        fun askOf(asset: Asset) = asks[indices[asset]!!].toBigDecimal()
+        fun bidOf(asset: Asset) = bids[indices[asset]!!].toBigDecimal()
+        fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
+        performTrade(config.assets, network, portfolio, tradedHistory.history, ::broker)
+        testTradeResult(config.assets, exchange, bids)
+    }.toList()
+}
 
 suspend fun performTrade(
         assets: TradeAssets,
         network: NeuralNetwork,
         portfolio: Portfolio,
-        history: History,
+        history: NeuralHistory,
         broker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?
 ) = with(object {
     suspend fun sell(altAsset: Asset, altPrice: BigDecimal, mainAmount: BigDecimal) {
@@ -173,6 +170,7 @@ suspend fun performTrade(
         brokerFrom(altAsset, altPrice).sell(mainAmount)
     }
 
+    // todo maybe use indices? it is faster for tests. must profile tests
     fun brokerFrom(altAsset: Asset, altPrice: BigDecimal): Broker {
         val attempts = SafeBroker.Attempts(count = 10, amountMultiplier = 0.99)
         val normalBroker = broker(assets.main, altAsset)
