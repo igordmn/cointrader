@@ -13,6 +13,8 @@ import java.time.Instant
 @Serializable
 data class Spread(val ask: Double, val bid: Double)
 
+typealias Spreads = List<Spread>
+
 @Serializable
 data class TimeSpread(val time: Instant, val spread: Spread)
 

@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private val neuralNetworkCreated = AtomicBoolean(false)
 private val neuralTrainerCreated = AtomicBoolean(false)
-
 fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
     return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
@@ -32,6 +31,16 @@ fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwor
 
 fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork): NeuralTrainer {
     return NeuralTrainer(jep, net).use()
+}
+
+fun jep() = Jep(false, Paths.get("com/dmi/cointrader/app/python/src").toAbsolutePath().toString()).apply {
+    try {
+        eval("import sys")
+        eval("sys.argv=[''] ")
+    } catch (e: Throwable) {
+        close()
+        throw e
+    }
 }
 
 typealias Portions = List<Double>
@@ -191,9 +200,9 @@ class NeuralTrainer(
 fun HistoryBatch.toMatrix(): Matrix4D {
     val batchSize = size
     val historySize = first().size
-    val coinsSize = first().first().coinIndexToCandle.size
+    val coinsSize = first().first().size
     val indicatorSize = 3
-    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h].coinIndexToCandle[c].indicator(i)
+    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h][c].indicator(i)
     return Matrix4D(batchSize, historySize, coinsSize, indicatorSize, ::value)
 }
 

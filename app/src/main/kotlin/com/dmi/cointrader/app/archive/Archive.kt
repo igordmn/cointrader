@@ -6,7 +6,6 @@ import com.dmi.cointrader.app.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.toLong
 import com.dmi.util.io.FixedListSerializer
-import com.dmi.util.io.FixedSerializer
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
@@ -14,15 +13,12 @@ import com.dmi.util.restorable.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.list
-import java.nio.ByteBuffer
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
 import java.time.Instant
 
-@Serializable
-data class Moment(val assetIndexToSpread: List<Spread>)
-typealias History = List<Moment>
+typealias History = List<Spreads>
 typealias HistoryBatch = List<History>
 
 interface Archive {
@@ -34,7 +30,7 @@ interface Archive {
 private data class BinanceTradeConfig(val market: String)
 
 @Serializable
-private data class MomentsConfig(val periods: Periods, val assets: List<Asset>)
+private data class HistoryConfig(val periods: Periods, val assets: List<Asset>)
 
 suspend fun archive(
         config: TradeConfig,
@@ -44,20 +40,22 @@ suspend fun archive(
         tradeLoadChunk: Int = 500,
         momentsReloadCount: Int = 10
 ): Archive {
-    fun tradeAppendLog(asset: String) = object : SyncFileList.Log<Trade> {
+    fun tradeAppendedLog(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {
             val lastTradeTime = items.last().time
             println("Trade cached: $asset $lastTradeTime")
         }
     }
 
-    fun momentAppendLog() = object : SyncFileList.Log<Moment> {
-        override fun itemsAppended(items: List<Moment>, indices: LongRange) {
+    fun spreadsAppendedLog() = object : SyncFileList.Log<Spreads> {
+        override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
             val endPeriod = Period(indices.last.toInt()).next()
             val time = config.periods.timeOf(endPeriod)
             println("Moment cached: $time")
         }
     }
+
+    fun Instant.period() = config.periods.of(this)
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
@@ -91,70 +89,63 @@ suspend fun archive(
         }
     }
 
-    fun SuspendList<Trade>.spreadsSource(currentPeriod: Period) = asRestorableSource()
+    fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
             .scan(null, Trade::toSpread)
             .map { it!! }
             .periodical(config.periods)
             .takeWhile { it.period <= currentPeriod }
             .map { it.spread }
 
-    fun momentsSource(currentPeriod: Period) = trades
-            .map { it.list.spreadsSource(currentPeriod) }
+    fun spreadsSource(currentPeriod: Period) = trades
+            .map { it.list.spreadSource(currentPeriod) }
             .zip()
-            .map(::Moment)
 
-    val momentsList = syncFileList(
+    val spreadsList = syncFileList(
             momentsFile,
-            MomentsConfig.serializer(),
+            HistoryConfig.serializer(),
             PeriodicalState.serializer(
                     ScanState.serializer(
                             LongSerializer,
                             TimeSpread.serializer()
                     )
             ).list,
-            MomentFixedSerializer(config.assets.alts.size),
-            MomentsConfig(config.periods, config.assets.alts),
+            FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
+            HistoryConfig(config.periods, config.assets.alts),
             reloadCount = momentsReloadCount
     )
 
     trades.forEach {
         it.sync(
                 BinanceTrades(it.market, currentTime, tradeLoadChunk),
-                tradeAppendLog(it.asset)
+                tradeAppendedLog(it.asset)
         )
     }
-    momentsList.sync(
-            momentsSource(),
-            momentAppendLog()
+    spreadsList.sync(
+            spreadsSource(currentTime.period()),
+            spreadsAppendedLog()
     )
 
     return object : Archive {
-        var lastPeriod = config.periods.of(currentTime)
+        var lastPeriod = currentTime.period()
 
         override suspend fun historyAt(range: PeriodRange): History {
             require(range.endInclusive <= lastPeriod)
-            return momentsList.get(range.nums().toLong())
+            return spreadsList.get(range.nums().toLong())
         }
 
         override suspend fun sync(currentTime: Instant) {
+            val period = currentTime.period()
             trades.forEach {
                 it.sync(
                         BinanceTrades(it.market, currentTime, tradeLoadChunk),
                         EmptyLog()
                 )
             }
-            momentsList.sync(
-                    momentsSource(),
+            spreadsList.sync(
+                    spreadsSource(period),
                     EmptyLog()
             )
-            lastPeriod = config.periods.of(currentTime)
+            lastPeriod = period
         }
     }
-}
-
-class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
-    private val listSerializer = FixedListSerializer(size, SpreadFixedSerializer)
-    override val itemBytes: Int = listSerializer.itemBytes
-    override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.assetIndexToSpread, data)
-    override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
 }
