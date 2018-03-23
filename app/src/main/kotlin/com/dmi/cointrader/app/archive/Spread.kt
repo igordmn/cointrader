@@ -12,40 +12,44 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 
 @Serializable
-data class TimeSpread(val time: Instant, val ask: Double, val bid: Double)
+data class Spread(val ask: Double, val bid: Double)
 
 @Serializable
-data class PeriodSpread(val period: Period, val ask: Double, val bid: Double)
+data class TimeSpread(val time: Instant, val spread: Spread)
+
+@Serializable
+data class PeriodSpread(val period: Period, val spread: Spread)
 
 fun Trade.toSpread(previous: TimeSpread?): TimeSpread = if (previous == null) {
     TimeSpread(
             time = time,
-            ask = price,
-            bid = price
+            spread = Spread(ask = price, bid = price)
     )
 } else {
-    val isAsk = previous.ask - price <= price - previous.bid
+    val isAsk = previous.spread.ask - price <= price - previous.spread.bid
     TimeSpread(
             time = time,
-            ask = if (isAsk) price else previous.ask,
-            bid = if (!isAsk) price else previous.bid
+            spread = Spread(
+                ask = if (isAsk) price else previous.spread.ask,
+                bid = if (!isAsk) price else previous.spread.bid
+            )
     )
 }
 
 @Serializable
-data class PeriodicalState<out SOURCE_STATE>(val period: Period, val source: SOURCE_STATE)
+data class PeriodicalState<out SOURCE_STATE>(val period: Period, val lastBefore: Item<SOURCE_STATE, TimeSpread>)
 
 fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
         periods: Periods
 ) = object : RestorableSource<PeriodicalState<STATE>, PeriodSpread> {
     override fun initial() = this@periodical.initial().periodical(Period(0))
-    override fun restored(state: PeriodicalState<STATE>) = this@periodical.restored(state.source).periodical(state.period.next())
+    override fun restored(state: PeriodicalState<STATE>) = this@periodical.restored(state.lastBefore.state).periodical(state.period.next(), state.lastBefore)
 
-    private fun ReceiveChannel<Item<STATE, TimeSpread>>.periodical(startPeriod: Period) = produce {
+    private fun ReceiveChannel<Item<STATE, TimeSpread>>.periodical(startPeriod: Period, last: Item<STATE, TimeSpread>? = null) = produce {
         consume {
             val it = iterator()
-            if (it.hasNext()) {
-                var lastBefore = it.next()
+            if (it.hasNext() || last != null) {
+                var lastBefore = last ?: it.next()
                 periodSequence(startPeriod).forEach { period ->
                     var firstAfter = lastBefore
                     val startTime = periods.timeOf(period)
@@ -53,8 +57,8 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
                         lastBefore = firstAfter
                         firstAfter = it.next()
                     }
-                    val state = PeriodicalState(period, lastBefore.state)
-                    val spread = PeriodSpread(period, lastBefore.value.ask, lastBefore.value.bid)
+                    val state = PeriodicalState(period, lastBefore)
+                    val spread = PeriodSpread(period, lastBefore.value.spread)
                     send(Item(state, spread))
                 }
             }
