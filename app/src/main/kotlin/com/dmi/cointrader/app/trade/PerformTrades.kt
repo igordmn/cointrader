@@ -28,6 +28,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.pow
+import com.dmi.util.lang.minus
 
 suspend fun performRealTrades() = resourceContext {
     askForRealTrade()
@@ -39,11 +40,12 @@ suspend fun performRealTrades() = resourceContext {
     val history = archive(config, exchange, config.periods.of(exchange.currentTime()))
 
     val iterator = object {
-        var previousPeriod = Period(Int.MIN_VALUE)
+        var previousPeriod = Int.MIN_VALUE
 
         fun nextAfter(time: Instant): Period {
-            val timePeriod = config.periods.of(time)
-            return max(previousPeriod, timePeriod).next().also {
+            val current = config.periods.of(time)
+            val next = (current / config.historyPeriods) * (config.historyPeriods + 1)
+            return max(previousPeriod, next).also {
                 previousPeriod = it
             }
         }
@@ -53,7 +55,7 @@ suspend fun performRealTrades() = resourceContext {
         val clock = binanceClock(exchange)
         val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
-        delay(Duration.between(currentTime, config.periods.timeOf(nextPeriod)))
+        delay(config.periods.timeOf(nextPeriod) - currentTime)
         performRealTrade(config, exchange, history, nextPeriod, clock, network, log)
     }
 }
@@ -83,7 +85,7 @@ suspend fun performRealTrade(
         archive.sync(period)
         val history = archive.historyAt(period.previous(config.historySize) until period)
         val tradeTime = config.periods.timeOf(period) + config.tradeDelayPeriods
-        val timeForTrade = Duration.between(clock.instant(), tradeTime)
+        val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
         }

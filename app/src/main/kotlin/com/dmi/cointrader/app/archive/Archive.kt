@@ -51,7 +51,7 @@ suspend fun archive(
 
     fun spreadsAppendedLog() = object : SyncFileList.Log<Spreads> {
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
-            val endPeriod = Period(indices.last.toInt()).next()
+            val endPeriod = indices.last.toInt() + 1
             val time = config.periods.timeOf(endPeriod)
             println("Moment cached: $time")
         }
@@ -132,7 +132,7 @@ suspend fun archive(
 
         override suspend fun historyAt(range: PeriodRange): History {
             require(range.endInclusive <= this.currentPeriod)
-            return spreadsList.get(range.nums().toLong())
+            return spreadsList.get(range.toLong())
         }
 
         override suspend fun sync(currentPeriod: Period) {
