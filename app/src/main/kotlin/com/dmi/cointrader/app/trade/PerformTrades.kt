@@ -36,20 +36,19 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = privateBinanceExchange(log)
-    val history = archive(config, exchange, exchange.currentTime())
+    val history = archive(config, exchange, config.periods.of(exchange.currentTime()))
 
-    class PeriodIterator(private val periods: Periods) {
-        private var previousPeriod = Period(Int.MIN_VALUE)
+    val iterator = object {
+        var previousPeriod = Period(Int.MIN_VALUE)
 
         fun nextAfter(time: Instant): Period {
-            val timePeriod = periods.of(time)
+            val timePeriod = config.periods.of(time)
             return max(previousPeriod, timePeriod).next().also {
                 previousPeriod = it
             }
         }
     }
 
-    val iterator = PeriodIterator(config.periods)
     while (isActive) {
         val clock = binanceClock(exchange)
         val currentTime = clock.instant()
@@ -81,7 +80,7 @@ suspend fun performRealTrade(
             ?.log(log, baseAsset, quoteAsset)
 
     try {
-        archive.sync(clock.instant())
+        archive.sync(period)
         val history = archive.historyAt(period.previous(config.historySize) until period)
         val tradeTime = config.periods.timeOf(period) + config.tradeDelayPeriods
         val timeForTrade = Duration.between(clock.instant(), tradeTime)
