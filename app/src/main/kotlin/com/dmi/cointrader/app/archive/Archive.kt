@@ -39,7 +39,7 @@ suspend fun archive(
         currentPeriod: Period,
         fileSystem: FileSystem = FileSystems.getDefault(),
         tradeLoadChunk: Int = 500,
-        momentsReloadCount: Int = 10
+        reloadCount: Int = 10
 ): Archive {
     fun tradeAppendedLog(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {
@@ -57,7 +57,6 @@ suspend fun archive(
     }
 
     fun Period.time() = config.periods.timeOf(this)
-    fun Instant.period() = config.periods.of(this)
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
@@ -113,7 +112,7 @@ suspend fun archive(
             FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
             SpreadsSourceConfig(config.periods, config.assets.alts),
             bufferSize = 4096,
-            reloadCount = momentsReloadCount
+            reloadCount = reloadCount
     )
 
     trades.forEach {
