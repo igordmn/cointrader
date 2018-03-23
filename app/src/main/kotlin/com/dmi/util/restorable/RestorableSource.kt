@@ -8,6 +8,7 @@ import com.dmi.util.concurrent.zip
 import com.dmi.util.restorable.RestorableSource.Item
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.channels.takeWhile
 
 interface RestorableSource<STATE, out VALUE> {
     fun initial(): ReceiveChannel<Item<STATE, VALUE>>
@@ -42,6 +43,11 @@ fun <STATE, T, R> RestorableSource<STATE, T>.map(transform: (T) -> R) = object :
     override fun initial() = this@map.initial().map(this::transform)
     override fun restored(state: STATE) = this@map.restored(state).map(this::transform)
     private fun transform(item: Item<STATE, T>) = Item(item.state, transform(item.value))
+}
+
+fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
+    override fun initial() = this@takeWhile.initial().takeWhile { predicate(it.value) }
+    override fun restored(state: STATE) = this@takeWhile.restored(state).takeWhile { predicate(it.value) }
 }
 
 @Serializable

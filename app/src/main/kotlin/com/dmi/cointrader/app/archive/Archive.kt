@@ -2,12 +2,11 @@ package com.dmi.cointrader.app.archive
 
 import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.binance.BinanceExchange
-import com.dmi.cointrader.app.candle.Period
-import com.dmi.cointrader.app.candle.PeriodRange
-import com.dmi.cointrader.app.candle.Periods
-import com.dmi.cointrader.app.candle.nums
 import com.dmi.cointrader.app.trade.TradeConfig
+import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.toLong
+import com.dmi.util.io.FixedListSerializer
+import com.dmi.util.io.FixedSerializer
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
@@ -15,11 +14,14 @@ import com.dmi.util.restorable.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.list
+import java.nio.ByteBuffer
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
 import java.time.Instant
 
+@Serializable
+data class Moment(val assetIndexToSpread: List<Spread>)
 typealias History = List<Moment>
 typealias HistoryBatch = List<History>
 
@@ -89,20 +91,22 @@ suspend fun archive(
         }
     }
 
-    fun momentsSource() = trades
-            .map {
-                it.list.asRestorableSource()
-                        .scan(null, Trade::toSpread)
-                        .map { it!! }
-                        .candles(config.periods, config.tradeDelay)
-            }
+    fun SuspendList<Trade>.spreadsSource(currentPeriod: Period) = asRestorableSource()
+            .scan(null, Trade::toSpread)
+            .map { it!! }
+            .periodical(config.periods)
+            .takeWhile { it.period <= currentPeriod }
+            .map { it.spread }
+
+    fun momentsSource(currentPeriod: Period) = trades
+            .map { it.list.spreadsSource(currentPeriod) }
             .zip()
             .map(::Moment)
 
     val momentsList = syncFileList(
             momentsFile,
             MomentsConfig.serializer(),
-            CandlesState.serializer(
+            PeriodicalState.serializer(
                     ScanState.serializer(
                             LongSerializer,
                             TimeSpread.serializer()
@@ -146,4 +150,11 @@ suspend fun archive(
             lastPeriod = config.periods.of(currentTime)
         }
     }
+}
+
+class MomentFixedSerializer(size: Int) : FixedSerializer<Moment> {
+    private val listSerializer = FixedListSerializer(size, SpreadFixedSerializer)
+    override val itemBytes: Int = listSerializer.itemBytes
+    override fun serialize(item: Moment, data: ByteBuffer) = listSerializer.serialize(item.assetIndexToSpread, data)
+    override fun deserialize(data: ByteBuffer): Moment = Moment(listSerializer.deserialize(data))
 }

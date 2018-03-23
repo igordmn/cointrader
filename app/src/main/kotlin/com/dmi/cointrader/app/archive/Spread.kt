@@ -1,14 +1,13 @@
 package com.dmi.cointrader.app.archive
 
-import com.dmi.cointrader.app.candle.Period
-import com.dmi.cointrader.app.candle.Periods
-import com.dmi.cointrader.app.candle.periodSequence
+import com.dmi.util.io.FixedSerializer
 import com.dmi.util.restorable.RestorableSource
 import com.dmi.util.restorable.RestorableSource.Item
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consume
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.serialization.Serializable
+import java.nio.ByteBuffer
 import java.time.Instant
 
 @Serializable
@@ -64,4 +63,18 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
             }
         }
     }
+}
+
+object SpreadFixedSerializer : FixedSerializer<Spread> {
+    override val itemBytes: Int = 2 * 8
+
+    override fun serialize(item: Spread, data: ByteBuffer) {
+        data.putDouble(item.ask)
+        data.putDouble(item.bid)
+    }
+
+    override fun deserialize(data: ByteBuffer): Spread = Spread(
+            data.double,
+            data.double
+    )
 }

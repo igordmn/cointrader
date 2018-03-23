@@ -1,6 +1,5 @@
 package com.dmi.cointrader.app.archive.moment
 
-import com.dmi.cointrader.app.candle.Candle
 import com.dmi.cointrader.app.archive.*
 import com.dmi.cointrader.app.archive.Trade
 import com.dmi.util.atom.MemoryAtom
@@ -8,8 +7,6 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.test.Spec
 import com.dmi.util.test.instant
 import com.dmi.util.test.period
-import io.kotlintest.matchers.shouldBe
-import kotlinx.coroutines.experimental.channels.toList
 
 class TradeMomentsSpec : Spec({
     val startTime = instant(10)

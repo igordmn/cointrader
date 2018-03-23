@@ -2,7 +2,6 @@ package com.dmi.cointrader.app.train
 
 import com.dmi.cointrader.app.archive.*
 import com.dmi.cointrader.app.binance.publicBinanceExchange
-import com.dmi.cointrader.app.candle.*
 import com.dmi.cointrader.app.neural.*
 import com.dmi.cointrader.app.test.TestExchange
 import com.dmi.cointrader.app.trade.*
