@@ -112,6 +112,7 @@ suspend fun archive(
             ).list,
             FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
             SpreadsSourceConfig(config.periods, config.assets.alts),
+            bufferSize = 4096,
             reloadCount = momentsReloadCount
     )
 
