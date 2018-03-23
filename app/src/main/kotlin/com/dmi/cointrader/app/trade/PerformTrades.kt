@@ -83,7 +83,7 @@ suspend fun performRealTrade(
     try {
         archive.sync(clock.instant())
         val history = archive.historyAt(period.previous(config.historySize) until period)
-        val tradeTime = config.periods.timeOf(period) + config.tradeDelay
+        val tradeTime = config.periods.timeOf(period) + config.tradeDelayPeriods
         val timeForTrade = Duration.between(clock.instant(), tradeTime)
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)

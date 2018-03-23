@@ -4,7 +4,6 @@ import com.dmi.cointrader.app.binance.Asset
 import com.dmi.cointrader.app.archive.Periods
 import com.dmi.util.io.readBytes
 import com.dmi.util.io.writeBytes
-import com.dmi.util.lang.ONE_MINUTE
 import com.dmi.util.lang.parseInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.load
@@ -41,5 +40,5 @@ data class TradeConfig(
         // start trade only after delay from start of trading period
         // it's needed because http requests to exchange take time
         // it's fixed because neural network is training with this delay
-        val tradeDelay: Duration = Duration.ofSeconds(10)
+        val tradeDelayPeriods: Int = 1
 )
