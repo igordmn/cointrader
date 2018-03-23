@@ -1,4 +1,4 @@
-package old.exchange.binance
+package com.dmi.cointrader.binance
 
 import com.dmi.cointrader.binance.BinanceConstants
 import com.dmi.cointrader.archive.Moment
