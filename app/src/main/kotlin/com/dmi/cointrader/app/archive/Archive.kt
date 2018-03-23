@@ -18,12 +18,13 @@ import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
 import java.time.Instant
 
+typealias Spreads = List<Spread>
 typealias History = List<Spreads>
 typealias HistoryBatch = List<History>
 
 interface Archive {
     suspend fun historyAt(range: PeriodRange): History
-    suspend fun sync(currentTime: Instant)
+    suspend fun sync(currentPeriod: Period)
 }
 
 @Serializable
@@ -35,7 +36,7 @@ private data class HistoryConfig(val periods: Periods, val assets: List<Asset>)
 suspend fun archive(
         config: TradeConfig,
         exchange: BinanceExchange,
-        currentTime: Instant,
+        currentPeriod: Period,
         fileSystem: FileSystem = FileSystems.getDefault(),
         tradeLoadChunk: Int = 500,
         momentsReloadCount: Int = 10
@@ -55,6 +56,7 @@ suspend fun archive(
         }
     }
 
+    fun Period.time() = config.periods.timeOf(this)
     fun Instant.period() = config.periods.of(this)
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
@@ -115,36 +117,35 @@ suspend fun archive(
 
     trades.forEach {
         it.sync(
-                BinanceTrades(it.market, currentTime, tradeLoadChunk),
+                BinanceTrades(it.market, currentPeriod.time(), tradeLoadChunk),
                 tradeAppendedLog(it.asset)
         )
     }
     spreadsList.sync(
-            spreadsSource(currentTime.period()),
+            spreadsSource(currentPeriod),
             spreadsAppendedLog()
     )
 
     return object : Archive {
-        var lastPeriod = currentTime.period()
+        var currentPeriod = currentPeriod
 
         override suspend fun historyAt(range: PeriodRange): History {
-            require(range.endInclusive <= lastPeriod)
+            require(range.endInclusive <= this.currentPeriod)
             return spreadsList.get(range.nums().toLong())
         }
 
-        override suspend fun sync(currentTime: Instant) {
-            val period = currentTime.period()
+        override suspend fun sync(currentPeriod: Period) {
             trades.forEach {
                 it.sync(
-                        BinanceTrades(it.market, currentTime, tradeLoadChunk),
+                        BinanceTrades(it.market, currentPeriod.time(), tradeLoadChunk),
                         EmptyLog()
                 )
             }
             spreadsList.sync(
-                    spreadsSource(period),
+                    spreadsSource(currentPeriod),
                     EmptyLog()
             )
-            lastPeriod = period
+            this.currentPeriod = currentPeriod
         }
     }
 }
