@@ -4,6 +4,8 @@ import com.dmi.cointrader.binance.*
 import com.dmi.cointrader.broker.*
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.NeuralNetwork
+import com.dmi.cointrader.neural.Portions
+import com.dmi.cointrader.neural.neuralHistory
 import com.dmi.cointrader.neural.trainedNetwork
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
@@ -86,8 +88,8 @@ suspend fun performRealTrade(
 
     try {
         archive.sync(period)
-        val history = archive.historyAt(period.previous(config.historySize) until period)
-        val tradeTime = config.periods.timeOf(period) + config.tradeDelayPeriods
+        val history = neuralHistory(config, archive, period)
+        val tradeTime = config.periods.timeOf(period + config.tradeDelayPeriods)
         val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
@@ -120,7 +122,7 @@ private suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchan
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
-private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: Prices): TradeResult {
+private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Double>): TradeResult {
     val resultAsset = "BTC"
     val minBtc = 0.0001
     val portfolio = exchange.portfolio()
@@ -145,8 +147,9 @@ suspend fun performTestTrades(
     val portfolio = exchange.portfolio()
     val historyWithNext = archive.historyAt(period.previous(config.historySize)..period)
     val history = historyWithNext.subList(0, historyWithNext.size - 1)
-    val asks = historyWithNext.last().tradeTimeAsks()
-    val bids = historyWithNext.last().tradeTimeBids()
+    val spreads = historyWithNext.last().withMainAsset()
+    val asks = spreads.map { it.ask }
+    val bids = spreads.map { it.bid }
     fun indexOf(asset: Asset) = config.assets.all.indexOf(asset)
     fun askOf(asset: Asset) = asks[indexOf(asset)].toBigDecimal()
     fun bidOf(asset: Asset) = bids[indexOf(asset)].toBigDecimal()
@@ -183,14 +186,15 @@ suspend fun performTrade(
     }
 }) {
     val amounts = portfolio.amountsOf(assets.all).toDouble()
-    val asks = history.last().closeAsks()
-    val bids = history.last().closeBids()
+    val spreads = history.last().withMainAsset()
+    val asks = spreads.map { it.ask }
+    val bids = spreads.map { it.bid }
     val capitals = amounts * bids
     val currentPortions = capitals.portions()
     val currentIndex = currentPortions.indexOfMax()
     val currentAsset = assets.all[currentIndex]
 
-    val bestPortions = network.bestPortfolio(currentPortions, history)
+    val bestPortions = network.bestPortfolio(currentPortions.withoutMainAsset(), history)
     val buyIndex = bestPortions.indexOfMax()
     val buyAsset = assets.all[buyIndex]
 
@@ -236,3 +240,6 @@ fun Profits.hourly(period: Duration): Profits {
         product(it).pow(periodsPerHour.toDouble() / it.size)
     }
 }
+
+private fun Spreads.withMainAsset(): Spreads = listOf(Spread(1.0, 1.0)) + this
+private fun Portions.withoutMainAsset(): Portions = drop(1)
