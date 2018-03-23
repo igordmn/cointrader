@@ -90,8 +90,7 @@ suspend fun archive(
     }
 
     fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
-            .scan(null, Trade::toSpread)
-            .map { it!! }
+            .scan(Trade::initialSpread, Trade::nextSpread)
             .periodical(config.periods)
             .takeWhile { it.period <= currentPeriod }
             .map { it.spread }

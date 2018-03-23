@@ -1,5 +1,7 @@
 package com.dmi.util.restorable
 
+import arrow.core.Option
+import arrow.syntax.applicative.pure
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.map
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -9,6 +11,9 @@ import com.dmi.util.restorable.RestorableSource.Item
 import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.channels.takeWhile
+import arrow.core.Option.Companion.pure
+import arrow.core.Option.Companion.empty
+import arrow.core.getOrElse
 
 interface RestorableSource<STATE, out VALUE> {
     fun initial(): ReceiveChannel<Item<STATE, VALUE>>
@@ -54,17 +59,20 @@ fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Bo
 data class ScanState<out SOURCE_STATE, out R>(val source: SOURCE_STATE, val acc: R)
 
 fun <STATE, T, R> RestorableSource<STATE, T>.scan(
-        initial: R,
+        initial: (first: T) -> R,
         operation: (T, acc: R) -> R
 ) = object : RestorableSource<ScanState<STATE, R>, R> {
-    override fun initial() = this@scan.initial().scan(initial)
-    override fun restored(state: ScanState<STATE, R>) = this@scan.restored(state.source).scan(state.acc)
+    override fun initial() = this@scan.initial().scan(empty())
+    override fun restored(state: ScanState<STATE, R>) = this@scan.restored(state.source).scan(pure(state.acc))
 
-    private fun ReceiveChannel<Item<STATE, T>>.scan(initial: R) = produce {
+    private fun ReceiveChannel<Item<STATE, T>>.scan(initial: Option<R>) = produce {
         var acc = initial
-        consumeEach {
-            acc = operation(it.value, acc)
-            send(Item(ScanState(it.state, acc), acc))
+        consumeEach { item ->
+            val accValue = acc
+                    .map { operation(item.value, it) }
+                    .getOrElse { initial(item.value) }
+            send(Item(ScanState(item.state, accValue), accValue))
+            acc = pure(accValue)
         }
     }
 }

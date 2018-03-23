@@ -21,14 +21,14 @@ data class TimeSpread(val time: Instant, val spread: Spread)
 @Serializable
 data class PeriodSpread(val period: Period, val spread: Spread)
 
-fun Trade.toSpread(previous: TimeSpread?): TimeSpread = if (previous == null) {
-    TimeSpread(
-            time = time,
-            spread = Spread(ask = price, bid = price)
-    )
-} else {
+fun Trade.initialSpread() = TimeSpread(
+        time = time,
+        spread = Spread(ask = price, bid = price)
+)
+
+fun Trade.nextSpread(previous: TimeSpread): TimeSpread {
     val isAsk = previous.spread.ask - price <= price - previous.spread.bid
-    TimeSpread(
+    return TimeSpread(
             time = time,
             spread = Spread(
                 ask = if (isAsk) price else previous.spread.ask,

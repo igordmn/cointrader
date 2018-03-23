@@ -33,7 +33,7 @@ fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork): NeuralTrainer 
     return NeuralTrainer(jep, net).use()
 }
 
-fun jep() = Jep(false, Paths.get("com/dmi/cointrader/app/python/src").toAbsolutePath().toString()).apply {
+fun jep() = Jep(false, Paths.get("python/src").toAbsolutePath().toString()).apply {
     try {
         eval("import sys")
         eval("sys.argv=[''] ")
