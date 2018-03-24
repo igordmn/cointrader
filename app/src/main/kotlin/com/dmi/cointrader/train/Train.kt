@@ -24,6 +24,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow
 import com.dmi.cointrader.neural.clampForTradedHistoryBatch
+import com.dmi.util.collection.size
 
 suspend fun train() = resourceContext {
     val networksFolder = Paths.get("data/networks")
@@ -48,7 +49,8 @@ suspend fun train() = resourceContext {
     val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainRange, testRange, validationRange) = ranges(tradeConfig, trainConfig)
     val random = GeometricDistribution(trainConfig.geometricBias)
-    val portfolios = initPortfolios(trainRange.endInclusive + 1, tradeConfig.assets.all.size).also {
+    val trainTradePeriods = trainRange.tradePeriods(tradeConfig.tradePeriods)
+    val portfolios = initPortfolios(trainTradePeriods.size(), tradeConfig.assets.all.size).also {
         require(trainRange.start == 0)
     }
 

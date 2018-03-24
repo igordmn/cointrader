@@ -1,5 +1,6 @@
 package com.dmi.util.collection
 
+import com.dmi.util.math.floorDiv
 import kotlin.coroutines.experimental.buildSequence
 
 fun LongRange.rangeChunked(size: Long): Sequence<LongRange> = buildSequence {
@@ -14,3 +15,5 @@ fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(
 ): ClosedRange<R> = transform(start)..transform(endInclusive)
 
 fun IntRange.toLong() = start.toLong()..endInclusive.toLong()
+
+fun IntProgression.size() = 1 + ((last - first) floorDiv step)
