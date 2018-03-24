@@ -59,7 +59,7 @@ suspend fun train() = resourceContext {
     }
 
     fun train(batch: TrainBatch): Double {
-        val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history, batch.spreads)
+        val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history)
         batch.setCurrentPortfolio(newPortions)
         return geometricMeanProfit
     }
@@ -116,13 +116,17 @@ fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 
 
 private fun ranges(tradeConfig: TradeConfig, trainConfig: TrainConfig): Triple<PeriodRange, PeriodRange, PeriodRange> {
     val periods = tradeConfig.periods
-    val timeRange = (periods.of(trainConfig.range.start)..periods.of(trainConfig.range.endInclusive)).clampForTradedHistoryBatch()
-    val periodsPerDay = periods.perDay()
-    val testStart = timeRange.endInclusive - ((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
-    val validationStart = timeRange.endInclusive - ((periodsPerDay * trainConfig.validationDays).toInt())
-    val trainRange = timeRange.start until validationStart
+    val timeRange = trainConfig.range
+    val testDays = trainConfig.testDays
+    val validationDays = trainConfig.validationDays
+
+    val original = periods.of(timeRange.start)..periods.of(timeRange.endInclusive)
+    val clamped = original.clampForTradedHistoryBatch()
+    val testStart = clamped.endInclusive - ((periods.perDay() * (testDays + validationDays)).toInt())
+    val validationStart = clamped.endInclusive - ((periods.perDay() * validationDays).toInt())
+    val trainRange = clamped.start until validationStart
     val testRange = testStart until validationStart
-    val validationRange = validationStart..timeRange.endInclusive
+    val validationRange = validationStart..clamped.endInclusive
     return Triple(trainRange, testRange, validationRange)
 }
 
