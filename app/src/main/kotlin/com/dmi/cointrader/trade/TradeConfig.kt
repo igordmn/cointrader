@@ -1,7 +1,7 @@
 package com.dmi.cointrader.trade
 
 import com.dmi.cointrader.binance.Asset
-import com.dmi.cointrader.archive.Periods
+import com.dmi.cointrader.archive.PeriodSpace
 import com.dmi.util.io.readBytes
 import com.dmi.util.io.writeBytes
 import com.dmi.util.lang.parseInstant
@@ -31,12 +31,12 @@ data class TradeConfig(
                 )
         ),
         val historySize: Int = 160,
-        val periods: Periods = Periods(
+        val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00"),
                 duration = Duration.ofSeconds(10)
         ),
-        val tradePeriods: Int = 1 * periods.perMinute().toInt(),    // trade every FIVE minutes
-        val historyPeriods: Int = 5 * periods.perMinute().toInt(),  // get historical prices every last FIVE minutes
+        val tradePeriods: Int = 1 * periodSpace.perMinute().toInt(),    // trade every FIVE minutes
+        val historyPeriods: Int = 5 * periodSpace.perMinute().toInt(),  // get historical prices every last FIVE minutes
         // start trade only after delay from start of trading period
         // it's needed because http requests to exchange take time
         // it's fixed because neural network is training with this delay

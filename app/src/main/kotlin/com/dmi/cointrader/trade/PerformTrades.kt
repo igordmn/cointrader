@@ -17,7 +17,6 @@ import com.dmi.util.math.product
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
-import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.map
 import kotlinx.coroutines.experimental.channels.toList
 import org.slf4j.Logger
@@ -36,13 +35,13 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = privateBinanceExchange(log)
-    val history = archive(config, exchange, config.periods.of(exchange.currentTime()))
+    val history = archive(config, exchange, config.periodSpace.of(exchange.currentTime()))
 
     val iterator = object {
         var previousPeriod = Int.MIN_VALUE
 
         fun nextAfter(time: Instant): Period {
-            val current = config.periods.of(time)
+            val current = config.periodSpace.of(time)
             val next = current.nextTradePeriod(config.tradePeriods)
             return max(previousPeriod + 1, next).also {
                 previousPeriod = it
@@ -54,7 +53,7 @@ suspend fun performRealTrades() = resourceContext {
         val clock = binanceClock(exchange)
         val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
-        val nextTime = config.periods.timeOf(nextPeriod).also {
+        val nextTime = config.periodSpace.timeOf(nextPeriod).also {
             require(it >= currentTime)
         }
         delay(nextTime - currentTime)
@@ -86,7 +85,7 @@ suspend fun performRealTrade(
     try {
         archive.sync(period)
         val history = neuralHistory(config, archive, period)
-        val tradeTime = config.periods.timeOf(period + config.tradeDelayPeriods)
+        val tradeTime = config.periodSpace.timeOf(period + config.tradeDelayPeriods)
         val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)

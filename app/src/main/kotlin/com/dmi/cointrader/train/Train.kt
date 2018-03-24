@@ -38,7 +38,7 @@ suspend fun train() = resourceContext {
     }
     val trainConfig = TrainConfig()
     val lastTime = trainConfig.range.endInclusive
-    val lastPeriod = tradeConfig.periods.of(lastTime)
+    val lastPeriod = tradeConfig.periodSpace.of(lastTime)
     val binanceExchange = publicBinanceExchange().apply {
         require(lastTime <= currentTime())
     }
@@ -48,13 +48,13 @@ suspend fun train() = resourceContext {
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainRange, testRange, validationRange) = ranges(tradeConfig, trainConfig)
-    val random = GeometricDistribution(trainConfig.geometricBias)
     val trainTradePeriods = trainRange.tradePeriods(tradeConfig.tradePeriods)
     val portfolios = initPortfolios(trainTradePeriods.size(), tradeConfig.assets.all.size).also {
         require(trainRange.start == 0)
     }
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
+        val random = GeometricDistribution(trainConfig.geometricBias)
         while (true) {
             send(batch(random, trainRange, tradeConfig.historySize, trainConfig.batchSize, archive, portfolios))
         }
@@ -72,8 +72,8 @@ suspend fun train() = resourceContext {
     }
 
     fun trainResult(step: Int, trainProfits: Profits, testResults: List<TradeResult>, validationResults: List<TradeResult>): TrainResult {
-        val periodsPerDay = tradeConfig.periods.perDay()
-        val period = tradeConfig.periods.duration
+        val periodsPerDay = tradeConfig.periodSpace.perDay()
+        val period = tradeConfig.periodSpace.duration
 
         fun trainTestResult(tradeResults: List<TradeResult>): TrainResult.Test {
             val profits = tradeResults.capitals().profits()
@@ -117,15 +117,15 @@ fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coi
 fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
 
 private fun ranges(tradeConfig: TradeConfig, trainConfig: TrainConfig): Triple<PeriodRange, PeriodRange, PeriodRange> {
-    val periods = tradeConfig.periods
+    val periodSpace = tradeConfig.periodSpace
     val timeRange = trainConfig.range
     val testDays = trainConfig.testDays
     val validationDays = trainConfig.validationDays
 
-    val original = periods.of(timeRange.start)..periods.of(timeRange.endInclusive)
+    val original = periodSpace.of(timeRange.start)..periodSpace.of(timeRange.endInclusive)
     val clamped = original.clampForTradedHistoryBatch()
-    val testStart = clamped.endInclusive - ((periods.perDay() * (testDays + validationDays)).toInt())
-    val validationStart = clamped.endInclusive - ((periods.perDay() * validationDays).toInt())
+    val testStart = clamped.endInclusive - ((periodSpace.perDay() * (testDays + validationDays)).toInt())
+    val validationStart = clamped.endInclusive - ((periodSpace.perDay() * validationDays).toInt())
     val trainRange = clamped.start until validationStart
     val testRange = testStart until validationStart
     val validationRange = validationStart..clamped.endInclusive

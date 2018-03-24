@@ -29,7 +29,7 @@ interface Archive {
 private data class TradeSourceConfig(val market: String)
 
 @Serializable
-private data class SpreadsSourceConfig(val periods: Periods, val assets: List<Asset>)
+private data class SpreadsSourceConfig(val periodSpace: PeriodSpace, val assets: List<Asset>)
 
 suspend fun archive(
         config: TradeConfig,
@@ -49,12 +49,12 @@ suspend fun archive(
     fun spreadsAppendedLog() = object : SyncFileList.Log<Spreads> {
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
             val endPeriod = indices.last.toInt() + 1
-            val time = config.periods.timeOf(endPeriod)
+            val time = config.periodSpace.timeOf(endPeriod)
             println("Moment cached: $time")
         }
     }
 
-    fun Period.time() = config.periods.timeOf(this)
+    fun Period.time() = config.periodSpace.timeOf(this)
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
@@ -90,7 +90,7 @@ suspend fun archive(
 
     fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
             .scan(Trade::initialSpread, Trade::nextSpread)
-            .periodical(config.periods)
+            .periodical(config.periodSpace)
             .takeWhile { it.period <= currentPeriod }
             .map { it.spread }
 
@@ -108,7 +108,7 @@ suspend fun archive(
                     )
             ).list,
             FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
-            SpreadsSourceConfig(config.periods, config.assets.alts),
+            SpreadsSourceConfig(config.periodSpace, config.assets.alts),
             bufferSize = 4096,
             reloadCount = reloadCount
     )

@@ -39,7 +39,7 @@ fun Trade.nextSpread(previous: TimeSpread): TimeSpread {
 data class PeriodicalState<out SOURCE_STATE>(val period: Period, val lastBefore: Item<SOURCE_STATE, TimeSpread>)
 
 fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
-        periods: Periods
+        periodSpace: PeriodSpace
 ) = object : RestorableSource<PeriodicalState<STATE>, PeriodSpread> {
     override fun initial() = this@periodical.initial().periodical(0)
     override fun restored(state: PeriodicalState<STATE>) = this@periodical.restored(state.lastBefore.state).periodical(state.period + 1, state.lastBefore)
@@ -51,7 +51,7 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
                 var lastBefore = last ?: it.next()
                 periodSequence(startPeriod).forEach { period ->
                     var firstAfter = lastBefore
-                    val startTime = periods.timeOf(period)
+                    val startTime = periodSpace.timeOf(period)
                     while (it.hasNext() && firstAfter.value.time <= startTime) {
                         lastBefore = firstAfter
                         firstAfter = it.next()

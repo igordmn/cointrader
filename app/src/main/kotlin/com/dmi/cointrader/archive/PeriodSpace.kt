@@ -11,7 +11,7 @@ typealias PeriodRange = IntRange
 typealias PeriodProgression = IntProgression
 
 @Serializable
-data class Periods(
+data class PeriodSpace(
         @Serializable(with = InstantSerializer::class) val start: Instant,
         @Serializable(with = DurationSerializer::class) val duration: Duration
 ) {
@@ -28,7 +28,7 @@ data class Periods(
     fun perDay(): Double = MILLIS_PER_DAY / duration.toMillis().toDouble()
     fun perMinute(): Double = MILLIS_PER_MINUTE / duration.toMillis().toDouble()
 
-    operator fun times(value: Int): Periods = Periods(start, duration * value)
+    operator fun times(value: Int): PeriodSpace = PeriodSpace(start, duration * value)
 }
 
 fun periodSequence(start: Period = 0): Sequence<Period> = generateSequence(start) { it + 1 }
