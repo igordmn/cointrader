@@ -6,9 +6,8 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 
 typealias NeuralHistory = History
-typealias NeuralHistoryBatch = HistoryBatch
 data class TradedHistory(val history: NeuralHistory, val tradeTimeSpreads: Spreads)
-data class TradedHistoryBatch(val history: NeuralHistory, val tradeTimeSpreads: Spreads)
+typealias TradedHistoryBatch = List<TradedHistory>
 
 suspend fun tradedHistory(config: TradeConfig, archive: Archive, period: Period): TradedHistory {
 
@@ -17,7 +16,7 @@ suspend fun tradedHistories(config: TradeConfig, archive: Archive, range: Period
     range.tradePeriods(config.tradePeriods).asReceiveChannel()
 }
 
-suspend fun tradedHistoryBatch(config: TradeConfig, archive: Archive, period: Period): TradedHistoryBatch {
+suspend fun tradedHistoryBatch(config: TradeConfig, archive: Archive, period: Period, batchSize: Int): TradedHistoryBatch {
 
 }
 

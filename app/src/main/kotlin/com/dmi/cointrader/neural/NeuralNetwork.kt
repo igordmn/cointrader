@@ -160,10 +160,12 @@ class NeuralTrainer(
         jep.invoke("create_trainer")
     }
 
-    fun train(currentPortfolio: PortionsBatch, histories: NeuralHistoryBatch, spreads: SpreadsBatch): Result {
+    fun train(currentPortfolio: PortionsBatch, histories: TradedHistoryBatch): Result {
         val resultMatrix = train(
-                currentPortfolio.toMatrix(), histories.toMatrix(),
-                spreads.toMatrix(Spread::ask), spreads.toMatrix(Spread::bid)
+                currentPortfolio.toMatrix(),
+                histories.map { it.history }.toMatrix(),
+                histories.map { it.tradeTimeSpreads }.toMatrix(Spread::ask),
+                histories.map { it.tradeTimeSpreads }.toMatrix(Spread::bid)
         )
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
@@ -198,8 +200,8 @@ class NeuralTrainer(
     data class Result(val newPortions: PortionsBatch, val geometricMeanProfit: Double)
 }
 
-@JvmName("HistoryBatch_toMatrix")
-fun NeuralHistoryBatch.toMatrix(): Matrix4D {
+@JvmName("NeuralHistoryBatch_toMatrix")
+fun List<NeuralHistory>.toMatrix(): Matrix4D {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
@@ -210,7 +212,6 @@ fun NeuralHistoryBatch.toMatrix(): Matrix4D {
 @JvmName("toMatrix2D")
 fun List<List<Double>>.toMatrix(): Matrix2D = toMatrix({ it })
 
-@JvmName("toMatrix2D")
 fun <T> List<List<T>>.toMatrix(value: (T) -> Double): Matrix2D {
     val batchSize = size
     val portfolioSize = first().size

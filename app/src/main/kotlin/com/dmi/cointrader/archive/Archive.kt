@@ -18,9 +18,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
 
 typealias Spreads = List<Spread>
-typealias SpreadsBatch = List<Spreads>
 typealias History = List<Spreads>
-typealias HistoryBatch = List<History>
 
 interface Archive {
     suspend fun historyAt(range: PeriodRange): History

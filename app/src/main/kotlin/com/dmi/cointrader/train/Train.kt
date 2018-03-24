@@ -6,8 +6,6 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.app.trade.*
 import com.dmi.cointrader.trade.*
-import com.dmi.util.collection.rangeMap
-import com.dmi.util.collection.set
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.appendText
@@ -136,20 +134,20 @@ private suspend fun batch(
         archive: Archive,
         portfolios: Array<DoubleArray>
 ): TrainBatch {
-    fun lastNums(): IntRange {
-        val last = random.sampleIn(range.nums())
+    fun periods(): IntRange {
+        val last = random.sampleIn(range)
         val first = last - batchSize + 1
         return first..last
     }
 
-    val lastNums = lastNums()
-    val allNums = lastNums.start - historySize + 1..lastNums.endInclusive + 2
-    val moments = archive.historyAt(allNums.toPeriods())
+    val lastPeriods = periods()
+    val allPeriods = lastPeriods.start - historySize + 1..lastPeriods.endInclusive + 2
+    val moments = archive.historyAt(allPeriods)
     val indices = (0 until batchSize).map { it + historySize - 1 }
 
     return TrainBatch(
-            setCurrentPortfolio = { portfolios.set(lastNums, it) },
-            currentPortfolio = portfolios.slice(lastNums),
+            setCurrentPortfolio = { portfolios.set(lastPeriods, it) },
+            currentPortfolio = portfolios.slice(lastPeriods),
             history = indices.map {
                 moments.slice(it - historySize + 1..it)
             },
@@ -167,6 +165,5 @@ private suspend fun batch(
 private class TrainBatch(
         val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val currentPortfolio: PortionsBatch,
-        val history: NeuralHistoryBatch,
-        val spreads: SpreadsBatch
+        val history: TradedHistoryBatch
 )
