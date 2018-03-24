@@ -6,6 +6,7 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.app.trade.*
 import com.dmi.cointrader.trade.*
+import com.dmi.util.collection.rangeMap
 import com.dmi.util.collection.set
 import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
@@ -24,6 +25,7 @@ import org.apache.commons.math3.distribution.GeometricDistribution
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.math.pow
+import com.dmi.cointrader.neural.clampForTradedHistoryBatch
 
 suspend fun train() = resourceContext {
     val networksFolder = Paths.get("data/networks")
@@ -36,26 +38,30 @@ suspend fun train() = resourceContext {
         saveTradeConfig(this)
     }
     val trainConfig = TrainConfig()
+    val lastTime = trainConfig.range.endInclusive
+    val lastPeriod = tradeConfig.periods.of(lastTime)
     val binanceExchange = publicBinanceExchange().apply {
-        require(trainConfig.range.endInclusive <= currentTime())
+        require(lastTime <= currentTime())
     }
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
-    val archive = archive(tradeConfig, binanceExchange, trainConfig.range.endInclusive)
+    val archive = archive(tradeConfig, binanceExchange, lastPeriod)
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
-    val trainer = networkTrainer(jep, net)
+    val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainRange, testRange, validationRange) = ranges(tradeConfig, trainConfig)
     val random = GeometricDistribution(trainConfig.geometricBias)
-    val portfolios = initPortfolios(trainRange.endInclusive.num + 1, tradeConfig.assets.all.size)
+    val portfolios = initPortfolios(trainRange.endInclusive + 1, tradeConfig.assets.all.size).also {
+        require(trainRange.start == 0)
+    }
 
     fun batches(): ReceiveChannel<TrainBatch> = produce {
         while (true) {
-            send(batch(random, trainRange, tradeConfig.historySize, trainConfig.batchSize, trainConfig.fee, archive, portfolios))
+            send(batch(random, trainRange, tradeConfig.historySize, trainConfig.batchSize, archive, portfolios))
         }
     }
 
     fun train(batch: TrainBatch): Double {
-        val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history, batch.futurePriceIncs, batch.fees)
+        val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history, batch.spreads)
         batch.setCurrentPortfolio(newPortions)
         return geometricMeanProfit
     }
@@ -108,21 +114,17 @@ private data class TrainResult(
 }
 
 fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
-fun initPortfolio(coinNumber: Int): Portions = Array(coinNumber) { 1.0 / coinNumber }.toList()
+fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
 
 private fun ranges(tradeConfig: TradeConfig, trainConfig: TrainConfig): Triple<PeriodRange, PeriodRange, PeriodRange> {
     val periods = tradeConfig.periods
-    val timeRange = trainConfig.range
+    val timeRange = (periods.of(trainConfig.range.start)..periods.of(trainConfig.range.endInclusive)).clampForTradedHistoryBatch()
     val periodsPerDay = periods.perDay()
-    val extraNeededFirstNums = tradeConfig.historySize + trainConfig.batchSize - 2
-    val extraNeededLastNums = 2  // -2st period for current tradeTimePrice, -1st period for next tradeTimePrice
-    val start = periods.of(timeRange.start).next(extraNeededFirstNums)
-    val end = periods.of(timeRange.endInclusive).previous(extraNeededLastNums)
-    val testStart = end.previous((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
-    val validationStart = end.previous((periodsPerDay * trainConfig.validationDays).toInt())
-    val trainRange = start until validationStart
+    val testStart = timeRange.endInclusive - ((periodsPerDay * (trainConfig.testDays + trainConfig.validationDays)).toInt())
+    val validationStart = timeRange.endInclusive - ((periodsPerDay * trainConfig.validationDays).toInt())
+    val trainRange = timeRange.start until validationStart
     val testRange = testStart until validationStart
-    val validationRange = validationStart until end
+    val validationRange = validationStart..timeRange.endInclusive
     return Triple(trainRange, testRange, validationRange)
 }
 
@@ -131,14 +133,9 @@ private suspend fun batch(
         range: PeriodRange,
         historySize: Int,
         batchSize: Int,
-        exchangeFee: Double,
         archive: Archive,
-        portfolios: Array<Portions>
+        portfolios: Array<DoubleArray>
 ): TrainBatch {
-    fun Candle.tradeTimePrice() = (tradeTimeAsk + tradeTimeBid) / 2
-    fun Candle.tradeTimeFee() = 1 - (1 - exchangeFee) * (tradeTimeBid / tradeTimePrice())
-    fun priceInc(currentPrice: Double, nextPrice: Double) = nextPrice / currentPrice
-
     fun lastNums(): IntRange {
         val last = random.sampleIn(range.nums())
         val first = last - batchSize + 1
@@ -167,12 +164,9 @@ private suspend fun batch(
     )
 }
 
-data class TrainHistory()
-
 private class TrainBatch(
         val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val currentPortfolio: PortionsBatch,
-        val history: HistoryBatch,
-        val futurePriceIncs: PriceIncsBatch,
-        val fees: FeesBatch
+        val history: NeuralHistoryBatch,
+        val spreads: SpreadsBatch
 )

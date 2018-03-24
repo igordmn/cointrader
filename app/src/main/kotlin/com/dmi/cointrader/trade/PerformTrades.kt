@@ -43,7 +43,7 @@ suspend fun performRealTrades() = resourceContext {
 
         fun nextAfter(time: Instant): Period {
             val current = config.periods.of(time)
-            val next = (current / config.tradePeriods) * (config.tradePeriods + 1)
+            val next = current.nextTradePeriod(config.tradePeriods)
             return max(previousPeriod + 1, next).also {
                 previousPeriod = it
             }
@@ -142,9 +142,8 @@ suspend fun performTestTrades(
         exchange: TestExchange
 ): List<TradeResult> {
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
-    return range.asSequence().asReceiveChannel().map { period ->
+    return tradedHistories(config, archive, range).map { tradedHistory ->
         val portfolio = exchange.portfolio()
-        val tradedHistory = tradedHistory(config, archive, period)
         val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
         val bids = tradedHistory.tradeTimeSpreads.map { it.bid }
         fun askOf(asset: Asset) = asks[indices[asset]!!].toBigDecimal()

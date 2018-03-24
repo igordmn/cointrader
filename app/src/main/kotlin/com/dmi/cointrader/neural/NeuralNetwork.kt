@@ -86,7 +86,7 @@ class NeuralNetwork private constructor(
         )
     }
 
-    fun bestPortfolio(currentPortfolio: Portions, history: History): Portions {
+    fun bestPortfolio(currentPortfolio: Portions, history: NeuralHistory): Portions {
         return bestPortfolio(currentPortfolio.toMatrix(), history.toMatrix()).toPortions()
     }
 
@@ -160,7 +160,7 @@ class NeuralTrainer(
         jep.invoke("create_trainer")
     }
 
-    fun train(currentPortfolio: PortionsBatch, histories: HistoryBatch, spreads: SpreadsBatch): Result {
+    fun train(currentPortfolio: PortionsBatch, histories: NeuralHistoryBatch, spreads: SpreadsBatch): Result {
         val resultMatrix = train(
                 currentPortfolio.toMatrix(), histories.toMatrix(),
                 spreads.toMatrix(Spread::ask), spreads.toMatrix(Spread::bid)
@@ -199,7 +199,7 @@ class NeuralTrainer(
 }
 
 @JvmName("HistoryBatch_toMatrix")
-fun HistoryBatch.toMatrix(): Matrix4D {
+fun NeuralHistoryBatch.toMatrix(): Matrix4D {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
@@ -229,5 +229,5 @@ fun Matrix2D.toPortionsBatch(): PortionsBatch {
     return portfolios
 }
 fun Portions.toMatrix(): Matrix2D = listOf(this).toMatrix()
-fun History.toMatrix(): Matrix4D = listOf(this).toMatrix()
+fun NeuralHistory.toMatrix(): Matrix4D = listOf(this).toMatrix()
 fun Matrix2D.toPortions(): Portions = toPortionsBatch().first()

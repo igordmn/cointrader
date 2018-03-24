@@ -41,8 +41,8 @@ data class PeriodicalState<out SOURCE_STATE>(val period: Period, val lastBefore:
 fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
         periods: Periods
 ) = object : RestorableSource<PeriodicalState<STATE>, PeriodSpread> {
-    override fun initial() = this@periodical.initial().periodical(Period(0))
-    override fun restored(state: PeriodicalState<STATE>) = this@periodical.restored(state.lastBefore.state).periodical(state.period.next(), state.lastBefore)
+    override fun initial() = this@periodical.initial().periodical(0)
+    override fun restored(state: PeriodicalState<STATE>) = this@periodical.restored(state.lastBefore.state).periodical(state.period + 1, state.lastBefore)
 
     private fun ReceiveChannel<Item<STATE, TimeSpread>>.periodical(startPeriod: Period, last: Item<STATE, TimeSpread>? = null) = produce {
         consume {

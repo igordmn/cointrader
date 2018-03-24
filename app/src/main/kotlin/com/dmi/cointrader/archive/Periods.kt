@@ -8,6 +8,7 @@ import com.dmi.util.lang.minus
 
 typealias Period = Int
 typealias PeriodRange = IntRange
+typealias PeriodProgression = IntProgression
 
 @Serializable
 data class Periods(
