@@ -37,7 +37,7 @@ plugins {
 
 apply {
     plugin("kotlinx-serialization")
-//    plugin("kotlin-kapt")
+//    plugin("kotlin-kapt")  see https://github.com/Kotlin/kotlinx.serialization/issues/76
 }
 
 val kotlinVersion: String by extra
