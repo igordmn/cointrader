@@ -118,21 +118,6 @@ private suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchan
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
-private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Double>): TradeResult {
-    val resultAsset = "BTC"
-    val minBtc = 0.0001
-    val portfolio = exchange.portfolio()
-    val amounts = portfolio.amountsOf(assets.all).toDouble()
-    val capitals = bids * amounts
-    val assetCapitals = assets.all.withIndex().associate {
-        it.value to capitals[it.index]
-    }.filter {
-        it.value > minBtc
-    }
-    val totalCapital = capitals.sum()
-    return TradeResult(assetCapitals, totalCapital, resultAsset)
-}
-
 suspend fun performTestTrades(
         periods: PeriodProgression,
         config: TradeConfig,
@@ -151,6 +136,21 @@ suspend fun performTestTrades(
         performTrade(config.assets, network, portfolio, tradedHistory.history, ::broker)
         testTradeResult(config.assets, exchange, bids)
     }.toList()
+}
+
+private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Double>): TradeResult {
+    val resultAsset = "BTC"
+    val minBtc = 0.0001
+    val portfolio = exchange.portfolio()
+    val amounts = portfolio.amountsOf(assets.all).toDouble()
+    val capitals = bids * amounts
+    val assetCapitals = assets.all.withIndex().associate {
+        it.value to capitals[it.index]
+    }.filter {
+        it.value > minBtc
+    }
+    val totalCapital = capitals.sum()
+    return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
 suspend fun performTrade(
