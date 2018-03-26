@@ -6,7 +6,7 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.trade.*
 import com.dmi.util.collection.contains
-import com.dmi.util.collection.indices
+import com.dmi.util.collection.set
 import com.dmi.util.collection.size
 import com.dmi.util.collection.slice
 import com.dmi.util.concurrent.chunked
@@ -20,6 +20,7 @@ import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
+import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.channels.withIndex
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -65,18 +66,15 @@ suspend fun train() = resourceContext {
     val batches = object {
         val random = Random(867979346)
 
-        fun PeriodProgression.randomBatch(): PeriodProgression {
-            val startIndex = random.nextInt(size() - trainConfig.batchSize)
+        suspend fun randomBatch(): TrainBatch {
+            val startIndex = random.nextInt(trainPeriods.size() - trainConfig.batchSize)
             val endIndex = startIndex + trainConfig.batchSize
-            return slice(startIndex until endIndex)
-        }
-
-        suspend fun randomBatch() = batch(trainPeriods.randomBatch())
-
-        suspend fun batch(periods: PeriodProgression): TrainBatch {
-            val portfolio = portfolios.slice(periods.indices())
-            val history = tradedHistories(tradeConfig, archive, periods)
-
+            val indices = startIndex until endIndex
+            val batchPeriods = trainPeriods.slice(indices)
+            val portfolio = portfolios.slice(indices).map { it.toList() }
+            fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices, portfolio.map { it.toDoubleArray() }.toTypedArray())
+            val history = tradedHistories(tradeConfig, archive, batchPeriods).toList()
+            TrainBatch(portfolio, ::setPortfolio, history)
         }
 
         fun channel(): ReceiveChannel<TrainBatch> = infiniteChannel { randomBatch() }
@@ -138,7 +136,7 @@ private data class TrainResult(
 }
 
 private class TrainBatch(
-        val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val currentPortfolio: PortionsBatch,
+        val setCurrentPortfolio: (PortionsBatch) -> Unit,
         val history: TradedHistoryBatch
 )
