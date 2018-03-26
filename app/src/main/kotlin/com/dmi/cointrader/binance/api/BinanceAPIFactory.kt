@@ -12,7 +12,7 @@ fun binanceAPI(
         apiKey: String? = null,
         secret: String? = null,
         log: Logger? = null,
-        maxRequestsPerSecond: Int  // binance has 20 request per second limit
+        maxRequestsPerSecond: Int = 6  // binance has 20 request per second limit
 ): BinanceAPI {
     val httpClient = OkHttpClient.Builder()
 
