@@ -11,6 +11,13 @@ fun IntRange.chunked(size: Int): Sequence<IntRange> = buildSequence {
     }
 }
 
+fun LongRange.chunked(size: Long): Sequence<LongRange> = buildSequence {
+    for (st in this@chunked step size) {
+        val nd = min(endInclusive, st + size - 1)
+        yield(LongRange(st, nd))
+    }
+}
+
 fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(
         transform: (T) -> R
 ): ClosedRange<R> = transform(start)..transform(endInclusive)

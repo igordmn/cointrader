@@ -7,7 +7,7 @@ interface SuspendList<out T> {
     suspend fun get(range: LongRange): List<T>
 
     fun channel(startIndex: Long, bufferSize: Long = 100): ReceiveChannel<T> = produce {
-        (startIndex until size()).rangeChunked(bufferSize).asReceiveChannel().consumeEach { range ->
+        (startIndex until size()).chunked(bufferSize).asReceiveChannel().consumeEach { range ->
             get(range).forEach { it ->
                 send(it)
             }
