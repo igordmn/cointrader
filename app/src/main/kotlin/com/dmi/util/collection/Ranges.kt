@@ -19,10 +19,12 @@ fun IntRange.toLong() = start.toLong()..endInclusive.toLong()
 fun IntProgression.size() = 1 + ((last - first) floorDiv step)
 
 fun IntProgression.slice(indices: IntRange): IntProgression {
-    require(indices.start >= 0 && indices.endInclusive <= size() - 1)
+    require(indices in this.indices())
     return first + step * indices.first..first + step * indices.last step step
 }
 
-infix fun <T: Comparable<T>> ClosedRange<T>.fullyContains(another: ClosedRange<T>): Boolean {
+fun IntProgression.indices() = 0 until size()
+
+operator fun <T: Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>): Boolean {
     return start <= another.start && another.endInclusive <= endInclusive
 }

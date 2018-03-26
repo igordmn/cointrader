@@ -5,6 +5,7 @@ import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.toLong
+import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
@@ -113,7 +114,7 @@ suspend fun archive(
             reloadCount = reloadCount
     )
 
-    trades.forEach {
+    trades.forEachAsync {
         it.sync(
                 TradeSource(it.market, currentPeriod.time(), tradeLoadChunk),
                 tradeAppendedLog(it.asset)
@@ -133,7 +134,7 @@ suspend fun archive(
         }
 
         override suspend fun sync(currentPeriod: Period) {
-            trades.forEach {
+            trades.forEachAsync {
                 it.sync(
                         TradeSource(it.market, currentPeriod.time(), tradeLoadChunk),
                         EmptyLog()

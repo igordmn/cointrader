@@ -10,11 +10,11 @@ import kotlin.coroutines.experimental.CoroutineContext
 
 fun suspend(action: suspend ()-> Unit) : suspend ()-> Unit = action
 
-suspend fun <T, R> Iterable<T>.mapAsync(transform: suspend (T) -> R): Iterable<R> = map { value ->
+suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit) = map { value ->
     async {
-        transform(value)
+        action(value)
     }
-}.map {
+}.forEach {
     it.await()
 }
 
@@ -57,67 +57,6 @@ fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<
     } finally {
         forEach {
             it.cancel()
-        }
-    }
-}
-
-fun <T> ReceiveChannel<T>.insert(
-        itemsFirst: (first: T) -> List<T>,
-        itemsBetween: (previous: T, next: T) -> List<T>,
-        itemsLast: (last: T) -> List<T>
-): ReceiveChannel<T> = insertFirst(itemsFirst).insertBetween(itemsBetween).insertLast(itemsLast)
-
-fun <T> ReceiveChannel<T>.insertFirst(items: (next: T) -> List<T>): ReceiveChannel<T> = produce {
-    var isFirst = true
-
-    consumeEach {
-        if (isFirst) {
-            items(it).forEach {
-                send(it)
-            }
-            isFirst = false
-        }
-
-        send(it)
-    }
-}
-
-fun <E> ReceiveChannel<E>.insertBetween(items: (E, E) -> List<E>): ReceiveChannel<E> = produce {
-    class Item(var value: E)
-
-    var previous: Item? = null
-
-    consumeEach {
-        if (previous == null) {
-            previous = Item(it)
-        } else {
-            items(previous!!.value, it).forEach {
-                send(it)
-            }
-            previous!!.value = it
-        }
-        send(it)
-    }
-}
-
-fun <E> ReceiveChannel<E>.insertLast(itemsAfter: (E) -> List<E>): ReceiveChannel<E> = produce {
-    class Item(var value: E)
-
-    var last: Item? = null
-
-    consumeEach {
-        send(it)
-
-        if (last == null) {
-            last = Item(it)
-        } else {
-            last!!.value = it
-        }
-    }
-
-    if (last != null) {
-        itemsAfter(last!!.value).forEach {
-            send(it)
         }
     }
 }
@@ -199,5 +138,11 @@ fun <E> ReceiveChannel<E>.withLongIndex(startIndex: Long = 0): ReceiveChannel<Lo
     var index = startIndex
     consumeEach {
         send(LongIndexed(index++, it))
+    }
+}
+
+fun <T> infiniteChannel(nextValue: suspend () -> T): ReceiveChannel<T> = produce {
+    while (true) {
+        send(nextValue())
     }
 }
