@@ -1,11 +1,51 @@
 package com.dmi.cointrader.trade
 
 import com.dmi.cointrader.binance.Asset
+import com.dmi.cointrader.binance.BinanceExchange
+import com.dmi.cointrader.binance.amountsOf
+import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.math.product
+import com.dmi.util.math.times
+import com.dmi.util.math.toDouble
+import java.time.Clock
 import java.time.Duration
 import kotlin.math.pow
+
+suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
+    val resultAsset = "BTC"
+    val minBtc = 0.0001
+    val portfolio = exchange.portfolio(clock)
+    val btcPrices = exchange.btcPrices()
+    val assetCapitals = assets.all
+            .associate {
+                val capital = if (it == resultAsset) {
+                    portfolio[it]!!
+                } else {
+                    portfolio[it]!! * btcPrices[it]!!
+                }
+                it to capital.toDouble()
+            }
+            .filter { it.value > minBtc }
+    val totalCapital = assetCapitals.values.sum()
+    return TradeResult(assetCapitals, totalCapital, resultAsset)
+}
+
+fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Double>): TradeResult {
+    val resultAsset = "BTC"
+    val minBtc = 0.0001
+    val portfolio = exchange.portfolio()
+    val amounts = portfolio.amountsOf(assets.all).toDouble()
+    val capitals = bids * amounts
+    val assetCapitals = assets.all.withIndex().associate {
+        it.value to capitals[it.index]
+    }.filter {
+        it.value > minBtc
+    }
+    val totalCapital = capitals.sum()
+    return TradeResult(assetCapitals, totalCapital, resultAsset)
+}
 
 data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
     override fun toString(): String {
