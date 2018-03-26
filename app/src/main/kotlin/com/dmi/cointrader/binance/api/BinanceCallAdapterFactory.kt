@@ -44,6 +44,7 @@ class BinanceCallAdapterFactory : CallAdapter.Factory() {
                     deferred.completeExceptionally(t)
                 }
 
+                @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
                 override fun onResponse(call: Call<T>, response: Response<T>) {
                     if (response.isSuccessful) {
                         deferred.complete(response.body()!!)
