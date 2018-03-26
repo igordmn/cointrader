@@ -3,23 +3,44 @@ package com.dmi.cointrader.neural
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.coerceIn
+import com.dmi.util.collection.chunked
+import com.dmi.util.concurrent.map
+import com.dmi.util.concurrent.windowed
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.asReceiveChannel
+import kotlinx.coroutines.experimental.channels.filterIndexed
+import kotlinx.coroutines.experimental.channels.toList
 
-typealias NeuralHistory = History
+typealias NeuralHistory = List<Spreads>
+
 data class TradedHistory(val history: NeuralHistory, val tradeTimeSpreads: Spreads)
 typealias TradedHistoryBatch = List<TradedHistory>
 
-suspend fun tradedHistories(config: TradeConfig, archive: Archive, periods: PeriodProgression): ReceiveChannel<TradedHistory> {
-    val bufferSize = 10000
-
+fun PeriodRange.clampForTradedHistory(config: TradeConfig): PeriodRange = with(config) {
+    return coerceIn(historyPeriods * historySize - 1..endInclusive - tradeDelayPeriods)
 }
 
-suspend fun neuralHistory(config: TradeConfig, archive: Archive, period: Period): NeuralHistory {
-
-    archive.historyAt()
+fun tradedHistories(
+        config: TradeConfig,
+        archive: Archive,
+        periods: PeriodProgression
+): ReceiveChannel<TradedHistory> = with(config) {
+    archive
+            .historyAt(periods.first - historyPeriods * historySize + 1..periods.last + tradeDelayPeriods)
+            .windowed(historyPeriods * historySize + tradeDelayPeriods, periods.step)
+            .map {
+                val history = it.slice(0 until historyPeriods * historySize).filterIndexed { i, _ ->
+                    (i + 1) % historyPeriods == 0
+                }
+                val tradeTimeSpreads = it.last()
+                TradedHistory(history, tradeTimeSpreads)
+            }
 }
 
-fun PeriodRange.clampForTradedHistory(config: TradeConfig): PeriodRange {
-    return coerceIn(config.historyPeriods * config.historySize - 1..endInclusive - config.tradeDelayPeriods)
+suspend fun neuralHistory(config: TradeConfig, archive: Archive, period: Period): NeuralHistory = with(config) {
+    return archive
+            .historyAt(period - historySize * historyPeriods + 1..period)
+            .filterIndexed { i, _ ->
+                (i + 1) % historyPeriods == 0
+            }
+            .toList()
 }

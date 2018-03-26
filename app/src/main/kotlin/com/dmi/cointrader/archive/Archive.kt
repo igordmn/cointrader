@@ -4,13 +4,17 @@ import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
+import com.dmi.util.collection.chunked
 import com.dmi.util.collection.toLong
+import com.dmi.util.concurrent.consumeTo
+import com.dmi.util.concurrent.flatten
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
 import com.dmi.util.restorable.*
+import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.list
@@ -19,10 +23,9 @@ import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
 
 typealias Spreads = List<Spread>
-typealias History = List<Spreads>
 
 interface Archive {
-    suspend fun historyAt(range: PeriodRange): History
+    fun historyAt(range: PeriodRange): ReceiveChannel<Spreads>
     suspend fun sync(currentPeriod: Period)
 }
 
@@ -85,6 +88,7 @@ suspend fun archive(
             } else {
                 list.map(Trade::reverse)
             }
+
             suspend fun sync(source: RestorableSource<TradeState, Trade>, log: SyncFileList.Log<Trade>) = list.sync(source, log)
         }
     }
@@ -128,9 +132,16 @@ suspend fun archive(
     return object : Archive {
         var currentPeriod = currentPeriod
 
-        override suspend fun historyAt(range: PeriodRange): History {
+        override fun historyAt(range: PeriodRange): ReceiveChannel<Spreads> {
             require(range.endInclusive <= this.currentPeriod)
-            return spreadsList.get(range.toLong())
+            return produce {
+                range
+                        .chunked(size = 10000)
+                        .asReceiveChannel()
+                        .map { spreadsList.get(it.toLong()) }
+                        .flatten()
+                        .consumeTo(this)
+            }
         }
 
         override suspend fun sync(currentPeriod: Period) {

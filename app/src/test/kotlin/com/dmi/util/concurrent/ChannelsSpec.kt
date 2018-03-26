@@ -5,7 +5,7 @@ import com.dmi.util.test.channelOf
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 
-class CoroutinesSpec : Spec() {
+class ChannelsSpec : Spec() {
     init {
         "chunked" - {
             "simple" {
