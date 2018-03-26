@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private val neuralNetworkCreated = AtomicBoolean(false)
 private val neuralTrainerCreated = AtomicBoolean(false)
+
 fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
     return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()

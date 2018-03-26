@@ -6,6 +6,7 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.app.trade.*
 import com.dmi.cointrader.trade.*
+import com.dmi.util.collection.fullyContains
 import com.dmi.util.collection.size
 import com.dmi.util.collection.slice
 import com.dmi.util.concurrent.chunked
@@ -37,11 +38,10 @@ suspend fun train() = resourceContext {
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
     val binanceExchange = publicBinanceExchange()
-    require(trainConfig.range.start >= tradeConfig.periodSpace.start && trainConfig.range.endInclusive <= binanceExchange.currentTime())
+    require(tradeConfig.periodSpace.start..binanceExchange.currentTime() fullyContains trainConfig.range)
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
-    val lastPeriod = tradeConfig.periodSpace.floor(trainConfig.range.endInclusive)
-    val archive = archive(tradeConfig, binanceExchange, lastPeriod)
+    val archive = archive(tradeConfig, binanceExchange, periods.last)
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
@@ -106,8 +106,8 @@ suspend fun train() = resourceContext {
             .withIndex()
             .consumeEach {
                 val step = it.index * trainConfig.logSteps
-                val testProfits = performTestTrades(testRange, tradeConfig, net, archive, testExchange)
-                val validationProfits = performTestTrades(validationRange, tradeConfig, net, archive, testExchange)
+                val testProfits = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange)
+                val validationProfits = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
                 saveNet(trainResult(step, it.value, testProfits, validationProfits))
             }
 }
