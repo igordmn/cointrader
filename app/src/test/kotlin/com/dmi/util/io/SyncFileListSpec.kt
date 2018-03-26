@@ -1,6 +1,7 @@
 package com.dmi.util.io
 
 import com.dmi.util.atom.cached
+import com.dmi.util.restorable.RestorableSource
 import com.dmi.util.test.Spec
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs

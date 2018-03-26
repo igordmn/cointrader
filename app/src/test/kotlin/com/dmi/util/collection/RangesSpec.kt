@@ -6,11 +6,11 @@ import io.kotlintest.matchers.shouldBe
 class RangesSpec : Spec() {
     init {
         "chunked" {
-            (1L..10L).rangeChunked(3).toList() shouldBe listOf(
-                    1L..3L,
-                    4L..6L,
-                    7L..9L,
-                    10L..10L
+            (1..10).chunked(3).toList() shouldBe listOf(
+                    1..3,
+                    4..6,
+                    7..9,
+                    10..10
             )
         }
     }
