@@ -74,7 +74,7 @@ suspend fun train() = resourceContext {
             val portfolio = portfolios.slice(indices).map { it.toList() }
             fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices, portfolio.map { it.toDoubleArray() }.toTypedArray())
             val history = tradedHistories(tradeConfig, archive, batchPeriods).toList()
-            TrainBatch(portfolio, ::setPortfolio, history)
+            return TrainBatch(portfolio, ::setPortfolio, history)
         }
 
         fun channel(): ReceiveChannel<TrainBatch> = infiniteChannel { randomBatch() }
