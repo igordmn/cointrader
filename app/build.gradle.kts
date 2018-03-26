@@ -13,7 +13,7 @@ import java.net.URI
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.31"
+    kotlinVersion = "1.2.21"
     var serializationVersion: String by extra
     serializationVersion = "0.4.2"
 
@@ -32,12 +32,12 @@ buildscript {
 plugins {
     application
     java
-    kotlin("jvm") version "1.2.31"
+    kotlin("jvm") version "1.2.21"
 }
 
 apply {
     plugin("kotlinx-serialization")
-    plugin("kotlin-kapt")
+//    plugin("kotlin-kapt")
 }
 
 val kotlinVersion: String by extra
