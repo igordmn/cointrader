@@ -25,6 +25,8 @@ fun IntProgression.slice(indices: IntRange): IntProgression {
 
 fun IntProgression.indices() = 0 until size()
 
-operator fun <T: Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>): Boolean {
+operator fun <T : Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>): Boolean {
     return start <= another.start && another.endInclusive <= endInclusive
 }
+
+fun IntRange.coerceIn(other: IntRange): IntRange = start.coerceIn(other)..endInclusive.coerceIn(other)

@@ -51,7 +51,7 @@ suspend fun train() = resourceContext {
         val space = tradeConfig.periodSpace
         val testSize = (trainConfig.testDays * space.periodsPerDay()).toInt()
         val validationSize = (trainConfig.validationDays * space.periodsPerDay()).toInt()
-        val all = periods.clampForTradedHistory().tradePeriods(tradeConfig.tradePeriods)
+        val all = periods.clampForTradedHistory(tradeConfig).tradePeriods(tradeConfig.tradePeriods)
         val size = all.size()
         Triple(
                 all.slice(0 until size - validationSize),
