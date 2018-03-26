@@ -3,7 +3,7 @@ package com.dmi.cointrader.neural
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.io.ResourceContext
-import com.dmi.util.lang.unsupportedOperation
+import com.dmi.util.lang.unsupported
 import jep.Jep
 import jep.NDArray
 import kotlinx.serialization.Serializable
@@ -37,7 +37,7 @@ private const val historyIndicatorNumber = 2
 private fun Spread.historyIndicator(index: Int) = when (index) {
     0 -> ask
     1 -> bid
-    else -> unsupportedOperation()
+    else -> unsupported()
 }
 
 class NeuralNetwork private constructor(
@@ -48,7 +48,7 @@ class NeuralNetwork private constructor(
 ): AutoCloseable {
     init {
         if (neuralNetworkCreated.getAndSet(true)) {
-            unsupportedOperation("Two created neural networks doesn't support")
+            unsupported("Two created neural networks doesn't support")
         }
 
         jep.eval("from cointrader.network import NeuralNetwork")
@@ -121,10 +121,10 @@ class NeuralTrainer(
 ): AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
-            unsupportedOperation("Two created neural trainers doesn't support")
+            unsupported("Two created neural trainers doesn't support")
         }
         if (!neuralNetworkCreated.get()) {
-            unsupportedOperation("Neural network should be created")
+            unsupported("Neural network should be created")
         }
 
         jep.eval("from cointrader.network import NeuralTrainer")

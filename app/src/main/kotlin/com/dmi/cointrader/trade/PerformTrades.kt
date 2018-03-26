@@ -35,13 +35,13 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = privateBinanceExchange(log)
-    val history = archive(config, exchange, config.periodSpace.of(exchange.currentTime()))
+    val history = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
 
     val iterator = object {
         var previousPeriod = Int.MIN_VALUE
 
         fun nextAfter(time: Instant): Period {
-            val current = config.periodSpace.of(time)
+            val current = config.periodSpace.floor(time)
             val next = current.nextTradePeriod(config.tradePeriods)
             return max(previousPeriod + 1, next).also {
                 previousPeriod = it
@@ -134,14 +134,14 @@ private fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: L
 }
 
 suspend fun performTestTrades(
-        range: PeriodRange,
+        periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
         archive: Archive,
         exchange: TestExchange
 ): List<TradeResult> {
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
-    return tradedHistories(config, archive, range).map { tradedHistory ->
+    return tradedHistories(config, archive, periods).map { tradedHistory ->
         val portfolio = exchange.portfolio()
         val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
         val bids = tradedHistory.tradeTimeSpreads.map { it.bid }

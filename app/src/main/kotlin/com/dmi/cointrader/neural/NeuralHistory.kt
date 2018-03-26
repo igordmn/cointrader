@@ -9,8 +9,8 @@ typealias NeuralHistory = History
 data class TradedHistory(val history: NeuralHistory, val tradeTimeSpreads: Spreads)
 typealias TradedHistoryBatch = List<TradedHistory>
 
-suspend fun tradedHistories(config: TradeConfig, archive: Archive, range: PeriodRange): ReceiveChannel<TradedHistory> {
-    range.tradePeriods(config.tradePeriods).asReceiveChannel()
+suspend fun tradedHistories(config: TradeConfig, archive: Archive, periods: PeriodProgression): ReceiveChannel<TradedHistory> {
+
 }
 
 suspend fun tradedHistoryBatch(config: TradeConfig, archive: Archive, period: Period, batchSize: Int): TradedHistoryBatch {
@@ -21,6 +21,6 @@ suspend fun neuralHistory(config: TradeConfig, archive: Archive, period: Period)
 
 }
 
-fun PeriodRange.clampForTradedHistoryBatch(): PeriodRange {
+fun PeriodRange.clampForTradedHistory(): PeriodRange {
 
 }

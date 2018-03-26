@@ -17,3 +17,8 @@ fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(
 fun IntRange.toLong() = start.toLong()..endInclusive.toLong()
 
 fun IntProgression.size() = 1 + ((last - first) floorDiv step)
+
+fun IntProgression.slice(indices: IntRange): IntProgression {
+    require(indices.start >= 0 && indices.endInclusive <= size() - 1)
+    return first + step * indices.first..first + step * indices.last step step
+}
