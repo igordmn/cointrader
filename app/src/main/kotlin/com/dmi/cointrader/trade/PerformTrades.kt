@@ -34,7 +34,7 @@ suspend fun performRealTrades() = resourceContext {
     val log = rootLog()
     val config = savedTradeConfig()
     val network = trainedNetwork()
-    val exchange = privateBinanceExchange(log)
+    val exchange = binanceExchangeForTrade(log)
     val history = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
 
     val iterator = object {

@@ -1,7 +1,7 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.binance.publicBinanceExchange
+import com.dmi.cointrader.binance.binanceExchangeForInfo
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.trade.*
@@ -39,7 +39,7 @@ suspend fun train() = resourceContext {
 
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
-    val binanceExchange = publicBinanceExchange()
+    val binanceExchange = binanceExchangeForInfo()
     require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)

@@ -29,7 +29,7 @@ typealias Amounts = List<BigDecimal>
 
 fun Portfolio.amountsOf(assets: List<Asset>): Amounts = assets.map { this[it]!! }
 
-suspend fun privateBinanceExchange(log: Logger): BinanceExchange {
+suspend fun binanceExchangeForTrade(log: Logger): BinanceExchange {
     val apiKey = File("E:/Distr/Data/CryptoExchanges/binance/apiKey.txt").readText()
     val secret = File("E:/Distr/Data/CryptoExchanges/binance/secret.txt").readText()
     val api = binanceAPI(apiKey, secret, log, maxRequestsPerSecond = 10)
@@ -37,8 +37,8 @@ suspend fun privateBinanceExchange(log: Logger): BinanceExchange {
     return BinanceExchange(api, info)
 }
 
-suspend fun publicBinanceExchange(): BinanceExchange {
-    val api = binanceAPI()
+suspend fun binanceExchangeForInfo(): BinanceExchange {
+    val api = binanceAPI(maxRequestsPerSecond = 6)
     val info = info(api)
     return BinanceExchange(api, info)
 }
