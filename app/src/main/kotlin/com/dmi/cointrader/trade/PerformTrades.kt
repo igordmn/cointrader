@@ -28,9 +28,15 @@ import java.time.Instant
 import kotlin.math.pow
 import com.dmi.util.lang.minus
 
-suspend fun performRealTrades() = resourceContext {
-    askForRealTrade()
+suspend fun askAndPerformRealTrades() {
+    println("Run trading real money? Enter 'yes'")
+    while (readLine() != "yes") {
+        println("Answer is not 'yes'")
+    }
+    performRealTrades()
+}
 
+suspend fun performRealTrades() = resourceContext {
     val log = rootLog()
     val config = savedTradeConfig()
     val network = trainedNetwork()
@@ -58,13 +64,6 @@ suspend fun performRealTrades() = resourceContext {
         }
         delay(nextTime - currentTime)
         performRealTrade(config, exchange, history, nextPeriod, clock, network, log)
-    }
-}
-
-private fun askForRealTrade() {
-    println("Run trading real money? Enter 'yes'")
-    while (readLine() != "yes") {
-        println("Answer is not 'yes'")
     }
 }
 
