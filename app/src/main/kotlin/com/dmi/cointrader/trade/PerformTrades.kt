@@ -6,6 +6,7 @@ import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
+import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
@@ -38,20 +39,18 @@ suspend fun performRealTrades() = resourceContext {
     val network = trainedNetwork()
     val exchange = binanceExchangeForTrade(log)
     val archive = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
+    val syncClock = suspend { binanceClock(exchange) }
 
-    performRealTrades(config.periodSpace, config.tradePeriods) {
-        val clock = binanceClock(exchange)
-        object : RealTrader {
-            override suspend fun currentTime() = clock.instant()
-            override suspend fun trade(period: Period) = performRealTrade(config, exchange, archive, period, clock, network, log)
-        }
+    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods) { clock, period ->
+        performRealTrade(config, exchange, archive, period, clock, network, log)
     }
 }
 
-suspend fun performRealTrades(
+suspend fun forEachRealTradePeriod(
+        syncClock: suspend () -> Clock,
         space: PeriodSpace,
         tradePeriods: Int,
-        getRealTrader: suspend () -> RealTrader
+        action: suspend (Clock, Period) -> Unit
 ) {
     val iterator = object {
         var previousPeriod = Int.MIN_VALUE
@@ -66,18 +65,13 @@ suspend fun performRealTrades(
     }
 
     while (isActive) {
-        val realTrader = getRealTrader()
-        val currentTime = realTrader.currentTime()
+        val clock = syncClock()
+        val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
         val nextTime = space.timeOf(nextPeriod)
         delay(nextTime - currentTime)
-        realTrader.trade(nextPeriod)
+        action(clock, nextPeriod)
     }
-}
-
-interface RealTrader {
-    suspend fun currentTime(): Instant
-    suspend fun trade(period: Period)
 }
 
 suspend fun performRealTrade(
@@ -96,13 +90,14 @@ suspend fun performRealTrade(
 
     try {
         archive.sync(period)
+        val portfolio = exchange.portfolio(clock)
         val history = neuralHistory(config, archive, period)
         val tradeTime = config.periodSpace.timeOf(period + config.tradeDelayPeriods)
         val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
         }
-        performTrade(config.assets, network, exchange.portfolio(clock), history, ::broker)
+        performTrade(config.assets, network, portfolio, history, ::broker)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
     } catch (e: Exception) {
