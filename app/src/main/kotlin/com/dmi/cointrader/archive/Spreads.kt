@@ -55,13 +55,13 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
                 periodSequence(startPeriod).forEach { period ->
                     val time = periodSpace.timeOf(period)
 
-                    if (item.value.time <= time) {
+                    while (item.value.time <= time) {
                         lastBefore = item
-                    }
-
-                    while (it.hasNext() && item.value.time <= time) {
-                        lastBefore = item
-                        item = it.next()
+                        if (it.hasNext()) {
+                            item = it.next()
+                        } else {
+                            break
+                        }
                     }
 
                     val state = PeriodicalState(period, lastBefore)
