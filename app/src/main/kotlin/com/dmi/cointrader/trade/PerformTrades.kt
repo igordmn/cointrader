@@ -6,15 +6,11 @@ import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
-import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.resourceContext
-import com.dmi.util.lang.MILLIS_PER_DAY
-import com.dmi.util.lang.MILLIS_PER_HOUR
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog
 import com.dmi.util.math.portions
-import com.dmi.util.math.product
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
@@ -26,7 +22,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import kotlin.math.pow
 import com.dmi.util.lang.minus
 
 suspend fun askAndPerformRealTrades() {
@@ -43,18 +38,20 @@ suspend fun performRealTrades() = resourceContext {
     val network = trainedNetwork()
     val exchange = binanceExchangeForTrade(log)
     val archive = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
-    val syncClock = suspend { binanceClock(exchange) }
 
-    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods) { clock, period ->
-        performRealTrade(config, exchange, archive, period, clock, network, log)
+    performRealTrades(config.periodSpace, config.tradePeriods) {
+        val clock = binanceClock(exchange)
+        object : RealTrader {
+            override suspend fun currentTime() = clock.instant()
+            override suspend fun trade(period: Period) = performRealTrade(config, exchange, archive, period, clock, network, log)
+        }
     }
 }
 
-suspend fun forEachRealTradePeriod(
-        syncClock: suspend () -> Clock,
+suspend fun performRealTrades(
         space: PeriodSpace,
         tradePeriods: Int,
-        action: suspend (Clock, Period) -> Unit
+        getRealTrader: suspend () -> RealTrader
 ) {
     val iterator = object {
         var previousPeriod = Int.MIN_VALUE
@@ -69,13 +66,18 @@ suspend fun forEachRealTradePeriod(
     }
 
     while (isActive) {
-        val clock = syncClock()
-        val currentTime = clock.instant()
+        val realTrader = getRealTrader()
+        val currentTime = realTrader.currentTime()
         val nextPeriod = iterator.nextAfter(currentTime)
         val nextTime = space.timeOf(nextPeriod)
         delay(nextTime - currentTime)
-        action(clock, nextPeriod)
+        realTrader.trade(nextPeriod)
     }
+}
+
+interface RealTrader {
+    suspend fun currentTime(): Instant
+    suspend fun trade(period: Period)
 }
 
 suspend fun performRealTrade(
