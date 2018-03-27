@@ -4,16 +4,12 @@ import com.binance.api.client.domain.general.SymbolInfo
 import com.dmi.cointrader.binance.api.BinanceAPI
 import com.dmi.cointrader.binance.api.binanceAPI
 import kotlinx.coroutines.experimental.runBlocking
-import java.math.BigDecimal
-import com.dmi.util.math.sum
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 fun printTopCoins() = runBlocking {
-    val beforeTime = LocalDateTime.of(2018, 2, 15, 0, 0, 0, 0).toInstant(ZoneOffset.ofHours(3))
-    val minVolume = BigDecimal(180)
+    val beforeTime = Instant.now() - Duration.ofDays(20)
+    val minVolume = 150
     val topCount = 70
     val excludedCoins = setOf("BNBBTC")
 
@@ -23,14 +19,14 @@ fun printTopCoins() = runBlocking {
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
 
     val exist = info.keys.associate { it to existBefore(api, it, beforeTime) }
-//    val volumesMonthBeforeTime = info.keys.associate { it to volume(api, it, 20 * 24, beforeTime) / BigDecimal(20) }
-    val volumesMonth1 = info.keys.associate { it to volume(api, it, 20 * 24) / BigDecimal(20) }
-//    val volumesMonth2 = info.keys.associate { it to volume(api, it, 20 * 24, Instant.now() - Duration.ofDays(20)) / BigDecimal(20) }
-    val volumesWeek1 = info.keys.associate { it to volume(api, it, 7 * 24) / BigDecimal(7) }
-    val volumesWeek2 = info.keys.associate { it to volume(api, it, 7 * 24, Instant.now() - Duration.ofDays(7)) / BigDecimal(7) }
-    val volumesDay1 = info.keys.associate { it to volume(api, it, 1 * 24) / BigDecimal(1) }
-    val volumesDay2 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(1)) / BigDecimal(1) }
-    val volumesDay3 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(2)) / BigDecimal(1) }
+//    val volumesMonthBeforeTime = info.keys.associate { it to volume(api, it, 20 * 24, beforeTime) / 20 }
+    val volumesMonth1 = info.keys.associate { it to volume(api, it, 20 * 24) / 20 }
+//    val volumesMonth2 = info.keys.associate { it to volume(api, it, 20 * 24, Instant.now() - Duration.ofDays(20)) / 20 }
+    val volumesWeek1 = info.keys.associate { it to volume(api, it, 7 * 24) / 7 }
+    val volumesWeek2 = info.keys.associate { it to volume(api, it, 7 * 24, Instant.now() - Duration.ofDays(7)) / 7 }
+    val volumesDay1 = info.keys.associate { it to volume(api, it, 1 * 24) / 1 }
+    val volumesDay2 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(1)) / 1 }
+    val volumesDay3 = info.keys.associate { it to volume(api, it, 1 * 24, Instant.now() - Duration.ofDays(2)) / 1 }
 //    val volumesMonthBeforeTimeList = volumesMonthBeforeTime.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
     val volumesMonth1List = volumesMonth1.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
 //    val volumesMonth2List = volumesMonth2.entries.filter { it.value >= minVolume && exist[it.key] == true }.sortedByDescending { it.value }
@@ -53,9 +49,9 @@ fun printTopCoins() = runBlocking {
     println(printList.joinToString(", ") { "\"$it\"" })
 }
 
-private suspend fun volume(client: BinanceAPI, coin: String, hourCount: Int, before: Instant? = null): BigDecimal {
+private suspend fun volume(client: BinanceAPI, coin: String, hourCount: Int, before: Instant? = null): Double {
     require(hourCount <= 500)
-    return client.getCandlestickBars(coin, "1h", hourCount, null, before?.toEpochMilli()).map { BigDecimal(it.quoteAssetVolume) }.sum()
+    return client.getCandlestickBars(coin, "1h", hourCount, null, before?.toEpochMilli()).map { it.quoteAssetVolume.toDouble() }.sum()
 }
 
 private suspend fun existBefore(client: BinanceAPI, coin: String, time: Instant): Boolean {
