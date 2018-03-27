@@ -3,7 +3,6 @@ package com.dmi.cointrader.archive
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeAssets
-import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.chunked
 import com.dmi.util.collection.toLong
