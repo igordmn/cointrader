@@ -44,17 +44,6 @@ fun <STATE, VALUE> List<RestorableSource<STATE, VALUE>>.zip() = object : Restora
     }
 }
 
-fun <STATE, T, R> RestorableSource<STATE, T>.map(transform: (T) -> R) = object : RestorableSource<STATE, R> {
-    override fun initial() = this@map.initial().map(this::transform)
-    override fun restored(state: STATE) = this@map.restored(state).map(this::transform)
-    private fun transform(item: Item<STATE, T>) = Item(item.state, transform(item.value))
-}
-
-fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
-    override fun initial() = this@takeWhile.initial().takeWhile { predicate(it.value) }
-    override fun restored(state: STATE) = this@takeWhile.restored(state).takeWhile { predicate(it.value) }
-}
-
 @Serializable
 data class ScanState<out SOURCE_STATE, out R>(val source: SOURCE_STATE, val acc: R)
 
@@ -75,6 +64,17 @@ fun <STATE, T, R> RestorableSource<STATE, T>.scan(
             acc = pure(accValue)
         }
     }
+}
+
+fun <STATE, T, R> RestorableSource<STATE, T>.map(transform: (T) -> R) = object : RestorableSource<STATE, R> {
+    override fun initial() = this@map.initial().map(this::transform)
+    override fun restored(state: STATE) = this@map.restored(state).map(this::transform)
+    private fun transform(item: Item<STATE, T>) = Item(item.state, transform(item.value))
+}
+
+fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
+    override fun initial() = this@takeWhile.initial().takeWhile { predicate(it.value) }
+    override fun restored(state: STATE) = this@takeWhile.restored(state).takeWhile { predicate(it.value) }
 }
 
 fun <T> SuspendList<T>.asRestorableSource() = object : RestorableSource<Long, T> {
