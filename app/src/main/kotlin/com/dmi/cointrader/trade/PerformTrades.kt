@@ -38,7 +38,7 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = binanceExchangeForTrade(log)
-    val archive = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
+    val archive = archive(config.periodSpace, config.assets, exchange, config.periodSpace.floor(exchange.currentTime()))
     val syncClock = suspend { binanceClock(exchange) }
 
     forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods) { clock, period ->

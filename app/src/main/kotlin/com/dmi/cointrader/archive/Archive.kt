@@ -2,6 +2,7 @@ package com.dmi.cointrader.archive
 
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
+import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.chunked
@@ -36,7 +37,8 @@ private data class TradeSourceConfig(val market: String)
 private data class SpreadsSourceConfig(val periodSpace: PeriodSpace, val assets: List<Asset>)
 
 suspend fun archive(
-        config: TradeConfig,
+        space: PeriodSpace,
+        assets: TradeAssets,
         exchange: BinanceExchange,
         currentPeriod: Period,
         fileSystem: FileSystem = FileSystems.getDefault(),
@@ -53,12 +55,12 @@ suspend fun archive(
     fun spreadsAppendedLog() = object : SyncFileList.Log<Spreads> {
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
             val endPeriod = indices.last.toInt() + 1
-            val time = config.periodSpace.timeOf(endPeriod)
+            val time = space.timeOf(endPeriod)
             println("Moment cached: $time")
         }
     }
 
-    fun Period.time() = config.periodSpace.timeOf(this)
+    fun Period.time() = space.timeOf(this)
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
@@ -66,8 +68,8 @@ suspend fun archive(
     createDirectories(cacheDir)
     createDirectories(tradesDir)
 
-    val mainAsset = config.assets.main
-    val trades = config.assets.alts.map { asset ->
+    val mainAsset = assets.main
+    val trades = assets.alts.map { asset ->
         val normalMarket = exchange.market(mainAsset, asset)
         val reversedMarket = exchange.market(asset, mainAsset)
         val market = normalMarket ?: reversedMarket!!
@@ -95,7 +97,7 @@ suspend fun archive(
 
     fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
             .scan(Trade::initialSpread, Trade::nextSpread)
-            .periodical(config.periodSpace)
+            .periodical(space)
             .takeWhile { it.period <= currentPeriod }
             .map { it.spread }
 
@@ -112,8 +114,8 @@ suspend fun archive(
                             TimeSpread.serializer()
                     )
             ).list,
-            FixedListSerializer(config.assets.alts.size, SpreadFixedSerializer),
-            SpreadsSourceConfig(config.periodSpace, config.assets.alts),
+            FixedListSerializer(assets.alts.size, SpreadFixedSerializer),
+            SpreadsSourceConfig(space, assets.alts),
             bufferSize = 4096,
             reloadCount = reloadCount
     )
