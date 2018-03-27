@@ -41,4 +41,4 @@ data class PeriodSpace(
 
 fun periodSequence(start: Period = 0): Sequence<Period> = generateSequence(start) { it + 1 }
 
-fun ClosedRange<Instant>.periods(space: PeriodSpace): PeriodRange = space.ceil(start)..space.ceil(endInclusive)
+fun InstantRange.periods(space: PeriodSpace): PeriodRange = space.ceil(start)..space.floor(endInclusive)

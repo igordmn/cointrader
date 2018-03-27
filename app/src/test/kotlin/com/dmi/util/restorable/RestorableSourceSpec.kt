@@ -46,31 +46,33 @@ class RestorableSourceSpec : Spec({
         }
 
         "double" {
-            listOf(fibonacci(), fibonacci().drop(1)).zip().initialValues() shouldBe listOf(
+            val source = listOf(fibonacci(), fibonacci().drop(1))
+            source.zip().initialValues() shouldBe listOf(
                     listOf(1, 2), listOf(2, 3), listOf(3, 5), listOf(5, 8)
             )
-            listOf(fibonacci(), fibonacci().drop(1)).zip().restoredAfter(0) shouldBe listOf(
+            source.zip().restoredAfter(0) shouldBe listOf(
                     listOf(2, 3), listOf(3, 5), listOf(5, 8)
             )
-            listOf(fibonacci(), fibonacci().drop(1)).zip().restoredAfter(1) shouldBe listOf(
+            source.zip().restoredAfter(1) shouldBe listOf(
                     listOf(3, 5), listOf(5, 8)
             )
-            listOf(fibonacci(), fibonacci().drop(1)).zip().restoredAfter(2) shouldBe listOf(
+            source.zip().restoredAfter(2) shouldBe listOf(
                     listOf(5, 8)
             )
-            listOf(fibonacci(), fibonacci().drop(1)).zip().restoredAfter(3) shouldBe emptyList<List<Int>>()
+            source.zip().restoredAfter(3) shouldBe emptyList<List<Int>>()
         }
     }
     
     "scan" {
         fun initial(value: Int) = value * 0.1
         fun operation(value: Int, acc: Double) = acc + value
-        fibonacci().scan(::initial, ::operation).initialValues() shouldBe listOf(0.1, 2.1, 5.1, 10.1, 18.1)
-        fibonacci().scan(::initial, ::operation).restoredAfter(0) shouldBe listOf(2.1, 5.1, 10.1, 18.1)
-        fibonacci().scan(::initial, ::operation).restoredAfter(1) shouldBe listOf(5.1, 10.1, 18.1)
-        fibonacci().scan(::initial, ::operation).restoredAfter(2) shouldBe listOf(10.1, 18.1)
-        fibonacci().scan(::initial, ::operation).restoredAfter(3) shouldBe listOf(18.1)
-        fibonacci().scan(::initial, ::operation).restoredAfter(4) shouldBe emptyList<Int>()
+        val source = fibonacci().scan(::initial, ::operation)
+        source.initialValues() shouldBe listOf(0.1, 2.1, 5.1, 10.1, 18.1)
+        source.restoredAfter(0) shouldBe listOf(2.1, 5.1, 10.1, 18.1)
+        source.restoredAfter(1) shouldBe listOf(5.1, 10.1, 18.1)
+        source.restoredAfter(2) shouldBe listOf(10.1, 18.1)
+        source.restoredAfter(3) shouldBe listOf(18.1)
+        source.restoredAfter(4) shouldBe emptyList<Int>()
     }
 })
 
