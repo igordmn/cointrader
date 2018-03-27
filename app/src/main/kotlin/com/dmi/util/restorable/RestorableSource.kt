@@ -80,12 +80,22 @@ fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Bo
 }
 
 fun <T> SuspendList<T>.asRestorableSource() = object : RestorableSource<Long, T> {
-    override fun initial(): ReceiveChannel<Item<Long, T>> = restored(0)
+    override fun initial(): ReceiveChannel<Item<Long, T>> = restored(-1)
 
     override fun restored(state: Long): ReceiveChannel<Item<Long, T>> = produce {
-        var i = state
+        var i = state + 1
         this@asRestorableSource.channel(i).consumeEach {
             send(Item(i++, it))
+        }
+    }
+}
+
+fun <T> List<T>.asRestorableSource() = object : RestorableSource<Int, T> {
+    override fun initial(): ReceiveChannel<Item<Int, T>> = restored(-1)
+
+    override fun restored(state: Int): ReceiveChannel<Item<Int, T>> = produce {
+        for (i in state + 1 until this@asRestorableSource.size) {
+            send(Item(i, this@asRestorableSource[i]))
         }
     }
 }

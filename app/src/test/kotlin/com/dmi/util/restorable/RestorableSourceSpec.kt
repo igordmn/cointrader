@@ -1,6 +1,8 @@
 package com.dmi.util.restorable
 
 import com.dmi.util.test.Spec
+import com.dmi.util.test.initialValues
+import com.dmi.util.test.restoredAfter
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.*
 
@@ -75,13 +77,3 @@ class RestorableSourceSpec : Spec({
         source.restoredAfter(4) shouldBe emptyList<Int>()
     }
 })
-
-suspend fun <STATE, VALUE> RestorableSource<STATE, VALUE>.initialValues(): List<VALUE> {
-    return initial().map { it.value }.toList()
-}
-
-suspend fun <STATE, VALUE> RestorableSource<STATE, VALUE>.restoredAfter(index: Int): List<VALUE> {
-    return restored(stateAt(index)).map { it.value }.toList()
-}
-
-suspend fun <STATE, VALUE> RestorableSource<STATE, VALUE>.stateAt(index: Int) = initial().elementAt(index).state

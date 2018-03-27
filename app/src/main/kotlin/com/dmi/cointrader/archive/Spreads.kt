@@ -24,13 +24,15 @@ fun Trade.initialSpread() = TimeSpread(
         spread = Spread(ask = price, bid = price)
 )
 
-fun Trade.nextSpread(previous: TimeSpread): TimeSpread {
-    val isAsk = previous.spread.ask - price <= price - previous.spread.bid
+fun Trade.nextSpread(previous: TimeSpread): TimeSpread = nextSpread(previous.spread)
+
+fun Trade.nextSpread(previous: Spread): TimeSpread {
+    val isAsk = previous.ask - price <= price - previous.bid
     return TimeSpread(
             time = time,
             spread = Spread(
-                ask = if (isAsk) price else previous.spread.ask,
-                bid = if (!isAsk) price else previous.spread.bid
+                ask = if (isAsk) price else previous.ask,
+                bid = if (!isAsk) price else previous.bid
             )
     )
 }
@@ -47,7 +49,7 @@ fun <STATE> RestorableSource<STATE, TimeSpread>.periodical(
     private fun ReceiveChannel<Item<STATE, TimeSpread>>.periodical(startPeriod: Period, last: Item<STATE, TimeSpread>? = null) = produce {
         consume {
             val it = iterator()
-            if (it.hasNext() || last != null) {
+            if (last != null || it.hasNext()) {
                 var lastBefore = last ?: it.next()
                 periodSequence(startPeriod).forEach { period ->
                     var firstAfter = lastBefore
