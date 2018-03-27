@@ -58,7 +58,7 @@ class RangesSpec : Spec() {
             (3..7).coerceIn(4..10) shouldBe 4..7
             (3..7).coerceIn(1..3) shouldBe 3..3
             (3..7).coerceIn(1..2) shouldBe 2..2
-            (3..7).coerceIn(8..9) shouldBe 7..7
+            (3..7).coerceIn(8..9) shouldBe 8..8
         }
     }
 }
