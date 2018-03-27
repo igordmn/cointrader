@@ -57,4 +57,22 @@ class PeriodsSpec : Spec({
         (instant(22)..instant(26)).periods(space) shouldBe 1..1
         (instant(22)..instant(27)).periods(space) shouldBe 1..2
     }
+
+    "tradePeriods" {
+        (0..9).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0, 3, 6, 9)
+        (0..8).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0, 3, 6)
+        (1..8).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3, 6)
+        (3..6).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3, 6)
+        (4..6).tradePeriods(tradeSize = 3).toList() shouldBe listOf(6)
+        (3..5).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3)
+        (4..5).tradePeriods(tradeSize = 3).toList() shouldBe emptyList<Int>()
+    }
+
+    "nextTradePeriod" {
+        0.nextTradePeriod(tradeSize = 3) shouldBe 3
+        2.nextTradePeriod(tradeSize = 3) shouldBe 3
+        3.nextTradePeriod(tradeSize = 3) shouldBe 6
+        5.nextTradePeriod(tradeSize = 3) shouldBe 6
+        6.nextTradePeriod(tradeSize = 3) shouldBe 9
+    }
 })

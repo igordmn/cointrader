@@ -42,3 +42,9 @@ data class PeriodSpace(
 fun periodSequence(start: Period = 0): Sequence<Period> = generateSequence(start) { it + 1 }
 
 fun InstantRange.periods(space: PeriodSpace): PeriodRange = space.ceil(start)..space.floor(endInclusive)
+
+fun PeriodRange.tradePeriods(tradeSize: Int): PeriodProgression {
+    return tradeSize * (start ceilDiv tradeSize)..tradeSize * (endInclusive floorDiv tradeSize) step tradeSize
+}
+
+fun Period.nextTradePeriod(tradeSize: Int): Period = ((this + 1) ceilDiv tradeSize) * tradeSize
