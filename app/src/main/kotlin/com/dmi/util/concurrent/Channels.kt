@@ -132,7 +132,7 @@ fun <E> ReceiveChannel<E>.withLongIndex(startIndex: Long = 0): ReceiveChannel<Lo
 }
 
 fun <T> infiniteChannel(nextValue: suspend () -> T): ReceiveChannel<T> = produce {
-    while (true) {
+    while (isActive) {
         send(nextValue())
     }
 }

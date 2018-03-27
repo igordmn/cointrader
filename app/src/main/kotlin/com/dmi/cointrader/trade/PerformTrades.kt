@@ -6,6 +6,7 @@ import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
+import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
@@ -41,14 +42,26 @@ suspend fun performRealTrades() = resourceContext {
     val config = savedTradeConfig()
     val network = trainedNetwork()
     val exchange = binanceExchangeForTrade(log)
-    val history = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
+    val archive = archive(config, exchange, config.periodSpace.floor(exchange.currentTime()))
+    val syncClock = suspend { binanceClock(exchange) }
 
+    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods) { clock, period ->
+        performRealTrade(config, exchange, archive, period, clock, network, log)
+    }
+}
+
+suspend fun forEachRealTradePeriod(
+        syncClock: suspend () -> Clock,
+        space: PeriodSpace,
+        tradePeriods: Int,
+        action: suspend (Clock, Period) -> Unit
+) {
     val iterator = object {
         var previousPeriod = Int.MIN_VALUE
 
         fun nextAfter(time: Instant): Period {
-            val current = config.periodSpace.floor(time)
-            val next = current.nextTradePeriod(config.tradePeriods)
+            val current = space.floor(time)
+            val next = current.nextTradePeriod(tradePeriods)
             return max(previousPeriod + 1, next).also {
                 previousPeriod = it
             }
@@ -56,14 +69,12 @@ suspend fun performRealTrades() = resourceContext {
     }
 
     while (isActive) {
-        val clock = binanceClock(exchange)
+        val clock = syncClock()
         val currentTime = clock.instant()
         val nextPeriod = iterator.nextAfter(currentTime)
-        val nextTime = config.periodSpace.timeOf(nextPeriod).also {
-            require(it >= currentTime)
-        }
+        val nextTime = space.timeOf(nextPeriod)
         delay(nextTime - currentTime)
-        performRealTrade(config, exchange, history, nextPeriod, clock, network, log)
+        action(clock, nextPeriod)
     }
 }
 

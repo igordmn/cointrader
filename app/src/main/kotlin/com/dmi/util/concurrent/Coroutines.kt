@@ -2,7 +2,7 @@ package com.dmi.util.concurrent
 
 import kotlinx.coroutines.experimental.async
 
-fun suspend(action: suspend ()-> Unit) : suspend ()-> Unit = action
+fun <T> suspend(action: suspend ()-> T) : suspend ()-> T = action
 
 suspend fun <T> Iterable<T>.forEachAsync(action: suspend (T) -> Unit) = map { value ->
     async {
