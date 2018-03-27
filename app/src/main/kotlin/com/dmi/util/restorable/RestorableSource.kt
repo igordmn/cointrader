@@ -4,16 +4,13 @@ import arrow.core.Option
 import arrow.syntax.applicative.pure
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.map
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.serialization.Serializable
 import com.dmi.util.concurrent.zip
 import com.dmi.util.restorable.RestorableSource.Item
-import kotlinx.coroutines.experimental.channels.consumeEach
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.channels.takeWhile
 import arrow.core.Option.Companion.pure
 import arrow.core.Option.Companion.empty
 import arrow.core.getOrElse
+import kotlinx.coroutines.experimental.channels.*
 
 interface RestorableSource<STATE, out VALUE> {
     fun initial(): ReceiveChannel<Item<STATE, VALUE>>
@@ -70,6 +67,11 @@ fun <STATE, T, R> RestorableSource<STATE, T>.map(transform: (T) -> R) = object :
     override fun initial() = this@map.initial().map(this::transform)
     override fun restored(state: STATE) = this@map.restored(state).map(this::transform)
     private fun transform(item: Item<STATE, T>) = Item(item.state, transform(item.value))
+}
+
+fun <STATE, T> RestorableSource<STATE, T>.drop(count: Int) = object : RestorableSource<STATE, T> {
+    override fun initial() = this@drop.initial().drop(count)
+    override fun restored(state: STATE) = this@drop.restored(state)
 }
 
 fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
