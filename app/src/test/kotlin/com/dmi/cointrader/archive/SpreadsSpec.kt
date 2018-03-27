@@ -1,10 +1,7 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.util.restorable.asRestorableSource
-import com.dmi.util.test.Spec
-import com.dmi.util.test.duration
-import com.dmi.util.test.initialValues
-import com.dmi.util.test.instant
+import com.dmi.util.test.*
 import io.kotlintest.matchers.shouldBe
 
 class SpreadsSpec: Spec({
@@ -27,7 +24,8 @@ class SpreadsSpec: Spec({
         ).asRestorableSource()
 
         "test1" {
-            spreads.periodical(PeriodSpace(instant(16), duration(3))).initialValues(11) shouldBe listOf(
+            val source = spreads.periodical(PeriodSpace(instant(16), duration(3)))
+            source.checkValues(listOf(
                     PeriodSpread(0, Spread(10.0, 1.0)),  // 16
                     PeriodSpread(1, Spread(10.0, 1.0)),  // 19
                     PeriodSpread(2, Spread(10.0, 1.0)),  // 22
@@ -39,7 +37,7 @@ class SpreadsSpec: Spec({
                     PeriodSpread(8, Spread(70.0, 7.0)),  // 40
                     PeriodSpread(9, Spread(70.0, 7.0)),  // 43
                     PeriodSpread(10, Spread(70.0, 7.0))  // 46
-            )
+            ))
         }
 
         "test2" {
@@ -71,6 +69,48 @@ class SpreadsSpec: Spec({
                     PeriodSpread(8, Spread(70.0, 7.0)),  // 41
                     PeriodSpread(9, Spread(70.0, 7.0)),  // 44
                     PeriodSpread(10, Spread(70.0, 7.0))  // 47
+            )
+        }
+
+        "test4" {
+            spreads.periodical(PeriodSpace(instant(22), duration(3))).initialValues(4) shouldBe listOf(
+                    PeriodSpread(0, Spread(10.0, 1.0)),  // 22
+                    PeriodSpread(1, Spread(40.0, 4.0)),  // 25
+                    PeriodSpread(2, Spread(50.0, 5.0)),  // 28
+                    PeriodSpread(3, Spread(50.0, 5.0))   // 31
+            )
+        }
+
+        "test5" {
+            spreads.periodical(PeriodSpace(instant(26), duration(3))).initialValues(4) shouldBe listOf(
+                    PeriodSpread(0, Spread(40.0, 4.0)),  // 26
+                    PeriodSpread(1, Spread(50.0, 5.0)),  // 29
+                    PeriodSpread(2, Spread(60.0, 6.0)),  // 32
+                    PeriodSpread(3, Spread(60.0, 6.0))   // 35
+            )
+        }
+
+        "test6" {
+            spreads.periodical(PeriodSpace(instant(39), duration(3))).initialValues(3) shouldBe listOf(
+                    PeriodSpread(0, Spread(60.0, 6.0)),  // 39
+                    PeriodSpread(1, Spread(70.0, 7.0)),  // 42
+                    PeriodSpread(2, Spread(70.0, 7.0))   // 45
+            )
+        }
+
+        "test7" {
+            spreads.periodical(PeriodSpace(instant(40), duration(3))).initialValues(3) shouldBe listOf(
+                    PeriodSpread(0, Spread(70.0, 7.0)),
+                    PeriodSpread(1, Spread(70.0, 7.0)),
+                    PeriodSpread(2, Spread(70.0, 7.0))
+            )
+        }
+
+        "test8" {
+            spreads.periodical(PeriodSpace(instant(41), duration(3))).initialValues(3) shouldBe listOf(
+                    PeriodSpread(0, Spread(70.0, 7.0)),
+                    PeriodSpread(1, Spread(70.0, 7.0)),
+                    PeriodSpread(2, Spread(70.0, 7.0))
             )
         }
     }
