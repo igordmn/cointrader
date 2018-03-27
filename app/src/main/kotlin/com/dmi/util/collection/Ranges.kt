@@ -18,10 +18,6 @@ fun LongRange.chunked(size: Long): Sequence<LongRange> = buildSequence {
     }
 }
 
-fun <T : Comparable<T>, R : Comparable<R>> ClosedRange<T>.rangeMap(
-        transform: (T) -> R
-): ClosedRange<R> = transform(start)..transform(endInclusive)
-
 fun IntRange.toLong() = start.toLong()..endInclusive.toLong()
 
 fun IntProgression.size() = 1 + ((last - first) floorDiv step)
@@ -37,4 +33,6 @@ operator fun <T : Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>
     return start <= another.start && another.endInclusive <= endInclusive
 }
 
-fun IntRange.coerceIn(other: IntRange): IntRange = start.coerceIn(other)..endInclusive.coerceIn(other)
+fun IntRange.coerceIn(other: IntRange): IntRange {
+    return start.coerceIn(other)..endInclusive.coerceIn(other)
+}
