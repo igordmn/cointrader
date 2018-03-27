@@ -51,47 +51,9 @@ fun <T> List<ReceiveChannel<T>>.zip(bufferSize: Int = 100): ReceiveChannel<List<
     }
 }
 
-fun <T, M, C> ReceiveChannel<T>.chunkedBy(marker: (T) -> M, fold: (M, List<T>) -> C): ReceiveChannel<C> {
-    return chunkedBy(marker).map { (key, value) ->
-        fold(key, value)
-    }
-}
-
-fun <T, M> ReceiveChannel<T>.chunkedBy(marker: (T) -> M): ReceiveChannel<Pair<M, List<T>>> = produce {
-    class Billet(val mark: M, firstItem: T) {
-        val items = arrayListOf(firstItem)
-    }
-
-    var billet: Billet? = null
-
-    consumeEach { item ->
-        val mark = marker(item)
-
-        billet = billet?.let {
-            if (it.mark != mark) {
-                send(Pair(it.mark, it.items))
-                Billet(mark, item)
-            } else {
-                it.items.add(item)
-                it
-            }
-        } ?: Billet(mark, item)
-    }
-
-    billet?.let {
-        send(Pair(it.mark, it.items))
-    }
-}
-
 fun <T, R> ReceiveChannel<T>.map(transform: (T) -> R): ReceiveChannel<R> = produce {
     consumeEach {
         send(transform(it))
-    }
-}
-
-fun <T> ReceiveChannel<T>.filter(predicate: (T) -> Boolean): ReceiveChannel<T> = produce {
-    consumeEach {
-        if (predicate(it)) send(it)
     }
 }
 
@@ -112,12 +74,6 @@ fun <T> ReceiveChannel<T>.withPrevious(num: Int): ReceiveChannel<CurrentAndPrevi
             null
         }
         send(CurrentAndPrevious(it, previous))
-    }
-}
-
-fun <T> buildChannel(build: suspend () -> ReceiveChannel<T>): ReceiveChannel<T> = produce {
-    build().consumeEach {
-        send(it)
     }
 }
 

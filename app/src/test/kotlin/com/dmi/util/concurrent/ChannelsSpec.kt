@@ -67,62 +67,67 @@ class ChannelsSpec : Spec() {
             "empty channel with non-empty" {
                 listOf(
                         channelOf(1, 2, 3, 4),
-                        channelOf<Int>()
+                        channelOf()
                 ).zip(5).toList() shouldBe emptyList<Int>()
             }
         }
 
-        "chunkedBy" - {
-            "simple" {
-                channelOf(1, 1, 2, 2, 2, 3)
-                        .chunkedBy { it }
-                        .toList() shouldBe listOf(
-                        Pair(1, listOf(1, 1)),
-                        Pair(2, listOf(2, 2, 2)),
-                        Pair(3, listOf(3))
-                )
-            }
-
-            "empty" {
-                channelOf<Int>()
-                        .chunkedBy { it }
-                        .toList() shouldBe emptyList<Int>()
-            }
-        }
-
         "withPrevious" - {
+            infix fun Int?.andNext(other: Int?) = CurrentAndPrevious(this, other)
+
             "empty" {
                 channelOf<Int>().withPrevious(1).toList() shouldBe emptyList<Int>()
             }
 
             "single" {
-                channelOf(1).withPrevious(1).toList() shouldBe listOf(1 to null)
+                channelOf(1).withPrevious(1).toList() shouldBe listOf(1 andNext null)
             }
 
             "multiple" {
                 channelOf(1, 2, 3).withPrevious(1).toList() shouldBe listOf(
-                        1 to null,
-                        2 to 1,
-                        3 to 2
+                        1 andNext null,
+                        2 andNext 1,
+                        3 andNext 2
                 )
             }
 
             "with step 2" {
                 channelOf(1, 2, 3, 4).withPrevious(2).toList() shouldBe listOf(
-                        1 to null,
-                        2 to null,
-                        3 to 1,
-                        4 to 2
+                        1 andNext null,
+                        2 andNext null,
+                        3 andNext 1,
+                        4 andNext 2
                 )
             }
 
             "zero previous" {
                 channelOf(1, 2, 3, 4).withPrevious(0).toList() shouldBe listOf(
-                        1 to 1,
-                        2 to 2,
-                        3 to 3,
-                        4 to 4
+                        1 andNext 1,
+                        2 andNext 2,
+                        3 andNext 3,
+                        4 andNext 4
                 )
+            }
+        }
+
+        "windowed" - {
+            "empty" {
+                emptyList<Int>().windowed(1, 1).toList() shouldBe emptyList<List<Int>>()
+                emptyList<Int>().windowed(1, 2).toList() shouldBe emptyList<List<Int>>()
+                emptyList<Int>().windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
+            }
+
+            "single" {
+                listOf(1).windowed(1, 1).toList() shouldBe listOf(listOf(1))
+                listOf(1).windowed(1, 2).toList() shouldBe listOf(listOf(1))
+                listOf(1).windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
+            }
+
+            "multiple" {
+                listOf(1, 2, 3, 4, 5).windowed(1, 1).toList() shouldBe listOf(listOf(1), listOf(2), listOf(3), listOf(4), listOf(5))
+                listOf(1, 2, 3, 4, 5).windowed(1, 2).toList() shouldBe listOf(listOf(1), listOf(3), listOf(5))
+                listOf(1, 2, 3, 4, 5).windowed(2, 1).toList() shouldBe listOf(listOf(1, 2), listOf(2, 3), listOf(3, 4), listOf(4, 5))
+                listOf(1, 2, 3, 4, 5).windowed(2, 2).toList() shouldBe listOf(listOf(1, 2), listOf(3, 4))
             }
         }
     }
