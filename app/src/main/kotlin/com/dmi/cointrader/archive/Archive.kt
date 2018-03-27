@@ -55,7 +55,7 @@ suspend fun archive(
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
             val endPeriod = indices.last.toInt() + 1
             val time = space.timeOf(endPeriod)
-            println("Moment cached: $time")
+            println("Spreads cached: $time")
         }
     }
 
@@ -63,7 +63,7 @@ suspend fun archive(
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
-    val momentsFile = cacheDir.resolve("moments")
+    val momentsFile = cacheDir.resolve("spreads")
     createDirectories(cacheDir)
     createDirectories(tradesDir)
 
