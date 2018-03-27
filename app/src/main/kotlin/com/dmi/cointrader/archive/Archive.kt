@@ -63,7 +63,7 @@ suspend fun archive(
 
     val cacheDir = fileSystem.getPath("data/cache/binance")
     val tradesDir = cacheDir.resolve("trades")
-    val momentsFile = cacheDir.resolve("spreads")
+    val spreadsFile = cacheDir.resolve("spreads")
     createDirectories(cacheDir)
     createDirectories(tradesDir)
 
@@ -105,7 +105,7 @@ suspend fun archive(
             .zip()
 
     val spreadsList = syncFileList(
-            momentsFile,
+            spreadsFile,
             SpreadsSourceConfig.serializer(),
             PeriodicalState.serializer(
                     ScanState.serializer(
