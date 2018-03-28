@@ -80,11 +80,13 @@ def build_best_portfolio(
 
 class NeuralNetwork:
     def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
+        tflearn.config.init_training_mode()
+
         self.alt_asset_number = alt_asset_number
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
-        self.best_portfolio = build_best_portfolio(self.batch_size, self.history, self.current_portfolio)
+        self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.history, self.current_portfolio)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -147,7 +149,7 @@ class NeuralTrainer:
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
         self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 
-        profits_size, profits = compute_profits(network.batch_size, network.best_portfolio, self.asks, self.bids, fee)
+        profits_size, profits = compute_profits(network.batch_size, network.best_portfolio_tensor, self.asks, self.bids, fee)
         self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / tf.to_float(profits_size))
 
         loss = -tf.reduce_mean(tf.log(profits))
@@ -157,7 +159,7 @@ class NeuralTrainer:
         self.batch_size = network.batch_size
         self.history = network.history
         self.current_portfolio = network.current_portfolio
-        self.best_portfolio = network.best_portfolio
+        self.best_portfolio_tensor = network.best_portfolio_tensor
         self.session = network.session
 
     def train(self, current_portfolio, history, asks, bids):
@@ -173,7 +175,7 @@ class NeuralTrainer:
                 geometric_mean_profit
         """
         tflearn.is_training(True, self.session)
-        results = self.session.run([self.train_tensor, self.best_portfolio, self.geometric_mean_profit], feed_dict={
+        results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit], feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: history,
             self.asks: asks,
