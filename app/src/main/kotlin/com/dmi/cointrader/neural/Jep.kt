@@ -45,7 +45,7 @@ fun numpyArray(n1: Int,
     return NDArray(data, n1, n2)
 }
 
-operator fun NDFloatArray.get(i1: Int, i2: Int) = data[i1 * dimensions[0] + i2]
+operator fun NDFloatArray.get(i1: Int, i2: Int) = data[i2 * dimensions[0] + i1]
 
 fun NDFloatArray.forEach(accept: (i1: Int, i2: Int, value: Float) -> Unit) {
     var k = 0

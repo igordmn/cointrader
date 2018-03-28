@@ -185,4 +185,4 @@ class NeuralTrainer:
             self.batch_size: history.shape[0]
         })
 
-        return results[1:]
+        return results[1], float(results[2])

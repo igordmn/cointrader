@@ -168,7 +168,7 @@ class NeuralTrainer(
         require(bids.dimensions[0] == currentPortfolio.dimensions[0])
         require(bids.dimensions[1] == net.config.altAssetNumber)
 
-        val result = jep.invoke("train", currentPortfolio, history, asks, bids) as Array<*>
+        val result = jep.invoke("train", currentPortfolio, history, asks, bids) as List<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
         return ResultMatrix(newPortions, geometricMeanProfit)
