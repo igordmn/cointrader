@@ -103,6 +103,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
                 val trades = api.getAggTrades(name, id.toString(), chunkLoadCount, null, null)
                 if (trades.isNotEmpty()) {
                     trades.forEach {
+                        require(it.isBestPrice)
                         send(it.convert())
                     }
                     id = trades.last().aggregatedTradeId + 1
@@ -116,7 +117,8 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
                 Instant.ofEpochMilli(tradeTime),
                 aggregatedTradeId,
                 price.toBigDecimal(),
-                quantity.toBigDecimal()
+                quantity.toBigDecimal(),
+                isBuyerMaker
         )
 
         fun broker(clock: Clock) = object : Broker {
@@ -164,6 +166,6 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         }
     }
 
-    data class Trade(val time: Instant, val aggTradeId: Long, val price: BigDecimal, val amount: BigDecimal)
+    data class Trade(val time: Instant, val aggTradeId: Long, val price: BigDecimal, val amount: BigDecimal, val isBuyerMaker: Boolean)
     data class Info(val markets: Set<String>, val marketToLimits: Map<String, Limits>)
 }

@@ -3,16 +3,8 @@ package com.dmi.cointrader.archive
 import com.dmi.util.lang.millis
 import com.dmi.util.restorable.asRestorableSource
 import com.dmi.util.test.*
-import io.kotlintest.matchers.shouldBe
 
 class SpreadsSpec: Spec({
-    "nextSpread" {
-        Trade(instant(22), 10.0, 0.0).nextSpread(previous = Spread(12.0, 11.00)) shouldBe TimeSpread(instant(22), Spread(12.0, 10.0))
-        Trade(instant(22), 11.4, 0.0).nextSpread(previous = Spread(12.0, 11.00)) shouldBe TimeSpread(instant(22), Spread(12.0, 11.4))
-        Trade(instant(22), 11.5, 0.0).nextSpread(previous = Spread(12.0, 11.00)) shouldBe TimeSpread(instant(22), Spread(11.5, 11.0))
-        Trade(instant(22), 13.0, 0.0).nextSpread(previous = Spread(12.0, 11.00)) shouldBe TimeSpread(instant(22), Spread(13.0, 11.0))
-    }
-
     "periodical" - {
         val spreads = listOf(
                 TimeSpread(instant(22), Spread(10.0, 1.0)),
