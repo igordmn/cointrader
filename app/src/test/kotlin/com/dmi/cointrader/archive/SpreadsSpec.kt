@@ -3,8 +3,48 @@ package com.dmi.cointrader.archive
 import com.dmi.util.lang.millis
 import com.dmi.util.restorable.asRestorableSource
 import com.dmi.util.test.*
+import io.kotlintest.matchers.shouldBe
 
 class SpreadsSpec: Spec({
+    "trades to spreads" {
+        val trades = listOf(
+                Trade(instant(3), 60.0, 0.0, false),
+                Trade(instant(4), 61.0, 0.0, false),
+                Trade(instant(5), 50.0, 0.0, true),
+                Trade(instant(6), 50.1, 0.0, true),
+                Trade(instant(7), 50.0, 0.0, true),
+                Trade(instant(8), 50.2, 0.0, true),
+                Trade(instant(9), 53.0, 0.0, false),
+                Trade(instant(10), 54.0, 0.0, true),
+                Trade(instant(11), 53.9, 0.0, true),
+                Trade(instant(12), 55.0, 0.0, false),
+                Trade(instant(16), 51.0, 0.0, false)
+        )
+
+        val spreads = ArrayList<TimeSpread?>()
+        
+        var billet = trades[0].initialSpreadBillet()
+        spreads.add(if (billet.isReady()) billet.build() else null)
+        for (i in 1 until trades.size) {
+            billet = trades[i].nextSpreadBillet(billet)
+            spreads.add(if (billet.isReady()) billet.build() else null)
+        }
+
+        spreads shouldBe listOf(
+                null,
+                null,
+                TimeSpread(instant(5), Spread(61.0, 50.0)),
+                TimeSpread(instant(6), Spread(61.0, 50.1)),
+                TimeSpread(instant(7), Spread(61.0, 50.0)),
+                TimeSpread(instant(8), Spread(61.0, 50.2)),
+                TimeSpread(instant(9), Spread(53.0, 50.2)),
+                TimeSpread(instant(10), Spread(54.0, 54.0)),
+                TimeSpread(instant(11), Spread(54.0, 53.9)),
+                TimeSpread(instant(12), Spread(55.0, 53.9)),
+                TimeSpread(instant(16), Spread(51.0, 51.0))
+        )
+    }
+
     "periodical" - {
         val spreads = listOf(
                 TimeSpread(instant(22), Spread(10.0, 1.0)),

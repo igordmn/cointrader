@@ -31,38 +31,39 @@ data class PeriodSpread(val period: Period, val spread: Spread)
 class TimeSpreadBillet(
         @Serializable(with = InstantSerializer::class) val time: Instant,
         val lastSell: Double?,
-        val lastBuy: Double?,
-        val lastIsBuy: Boolean
+        val lastBuy: Double?
 ) {
     fun isReady(): Boolean = lastSell != null && lastBuy != null
-
-    fun build(): TimeSpread {
-        val lastSell = lastSell!!
-        val lastBuy = lastBuy!!
-        return TimeSpread(
-                time,
-                spread = when {
-                    lastSell >= lastBuy -> Spread(lastSell, lastBuy)
-                    lastIsBuy -> Spread(lastBuy, lastBuy)
-                    else -> Spread(lastSell, lastSell)
-                }
-        )
-    }
+    fun build() = TimeSpread(time, Spread(lastSell!!, lastBuy!!))
 }
 
 fun Trade.initialSpreadBillet() = TimeSpreadBillet(
         time = time,
         lastSell = if (!isMakerBuyer) price else null,
-        lastBuy = if (isMakerBuyer) price else null,
-        lastIsBuy = isMakerBuyer
+        lastBuy = if (isMakerBuyer) price else null
 )
 
-fun Trade.nextSpreadBillet(previous: TimeSpreadBillet) = TimeSpreadBillet(
-        time = time,
-        lastSell = if (!isMakerBuyer) price else previous.lastSell,
-        lastBuy = if (isMakerBuyer) price else previous.lastBuy,
-        lastIsBuy = isMakerBuyer
-)
+fun Trade.nextSpreadBillet(previous: TimeSpreadBillet): TimeSpreadBillet {
+    val lastSell: Double?
+    val lastBuy: Double?
+    if (isMakerBuyer) {
+        lastBuy = price
+        lastSell = if (previous.lastSell != null && price > previous.lastSell) {
+            price
+        } else {
+            previous.lastSell
+        }
+    } else {
+        lastSell = price
+        lastBuy = if (previous.lastBuy != null && price < previous.lastBuy) {
+            price
+        } else {
+            previous.lastBuy
+        }
+    }
+
+    return TimeSpreadBillet(time, lastSell, lastBuy)
+}
 
 fun <SOURCE_STATE> spreadsStateSerializer(source: KSerializer<SOURCE_STATE>) =
         ScanState.serializer(
