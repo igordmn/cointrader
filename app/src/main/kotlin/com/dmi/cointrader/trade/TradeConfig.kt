@@ -36,6 +36,7 @@ data class TradeConfig(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00"),
                 duration = seconds(10)
         ),
+        val archiveReloadCount: Int = 6 * 10,
         val tradePeriods: Int = 1 * periodSpace.periodsPerMinute().toInt(),    // trade every FIVE minutes
         val historyPeriods: Int = 5 * periodSpace.periodsPerMinute().toInt(),  // get historical prices every last FIVE minutes
         // start trade only after delay from start of trading period

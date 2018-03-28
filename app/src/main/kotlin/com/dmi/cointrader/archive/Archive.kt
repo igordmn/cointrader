@@ -40,8 +40,8 @@ suspend fun archive(
         exchange: BinanceExchange,
         currentPeriod: Period,
         fileSystem: FileSystem = FileSystems.getDefault(),
-        tradeLoadChunk: Int = 500,
-        reloadCount: Int = 10
+        reloadCount: Int,
+        tradeLoadChunk: Int = 500
 ): Archive {
     fun tradeAppendedLog(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {

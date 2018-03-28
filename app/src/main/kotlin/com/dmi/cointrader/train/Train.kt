@@ -43,7 +43,10 @@ suspend fun train() = resourceContext {
     require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
     val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
-    val archive = archive(tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last)
+    val archive = archive(
+            tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
+            reloadCount = tradeConfig.archiveReloadCount
+    )
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
