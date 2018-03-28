@@ -117,7 +117,9 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(best_portfolio, asks, bids, fee):
+def compute_profits(batch_size, best_portfolio, asks, bids, fee):
+    asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
+    bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
     prices = (asks + bids) / 2.0
     costs = (1.0 - fee) * (bids / prices)
     
@@ -130,9 +132,9 @@ def compute_profits(best_portfolio, asks, bids, fee):
     costs = costs[1:]
     best_portfolio = best_portfolio[1:]
     current_portfolio = future_portfolio[:-1]
-    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * costs, axis=1)
+    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * costs[:, 1:], axis=1)
 
-    return price_incs * best_portfolio * cost
+    return batch_size - 2, price_incs * best_portfolio * cost
 
 
 class NeuralTrainer:
@@ -140,8 +142,8 @@ class NeuralTrainer:
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
         self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 
-        profits = compute_profits(network.best_portfolio, self.asks, self.bids, fee)
-        self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / profits.shape[0])
+        profits_size, profits = compute_profits(network.batch_size, network.best_portfolio, self.asks, self.bids, fee)
+        self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / tf.to_float(profits_size))
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
