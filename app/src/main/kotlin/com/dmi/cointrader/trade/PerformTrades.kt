@@ -7,6 +7,7 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
+import com.dmi.util.io.appendText
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
@@ -25,6 +26,10 @@ import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Files.createDirectories
+import java.nio.file.Path
+import java.nio.file.Paths
 
 suspend fun askAndPerformRealTrades() {
     println("Run trading real money? Enter 'yes'")
@@ -115,7 +120,8 @@ suspend fun performRealTrade(
 private fun writeCapital(result: TradeResult, config: TradeConfig, period: Period) {
     val time = config.periodSpace.timeOf(period)
     val capital = result.totalCapital
-    File("data/capitals.txt").appendText("$time\t$capital\n")
+    createDirectories(Paths.get("data/logs"))
+    Paths.get("data/logs/capitals.log").appendText("$time\t$capital\n")
 }
 
 suspend fun performTestTrades(
