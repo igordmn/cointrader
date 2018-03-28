@@ -13,47 +13,47 @@ class TradeSourceSpec : Spec({
     "test1" {
         val source = TradeSource(market, instant(1500007920000L), chunkLoadCount = 3)
         source.initialValues() shouldBe listOf(
-                Trade(instant(1500005394457L), 20.00000000, 0.01900000),
-                Trade(instant(1500005536859L), 1.59000000, 0.01909900),
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900),
-                Trade(instant(1500007884037L), 3.87000000, 0.01922300)
+                Trade(instant(1500005394457L), 0.01900000, 20.00000000),
+                Trade(instant(1500005536859L), 0.01909900, 1.59000000),
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000),
+                Trade(instant(1500007884037L), 0.01922300, 3.87000000)
         )
         source.restoredAfter(0) shouldBe listOf(
-                Trade(instant(1500005536859L), 1.59000000, 0.01909900),
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900),
-                Trade(instant(1500007884037L), 3.87000000, 0.01922300)
+                Trade(instant(1500005536859L), 0.01909900, 1.59000000),
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000),
+                Trade(instant(1500007884037L), 0.01922300, 3.87000000)
         )
         source.restoredAfter(1) shouldBe listOf(
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900),
-                Trade(instant(1500007884037L), 3.87000000, 0.01922300)
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000),
+                Trade(instant(1500007884037L), 0.01922300, 3.87000000)
         )
     }
 
     "test2" {
         val source = TradeSource(market, instant(1500007691579L), chunkLoadCount = 3)
         source.initialValues() shouldBe listOf(
-                Trade(instant(1500005394457L), 20.00000000, 0.01900000),
-                Trade(instant(1500005536859L), 1.59000000, 0.01909900),
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900)
+                Trade(instant(1500005394457L), 0.01900000, 20.00000000),
+                Trade(instant(1500005536859L), 0.01909900, 1.59000000),
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000)
         )
         source.restoredAfter(0) shouldBe listOf(
-                Trade(instant(1500005536859L), 1.59000000, 0.01909900),
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900)
+                Trade(instant(1500005536859L), 0.01909900, 1.59000000),
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000)
         )
         source.restoredAfter(1) shouldBe listOf(
-                Trade(instant(1500006066191L), 1.90000000, 0.01914800),
-                Trade(instant(1500007121710L), 13.75000000, 0.01909600),
-                Trade(instant(1500007691579L), 4.79000000, 0.01932900)
+                Trade(instant(1500006066191L), 0.01914800, 1.90000000),
+                Trade(instant(1500007121710L), 0.01909600, 13.75000000),
+                Trade(instant(1500007691579L), 0.01932900, 4.79000000)
         )
     }
 })

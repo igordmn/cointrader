@@ -7,29 +7,44 @@ import com.dmi.util.test.Spec
 import com.dmi.util.test.instant
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import io.kotlintest.matchers.shouldBe
+import kotlinx.coroutines.experimental.channels.toList
 
 class ArchiveSpec : Spec({
     val space = PeriodSpace(instant(1500005040000L), minutes(5))
     val fileSystem = Jimfs.newFileSystem(Configuration.unix())
     val assets = TradeAssets(main = "BTC", alts = listOf("ETH", "NEO", "LTC"))
     val exchange = binanceExchangeForInfo()
-    val period = space.floor(instant(2))
-    val archive = archive(space, assets, exchange, period, fileSystem, tradeLoadChunk = 20, reloadCount = 1)
+    val initialPeriod = space.floor(instant(2))
+    val archive = archive(space, assets, exchange, initialPeriod, fileSystem, tradeLoadChunk = 20, reloadCount = 1)
 
     val syncs = object {
+        suspend fun initial() {
+
+        }
+
         suspend fun first() {
-            archive.sync(space.floor(LocalDateTime.of(2017, 7, 14, 7, 40, 0).toInstant(ZoneOffset.of("+3"))))
+            val period = space.floor(instant(1500007200000L))
+            archive.sync(period)
+
+            archive.historyAt(0..period).toList() shouldBe listOf(
+                    listOf()
+            )
         }
 
         suspend fun second() {
-
+            val period = space.floor(instant(1500007920000L))
+            archive.sync(period)
         }
 
         suspend fun third() {
-
+            val period = space.floor(instant(1500008100000L))
+            archive.sync(period)
         }
+    }
+
+    "initial" {
+        syncs.initial()
     }
 
     "third sync only" {
@@ -56,36 +71,12 @@ class ArchiveSpec : Spec({
 
 /*
 
-    Times:
-
-    1500005040000
-    1500005340000
-    1500005640000
-    1500005940000
-    1500006240000
-    1500006540000
-    1500006840000
-    1500007140000
-    1500007440000
-    1500007740000
-    1500008040000
-
-    Current times:
-
-    1500005040000
-    1500007200000
-    1500007920000
-    1500008100000
-
-
-    Trades:
-
     ETH
     1500004804757 0.08000000 0.04300000
     1500004971477 0.08000000 0.18000000
     1500004979827 0.08000000 0.12600000
     1500005019095 0.08000000 0.21200000
-    Candle(0.08000000, 0.08000000, 0.08000000)  // 1500005040000
+    Spread(0.08000000, 0.08000000, 0.08000000)  // 1500005040000
     1500005045212 0.08000000 0.12500000
     1500005083426 0.08000000 0.04000000
     1500005122638 0.08000000 0.12600000

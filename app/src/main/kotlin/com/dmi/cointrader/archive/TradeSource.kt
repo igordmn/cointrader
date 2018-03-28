@@ -28,8 +28,8 @@ class TradeSource(
             TradeState(trade.aggTradeId, trade.time),
             Trade(
                     trade.time,
-                    trade.amount.toDouble(),
-                    trade.price.toDouble()
+                    trade.price.toDouble(),
+                    trade.amount.toDouble()
             )
     )
 }
