@@ -1,6 +1,11 @@
-# from java.lang import System  # for debugging (System.out.println), standard python 'print' doesn't work in jep
 import tflearn
 import tensorflow as tf
+
+
+# standard python 'print' doesn't work in jep
+def debug(obj):
+    from java.lang import System
+    System.out.println(str(obj))
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
@@ -77,7 +82,7 @@ class NeuralNetwork:
     def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
         self.alt_asset_number = alt_asset_number
         self.batch_size = tf.placeholder(tf.int32, shape=[])
-        self.history = tf.placeholder(tf.float32, shape=[None, history_indicator_number, alt_asset_number, history_size])
+        self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
         self.best_portfolio = build_best_portfolio(self.batch_size, self.history, self.current_portfolio)
 
@@ -147,7 +152,7 @@ class NeuralTrainer:
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        self.train_tensor = tf.train.AdamOptimizer(0.00028).minimize(loss)
 
         self.batch_size = network.batch_size
         self.history = network.history
@@ -168,7 +173,7 @@ class NeuralTrainer:
                 geometric_mean_profit
         """
         tflearn.is_training(True, self.session)
-        results = self.session.run([self.train, self.best_portfolio, self.geometric_mean_profit], feed_dict={
+        results = self.session.run([self.train_tensor, self.best_portfolio, self.geometric_mean_profit], feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: history,
             self.asks: asks,

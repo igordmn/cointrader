@@ -160,8 +160,8 @@ class NeuralTrainer(
     private fun train(currentPortfolio: NDDoubleArray, history: NDDoubleArray, asks: NDDoubleArray, bids: NDDoubleArray): ResultMatrix {
         require(currentPortfolio.dimensions[1] == net.config.altAssetNumber)
         require(history.dimensions[0] == currentPortfolio.dimensions[0])
-        require(history.dimensions[1] == net.config.historySize)
-        require(history.dimensions[2] == net.config.altAssetNumber)
+        require(history.dimensions[1] == net.config.altAssetNumber)
+        require(history.dimensions[2] == net.config.historySize)
         require(history.dimensions[3] == historyIndicatorNumber)
         require(asks.dimensions[0] == currentPortfolio.dimensions[0])
         require(asks.dimensions[1] == net.config.altAssetNumber)
@@ -188,10 +188,10 @@ private fun List<NeuralHistory>.toNumpy(): NDDoubleArray {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
-    fun value(b: Int, h: Int, c: Int, i: Int): Double {
+    fun value(b: Int, c: Int, h: Int, i: Int): Double {
         return this[b][h][c].historyIndicator(i)
     }
-    return numpyArray(batchSize, historySize, coinsSize, historyIndicatorNumber, ::value)
+    return numpyArray(batchSize, coinsSize, historySize, historyIndicatorNumber, ::value)
 }
 
 @JvmName("toNumpy2")
