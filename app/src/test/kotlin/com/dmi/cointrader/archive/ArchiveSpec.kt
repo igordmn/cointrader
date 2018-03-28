@@ -27,8 +27,8 @@ class ArchiveSpec : Spec({
         }
 
         "initial" {
-            val archive = newArchive(currentPeriod = 7)
-            archive.historyAt(0..7).toList() shouldBe listOf(
+            val archive = newArchive(currentPeriod = 10)
+            archive.historyAt(0..10).toList() shouldBe listOf(
                     listOf(Spread(0.08640000, 0.08100000), Spread(0.00261000, 0.00245000)),  // 0 1500005040000
                     listOf(Spread(0.08640000, 0.08100000), Spread(0.00261000, 0.00245000)),  // 1 1500005340000
                     listOf(Spread(0.08640000, 0.08640000), Spread(0.00261000, 0.00257000)),  // 2 1500005640000
@@ -36,7 +36,10 @@ class ArchiveSpec : Spec({
                     listOf(Spread(0.08600000, 0.08600000), Spread(0.00265000, 0.00257000)),  // 4 1500006240000
                     listOf(Spread(0.08543200, 0.08543200), Spread(0.00258600, 0.00253800)),  // 5 1500006540000
                     listOf(Spread(0.08600000, 0.08585100), Spread(0.00258700, 0.00258700)),  // 6 1500006840000
-                    listOf(Spread(0.08618000, 0.08618000), Spread(0.00258700, 0.00254200))   // 7 1500007140000
+                    listOf(Spread(0.08618000, 0.08618000), Spread(0.00258700, 0.00254200)),  // 7 1500007140000
+                    listOf(Spread(0.08636000, 0.08636000), Spread(0.00254200, 0.00254200)),  // 8 1500007440000
+                    listOf(Spread(0.08635000, 0.08631900), Spread(0.00254200, 0.00253800)),  // 9 1500007740000
+                    listOf(Spread(0.08638000, 0.08635000), Spread(0.00263900, 0.00254500))   // 10 1500008040000
             )
         }
 

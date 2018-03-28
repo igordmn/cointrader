@@ -29,7 +29,8 @@ class TradeSource(
             Trade(
                     trade.time,
                     trade.price.toDouble(),
-                    trade.amount.toDouble()
+                    trade.amount.toDouble(),
+                    trade.isBuyerMaker
             )
     )
 }
