@@ -24,6 +24,7 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
+import java.io.File
 
 suspend fun askAndPerformRealTrades() {
     println("Run trading real money? Enter 'yes'")
@@ -104,10 +105,17 @@ suspend fun performRealTrade(
         performTrade(config.assets, network, portfolio, history, ::broker)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
+        writeCapital(result,  config, period)
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()
     }
+}
+
+private fun writeCapital(result: TradeResult, config: TradeConfig, period: Period) {
+    val time = config.periodSpace.timeOf(period)
+    val capital = result.totalCapital
+    File("data/capitals.txt").appendText("$time\t$capital\n")
 }
 
 suspend fun performTestTrades(
