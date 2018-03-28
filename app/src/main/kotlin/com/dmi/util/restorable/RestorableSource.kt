@@ -74,6 +74,11 @@ fun <STATE, T> RestorableSource<STATE, T>.drop(count: Int) = object : Restorable
     override fun restored(state: STATE) = this@drop.restored(state)
 }
 
+fun <STATE, T> RestorableSource<STATE, T>.dropWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
+    override fun initial() = this@dropWhile.initial().dropWhile { predicate(it.value) }
+    override fun restored(state: STATE) = this@dropWhile.restored(state).dropWhile { predicate(it.value) }
+}
+
 fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Boolean) = object : RestorableSource<STATE, T> {
     override fun initial() = this@takeWhile.initial().takeWhile { predicate(it.value) }
     override fun restored(state: STATE) = this@takeWhile.restored(state).takeWhile { predicate(it.value) }

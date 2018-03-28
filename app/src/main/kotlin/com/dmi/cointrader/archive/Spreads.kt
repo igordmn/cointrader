@@ -1,11 +1,12 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.util.io.FixedSerializer
-import com.dmi.util.restorable.RestorableSource
+import com.dmi.util.restorable.*
 import com.dmi.util.restorable.RestorableSource.Item
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consume
 import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.time.Instant
@@ -23,23 +24,34 @@ data class TimeSpread(val time: Instant, val spread: Spread)
 @Serializable
 data class PeriodSpread(val period: Period, val spread: Spread)
 
-fun Trade.initialSpread() = TimeSpread(
+@Serializable
+class TimeSpreadBillet(val time: Instant, val ask: Double? = null, val bid: Double? = null) {
+    fun isReady(): Boolean = ask != null && bid != null
+    fun build() = TimeSpread(time, Spread(ask!!, bid!!))
+}
+
+fun Trade.initialSpreadBillet() = TimeSpreadBillet(
         time = time,
-        spread = Spread(ask = price, bid = price)
+        ask = if (!isBuyerMaker) price else null,
+        bid = if (isBuyerMaker) price else null
 )
 
-fun Trade.nextSpread(previous: TimeSpread): TimeSpread = nextSpread(previous.spread)
+fun Trade.nextSpreadBillet(previous: TimeSpreadBillet) = TimeSpreadBillet(
+        time = time,
+        ask = if (!isBuyerMaker) price else previous.ask,
+        bid = if (isBuyerMaker) price else previous.bid
+)
 
-fun Trade.nextSpread(previous: Spread): TimeSpread {
-    val isAsk = previous.ask - price <= price - previous.bid
-    return TimeSpread(
-            time = time,
-            spread = Spread(
-                    ask = if (isAsk) price else previous.ask,
-                    bid = if (!isAsk) price else previous.bid
-            )
-    )
-}
+fun <SOURCE_STATE> spreadsStateSerializer(source: KSerializer<SOURCE_STATE>) =
+        ScanState.serializer(
+                source,
+                TimeSpreadBillet.serializer()
+        )
+
+fun <SOURCE_STATE> RestorableSource<SOURCE_STATE, Trade>.spreads() =
+        scan(Trade::initialSpreadBillet, Trade::nextSpreadBillet)
+                .dropWhile { !it.isReady() }
+                .map { it.build() }
 
 @Serializable
 data class PeriodicalState<out SOURCE_STATE>(val period: Period, val lastBefore: Item<SOURCE_STATE, TimeSpread>)

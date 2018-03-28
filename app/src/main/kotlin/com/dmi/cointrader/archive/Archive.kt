@@ -94,7 +94,7 @@ suspend fun archive(
     }
 
     fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
-            .scan(Trade::initialSpread, Trade::nextSpread)
+            .spreads()
             .periodical(space)
             .takeWhile { it.period <= currentPeriod }
             .map { it.spread }
@@ -106,12 +106,7 @@ suspend fun archive(
     val spreadsList = syncFileList(
             spreadsFile,
             SpreadsSourceConfig.serializer(),
-            PeriodicalState.serializer(
-                    ScanState.serializer(
-                            LongSerializer,
-                            TimeSpread.serializer()
-                    )
-            ).list,
+            PeriodicalState.serializer(spreadsStateSerializer(LongSerializer)).list,
             FixedListSerializer(assets.alts.size, SpreadFixedSerializer),
             SpreadsSourceConfig(space, assets.alts),
             bufferSize = 10000,
