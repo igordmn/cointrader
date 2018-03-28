@@ -11,7 +11,7 @@ import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 
 class ArchiveSpec : Spec({
-    "reversed assets" - {
+    "ETH and NEO assets (reversed markets)" - {
         val fileSystem = Jimfs.newFileSystem(Configuration.unix())
 
         val newArchive = object {
@@ -261,7 +261,7 @@ class ArchiveSpec : Spec({
         */
     }
 
-    "USDT asset" {
+    "USDT asset (normal market)" {
 
     }
 })
