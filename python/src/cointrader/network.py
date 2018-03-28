@@ -1,3 +1,4 @@
+from java.lang import System
 import tflearn
 import tensorflow as tf
 
@@ -75,10 +76,10 @@ def build_best_portfolio(
 class NeuralNetwork:
     def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
         self.alt_asset_number = alt_asset_number
-        self.batch_count = tf.placeholder(tf.int32, shape=[])
+        self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, history_indicator_number, alt_asset_number, history_size])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
-        self.best_portfolio = build_best_portfolio(self.batch_count, self.history, self.current_portfolio)
+        self.best_portfolio = build_best_portfolio(self.batch_size, self.history, self.current_portfolio)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -104,7 +105,7 @@ class NeuralNetwork:
         result = self.session.run(self.best_portfolio, feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: history,
-            self.batch_count: history.shape[0]
+            self.batch_size: history.shape[0]
         })
         return result
 
@@ -117,8 +118,6 @@ class NeuralNetwork:
 
 
 def compute_profits(best_portfolio, asks, bids, fee):
-    asks = tf.concat([tf.ones([asks.shape[0], 1]), asks], axis=1)  # add main asset price
-    bids = tf.concat([tf.ones([bids.shape[0], 1]), bids], axis=1)  # add main asset price
     prices = (asks + bids) / 2.0
     costs = (1.0 - fee) * (bids / prices)
     
