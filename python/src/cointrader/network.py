@@ -30,9 +30,9 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
         weight_decay=weight_decay
     )
     net = net[:, :, 0, 0]
-    main_coin_bias = tf.get_variable("main_coin_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
-    main_coin_bias = tf.tile(main_coin_bias, [batch_size, 1])
-    net = tf.concat([main_coin_bias, net], 1)
+    main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
+    main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
+    net = tf.concat([main_asset_bias, net], 1)
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
@@ -42,7 +42,7 @@ def build_best_portfolio(
     # [batch, asset, history, indicator]
     net = history
 
-    net = net / net[:, :, -1, 0, None, None]  # divide on last close
+    net = net / net[:, :, -1, 0, None, None]  # divide on last ask
     net = tf.log(net)
 
     net = tflearn.layers.conv_2d(
