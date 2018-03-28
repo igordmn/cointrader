@@ -45,8 +45,7 @@ fun printTopCoins() = runBlocking {
     val topCoinsDay2 = volumesDay2List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoinsDay3 = volumesDay3List.map { it.key }.filter { !excludedCoins.contains(it) }.take(topCount)
     val topCoins = topCoinsMonth1 intersect topCoinsWeek1 intersect topCoinsWeek2 intersect topCoinsDay1 intersect topCoinsDay2 intersect topCoinsDay3
-
-    val printList = listOf("USDT") + topCoins
+    val printList = listOf("USDT") + topCoins.map { it.removeSuffix("BTC") }
     println(printList.joinToString(", ") { "\"$it\"" })
 }
 

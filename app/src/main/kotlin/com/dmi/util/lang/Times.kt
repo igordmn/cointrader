@@ -4,12 +4,16 @@ import kotlinx.serialization.*
 import kotlinx.serialization.internal.PairClassDesc
 import kotlinx.serialization.internal.PrimitiveDesc
 import kotlinx.serialization.internal.SerialClassDescImpl
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
 import java.time.temporal.UnsupportedTemporalTypeException
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.temporal.TemporalAccessor
+
+
+
 
 const val HOURS_PER_DAY = 24
 const val MINUTES_PER_HOUR = 60
@@ -28,8 +32,15 @@ const val NANOS_PER_DAY = NANOS_PER_HOUR * HOURS_PER_DAY
 
 typealias InstantRange = ClosedRange<Instant>
 
-fun DateTimeFormatter.parseInstant(text: CharSequence): Instant = parse(text, Instant::from)
-fun DateTimeFormatter.parseInstantRange(from: CharSequence, to: CharSequence): InstantRange = parseInstant(from)..parseInstant(to)
+fun DateTimeFormatter.parseInstant(text: CharSequence, zoneId: ZoneId): Instant {
+    val ldt = parse(text, LocalDateTime::from)
+    val zdt = ZonedDateTime.of(ldt, zoneId)
+    return Instant.from(zdt)
+}
+
+fun DateTimeFormatter.parseInstantRange(from: CharSequence, to: CharSequence, zoneId: ZoneId): InstantRange {
+    return parseInstant(from, zoneId)..parseInstant(to, zoneId)
+}
 
 operator fun Instant.minus(other: Instant): Duration = Duration.between(other, this)
 operator fun Duration.div(other: Duration): Double = seconds / other.seconds.toDouble()
@@ -76,7 +87,9 @@ object DurationSerializer : KSerializer<Duration> {
     )
 }
 
-fun days(count: Long) = Duration.ofDays(count)
-fun minutes(count: Long) = Duration.ofMinutes(count)
-fun seconds(count: Long) = Duration.ofSeconds(count)
-fun millis(count: Long) = Duration.ofMillis(count)
+fun days(count: Long): Duration = Duration.ofDays(count)
+fun minutes(count: Long): Duration = Duration.ofMinutes(count)
+fun seconds(count: Long): Duration = Duration.ofSeconds(count)
+fun millis(count: Long): Duration = Duration.ofMillis(count)
+
+fun zoneOffset(str: String): ZoneId = ZoneOffset.of(str)

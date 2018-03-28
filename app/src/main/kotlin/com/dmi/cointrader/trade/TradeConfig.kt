@@ -6,6 +6,7 @@ import com.dmi.util.io.readBytes
 import com.dmi.util.io.writeBytes
 import com.dmi.util.lang.parseInstant
 import com.dmi.util.lang.seconds
+import com.dmi.util.lang.zoneOffset
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.load
 import kotlinx.serialization.cbor.CBOR.Companion.dump
@@ -26,14 +27,15 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "TRX", "NANO", "NCASH", "XRP", "DGD", "VEN", "NEO", "LTC", "ADA", "ETC", "ICX", "BCPT", "EOS", "WTC", "XLM", "XMR", "GVT",
-                        "MTL", "BCH", "IOST", "IOTA", "OMG", "NEBL", "BCD", "AION", "XVG", "INS", "SUB", "LSK", "QTUM", "CND", "WAVES", "ELF", "DASH",
-                        "STRAT", "GXS", "BQX", "BTG", "CTR"
+                        "USDT", "TRX", "ETH", "ICX", "NCASH", "XRP", "EOS", "NANO", "NEO", "ONT", "ADA", "QTUM", "LTC", "DGD", "IOST", "XVG",
+                        "VEN", "XLM", "BCC", "IOTA", "GVT", "MTL", "AION", "NEBL", "ETC", "XMR", "ENJ", "BCPT", "SUB", "DASH", "OMG", "WAVES",
+                        "LINK", "ZIL", "WTC", "CTR", "ELF", "NULS", "BQX", "AST", "MCO", "STRAT", "ENG", "TRIG", "INS", "POWR", "TNT", "SNT",
+                        "BTG", "EDO", "SALT", "LSK", "VIB", "POE", "RCN", "REQ"
                 )
         ),
         val historySize: Int = 160,
         val periodSpace: PeriodSpace = PeriodSpace(
-                start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00"),
+                start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
                 duration = seconds(10)
         ),
         val archiveReloadCount: Int = 6 * 10,
