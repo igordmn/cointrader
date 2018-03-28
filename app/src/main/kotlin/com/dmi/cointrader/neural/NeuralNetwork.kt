@@ -211,6 +211,7 @@ private fun NDFloatArray.toPortionsBatch(): PortionsBatch {
         (0 until dimensions[1]).forEach { c ->
             portfolio.add(this[b, c].toDouble())
         }
+        portfolios.add(portfolio)
     }
     return portfolios
 }
