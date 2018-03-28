@@ -3,9 +3,9 @@ import tensorflow as tf
 
 
 # standard python 'print' doesn't work in jep
-def debug(obj):
+def debug(obj, name=""):
     from java.lang import System
-    System.out.println(str(obj))
+    System.out.println(name + " " + str(obj))
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
@@ -129,7 +129,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
     prices = (asks + bids) / 2.0
     costs = (1.0 - fee) * (bids / prices)
-    
+
     price_incs = prices[1:] / prices[:-1]
     costs = costs[:-1]
     best_portfolio = best_portfolio[:-1]
@@ -140,8 +140,9 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     best_portfolio = best_portfolio[1:]
     current_portfolio = future_portfolio[:-1]
     cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * costs[:, 1:], axis=1)
+    profit = tf.reduce_sum(price_incs * best_portfolio, axis=1)
 
-    return batch_size - 2, price_incs * best_portfolio * cost
+    return batch_size - 2, profit * cost
 
 
 class NeuralTrainer:
@@ -161,6 +162,7 @@ class NeuralTrainer:
         self.current_portfolio = network.current_portfolio
         self.best_portfolio_tensor = network.best_portfolio_tensor
         self.session = network.session
+        self.session.run(tf.global_variables_initializer())
 
     def train(self, current_portfolio, history, asks, bids):
         """
