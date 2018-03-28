@@ -6,8 +6,8 @@ import java.nio.ByteBuffer
 import java.time.Instant
 
 @Serializable
-data class Trade(val time: Instant, val price: Double, val amount: Double, val isBuyerMaker: Boolean) {
-    fun reverse() = Trade(time, 1.0 / price, amount * price, !isBuyerMaker)
+data class Trade(val time: Instant, val price: Double, val amount: Double, val isMakerBuyer: Boolean) {
+    fun reverse() = Trade(time, 1.0 / price, amount * price, !isMakerBuyer)
 }
 
 object TradeFixedSerializer : FixedSerializer<Trade> {
@@ -17,7 +17,7 @@ object TradeFixedSerializer : FixedSerializer<Trade> {
         data.putLong(item.time.toEpochMilli())
         data.putDouble(item.price)
         data.putDouble(item.amount)
-        data.put(if (item.isBuyerMaker) 1.toByte() else 0.toByte())
+        data.put(if (item.isMakerBuyer) 1.toByte() else 0.toByte())
     }
 
     override fun deserialize(data: ByteBuffer): Trade = Trade(

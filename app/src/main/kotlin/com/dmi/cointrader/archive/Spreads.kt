@@ -32,14 +32,14 @@ class TimeSpreadBillet(val time: Instant, val ask: Double? = null, val bid: Doub
 
 fun Trade.initialSpreadBillet() = TimeSpreadBillet(
         time = time,
-        ask = if (!isBuyerMaker) price else null,
-        bid = if (isBuyerMaker) price else null
+        ask = if (!isMakerBuyer) price else null,
+        bid = if (isMakerBuyer) price else null
 )
 
 fun Trade.nextSpreadBillet(previous: TimeSpreadBillet) = TimeSpreadBillet(
         time = time,
-        ask = if (!isBuyerMaker) price else previous.ask,
-        bid = if (isBuyerMaker) price else previous.bid
+        ask = if (!isMakerBuyer) price else previous.ask,
+        bid = if (isMakerBuyer) price else previous.bid
 )
 
 fun <SOURCE_STATE> spreadsStateSerializer(source: KSerializer<SOURCE_STATE>) =
