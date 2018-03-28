@@ -82,7 +82,7 @@ class ArchiveSpec : Spec() {
             /*
                 Trades
 
-                ETH
+                ETH from https://api.binance.com/api/v1/aggTrades?symbol=ETHBTC&fromId=0
                 1500004804757 0.08000000 0.04300000 maker-buyer
                 1500004971477 0.08000000 0.18000000 maker-buyer
                 1500004979827 0.08000000 0.12600000 maker-buyer
@@ -218,7 +218,7 @@ class ArchiveSpec : Spec() {
                 Spread(0.08638000, 0.08635000)          // 10 1500008040000
 
 
-                NEO
+                NEO from https://api.binance.com/api/v1/aggTrades?symbol=NEOBTC&fromId=0
                 1500004832141 0.00375000 20.00000000 maker-seller
                 Spread(0.00261000, 0.00245000)          // 0 1500005040000
                 Spread(0.00261000, 0.00245000)          // 1 1500005340000
@@ -291,6 +291,7 @@ class ArchiveSpec : Spec() {
             }
 
             /*
+                from https://api.binance.com/api/v1/aggTrades?symbol=BTCUSDT&fromId=0
                 Trades
                 1502942428322 4261.48000000 0.10000000 maker-buyer
                 Spread(4261.48000000, 4261.48000000)          // 0 1502942428322
