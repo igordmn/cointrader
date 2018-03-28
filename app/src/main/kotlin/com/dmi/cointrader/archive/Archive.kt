@@ -6,7 +6,6 @@ import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.chunked
 import com.dmi.util.collection.toLong
-import com.dmi.util.concurrent.consumeTo
 import com.dmi.util.concurrent.flatten
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
@@ -135,14 +134,11 @@ suspend fun archive(
 
         override fun historyAt(range: PeriodRange): ReceiveChannel<Spreads> {
             require(range.endInclusive <= this.currentPeriod)
-            return produce {
-                range
+            return range
                         .chunked(size = 10000)
                         .asReceiveChannel()
                         .map { spreadsList.get(it.toLong()) }
                         .flatten()
-                        .consumeTo(this)
-            }
         }
 
         override suspend fun sync(currentPeriod: Period) {

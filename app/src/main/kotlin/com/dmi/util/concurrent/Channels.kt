@@ -93,9 +93,7 @@ fun <T> infiniteChannel(nextValue: suspend () -> T): ReceiveChannel<T> = produce
     }
 }
 
-suspend fun <T> ReceiveChannel<T>.consumeTo(channel: SendChannel<T>) = consumeEach {
-    channel.send(it)
-}
+fun <T> emptyChannel(): ReceiveChannel<T> = produce {}
 
 fun <T> ReceiveChannel<T>.windowed(size: Int, step: Int): ReceiveChannel<List<T>> = produce {
     require(size > 0 && step > 0)
