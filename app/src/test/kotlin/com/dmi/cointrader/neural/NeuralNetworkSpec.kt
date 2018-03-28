@@ -4,33 +4,56 @@ import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.archive.Spreads
 import com.dmi.util.io.resourceContext
 import com.dmi.util.test.Spec
+import com.dmi.util.test.testFileSystem
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.beGreaterThan
 import io.kotlintest.matchers.should
 import io.kotlintest.matchers.shouldBe
 
 class NeuralNetworkSpec: Spec({
-    "train" {
+    "test" {
+        val fileSystem = testFileSystem()
+        val altAssetNumber = 2
+        val historySize = 3
+        val batchSize = 4
+
+        fun portfolio() = listOf(1.0, 0.0)
+        fun spread() = Spread(1.0, 1.0)
+        fun spreads(): Spreads = listOf(spread(), spread())
+        fun history() = listOf(spreads(), spreads(), spreads())
+        fun tradedHistory() = TradedHistory(history(), spreads())
+
+        var bestPortfolio1: Portions? = null
+
         resourceContext {
             val jep = jep()
-            val altAssetNumber = 2
-            val historySize = 3
-            val batchSize = 4
             val network = NeuralNetwork.init(jep, NeuralNetwork.Config(altAssetNumber, historySize), gpuMemoryFraction = 0.1)
             val trainer = NeuralTrainer(jep, network, 0.01)
 
-            fun spread() = Spread(1.0, 1.0)
-            fun spreads(): Spreads = listOf(spread(), spread())
-            fun history() = TradedHistory(listOf(spreads(), spreads(), spreads()), spreads())
-
-            val portfolio = listOf(listOf(1.0, 0.0), listOf(1.0, 0.0), listOf(1.0, 0.0), listOf(1.0, 0.0))
-            val histories = listOf(history(), history(), history(), history())
-            val (newPortions, geometricMeanProfit) = trainer.train(portfolio, histories)
+            val portfolio = listOf(portfolio(), portfolio(), portfolio(), portfolio())
+            val history = listOf(tradedHistory(), tradedHistory(), tradedHistory(), tradedHistory())
+            val (newPortions, geometricMeanProfit) = trainer.train(portfolio, history)
 
             newPortions.size shouldBe batchSize
             newPortions.forEach {
                 it.size shouldBe 1 + altAssetNumber
             }
             geometricMeanProfit should beGreaterThan(0.0)
+
+            bestPortfolio1 = network.bestPortfolio(portfolio(), history())
+            bestPortfolio1!!.size shouldBe 1 + altAssetNumber
+
+            network.save(fileSystem.getPath("net"))
+        }
+
+        resourceContext {
+            val jep = jep()
+            val network = NeuralNetwork.load(jep, fileSystem.getPath("net"), gpuMemoryFraction = 0.1)
+
+            val bestPortfolio2 = network.bestPortfolio(portfolio(), history())
+            bestPortfolio2.size shouldBe 1 + altAssetNumber
+            bestPortfolio2 shouldBe bestPortfolio1
         }
     }
 })

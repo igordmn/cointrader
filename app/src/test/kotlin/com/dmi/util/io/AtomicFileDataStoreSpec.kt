@@ -1,5 +1,7 @@
 package com.dmi.util.io
 
+import com.dmi.util.test.Spec
+import com.dmi.util.test.testFileSystem
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
@@ -8,7 +10,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
 
-class AtomicFileDataStoreSpec : FreeSpec() {
+class AtomicFileDataStoreSpec : Spec() {
     init {
         "shouldn't exist initially" {
             test { file ->
@@ -134,11 +136,9 @@ class AtomicFileDataStoreSpec : FreeSpec() {
         }
     }
 
-    private fun test(action: suspend (Path) -> Unit) {
-        Jimfs.newFileSystem(Configuration.unix()).use {
-            runBlocking {
-                action(it.getPath("/test"))
-            }
+    private suspend fun test(action: suspend (Path) -> Unit) {
+        testFileSystem().use {
+            action(it.getPath("/test"))
         }
     }
 

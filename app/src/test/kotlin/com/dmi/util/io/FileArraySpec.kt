@@ -1,6 +1,7 @@
 package com.dmi.util.io
 
 import com.dmi.util.test.Spec
+import com.dmi.util.test.testFileSystem
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
@@ -8,7 +9,7 @@ import io.kotlintest.matchers.shouldBe
 class FileArraySpec: Spec() {
     init {
         "append and get" {
-            val path = Jimfs.newFileSystem(Configuration.unix()).getPath("/test")
+            val path = testFileSystem().getPath("/test")
             val array = FileArray(path, LongFixedSerializer)
             array.append(listOf(1L))
             array.append(listOf(4L, 6L, 8L))

@@ -80,8 +80,6 @@ def build_best_portfolio(
 
 class NeuralNetwork:
     def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
-        tflearn.config.init_training_mode()
-
         self.alt_asset_number = alt_asset_number
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
@@ -109,7 +107,7 @@ class NeuralNetwork:
         """
 
         tflearn.is_training(False, self.session)
-        result = self.session.run(self.best_portfolio, feed_dict={
+        result = self.session.run(self.best_portfolio_tensor, feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: history,
             self.batch_size: history.shape[0]
@@ -147,6 +145,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
 
 class NeuralTrainer:
     def __init__(self, network, fee):
+        tflearn.config.init_training_mode()
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
         self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 

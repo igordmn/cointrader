@@ -5,13 +5,14 @@ import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.lang.minutes
 import com.dmi.util.test.Spec
 import com.dmi.util.test.instant
+import com.dmi.util.test.testFileSystem
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 
 class ArchiveSpec : Spec() {
-    private val fileSystem = Jimfs.newFileSystem(Configuration.unix())!!
+    private val fileSystem = testFileSystem()
 
     private suspend fun archive(space: PeriodSpace, assets: TradeAssets, currentPeriod: Period) = archive(
             space,

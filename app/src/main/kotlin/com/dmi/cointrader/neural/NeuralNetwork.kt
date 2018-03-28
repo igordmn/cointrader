@@ -78,9 +78,9 @@ class NeuralNetwork private constructor(
     private fun bestPortfolio(currentPortfolio: NDDoubleArray, histories: NDDoubleArray): NDFloatArray {
         require(currentPortfolio.dimensions[1] == config.altAssetNumber)
         require(histories.dimensions[0] == currentPortfolio.dimensions[0])
-        require(histories.dimensions[1] == historyIndicatorNumber)
-        require(histories.dimensions[2] == config.altAssetNumber)
-        require(histories.dimensions[3] == config.historySize)
+        require(histories.dimensions[1] == config.altAssetNumber)
+        require(histories.dimensions[2] == config.historySize)
+        require(histories.dimensions[3] == historyIndicatorNumber)
 
         return jep.invoke("best_portfolio", currentPortfolio, histories) as NDArray<FloatArray>
     }

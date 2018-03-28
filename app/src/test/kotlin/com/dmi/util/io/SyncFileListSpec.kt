@@ -38,7 +38,7 @@ private class TestSource(private val values: List<Pair<Long, Long>>) : Restorabl
 class SyncFileListSpec : Spec({
     "simple" - {
         "empty" {
-            val fs = Jimfs.newFileSystem(Configuration.unix())
+            val fs = testFileSystem()
             val dest = testSyncList(fs, TestConfig("f"))
             dest.toList() shouldBe emptyList<TestDestRow>()
             dest.sync(TestSource(emptyList()))
@@ -46,7 +46,7 @@ class SyncFileListSpec : Spec({
         }
 
         "sync new values" {
-            val fs = Jimfs.newFileSystem(Configuration.unix())
+            val fs = testFileSystem()
             val dest = testSyncList(fs, TestConfig("f"))
 
             dest.sync(TestSource(listOf(
@@ -103,7 +103,7 @@ class SyncFileListSpec : Spec({
     }
 
     "restore" {
-        val fs = Jimfs.newFileSystem(Configuration.unix())
+        val fs = testFileSystem()
         val dest1 = testSyncList(fs, TestConfig("f"))
 
         dest1.sync(TestSource(listOf(
@@ -136,7 +136,7 @@ class SyncFileListSpec : Spec({
     }
 
     "reload last" {
-        val fs = Jimfs.newFileSystem(Configuration.unix())
+        val fs = testFileSystem()
         val dest = testSyncList(fs, TestConfig("f"), reloadCount = 3)
 
         dest.sync(TestSource(listOf(
@@ -178,7 +178,7 @@ class SyncFileListSpec : Spec({
     }
 
     "corrupted" - {
-        val fs = Jimfs.newFileSystem(Configuration.unix())
+        val fs = testFileSystem()
         val dest1 = testSyncList(fs, TestConfig("f"))
 
         val file = fs.getPath("/test")
