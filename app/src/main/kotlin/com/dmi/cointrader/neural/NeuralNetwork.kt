@@ -143,12 +143,12 @@ class NeuralTrainer(
         jep.invoke("create_trainer")
     }
 
-    fun train(currentPortfolio: PortionsBatch, histories: TradedHistoryBatch): Result {
+    fun train(currentPortfolio: PortionsBatch, history: TradedHistoryBatch): Result {
         val resultMatrix = train(
                 currentPortfolio.toNumpy(),
-                histories.map { it.history }.toNumpy(),
-                histories.map { it.tradeTimeSpreads }.toNumpy(Spread::ask),
-                histories.map { it.tradeTimeSpreads }.toNumpy(Spread::bid)
+                history.map { it.history }.toNumpy(),
+                history.map { it.tradeTimeSpreads }.toNumpy(Spread::ask),
+                history.map { it.tradeTimeSpreads }.toNumpy(Spread::bid)
         )
         return Result(
                 resultMatrix.newPortions.toPortionsBatch(),
@@ -157,18 +157,18 @@ class NeuralTrainer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun train(currentPortfolio: NDDoubleArray, histories: NDDoubleArray, asks: NDDoubleArray, bids: NDDoubleArray): ResultMatrix {
+    private fun train(currentPortfolio: NDDoubleArray, history: NDDoubleArray, asks: NDDoubleArray, bids: NDDoubleArray): ResultMatrix {
         require(currentPortfolio.dimensions[1] == net.config.altAssetNumber)
-        require(histories.dimensions[0] == currentPortfolio.dimensions[0])
-        require(histories.dimensions[1] == historyIndicatorNumber)
-        require(histories.dimensions[2] == net.config.altAssetNumber)
-        require(histories.dimensions[3] == net.config.historySize)
+        require(history.dimensions[0] == currentPortfolio.dimensions[0])
+        require(history.dimensions[1] == net.config.historySize)
+        require(history.dimensions[2] == net.config.altAssetNumber)
+        require(history.dimensions[3] == historyIndicatorNumber)
         require(asks.dimensions[0] == currentPortfolio.dimensions[0])
         require(asks.dimensions[1] == net.config.altAssetNumber)
         require(bids.dimensions[0] == currentPortfolio.dimensions[0])
         require(bids.dimensions[1] == net.config.altAssetNumber)
 
-        val result = jep.invoke("train", currentPortfolio, histories, asks, bids) as Array<*>
+        val result = jep.invoke("train", currentPortfolio, history, asks, bids) as Array<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
         return ResultMatrix(newPortions, geometricMeanProfit)
@@ -188,7 +188,9 @@ private fun List<NeuralHistory>.toNumpy(): NDDoubleArray {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
-    fun value(b: Int, c: Int, h: Int, i: Int) = this[b][h][c].historyIndicator(i)
+    fun value(b: Int, h: Int, c: Int, i: Int): Double {
+        return this[b][h][c].historyIndicator(i)
+    }
     return numpyArray(batchSize, historySize, coinsSize, historyIndicatorNumber, ::value)
 }
 
