@@ -11,7 +11,11 @@ import java.nio.ByteBuffer
 import java.time.Instant
 
 @Serializable
-data class Spread(val ask: Double, val bid: Double)
+data class Spread(val ask: Double, val bid: Double) {
+    init {
+        require(ask >= bid)
+    }
+}
 
 @Serializable
 data class TimeSpread(val time: Instant, val spread: Spread)
@@ -31,8 +35,8 @@ fun Trade.nextSpread(previous: Spread): TimeSpread {
     return TimeSpread(
             time = time,
             spread = Spread(
-                ask = if (isAsk) price else previous.ask,
-                bid = if (!isAsk) price else previous.bid
+                    ask = if (isAsk) price else previous.ask,
+                    bid = if (!isAsk) price else previous.bid
             )
     )
 }
