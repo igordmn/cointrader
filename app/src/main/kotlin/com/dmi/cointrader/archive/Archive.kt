@@ -46,7 +46,7 @@ suspend fun archive(
     fun tradeAppendedLog(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {
             val lastTradeTime = items.last().time
-            println("Trade cached: $asset $lastTradeTime")
+            println("Trades cached: $asset $lastTradeTime")
         }
     }
 

@@ -1,6 +1,7 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.util.io.FixedSerializer
+import com.dmi.util.lang.InstantSerializer
 import com.dmi.util.restorable.*
 import com.dmi.util.restorable.RestorableSource.Item
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -10,8 +11,6 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.time.Instant
-import kotlin.math.max
-import kotlin.math.min
 
 @Serializable
 data class Spread(val ask: Double, val bid: Double) {
@@ -21,13 +20,20 @@ data class Spread(val ask: Double, val bid: Double) {
 }
 
 @Serializable
-data class TimeSpread(val time: Instant, val spread: Spread)
+data class TimeSpread(
+        @Serializable(with = InstantSerializer::class) val time: Instant,
+        val spread: Spread)
 
 @Serializable
 data class PeriodSpread(val period: Period, val spread: Spread)
 
 @Serializable
-class TimeSpreadBillet(val time: Instant, val lastSell: Double?, val lastBuy: Double?, val lastIsBuy: Boolean) {
+class TimeSpreadBillet(
+        @Serializable(with = InstantSerializer::class) val time: Instant,
+        val lastSell: Double?,
+        val lastBuy: Double?,
+        val lastIsBuy: Boolean
+) {
     fun isReady(): Boolean = lastSell != null && lastBuy != null
 
     fun build(): TimeSpread {

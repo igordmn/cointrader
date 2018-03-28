@@ -3,13 +3,17 @@ package com.dmi.cointrader.archive
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.util.concurrent.emptyChannel
 import com.dmi.util.concurrent.map
+import com.dmi.util.lang.InstantSerializer
 import com.dmi.util.restorable.RestorableSource
 import kotlinx.coroutines.experimental.channels.takeWhile
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
 @Serializable
-class TradeState(val id: Long, val time: Instant)
+class TradeState(
+        val id: Long,
+        @Serializable(with = InstantSerializer::class) val time: Instant
+)
 
 class TradeSource(
         private val market: BinanceExchange.Market,
