@@ -86,13 +86,8 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
     }
 
     fun market(baseAsset: Asset, quoteAsset: Asset): Market? {
-        val normalName = "$baseAsset$quoteAsset"
-        val reversedName = "$quoteAsset$baseAsset"
-        return when  {
-            info.markets.contains(normalName) -> Market(normalName)
-            info.markets.contains(reversedName) -> Market(reversedName)
-            else -> null
-        }
+        val name = "$baseAsset$quoteAsset"
+        return if (info.markets.contains(name)) Market(name) else null
     }
 
     inner class Market(private val name: String) {
