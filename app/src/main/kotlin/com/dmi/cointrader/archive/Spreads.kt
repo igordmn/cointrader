@@ -10,6 +10,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.time.Instant
+import kotlin.math.max
+import kotlin.math.min
 
 @Serializable
 data class Spread(val ask: Double, val bid: Double) {
@@ -25,21 +27,35 @@ data class TimeSpread(val time: Instant, val spread: Spread)
 data class PeriodSpread(val period: Period, val spread: Spread)
 
 @Serializable
-class TimeSpreadBillet(val time: Instant, val ask: Double? = null, val bid: Double? = null) {
-    fun isReady(): Boolean = ask != null && bid != null
-    fun build() = TimeSpread(time, Spread(ask!!, bid!!))
+class TimeSpreadBillet(val time: Instant, val lastSell: Double?, val lastBuy: Double?, val lastIsBuy: Boolean) {
+    fun isReady(): Boolean = lastSell != null && lastBuy != null
+
+    fun build(): TimeSpread {
+        val lastSell = lastSell!!
+        val lastBuy = lastBuy!!
+        return TimeSpread(
+                time,
+                spread = when {
+                    lastSell >= lastBuy -> Spread(lastSell, lastBuy)
+                    lastIsBuy -> Spread(lastBuy, lastBuy)
+                    else -> Spread(lastSell, lastSell)
+                }
+        )
+    }
 }
 
 fun Trade.initialSpreadBillet() = TimeSpreadBillet(
         time = time,
-        ask = if (!isMakerBuyer) price else null,
-        bid = if (isMakerBuyer) price else null
+        lastSell = if (!isMakerBuyer) price else null,
+        lastBuy = if (isMakerBuyer) price else null,
+        lastIsBuy = isMakerBuyer
 )
 
 fun Trade.nextSpreadBillet(previous: TimeSpreadBillet) = TimeSpreadBillet(
         time = time,
-        ask = if (!isMakerBuyer) price else previous.ask,
-        bid = if (isMakerBuyer) price else previous.bid
+        lastSell = if (!isMakerBuyer) price else previous.lastSell,
+        lastBuy = if (isMakerBuyer) price else previous.lastBuy,
+        lastIsBuy = isMakerBuyer
 )
 
 fun <SOURCE_STATE> spreadsStateSerializer(source: KSerializer<SOURCE_STATE>) =
