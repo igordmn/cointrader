@@ -21,7 +21,7 @@
 //            TestMarketBroker.EmptyListener()
 //    )
 //
-//    val safeBroker = SafeMarketBroker(testMarketBroker, limits, 3, BigDecimal("0.99"), NOPLogger.NOP_LOGGER)
+//    val safeBroker = SafeBroker(testMarketBroker, limits, 3, BigDecimal("0.99"), NOPLogger.NOP_LOGGER)
 //
 //    "can buy/sell zero amount" {
 //        runBlocking {
@@ -96,7 +96,7 @@
 //
 //    "fourth attempt not allowed when first, second and third buy unsuccessful with insufficient balance" {
 //        runBlocking {
-//            shouldThrow<MarketBroker.Error.InsufficientBalance> {
+//            shouldThrow<Broker.OrderError.InsufficientBalance> {
 //                safeBroker.buy(BigDecimal("103")) // 101 * 0.99 * 0.99 = 100.9503 > 100
 //            }
 //        }
@@ -124,19 +124,19 @@
 //
 //    "fourth attempt not allowed when first, second and third sell unsuccessful with insufficient balance" {
 //        runBlocking {
-//            shouldThrow<MarketBroker.Error.InsufficientBalance> {
+//            shouldThrow<Broker.OrderError.InsufficientBalance> {
 //                safeBroker.sell(BigDecimal("20.5")) // 20.5 * 0.99 * 0.99 = 20.09205 > 20
 //            }
 //        }
 //    }
 //
 //    "amount cannot be negative" {
-//        shouldThrow<MarketBroker.Error.WrongAmount> {
+//        shouldThrow<Broker.OrderError.WrongAmount> {
 //            runBlocking {
 //                safeBroker.buy(BigDecimal("-1.0"))
 //            }
 //        }
-//        shouldThrow<MarketBroker.Error.WrongAmount> {
+//        shouldThrow<Broker.OrderError.WrongAmount> {
 //            runBlocking {
 //                safeBroker.sell(BigDecimal("-1.0"))
 //            }
