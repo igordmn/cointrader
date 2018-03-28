@@ -1,5 +1,6 @@
 package com.dmi.cointrader.archive
 
+import com.dmi.util.lang.millis
 import com.dmi.util.restorable.asRestorableSource
 import com.dmi.util.test.*
 import io.kotlintest.matchers.shouldBe
@@ -24,7 +25,7 @@ class SpreadsSpec: Spec({
         ).asRestorableSource()
 
         "test1" {
-            spreads.periodical(PeriodSpace(instant(16), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(16), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(10.0, 1.0)),  // 16
                     PeriodSpread(1, Spread(10.0, 1.0)),  // 19
                     PeriodSpread(2, Spread(10.0, 1.0)),  // 22
@@ -40,7 +41,7 @@ class SpreadsSpec: Spec({
         }
 
         "test2" {
-            spreads.periodical(PeriodSpace(instant(15), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(15), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(10.0, 1.0)),  // 15
                     PeriodSpread(1, Spread(10.0, 1.0)),  // 18
                     PeriodSpread(2, Spread(10.0, 1.0)),  // 21
@@ -56,7 +57,7 @@ class SpreadsSpec: Spec({
         }
 
         "test3" {
-            spreads.periodical(PeriodSpace(instant(17), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(17), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(10.0, 1.0)),  // 17
                     PeriodSpread(1, Spread(10.0, 1.0)),  // 20
                     PeriodSpread(2, Spread(20.0, 2.0)),  // 23
@@ -72,7 +73,7 @@ class SpreadsSpec: Spec({
         }
 
         "test4" {
-            spreads.periodical(PeriodSpace(instant(22), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(22), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(10.0, 1.0)),  // 22
                     PeriodSpread(1, Spread(40.0, 4.0)),  // 25
                     PeriodSpread(2, Spread(50.0, 5.0)),  // 28
@@ -81,7 +82,7 @@ class SpreadsSpec: Spec({
         }
 
         "test5" {
-            spreads.periodical(PeriodSpace(instant(26), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(26), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(40.0, 4.0)),  // 26
                     PeriodSpread(1, Spread(50.0, 5.0)),  // 29
                     PeriodSpread(2, Spread(60.0, 6.0)),  // 32
@@ -90,7 +91,7 @@ class SpreadsSpec: Spec({
         }
 
         "test6" {
-            spreads.periodical(PeriodSpace(instant(39), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(39), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(60.0, 6.0)),  // 39
                     PeriodSpread(1, Spread(70.0, 7.0)),  // 42
                     PeriodSpread(2, Spread(70.0, 7.0))   // 45
@@ -98,7 +99,7 @@ class SpreadsSpec: Spec({
         }
 
         "test7" {
-            spreads.periodical(PeriodSpace(instant(40), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(40), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(70.0, 7.0)),
                     PeriodSpread(1, Spread(70.0, 7.0)),
                     PeriodSpread(2, Spread(70.0, 7.0))
@@ -106,7 +107,7 @@ class SpreadsSpec: Spec({
         }
 
         "test8" {
-            spreads.periodical(PeriodSpace(instant(41), duration(3))).checkValues(listOf(
+            spreads.periodical(PeriodSpace(instant(41), millis(3))).checkValues(listOf(
                     PeriodSpread(0, Spread(70.0, 7.0)),
                     PeriodSpread(1, Spread(70.0, 7.0)),
                     PeriodSpread(2, Spread(70.0, 7.0))

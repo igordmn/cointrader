@@ -5,6 +5,7 @@ import com.dmi.cointrader.archive.PeriodSpace
 import com.dmi.util.io.readBytes
 import com.dmi.util.io.writeBytes
 import com.dmi.util.lang.parseInstant
+import com.dmi.util.lang.seconds
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.load
 import kotlinx.serialization.cbor.CBOR.Companion.dump
@@ -33,7 +34,7 @@ data class TradeConfig(
         val historySize: Int = 160,
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00"),
-                duration = Duration.ofSeconds(10)
+                duration = seconds(10)
         ),
         val tradePeriods: Int = 1 * periodSpace.periodsPerMinute().toInt(),    // trade every FIVE minutes
         val historyPeriods: Int = 5 * periodSpace.periodsPerMinute().toInt(),  // get historical prices every last FIVE minutes

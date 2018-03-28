@@ -1,12 +1,13 @@
 package com.dmi.cointrader.archive
 
+import com.dmi.util.lang.millis
 import com.dmi.util.test.Spec
 import com.dmi.util.test.duration
 import com.dmi.util.test.instant
 import io.kotlintest.matchers.shouldBe
 
 class PeriodsSpec : Spec({
-    val space = PeriodSpace(instant(21), duration(3))
+    val space = PeriodSpace(instant(21), millis(3))
 
     "floor" {
         space.floor(instant(17)) shouldBe -2
@@ -41,7 +42,7 @@ class PeriodsSpec : Spec({
     }
 
     "times" {
-        space * 2 shouldBe PeriodSpace(instant(21), duration(6))
+        space * 2 shouldBe PeriodSpace(instant(21), millis(6))
     }
 
     "periodSequence" {

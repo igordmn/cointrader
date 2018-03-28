@@ -75,3 +75,8 @@ object DurationSerializer : KSerializer<Duration> {
             input.readIntValue().toLong()
     )
 }
+
+fun days(count: Long) = Duration.ofDays(count)
+fun minutes(count: Long) = Duration.ofMinutes(count)
+fun seconds(count: Long) = Duration.ofSeconds(count)
+fun millis(count: Long) = Duration.ofMillis(count)
