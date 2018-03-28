@@ -8,7 +8,9 @@ class ResourceContext: AutoCloseable {
         return this
     }
 
-    override fun close() = resources.asReversed().forEach(AutoCloseable::close)
+    override fun close() {
+        resources.asReversed().forEach(AutoCloseable::close)
+    }
 }
 
 inline fun resourceContext(consume: ResourceContext.() -> Unit) {

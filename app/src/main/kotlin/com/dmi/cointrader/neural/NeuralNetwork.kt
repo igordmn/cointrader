@@ -19,7 +19,9 @@ private val neuralTrainerCreated = AtomicBoolean(false)
 
 fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
-    return NeuralNetwork.load(jep, Paths.get("data/network"), gpuMemoryFraction = 0.2).use()
+    val dir = Paths.get("data/network")
+    Files.createDirectories(dir)
+    return NeuralNetwork.load(jep, dir, gpuMemoryFraction = 0.2).use()
 }
 
 fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwork {

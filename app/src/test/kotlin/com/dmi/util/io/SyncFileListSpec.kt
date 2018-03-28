@@ -2,6 +2,7 @@ package com.dmi.util.io
 
 import com.dmi.util.restorable.RestorableSource
 import com.dmi.util.test.Spec
+import com.dmi.util.test.testFileSystem
 import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe

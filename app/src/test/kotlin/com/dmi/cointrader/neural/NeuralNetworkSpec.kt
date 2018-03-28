@@ -10,6 +10,7 @@ import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.beGreaterThan
 import io.kotlintest.matchers.should
 import io.kotlintest.matchers.shouldBe
+import java.nio.file.Files
 
 class NeuralNetworkSpec: Spec({
     "test" {
@@ -17,6 +18,7 @@ class NeuralNetworkSpec: Spec({
         val altAssetNumber = 2
         val historySize = 3
         val batchSize = 4
+        val dir = fileSystem.getPath("/net")
 
         fun portfolio() = listOf(1.0, 0.0)
         fun spread() = Spread(1.0, 1.0)
@@ -26,10 +28,11 @@ class NeuralNetworkSpec: Spec({
 
         var bestPortfolio1: Portions? = null
 
+        val jep = jep()
+
         resourceContext {
-            val jep = jep()
-            val network = NeuralNetwork.init(jep, NeuralNetwork.Config(altAssetNumber, historySize), gpuMemoryFraction = 0.1)
-            val trainer = NeuralTrainer(jep, network, 0.01)
+            val network = NeuralNetwork.init(jep, NeuralNetwork.Config(altAssetNumber, historySize), gpuMemoryFraction = 0.1).use()
+            val trainer = NeuralTrainer(jep, network, 0.01).use()
 
             val portfolio = listOf(portfolio(), portfolio(), portfolio(), portfolio())
             val history = listOf(tradedHistory(), tradedHistory(), tradedHistory(), tradedHistory())
@@ -44,12 +47,12 @@ class NeuralNetworkSpec: Spec({
             bestPortfolio1 = network.bestPortfolio(portfolio(), history())
             bestPortfolio1!!.size shouldBe 1 + altAssetNumber
 
-            network.save(fileSystem.getPath("net"))
+            Files.createDirectories(dir)
+            network.save(dir)
         }
 
         resourceContext {
-            val jep = jep()
-            val network = NeuralNetwork.load(jep, fileSystem.getPath("net"), gpuMemoryFraction = 0.1)
+            val network = NeuralNetwork.load(jep, fileSystem.getPath("/net"), gpuMemoryFraction = 0.1).use()
 
             val bestPortfolio2 = network.bestPortfolio(portfolio(), history())
             bestPortfolio2.size shouldBe 1 + altAssetNumber
