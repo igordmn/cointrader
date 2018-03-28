@@ -144,3 +144,8 @@ tasks.withType(JavaExec::class.java) {
     systemProperty("java.library.path", libraryPath)
     environment("PYTHONHOME", pythonHome)
 }
+
+tasks.withType(Test::class.java) {
+    systemProperty("java.library.path", libraryPath)
+    environment("PYTHONHOME", pythonHome)
+}
