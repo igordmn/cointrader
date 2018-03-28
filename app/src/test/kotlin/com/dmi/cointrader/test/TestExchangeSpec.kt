@@ -1,143 +1,64 @@
 package com.dmi.cointrader.test
 
+import com.dmi.cointrader.binance.Portfolio
 import com.dmi.cointrader.broker.Broker
+import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.test.Spec
+import io.kotlintest.matchers.shouldBe
+import io.kotlintest.matchers.shouldNotBe
 import io.kotlintest.matchers.shouldThrow
-import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
+import java.math.RoundingMode
+
+fun Portfolio.round() = mapValues { it.value.setScale(3, RoundingMode.HALF_DOWN) }
 
 class TestExchangeSpec : Spec({
-    val ltcInBtcPrice = TestMarketPrice(BigDecimal("0.01"))
-    val ethInBtcPrice = TestMarketPrice(BigDecimal("0.1"))
+    val assets = TradeAssets(main = "BTC", alts = listOf("LTC", "ETH"))
+    val exchange = TestExchange(assets, BigDecimal("0.01"))
 
-    "zero fee, zero limits" - {
-        val portfolio = TestPortfolio(mapOf(
-                "BTC" to BigDecimal("1.0"),
-                "LTC" to BigDecimal("20.0"),
-                "ETH" to BigDecimal("25.0")
-        ))
-        val btcToLtc = TestMarketBroker(
-                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
-                TestMarketBroker.EmptyListener()
-        )
-        val btcToEth = TestMarketBroker(
-                "BTC", "ETH", portfolio, ethInBtcPrice, BigDecimal.ZERO, TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
-                TestMarketBroker.EmptyListener()
-        )
-
-        "buy LTC" {
-            btcToLtc.buy(BigDecimal("10.0"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(2) shouldBe BigDecimal("0.90")
-            amounts["LTC"]!!.setScale(2) shouldBe BigDecimal("30.00")
-            amounts["ETH"]!!.setScale(2) shouldBe BigDecimal("25.00")
-        }
-
-        "sell LTC" {
-            btcToLtc.sell(BigDecimal("5.0"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(2) shouldBe BigDecimal("1.05")
-            amounts["LTC"]!!.setScale(2) shouldBe BigDecimal("15.00")
-            amounts["ETH"]!!.setScale(2) shouldBe BigDecimal("25.00")
-        }
-
-        "sell LTC, buy ETH" {
-            btcToLtc.sell(BigDecimal("10.0"))
-            btcToEth.buy(BigDecimal("5.0"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(2) shouldBe BigDecimal("0.60")  // 1.0 + 10 * 0.01 - 0.1 * 5
-            amounts["LTC"]!!.setScale(2) shouldBe BigDecimal("10.00")
-            amounts["ETH"]!!.setScale(2) shouldBe BigDecimal("30.00")
-        }
-
-        "cannot buy/sell zero/negative amount" {
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.buy(BigDecimal("0.0"))
-            }
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.sell(BigDecimal("0.0"))
-            }
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.buy(BigDecimal("-10.0"))
-            }
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.sell(BigDecimal("-10.0"))
-            }
-        }
-
-        "sell/buy LTC greater than can sell/buy" {
-            shouldThrow<Broker.OrderError.InsufficientBalance> {
-                btcToLtc.sell(BigDecimal("21.0"))
-            }
-            shouldThrow<Broker.OrderError.InsufficientBalance> {
-                btcToLtc.buy(BigDecimal("101.0"))
-            }
-        }
+    "initial portfolio" {
+        exchange.portfolio() shouldBe mapOf("BTC" to BigDecimal.ONE, "LTC" to BigDecimal.ZERO, "ETH" to BigDecimal.ZERO)
     }
 
-    "0.1 fee, zero limits" - {
-        val portfolio = TestPortfolio(mapOf(
-                "BTC" to BigDecimal("1.0"),
-                "LTC" to BigDecimal("20.0")
-        ))
-        val btcToLtc = TestMarketBroker(
-                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal("0.1"), TestMarketLimits(BigDecimal.ZERO, BigDecimal.ZERO),
-                TestMarketBroker.EmptyListener()
-        )
-
-        "buy LTC" {
-            btcToLtc.buy(BigDecimal("10.0"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(2) shouldBe BigDecimal("0.90")
-            amounts["LTC"]!!.setScale(2) shouldBe BigDecimal("29.00")
-        }
-
-        "sell LTC" {
-            btcToLtc.sell(BigDecimal("5.0"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(3) shouldBe BigDecimal("1.045")
-            amounts["LTC"]!!.setScale(2) shouldBe BigDecimal("15.00")
-        }
+    "brokers" {
+        exchange.broker("BTC", "LTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
+        exchange.broker("BTC", "ETH", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
+        exchange.broker("LTC", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
+        exchange.broker("ETH", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
+        exchange.broker("ETH", "XXX", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
+        exchange.broker("XXX", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
     }
 
-    "zero fee, with limits" - {
-        val portfolio = TestPortfolio(mapOf(
-                "BTC" to BigDecimal("1.0"),
-                "LTC" to BigDecimal("20.0")
-        ))
-        val limits = TestMarketLimits(BigDecimal("0.1"), BigDecimal("0.02"))
-        val btcToLtc = TestMarketBroker(
-                "BTC", "LTC", portfolio, ltcInBtcPrice, BigDecimal.ZERO, limits,
-                TestMarketBroker.EmptyListener()
+    "sell and buy" {
+        val broker = exchange.broker("BTC", "LTC", ask = BigDecimal("150"), bid = BigDecimal("100"))!!
+
+        broker.sell(BigDecimal("0.4"))
+        exchange.portfolio().round() shouldBe mapOf(
+                "BTC" to BigDecimal("0.600"),
+                "LTC" to BigDecimal("39.600"),    // 0.0 + 0.4 * 100 * (1 - 0.01)
+                "ETH" to BigDecimal("0.000")
         )
 
-        "can buy LTC greater than min limit and multiply of step" {
-            btcToLtc.buy(BigDecimal("0.1"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(4) shouldBe BigDecimal("0.9990")
-            amounts["LTC"]!!.setScale(4) shouldBe BigDecimal("20.1000")
+        broker.sell(BigDecimal("0.2"))
+        exchange.portfolio().round() shouldBe mapOf(
+                "BTC" to BigDecimal("0.400"),
+                "LTC" to BigDecimal("59.400"),    // 39.60 + 0.2 * 100 * (1 - 0.01)
+                "ETH" to BigDecimal("0.000")
+        )
+
+        broker.buy(BigDecimal("0.3"))
+        exchange.portfolio().round() shouldBe mapOf(
+                "BTC" to BigDecimal("0.697"),     // 0.40 + 0.3 * (1 - 0.01)
+                "LTC" to BigDecimal("14.400"),    // 59.40 - 0.3 * 150
+                "ETH" to BigDecimal("0.000")
+        )
+
+        shouldThrow<Broker.OrderError.InsufficientBalance> {
+            broker.buy(BigDecimal("1.0"))
         }
 
-        "can sell LTC greater than min limit and multiply of step" {
-            btcToLtc.sell(BigDecimal("0.1"))
-            val amounts = portfolio.amounts()
-            amounts["BTC"]!!.setScale(4) shouldBe BigDecimal("1.0010")
-            amounts["LTC"]!!.setScale(4) shouldBe BigDecimal("19.9000")
-        }
-
-        "cannot buy LTC less than min limit" {
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.buy(BigDecimal("0.08"))
-            }
-        }
-
-        "cannot buy/sell LTC that not multiple of step" {
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.buy(BigDecimal("0.11"))
-            }
-            shouldThrow<Broker.OrderError.WrongAmount> {
-                btcToLtc.sell(BigDecimal("0.11"))
-            }
+        shouldThrow<Broker.OrderError.InsufficientBalance> {
+            broker.sell(BigDecimal("1.0"))
         }
     }
 })
