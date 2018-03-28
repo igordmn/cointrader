@@ -106,7 +106,7 @@ kotlin {
 val libraryPath = "D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64"
 
 application {
-    mainClassName = "old.main.MainKt"
+    mainClassName = "com.dmi.cointrader.MainKt"
     applicationDefaultJvmArgs = listOf("-Djava.library.path=$libraryPath")
 }
 
@@ -134,26 +134,8 @@ configure<ApplicationPluginConvention> {
     applicationDistribution
             .from("$rootDir")
             .include("data/**")
+            .exclude("data/cache/**")
             .include("python/src/**")
             .include("lib/native/**")
             .into("bin")
 }
-
-fun mainTask(name: String) = task(name, JavaExec::class) {
-    group = "application"
-    val javaPlugin = the<JavaPluginConvention>()
-    val applicationPlugin = the<ApplicationPluginConvention>()
-    classpath = javaPlugin.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).runtimeClasspath
-    main = applicationPlugin.mainClassName
-    jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList() +
-            listOf("-Djava.library.path=$libraryPath")
-
-    environment = environment + mapOf("PYTHONHOME" to "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict")
-    workingDir = rootDir
-    args = listOf(name)
-}
-
-mainTask("backTest")
-mainTask("forwardTest")
-mainTask("realTrade")
-mainTask("printTopCoins")
