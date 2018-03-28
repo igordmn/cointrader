@@ -1,6 +1,7 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.cointrader.binance.binanceExchangeForInfo
+import com.dmi.cointrader.binance.binanceExchangeForTest
 import com.dmi.util.test.Spec
 import com.dmi.util.test.initialValues
 import com.dmi.util.test.instant
@@ -8,7 +9,7 @@ import com.dmi.util.test.restoredAfter
 import io.kotlintest.matchers.shouldBe
 
 class TradeSourceSpec : Spec({
-    val market = binanceExchangeForInfo().market("LTC", "BTC")!!
+    val market = binanceExchangeForTest().market("LTC", "BTC")!!
 
     "test1" {
         val source = TradeSource(market, instant(1500007920000L), chunkLoadCount = 3)

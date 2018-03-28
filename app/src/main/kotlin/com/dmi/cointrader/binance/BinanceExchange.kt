@@ -44,7 +44,7 @@ suspend fun binanceExchangeForInfo(): BinanceExchange {
     return BinanceExchange(api, info)
 }
 
-private suspend fun info(api: BinanceAPI): BinanceExchange.Info {
+suspend fun info(api: BinanceAPI): BinanceExchange.Info {
     fun SymbolInfo.limits(): Limits {
         val lotSizeFilter = filters.find { it.filterType == FilterType.LOT_SIZE }!!
         return Limits(
