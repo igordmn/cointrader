@@ -104,7 +104,7 @@ kotlin {
 }
 
 val libraryPath = "D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64"
-val pythonHome = "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
+val pythonHome = "E:/Distr/Portable/Dev/Anaconda3/envs/coin_predict"
 
 application {
     mainClassName = "com.dmi.cointrader.MainKt"
