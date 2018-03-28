@@ -1,4 +1,4 @@
-# from java.lang import System  # for debugging (System.out.println), standard python 'print' doesn't work
+# from java.lang import System  # for debugging (System.out.println), standard python 'print' doesn't work in jep
 import tflearn
 import tensorflow as tf
 
