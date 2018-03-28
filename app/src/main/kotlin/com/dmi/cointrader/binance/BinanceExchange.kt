@@ -61,7 +61,7 @@ suspend fun info(api: BinanceAPI): BinanceExchange.Info {
 }
 
 class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
-    suspend fun currentTime(): Instant = Instant.ofEpochSecond(api.serverTime().serverTime)
+    suspend fun currentTime(): Instant = Instant.ofEpochMilli(api.serverTime().serverTime)
 
     suspend fun portfolio(clock: Clock): Portfolio {
         val result = api.getAccount(5000, clock.instant().toEpochMilli())

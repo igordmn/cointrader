@@ -6,7 +6,6 @@ import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.test.Spec
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldThrow
-import kotlinx.coroutines.experimental.runBlocking
 import java.math.BigDecimal
 
 class SafeBrokerSpec : Spec({
