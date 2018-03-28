@@ -104,12 +104,12 @@ kotlin {
 }
 
 val libraryPath = "D:/Development/Projects/cointrader/src/lib/native/cp36-win_amd64"
+val pythonHome = "E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
 
 application {
     mainClassName = "com.dmi.cointrader.MainKt"
     applicationDefaultJvmArgs = listOf("-Djava.library.path=$libraryPath")
 }
-
 
 val startScripts = (tasks["startScripts"] as CreateStartScripts)
 val original = startScripts.windowsStartScriptGenerator
@@ -118,7 +118,7 @@ startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
         val header = "@if \"%DEBUG%\" == \"\" @echo off"
         val classPathOld = Regex("set CLASSPATH=.*\r\n")
         val classPathNew = "set CLASSPATH=%APP_HOME%/lib/*\r\n"
-        val additional = "set PYTHONHOME=E:\\Distr\\Portable\\Dev\\Anaconda3\\envs\\coin_predict"
+        val additional = "set PYTHONHOME=$pythonHome"
 
         val midStr = StringWriter()
         original.generateScript(details, midStr)
@@ -138,4 +138,9 @@ configure<ApplicationPluginConvention> {
             .include("python/src/**")
             .include("lib/native/**")
             .into("bin")
+}
+
+tasks.withType(JavaExec::class.java) {
+    systemProperty("java.library.path", libraryPath)
+    environment("PYTHONHOME", pythonHome)
 }
