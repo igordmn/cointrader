@@ -18,7 +18,11 @@ class SpreadsSpec: Spec({
                 Trade(instant(10), 54.0, 0.0, true),
                 Trade(instant(11), 53.9, 0.0, true),
                 Trade(instant(12), 55.0, 0.0, false),
-                Trade(instant(16), 51.0, 0.0, false)
+                Trade(instant(16), 51.0, 0.0, false),
+                Trade(instant(17), 52.0, 0.0, false),
+                Trade(instant(18), 52.0, 0.0, true),
+                Trade(instant(19), 51.0, 0.0, true),
+                Trade(instant(20), 51.0, 0.0, false)
         )
 
         val spreads = ArrayList<TimeSpread?>()
@@ -41,7 +45,11 @@ class SpreadsSpec: Spec({
                 TimeSpread(instant(10), Spread(54.0, 54.0)),
                 TimeSpread(instant(11), Spread(54.0, 53.9)),
                 TimeSpread(instant(12), Spread(55.0, 53.9)),
-                TimeSpread(instant(16), Spread(51.0, 51.0))
+                TimeSpread(instant(16), Spread(51.0, 51.0)),
+                TimeSpread(instant(17), Spread(52.0, 51.0)),
+                TimeSpread(instant(18), Spread(52.0, 52.0)),
+                TimeSpread(instant(19), Spread(52.0, 51.0)),
+                TimeSpread(instant(20), Spread(51.0, 51.0))
         )
     }
 
