@@ -115,8 +115,8 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         private fun AggTrade.convert() = Trade(
                 Instant.ofEpochMilli(tradeTime),
                 aggregatedTradeId,
-                quantity.toBigDecimal(),
-                price.toBigDecimal()
+                price.toBigDecimal(),
+                quantity.toBigDecimal()
         )
 
         fun broker(clock: Clock) = object : Broker {
@@ -164,6 +164,6 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         }
     }
 
-    data class Trade(val time: Instant, val aggTradeId: Long, val amount: BigDecimal, val price: BigDecimal)
+    data class Trade(val time: Instant, val aggTradeId: Long, val price: BigDecimal, val amount: BigDecimal)
     data class Info(val markets: Set<String>, val marketToLimits: Map<String, Limits>)
 }
