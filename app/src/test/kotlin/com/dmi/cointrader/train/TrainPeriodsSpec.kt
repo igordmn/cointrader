@@ -4,6 +4,7 @@ import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.neural.TradedHistory
 import com.dmi.cointrader.trade.HistoryPeriods
 import com.dmi.util.collection.asSuspend
+import com.dmi.util.concurrent.suspend
 import com.dmi.util.test.Spec
 import io.kotlintest.matchers.shouldBe
 
@@ -50,7 +51,11 @@ class TrainPeriodsSpec : Spec({
                 historyPeriods = HistoryPeriods(count = 3, size = 2), tradeDelayPeriods = 1
         )
 
-        val batchesList = (0 until batches.size).map { batches.get(it) }
+        val getBatches = suspend {
+            (0 until batches.size).map { batches.get(it) }
+        }
+
+        val batchesList = getBatches()
         batchesList.map { it.history } shouldBe listOf(
                 listOf(
                         TradedHistory(listOf(spreads01, spreads03, spreads05), spreads06),
@@ -61,6 +66,58 @@ class TrainPeriodsSpec : Spec({
                         TradedHistory(listOf(spreads04, spreads06, spreads08), spreads09),
                         TradedHistory(listOf(spreads07, spreads09, spreads11), spreads12),
                         TradedHistory(listOf(spreads10, spreads12, spreads14), spreads15)
+                )
+        )
+        batchesList.map { it.currentPortfolio } shouldBe listOf(
+                listOf(
+                        listOf(0.5, 0.5),
+                        listOf(0.5, 0.5),
+                        listOf(0.5, 0.5)
+                ),
+                listOf(
+                        listOf(0.5, 0.5),
+                        listOf(0.5, 0.5),
+                        listOf(0.5, 0.5)
+                )
+        )
+
+        batchesList[0].setCurrentPortfolio(
+                listOf(
+                        listOf(0.2, 0.8),
+                        listOf(0.9, 0.1),
+                        listOf(0.3, 0.7)
+                )
+        )
+        getBatches().map { it.currentPortfolio } shouldBe listOf(
+                listOf(
+                        listOf(0.2, 0.8),
+                        listOf(0.9, 0.1),
+                        listOf(0.3, 0.7)
+                ),
+                listOf(
+                        listOf(0.9, 0.1),
+                        listOf(0.3, 0.7),
+                        listOf(0.5, 0.5)
+                )
+        )
+
+        batchesList[1].setCurrentPortfolio(
+                listOf(
+                        listOf(0.2, 0.8),
+                        listOf(0.9, 0.1),
+                        listOf(0.3, 0.7)
+                )
+        )
+        getBatches().map { it.currentPortfolio } shouldBe listOf(
+                listOf(
+                        listOf(0.2, 0.8),
+                        listOf(0.2, 0.8),
+                        listOf(0.9, 0.1)
+                ),
+                listOf(
+                        listOf(0.2, 0.8),
+                        listOf(0.9, 0.1),
+                        listOf(0.3, 0.7)
                 )
         )
     }
