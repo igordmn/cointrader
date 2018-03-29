@@ -53,16 +53,12 @@ class TrainBatches(
         private val archive: SuspendList<Spreads>,
         private val periods: PeriodProgression,
         private val batchSize: Int,
-        assetsSize: Int,
+        private val assetsSize: Int,
         private val historyPeriods: HistoryPeriods,
         private val tradeDelayPeriods: Int
 ) {
-    private fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
-    private fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
-
-    private val portfolios = initPortfolios(periods.size().toInt(), assetsSize).also {
-        require(periods.first == 0L)
-    }
+    private fun initPortfolio(): DoubleArray = DoubleArray(assetsSize) { 1.0 / assetsSize }
+    private val portfolios = Array(periods.size().toInt()) { initPortfolio() }
 
     private val random = Random(867979346)
 
@@ -72,7 +68,10 @@ class TrainBatches(
         val indices = index until index + batchSize
         val batchPeriods = periods.slice(indices)
         val portfolio = portfolios.slice(indices.toInt()).map { it.toList() }
-        fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices.toInt(), portfolio.map { it.toDoubleArray() }.toTypedArray())
+        fun setPortfolio(portfolio: PortionsBatch) {
+            val portfolioArray = portfolio.map { it.toDoubleArray() }.toTypedArray()
+            portfolios[indices.toInt()] = portfolioArray
+        }
         val history = tradedHistories(archive, historyPeriods, tradeDelayPeriods, batchPeriods).toList()
         return TrainBatch(portfolio, ::setPortfolio, history)
     }
