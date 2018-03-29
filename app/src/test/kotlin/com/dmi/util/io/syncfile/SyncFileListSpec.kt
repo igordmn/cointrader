@@ -1,5 +1,8 @@
-package com.dmi.util.io
+package com.dmi.util.io.syncfile
 
+import com.dmi.util.io.LongFixedSerializer
+import com.dmi.util.io.appendToFileName
+import com.dmi.util.io.syncFileList
 import com.dmi.util.restorable.RestorableSource
 import com.dmi.util.test.Spec
 import com.dmi.util.test.testFileSystem
@@ -13,28 +16,6 @@ import kotlinx.serialization.internal.LongSerializer
 import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.util.*
-
-
-@Serializable
-private data class TestConfig(val x: String)
-
-private typealias TestSourceRow = RestorableSource.Item<Long, Long>
-private typealias TestDestRow = RestorableSource.Item<Long, Long>
-
-private class TestSource(private val values: List<Pair<Long, Long>>) : RestorableSource<Long, Long> {
-    override fun initial() = channel(null)
-    override fun restored(state: Long) = channel(state)
-
-    private fun channel(state: Long?): ReceiveChannel<TestSourceRow> {
-        val map = TreeMap<Long, Long>().apply { putAll(this@TestSource.values) }
-        val subMap = if (state != null) {
-            map.tailMap(state, false)
-        } else {
-            map
-        }
-        return subMap.asSequence().map { TestSourceRow(it.key, it.value) }.asReceiveChannel()
-    }
-}
 
 class SyncFileListSpec : Spec({
     "simple" - {

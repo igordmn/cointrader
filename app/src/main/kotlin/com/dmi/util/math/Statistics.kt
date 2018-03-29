@@ -1,9 +1,12 @@
 package com.dmi.util.math
 
 import org.apache.commons.math3.distribution.GeometricDistribution
+import java.util.*
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sqrt
+
+fun Random.nextInt(range: IntRange) = range.first + nextInt(range.last - 1 - range.first)
 
 fun GeometricDistribution.sampleIn(range: IntRange): Int {
     var ran = sample()

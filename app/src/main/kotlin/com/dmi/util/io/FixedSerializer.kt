@@ -24,6 +24,16 @@ class FixedListSerializer<T>(
     }
 }
 
+object IntFixedSerializer : FixedSerializer<Int> {
+    override val itemBytes: Int = 4
+
+    override fun serialize(item: Int, data: ByteBuffer) {
+        data.putInt(item)
+    }
+
+    override fun deserialize(data: ByteBuffer): Int = data.int
+}
+
 object LongFixedSerializer : FixedSerializer<Long> {
     override val itemBytes: Int = 8
 
