@@ -5,14 +5,12 @@ import com.dmi.util.io.IntFixedSerializer
 import com.dmi.util.io.syncFileList
 import com.dmi.util.math.nextInt
 import com.dmi.util.restorable.RestorableSource
-import com.dmi.util.restorable.asRestorableSource
 import com.dmi.util.test.Spec
 import com.dmi.util.test.testFileSystem
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.serialization.internal.IntSerializer
 import java.nio.file.Path
@@ -26,8 +24,8 @@ class SyncFileListParallelTest : Spec({
         val itemCount = 1000..10000
         val sourceCount = 100
 
+        val thread = newSingleThreadContext("test")
         fun List<Int>.asAsyncRestorableSource() = object : RestorableSource<Int, Int> {
-            private val thread = newSingleThreadContext("test")
 
             override fun initial(): ReceiveChannel<RestorableSource.Item<Int, Int>> = restored(-1)
 
