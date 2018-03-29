@@ -14,16 +14,23 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
 import java.util.*
 
-fun PeriodRange.splitForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig): TrainPeriods {
-    val space = tradeConfig.periodSpace
-    val testSize = (trainConfig.testDays * space.periodsPerDay()).toInt()
-    val validationSize = (trainConfig.validationDays * space.periodsPerDay()).toInt()
-    val all = clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay).tradePeriods(tradeConfig.tradePeriods.size)
-    val size = all.size()
+fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig) = this
+        .clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay)
+        .tradePeriods(tradeConfig.tradePeriods.size)
+        .splitForTrain(tradeConfig.periodSpace.periodsPerDay(), trainConfig.testDays, trainConfig.validationDays)
+
+fun PeriodProgression.splitForTrain(
+        periodsPerDay: Double,
+        testDays: Double,
+        validationDays: Double
+): TrainPeriods {
+    val testSize = (testDays * periodsPerDay / step).toInt()
+    val validationSize = (validationDays * periodsPerDay / step).toInt()
+    val size = size()
     return TrainPeriods(
-            train = all.slice(0 until size - validationSize),
-            test = all.slice(size - testSize until size - validationSize),
-            validation = all.slice(size - validationSize until size)
+            train = slice(0 until size - validationSize),
+            test = slice(size - validationSize - testSize until size - validationSize),
+            validation = slice(size - validationSize until size)
     )
 }
 

@@ -47,7 +47,7 @@ suspend fun train() = resourceContext {
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
-    val (trainPeriods, testPeriods, validationPeriods) = periods.splitForTrain(tradeConfig, trainConfig)
+    val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
     val batches = TrainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
 
     fun train(batch: TrainBatch): Double {
