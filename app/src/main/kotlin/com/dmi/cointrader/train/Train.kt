@@ -6,26 +6,15 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.trade.*
 import com.dmi.util.collection.contains
-import com.dmi.util.collection.set
-import com.dmi.util.collection.size
-import com.dmi.util.collection.slice
 import com.dmi.util.concurrent.chunked
-import com.dmi.util.concurrent.infiniteChannel
 import com.dmi.util.concurrent.map
 import com.dmi.util.io.appendText
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
-import com.dmi.util.math.downsideDeviation
-import com.dmi.util.math.geoMean
-import com.dmi.util.math.maximumDrawdawn
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.consumeEach
-import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.coroutines.experimental.channels.withIndex
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.*
-import kotlin.math.pow
 
 suspend fun train() = resourceContext {
     val networksFolder = Paths.get("data/networks")
@@ -48,7 +37,7 @@ suspend fun train() = resourceContext {
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
-    val batches = TrainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
+    val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
 
     fun train(batch: TrainBatch): Double {
         val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history)
