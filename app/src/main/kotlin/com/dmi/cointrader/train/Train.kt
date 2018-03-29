@@ -126,7 +126,7 @@ suspend fun train() = resourceContext {
                         step = it.index * trainConfig.logSteps,
                         trainProfits = it.value,
                         testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
-                        validationResults =performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
+                        validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
                 ))
             }
 }
