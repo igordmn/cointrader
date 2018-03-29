@@ -11,6 +11,7 @@ import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.serialization.internal.IntSerializer
 import java.nio.file.Path
@@ -24,9 +25,8 @@ class SyncFileListParallelTest : Spec({
         val itemCount = 1000..10000
         val sourceCount = 100
 
-        val thread = newSingleThreadContext("test")
+        val thread = newFixedThreadPoolContext(4, "test")
         fun List<Int>.asAsyncRestorableSource() = object : RestorableSource<Int, Int> {
-
             override fun initial(): ReceiveChannel<RestorableSource.Item<Int, Int>> = restored(-1)
 
             override fun restored(state: Int): ReceiveChannel<RestorableSource.Item<Int, Int>> = produce {
