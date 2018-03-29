@@ -47,18 +47,7 @@ suspend fun train() = resourceContext {
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
-    val (trainPeriods, testPeriods, validationPeriods) = run {
-        val space = tradeConfig.periodSpace
-        val testSize = (trainConfig.testDays * space.periodsPerDay()).toInt()
-        val validationSize = (trainConfig.validationDays * space.periodsPerDay()).toInt()
-        val all = periods.clampForTradedHistory(tradeConfig).tradePeriods(tradeConfig.tradePeriods)
-        val size = all.size()
-        Triple(
-                all.slice(0 until size - validationSize),
-                all.slice(size - testSize until size - validationSize),
-                all.slice(size - validationSize until size)
-        )
-    }
+    val (trainPeriods, testPeriods, validationPeriods) = periods.splitForTrain(tradeConfig, trainConfig)
 
     fun train(batch: TrainBatch): Double {
         val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history)

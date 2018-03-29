@@ -1,9 +1,12 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.Archive
-import com.dmi.cointrader.binance.Asset
+import com.dmi.cointrader.archive.PeriodProgression
+import com.dmi.cointrader.archive.PeriodRange
+import com.dmi.cointrader.archive.tradePeriods
 import com.dmi.cointrader.neural.PortionsBatch
 import com.dmi.cointrader.neural.TradedHistoryBatch
+import com.dmi.cointrader.neural.clampForTradedHistory
 import com.dmi.cointrader.neural.tradedHistories
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.set
@@ -15,8 +18,23 @@ import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
 import java.util.*
 
+fun PeriodRange.splitForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig): TrainPeriods {
+    val space = tradeConfig.periodSpace
+    val testSize = (trainConfig.testDays * space.periodsPerDay()).toInt()
+    val validationSize = (trainConfig.validationDays * space.periodsPerDay()).toInt()
+    val all = clampForTradedHistory(tradeConfig).tradePeriods(tradeConfig.tradePeriods)
+    val size = all.size()
+    return TrainPeriods(
+            train = all.slice(0 until size - validationSize),
+            test = all.slice(size - testSize until size - validationSize),
+            validation = all.slice(size - validationSize until size)
+    )
+}
+
+data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation: PeriodProgression)
+
 fun trainBatches(
-        trainPeriods: IntProgression,
+        trainPeriods: PeriodProgression,
         size: Int,
         config: TradeConfig,
         archive: Archive
