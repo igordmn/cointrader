@@ -18,7 +18,7 @@ fun PeriodRange.splitForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig
     val space = tradeConfig.periodSpace
     val testSize = (trainConfig.testDays * space.periodsPerDay()).toInt()
     val validationSize = (trainConfig.validationDays * space.periodsPerDay()).toInt()
-    val all = clampForTradedHistory(tradeConfig).tradePeriods(tradeConfig.tradePeriods)
+    val all = clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay).tradePeriods(tradeConfig.tradePeriods.size)
     val size = all.size()
     return TrainPeriods(
             train = all.slice(0 until size - validationSize),
@@ -51,7 +51,7 @@ fun trainBatches(
         val batchPeriods = trainPeriods.slice(indices)
         val portfolio = portfolios.slice(indices.toInt()).map { it.toList() }
         fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices.toInt(), portfolio.map { it.toDoubleArray() }.toTypedArray())
-        val history = tradedHistories(config, archive, batchPeriods).toList()
+        val history = tradedHistories(config.historyPeriods, config.tradePeriods.delay, archive, batchPeriods).toList()
         TrainBatch(portfolio, ::setPortfolio, history)
     }
 

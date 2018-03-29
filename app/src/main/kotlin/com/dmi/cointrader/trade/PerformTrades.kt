@@ -52,7 +52,7 @@ suspend fun performRealTrades() = resourceContext {
     )
     val syncClock = suspend { binanceClock(exchange) }
 
-    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods) { clock, period ->
+    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods.size) { clock, period ->
         performRealTrade(config, exchange, archive, period, clock, network, log)
     }
 }
@@ -102,8 +102,8 @@ suspend fun performRealTrade(
     try {
         archive.sync(period)
         val portfolio = exchange.portfolio(clock)
-        val history = neuralHistory(config, archive, period)
-        val tradeTime = config.periodSpace.timeOf(period + config.tradeDelayPeriods)
+        val history = neuralHistory(config.historyPeriods, archive, period)
+        val tradeTime = config.periodSpace.timeOf(period + config.tradePeriods.delay)
         val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
@@ -133,7 +133,7 @@ suspend fun performTestTrades(
         exchange: TestExchange
 ): List<TradeResult> {
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
-    return tradedHistories(config, archive, periods).map { tradedHistory ->
+    return tradedHistories(config.historyPeriods, config.tradePeriods.delay, archive, periods).map { tradedHistory ->
         val portfolio = exchange.portfolio()
         val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
         val bids = tradedHistory.tradeTimeSpreads.map { it.bid }
