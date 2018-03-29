@@ -8,6 +8,8 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.plugins.JavaPluginConvention
 import com.sun.javafx.scene.CameraHelper.project
 import org.codehaus.groovy.vmplugin.VMPluginFactory.getPlugin
+import org.gradle.internal.deployment.RunApplication
+import org.gradle.internal.impldep.aQute.bnd.build.Run
 import java.net.URI
 
 
@@ -151,3 +153,22 @@ tasks.withType(Test::class.java) {
     environment("PYTHONHOME", pythonHome)
     workingDir(rootDir)
 }
+
+fun mainTask(name: String) = task(name, JavaExec::class) {
+    group = "application"
+    val javaPlugin = the<JavaPluginConvention>()
+    val applicationPlugin = the<ApplicationPluginConvention>()
+    classpath = javaPlugin.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).runtimeClasspath
+    main = applicationPlugin.mainClassName
+    jvmArgs = applicationPlugin.applicationDefaultJvmArgs.toList() +
+            listOf("-Djava.library.path=$libraryPath")
+
+    environment = environment + mapOf("PYTHONHOME" to pythonHome)
+    workingDir = rootDir
+    args = listOf(name)
+}
+
+mainTask("archive")
+mainTask("train")
+mainTask("realtrades")
+mainTask("topcoins")
