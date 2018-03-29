@@ -2,6 +2,7 @@ package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
 import com.dmi.util.collection.chunked
 import com.dmi.util.concurrent.map

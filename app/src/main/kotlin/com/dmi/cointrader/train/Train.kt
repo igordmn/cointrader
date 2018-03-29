@@ -28,9 +28,6 @@ import java.util.*
 import kotlin.math.pow
 
 suspend fun train() = resourceContext {
-    fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
-    fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
-
     val networksFolder = Paths.get("data/networks")
     networksFolder.deleteRecursively()
     Files.createDirectory(networksFolder)
@@ -62,27 +59,6 @@ suspend fun train() = resourceContext {
                 all.slice(size - validationSize until size)
         )
     }
-    val portfolios = initPortfolios(trainPeriods.size(), tradeConfig.assets.all.size).also {
-        require(trainPeriods.first == 0)
-    }
-
-    val batches = object {
-        val random = Random(867979346)
-
-        suspend fun randomBatch(): TrainBatch {
-            val startIndex = random.nextInt(trainPeriods.size() - trainConfig.batchSize)
-            val endIndex = startIndex + trainConfig.batchSize
-            val indices = startIndex until endIndex
-            val batchPeriods = trainPeriods.slice(indices)
-            val portfolio = portfolios.slice(indices).map { it.toList() }
-            fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices, portfolio.map { it.toDoubleArray() }.toTypedArray())
-            val history = tradedHistories(tradeConfig, archive, batchPeriods).toList()
-            return TrainBatch(portfolio, ::setPortfolio, history)
-        }
-
-        fun channel(): ReceiveChannel<TrainBatch> = infiniteChannel { randomBatch() }
-    }
-
 
     fun train(batch: TrainBatch): Double {
         val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history)
@@ -117,7 +93,7 @@ suspend fun train() = resourceContext {
     }
 
     saveTradeConfig(tradeConfig)
-    batches.channel()
+    trainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
             .map(::train)
             .chunked(trainConfig.logSteps)
             .withIndex()
@@ -131,17 +107,6 @@ suspend fun train() = resourceContext {
             }
 }
 
-private data class TrainResult(
-        val step: Int,
-        val trainDayProfit: Double,
-        val test: Test,
-        val validation: Test
-) {
+private data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test, val validation: Test) {
     data class Test(val dayProfit: Double, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double)
 }
-
-private class TrainBatch(
-        val currentPortfolio: PortionsBatch,
-        val setCurrentPortfolio: (PortionsBatch) -> Unit,
-        val history: TradedHistoryBatch
-)
