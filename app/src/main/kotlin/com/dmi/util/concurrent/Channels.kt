@@ -98,13 +98,15 @@ fun <T> emptyChannel(): ReceiveChannel<T> = produce {}
 fun <T> ReceiveChannel<T>.windowed(size: Int, step: Int): ReceiveChannel<List<T>> = produce {
     require(size > 0 && step > 0)
     val list = LinkedList<T>()
-    var n = 1
+    var i = 0
     consumeEach {
         list.add(it)
-        if (n >= size && n % step == 0) {
-            send(ArrayList(list))
+        if (list.size >= size) {
+            if ((i + size - 1) % step == 0) {
+                send(ArrayList(list))
+            }
+            list.removeFirst()
         }
-        list.removeFirst()
-        n++
+        i++
     }
 }

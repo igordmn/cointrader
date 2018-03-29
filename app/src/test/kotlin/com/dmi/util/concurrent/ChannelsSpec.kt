@@ -112,26 +112,26 @@ class ChannelsSpec : Spec() {
 
         "windowed" - {
             "empty" {
-                emptyList<Int>().windowed(1, 1).toList() shouldBe emptyList<List<Int>>()
-                emptyList<Int>().windowed(1, 2).toList() shouldBe emptyList<List<Int>>()
-                emptyList<Int>().windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
+                channelOf<Int>().windowed(1, 1).toList() shouldBe emptyList<List<Int>>()
+                channelOf<Int>().windowed(1, 2).toList() shouldBe emptyList<List<Int>>()
+                channelOf<Int>().windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
             }
 
             "single" {
-                listOf(1).windowed(1, 1).toList() shouldBe listOf(listOf(1))
-                listOf(1).windowed(1, 2).toList() shouldBe listOf(listOf(1))
-                listOf(1).windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
+                channelOf(1).windowed(1, 1).toList() shouldBe listOf(listOf(1))
+                channelOf(1).windowed(1, 2).toList() shouldBe listOf(listOf(1))
+                channelOf(1).windowed(2, 1).toList() shouldBe emptyList<List<Int>>()
             }
 
             "multiple" {
-                listOf(1, 2, 3, 4, 5).windowed(1, 1).toList() shouldBe listOf(listOf(1), listOf(2), listOf(3), listOf(4), listOf(5))
-                listOf(1, 2, 3, 4, 5).windowed(1, 2).toList() shouldBe listOf(listOf(1), listOf(3), listOf(5))
-                listOf(1, 2, 3, 4, 5).windowed(2, 1).toList() shouldBe listOf(listOf(1, 2), listOf(2, 3), listOf(3, 4), listOf(4, 5))
-                listOf(1, 2, 3, 4, 5).windowed(2, 2).toList() shouldBe listOf(listOf(1, 2), listOf(3, 4))
-                listOf(1, 2, 3, 4, 5).windowed(3, 2).toList() shouldBe listOf(listOf(1, 2, 3), listOf(3, 4, 5))
-                listOf(1, 2, 3, 4, 5).windowed(4, 2).toList() shouldBe listOf(listOf(1, 2, 3, 4))
-                listOf(1, 2, 3, 4, 5, 6).windowed(5, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5), listOf(2, 3, 4, 5, 6))
-                listOf(1, 2, 3, 4, 5, 6).windowed(6, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5, 6))
+                channelOf(1, 2, 3, 4, 5).windowed(1, 1).toList() shouldBe listOf(listOf(1), listOf(2), listOf(3), listOf(4), listOf(5))
+                channelOf(1, 2, 3, 4, 5).windowed(1, 2).toList() shouldBe listOf(listOf(1), listOf(3), listOf(5))
+                channelOf(1, 2, 3, 4, 5).windowed(2, 1).toList() shouldBe listOf(listOf(1, 2), listOf(2, 3), listOf(3, 4), listOf(4, 5))
+                channelOf(1, 2, 3, 4, 5).windowed(2, 2).toList() shouldBe listOf(listOf(1, 2), listOf(3, 4))
+                channelOf(1, 2, 3, 4, 5).windowed(3, 2).toList() shouldBe listOf(listOf(1, 2, 3), listOf(3, 4, 5))
+                channelOf(1, 2, 3, 4, 5).windowed(4, 2).toList() shouldBe listOf(listOf(1, 2, 3, 4))
+                channelOf(1, 2, 3, 4, 5, 6).windowed(5, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5), listOf(2, 3, 4, 5, 6))
+                channelOf(1, 2, 3, 4, 5, 6).windowed(6, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5, 6))
             }
         }
     }
