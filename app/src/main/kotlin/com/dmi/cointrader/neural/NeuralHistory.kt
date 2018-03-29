@@ -9,6 +9,7 @@ import com.dmi.util.concurrent.windowed
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.filterIndexed
 import kotlinx.coroutines.experimental.channels.toList
+import kotlinx.coroutines.experimental.runBlocking
 
 typealias NeuralHistory = List<Spreads>
 
@@ -16,7 +17,7 @@ data class TradedHistory(val history: NeuralHistory, val tradeTimeSpreads: Sprea
 typealias TradedHistoryBatch = List<TradedHistory>
 
 fun PeriodRange.clampForTradedHistory(config: HistoryPeriods, tradeDelayPeriods: Int): PeriodRange = with(config) {
-    return coerceIn(size * count - 1..endInclusive - tradeDelayPeriods)
+    return coerceIn(start + size * count - 1..endInclusive - tradeDelayPeriods)
 }
 
 fun tradedHistories(
@@ -25,6 +26,11 @@ fun tradedHistories(
         tradeDelayPeriods: Int,
         periods: PeriodProgression
 ): ReceiveChannel<TradedHistory> = with(config) {
+    val x = runBlocking {
+        archive
+                .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
+                .windowed(size * count + tradeDelayPeriods, periods.step.toInt()).toList()
+    }
     archive
             .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
             .windowed(size * count + tradeDelayPeriods, periods.step.toInt())

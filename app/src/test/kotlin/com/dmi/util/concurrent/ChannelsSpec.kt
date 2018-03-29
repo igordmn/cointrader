@@ -128,6 +128,10 @@ class ChannelsSpec : Spec() {
                 listOf(1, 2, 3, 4, 5).windowed(1, 2).toList() shouldBe listOf(listOf(1), listOf(3), listOf(5))
                 listOf(1, 2, 3, 4, 5).windowed(2, 1).toList() shouldBe listOf(listOf(1, 2), listOf(2, 3), listOf(3, 4), listOf(4, 5))
                 listOf(1, 2, 3, 4, 5).windowed(2, 2).toList() shouldBe listOf(listOf(1, 2), listOf(3, 4))
+                listOf(1, 2, 3, 4, 5).windowed(3, 2).toList() shouldBe listOf(listOf(1, 2, 3), listOf(3, 4, 5))
+                listOf(1, 2, 3, 4, 5).windowed(4, 2).toList() shouldBe listOf(listOf(1, 2, 3, 4))
+                listOf(1, 2, 3, 4, 5, 6).windowed(5, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5), listOf(2, 3, 4, 5, 6))
+                listOf(1, 2, 3, 4, 5, 6).windowed(6, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5, 6))
             }
         }
     }
