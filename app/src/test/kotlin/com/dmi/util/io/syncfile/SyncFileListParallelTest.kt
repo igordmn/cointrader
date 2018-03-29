@@ -61,5 +61,5 @@ private suspend fun testSyncList(path: Path) = syncFileList(
         IntSerializer,
         IntFixedSerializer,
         TestConfig("f"),
-        bufferSize = 30
+        bufferSize = 500
 )
