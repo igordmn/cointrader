@@ -2,7 +2,6 @@ package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.HistoryPeriods
-import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
 import com.dmi.util.concurrent.map
@@ -21,9 +20,9 @@ fun PeriodRange.clampForTradedHistory(config: HistoryPeriods, tradeDelayPeriods:
 }
 
 fun tradedHistories(
+        archive: SuspendList<Spreads>,
         config: HistoryPeriods,
         tradeDelayPeriods: Int,
-        archive: SuspendList<Spreads>,
         periods: PeriodProgression
 ): ReceiveChannel<TradedHistory> = with(config) {
     archive
@@ -38,7 +37,7 @@ fun tradedHistories(
             }
 }
 
-suspend fun neuralHistory(config: HistoryPeriods, archive: SuspendList<Spreads>, period: Period): NeuralHistory = with(config) {
+suspend fun neuralHistory(archive: SuspendList<Spreads>, config: HistoryPeriods, period: Period): NeuralHistory = with(config) {
     return archive
             .channel(period - count * size + 1..period, bufferSize = 10000)
             .filterIndexed { i, _ ->

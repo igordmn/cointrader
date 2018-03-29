@@ -10,26 +10,18 @@ import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.appendText
 import com.dmi.util.io.resourceContext
-import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog
-import com.dmi.util.math.portions
-import com.dmi.util.math.times
-import com.dmi.util.math.toDouble
 import kotlinx.coroutines.experimental.NonCancellable.isActive
 import kotlinx.coroutines.experimental.channels.map
 import kotlinx.coroutines.experimental.channels.toList
 import org.slf4j.Logger
 import java.awt.Toolkit
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
-import java.io.File
-import java.nio.file.Files
 import java.nio.file.Files.createDirectories
-import java.nio.file.Path
 import java.nio.file.Paths
 
 suspend fun askAndPerformRealTrades() {
@@ -102,7 +94,7 @@ suspend fun performRealTrade(
     try {
         archive.sync(period)
         val portfolio = exchange.portfolio(clock)
-        val history = neuralHistory(config.historyPeriods, archive, period)
+        val history = neuralHistory(archive, config.historyPeriods, period)
         val tradeTime = config.periodSpace.timeOf(period + config.tradePeriods.delay)
         val timeForTrade = tradeTime - clock.instant()
         if (timeForTrade >= Duration.ZERO) {
@@ -133,7 +125,7 @@ suspend fun performTestTrades(
         exchange: TestExchange
 ): List<TradeResult> {
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
-    return tradedHistories(config.historyPeriods, config.tradePeriods.delay, archive, periods).map { tradedHistory ->
+    return tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).map { tradedHistory ->
         val portfolio = exchange.portfolio()
         val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
         val bids = tradedHistory.tradeTimeSpreads.map { it.bid }
