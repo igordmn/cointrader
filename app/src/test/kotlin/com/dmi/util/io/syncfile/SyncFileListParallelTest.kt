@@ -12,7 +12,6 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.produce
 import kotlinx.coroutines.experimental.newFixedThreadPoolContext
-import kotlinx.coroutines.experimental.newSingleThreadContext
 import kotlinx.serialization.internal.IntSerializer
 import java.nio.file.Path
 import java.util.*
