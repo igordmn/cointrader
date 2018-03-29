@@ -48,6 +48,7 @@ suspend fun train() = resourceContext {
     val net = trainingNetwork(jep, tradeConfig)
     val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainPeriods, testPeriods, validationPeriods) = periods.splitForTrain(tradeConfig, trainConfig)
+    val batches = TrainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
 
     fun train(batch: TrainBatch): Double {
         val (newPortions, geometricMeanProfit) = trainer.train(batch.currentPortfolio, batch.history)
@@ -61,7 +62,7 @@ suspend fun train() = resourceContext {
     }
 
     saveTradeConfig(tradeConfig)
-    trainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
+    batches.channel()
             .map(::train)
             .chunked(trainConfig.logSteps)
             .withIndex()

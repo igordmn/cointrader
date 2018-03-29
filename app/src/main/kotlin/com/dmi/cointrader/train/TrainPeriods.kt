@@ -29,33 +29,33 @@ fun PeriodRange.splitForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig
 
 data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation: PeriodProgression)
 
-fun trainBatches(
-        trainPeriods: PeriodProgression,
-        size: Int,
-        config: TradeConfig,
-        archive: SuspendList<Spreads>
-): ReceiveChannel<TrainBatch> {
-    fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
-    fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
+class TrainBatches(
+        private val trainPeriods: PeriodProgression,
+        private val batchSize: Int,
+        private val config: TradeConfig,
+        private val archive: SuspendList<Spreads>
+) {
+    private fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
+    private fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 
-    val portfolios = initPortfolios(trainPeriods.size().toInt(), config.assets.all.size).also {
+    private val portfolios = initPortfolios(trainPeriods.size().toInt(), config.assets.all.size).also {
         require(trainPeriods.first == 0L)
     }
 
-    val random = Random(867979346)
+    private val random = Random(867979346)
 
-    val randomBatch = suspend {
-        val startIndex = random.nextLong(trainPeriods.size() - size)
-        val endIndex = startIndex + size
-        val indices = startIndex until endIndex
+    val size = trainPeriods.size() - batchSize
+
+    suspend fun get(index: Long): TrainBatch {
+        val indices = index until index + batchSize
         val batchPeriods = trainPeriods.slice(indices)
         val portfolio = portfolios.slice(indices.toInt()).map { it.toList() }
         fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices.toInt(), portfolio.map { it.toDoubleArray() }.toTypedArray())
         val history = tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, batchPeriods).toList()
-        TrainBatch(portfolio, ::setPortfolio, history)
+        return TrainBatch(portfolio, ::setPortfolio, history)
     }
 
-    return infiniteChannel { randomBatch() }
+    fun channel() = infiniteChannel { get(random.nextLong(size)) }
 }
 
 class TrainBatch(
