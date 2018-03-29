@@ -32,7 +32,7 @@ suspend fun train() = resourceContext {
     networksFolder.deleteRecursively()
     Files.createDirectory(networksFolder)
     fun netFolder(step: Int) = networksFolder.resolve(step.toString())
-    val resultsFile = networksFolder.resolve("results.txt")
+    val resultsFile = networksFolder.resolve("results.log")
 
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
