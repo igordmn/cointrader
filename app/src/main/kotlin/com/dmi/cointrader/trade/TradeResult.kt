@@ -13,9 +13,11 @@ import java.time.Clock
 import java.time.Duration
 import kotlin.math.pow
 
+private val resultAsset = "BTC"
+private const val resultMin = 0.0001
+private val resultFormat = "%.4f"
+
 suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
-    val resultAsset = "BTC"
-    val minBtc = 0.0001
     val portfolio = exchange.portfolio(clock)
     val btcPrices = exchange.btcPrices()
     val assetCapitals = assets.all
@@ -27,21 +29,19 @@ suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, cloc
                 }
                 it to capital.toDouble()
             }
-            .filter { it.value > minBtc }
+            .filter { it.value > resultMin }
     val totalCapital = assetCapitals.values.sum()
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
 fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Double>): TradeResult {
-    val resultAsset = "BTC"
-    val minBtc = 0.0001
     val portfolio = exchange.portfolio()
     val amounts = portfolio.amountsOf(assets.all).toDouble()
     val capitals = bids * amounts
     val assetCapitals = assets.all.withIndex().associate {
         it.value to capitals[it.index]
     }.filter {
-        it.value > minBtc
+        it.value > resultMin
     }
     val totalCapital = capitals.sum()
     return TradeResult(assetCapitals, totalCapital, resultAsset)
@@ -49,10 +49,10 @@ fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Doub
 
 data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalCapital: Double, private val mainAsset: Asset) {
     override fun toString(): String {
-        val totalCapital = "%.4f".format(totalCapital)
+        val totalCapital = resultFormat.format(totalCapital)
         val assetCapitals = assetCapitals.toList().joinToString(", ") {
             val asset = it.first
-            val capital = "%.4f".format(it.second)
+            val capital = resultFormat.format(it.second)
             "$asset=$capital"
         }
         return "$totalCapital $mainAsset ($assetCapitals)"

@@ -74,7 +74,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         fun TickerPrice.toAssetPrice(): Pair<Asset, BigDecimal> {
             val isReversed = symbol.endsWith("BTC")
             val price = price.toBigDecimal()
-            val btcPrice = if (isReversed) BigDecimal.ONE.divide(price, 8) else price
+            val btcPrice = if (isReversed) price else BigDecimal.ONE.divide(price, 8)
             val asset = if (isReversed) symbol.removeSuffix("BTC") else symbol.removePrefix("BTC")
             return asset to btcPrice
         }
