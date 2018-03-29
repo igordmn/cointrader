@@ -31,7 +31,7 @@ suspend fun train() = resourceContext {
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
     val archive = archive(
             tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
-            reloadCount = tradeConfig.archiveReloadCount
+            reloadCount = tradeConfig.archiveReloadPeriods
     )
     val jep = jep()
     val net = trainingNetwork(jep, tradeConfig)

@@ -40,7 +40,7 @@ suspend fun performRealTrades() = resourceContext {
     val archive = archive(
             config.periodSpace, config.assets, exchange,
             config.periodSpace.floor(exchange.currentTime()),
-            reloadCount = config.archiveReloadCount
+            reloadCount = config.archiveReloadPeriods
     )
     val syncClock = suspend { binanceClock(exchange) }
 

@@ -13,6 +13,6 @@ suspend fun downloadArchive() {
             exchange,
             config.periodSpace.floor(exchange.currentTime()),
             FileSystems.getDefault(),
-            reloadCount = config.archiveReloadCount
+            reloadCount = config.archiveReloadPeriods
     )
 }
