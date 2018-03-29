@@ -60,27 +60,6 @@ suspend fun train() = resourceContext {
         resultsFile.appendText(result.toString())
     }
 
-    fun trainResult(step: Int, trainProfits: Profits, testResults: List<TradeResult>, validationResults: List<TradeResult>): TrainResult {
-        val periodsPerDay = tradeConfig.periodSpace.periodsPerDay()
-        val period = tradeConfig.periodSpace.duration
-
-        fun trainTestResult(tradeResults: List<TradeResult>): TrainResult.Test {
-            val profits = tradeResults.capitals().profits()
-            val dayProfit = profits.daily(period).let(::geoMean)
-            val hourlyProfits = profits.hourly(period)
-            val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
-            val maximumDrawdawn: Double = hourlyProfits.let(::maximumDrawdawn)
-            return TrainResult.Test(dayProfit, downsideDeviation, maximumDrawdawn)
-        }
-
-        return TrainResult(
-                step,
-                geoMean(trainProfits).pow(periodsPerDay),
-                trainTestResult(testResults),
-                trainTestResult(validationResults)
-        )
-    }
-
     saveTradeConfig(tradeConfig)
     trainBatches(trainPeriods, trainConfig.batchSize, tradeConfig, archive)
             .map(::train)
@@ -88,14 +67,11 @@ suspend fun train() = resourceContext {
             .withIndex()
             .consumeEach {
                 saveNet(trainResult(
+                        space = tradeConfig.periodSpace,
                         step = it.index * trainConfig.logSteps,
                         trainProfits = it.value,
                         testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
                         validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
                 ))
             }
-}
-
-private data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test, val validation: Test) {
-    data class Test(val dayProfit: Double, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double)
 }
