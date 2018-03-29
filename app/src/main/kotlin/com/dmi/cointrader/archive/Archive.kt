@@ -88,7 +88,7 @@ suspend fun archive(
         }
     }
 
-    fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource()
+    fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource(bufferSize = 30000)
             .spreads()
             .periodical(space)
             .takeWhile { it.period <= currentPeriod }
@@ -120,8 +120,8 @@ suspend fun archive(
     )
 
     return object : Archive {
-        suspend override fun size(): Long = spreadsList.size()
-        suspend override fun get(range: LongRange): List<Spreads> = spreadsList.get(range)
+        override suspend fun size(): Long = spreadsList.size()
+        override suspend fun get(range: LongRange): List<Spreads> = spreadsList.get(range)
 
         override suspend fun sync(currentPeriod: Period) {
             trades.forEachAsync {

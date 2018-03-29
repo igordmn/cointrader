@@ -84,12 +84,12 @@ fun <STATE, T> RestorableSource<STATE, T>.takeWhile(predicate: suspend (T) -> Bo
     override fun restored(state: STATE) = this@takeWhile.restored(state).takeWhile { predicate(it.value) }
 }
 
-fun <T> SuspendList<T>.asRestorableSource() = object : RestorableSource<Long, T> {
+fun <T> SuspendList<T>.asRestorableSource(bufferSize: Long = 100) = object : RestorableSource<Long, T> {
     override fun initial(): ReceiveChannel<Item<Long, T>> = restored(-1)
 
     override fun restored(state: Long): ReceiveChannel<Item<Long, T>> = produce {
         var i = state + 1
-        channel(i until size()).consumeEach {
+        channel(i until size(), bufferSize).consumeEach {
             send(Item(i++, it))
         }
     }

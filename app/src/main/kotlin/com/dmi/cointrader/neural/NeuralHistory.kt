@@ -27,7 +27,7 @@ fun tradedHistories(
         periods: PeriodProgression
 ): ReceiveChannel<TradedHistory> = with(config) {
     archive
-            .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
+            .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 1000)
             .windowed(size * count + tradeDelayPeriods, periods.step.toInt())
             .map {
                 val history = it.slice(0 until size * count).filterIndexed { i, _ ->
@@ -40,7 +40,7 @@ fun tradedHistories(
 
 suspend fun neuralHistory(archive: SuspendList<Spreads>, config: HistoryPeriods, period: Period): NeuralHistory = with(config) {
     return archive
-            .channel(period - count * size + 1..period, bufferSize = 10000)
+            .channel(period - count * size + 1..period, bufferSize = 1000)
             .filterIndexed { i, _ ->
                 (i + 1) % size == 0
             }
