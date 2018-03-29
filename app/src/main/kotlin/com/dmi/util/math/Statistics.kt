@@ -8,11 +8,20 @@ import kotlin.math.sqrt
 
 fun Random.nextInt(range: IntRange) = range.first + nextInt(range.last - 1 - range.first)
 fun Random.nextLong(range: LongRange) = range.first + nextLong(range.last - 1 - range.first)
-fun Random.nextLong(max : Long) = nextLong() % max
+
+fun Random.nextLong(n: Long): Long {
+    var bits: Long
+    var res: Long
+    do {
+        bits = (nextLong() shl 1).ushr(1)
+        res = bits % n
+    } while (bits - res + (n - 1) < 0L)
+    return res
+}
 
 fun GeometricDistribution.sampleIn(range: IntRange): Int {
     var ran = sample()
-    while(ran > range.endInclusive + 1 - range.start) {
+    while (ran > range.endInclusive + 1 - range.start) {
         ran = sample()
     }
     return range.endInclusive + 1 - ran
