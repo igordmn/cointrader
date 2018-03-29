@@ -35,6 +35,8 @@ fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double): N
 typealias Portions = List<Double>
 typealias PortionsBatch = List<Portions>
 
+fun Portions.withoutMainAsset(): Portions = drop(1)
+
 private const val historyIndicatorNumber = 2
 
 private fun Spread.historyIndicator(index: Int) = when (index) {
@@ -48,7 +50,7 @@ class NeuralNetwork private constructor(
         val config: Config,
         gpuMemoryFraction: Double,
         savedFile: Path?
-): AutoCloseable {
+) : AutoCloseable {
     init {
         if (neuralNetworkCreated.getAndSet(true)) {
             unsupported("Two created neural networks doesn't support")
@@ -73,7 +75,7 @@ class NeuralNetwork private constructor(
     }
 
     fun bestPortfolio(currentPortfolio: Portions, history: NeuralHistory): Portions {
-        return bestPortfolio(currentPortfolio.toNumpy(), history.toNumpy()).toPortions()
+        return bestPortfolio(currentPortfolio.withoutMainAsset().toNumpy(), history.toNumpy()).toPortions()
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -121,7 +123,7 @@ class NeuralTrainer(
         private val jep: Jep,
         private val net: NeuralNetwork,
         fee: Double
-): AutoCloseable {
+) : AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
             unsupported("Two created neural trainers doesn't support")
@@ -147,7 +149,7 @@ class NeuralTrainer(
 
     fun train(currentPortfolio: PortionsBatch, history: TradedHistoryBatch): Result {
         val resultMatrix = train(
-                currentPortfolio.toNumpy(),
+                currentPortfolio.map { it.withoutMainAsset() }.toNumpy(),
                 history.map { it.history }.toNumpy(),
                 history.map { it.tradeTimeSpreads }.toNumpy(Spread::ask),
                 history.map { it.tradeTimeSpreads }.toNumpy(Spread::bid)

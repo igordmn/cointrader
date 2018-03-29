@@ -1,5 +1,6 @@
 package com.dmi.cointrader.trade
 
+import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.archive.Spreads
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.Portfolio
@@ -10,7 +11,6 @@ import com.dmi.cointrader.broker.reversed
 import com.dmi.cointrader.broker.safe
 import com.dmi.cointrader.neural.NeuralHistory
 import com.dmi.cointrader.neural.NeuralNetwork
-import com.dmi.cointrader.neural.Portions
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
@@ -54,7 +54,7 @@ suspend fun performTrade(
     val currentIndex = currentPortions.indexOfMax()
     val currentAsset = assets.all[currentIndex]
 
-    val bestPortions = network.bestPortfolio(currentPortions.withoutMainAsset(), history)
+    val bestPortions = network.bestPortfolio(currentPortions, history)
     val buyIndex = bestPortions.indexOfMax()
     val buyAsset = assets.all[buyIndex]
 
@@ -69,5 +69,4 @@ suspend fun performTrade(
     }
 }
 
-private fun Spreads.withMainAsset(): Spreads = kotlin.collections.listOf(com.dmi.cointrader.archive.Spread(1.0, 1.0)) + this
-private fun Portions.withoutMainAsset(): Portions = drop(1)
+private fun Spreads.withMainAsset(): Spreads = listOf(Spread(1.0, 1.0)) + this
