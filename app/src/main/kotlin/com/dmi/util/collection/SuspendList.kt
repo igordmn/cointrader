@@ -6,8 +6,8 @@ interface SuspendList<out T> {
     suspend fun size(): Long
     suspend fun get(range: LongRange): List<T>
 
-    fun channel(startIndex: Long, bufferSize: Long = 100): ReceiveChannel<T> = produce {
-        (startIndex until size()).chunked(bufferSize).asReceiveChannel().consumeEach { range ->
+    fun channel(indices: LongRange, bufferSize: Long = 100): ReceiveChannel<T> = produce {
+        indices.chunked(bufferSize).asReceiveChannel().consumeEach { range ->
             get(range).forEach { it ->
                 send(it)
             }
@@ -22,5 +22,5 @@ interface SuspendList<out T> {
         }
     }
 
-    suspend fun toList(): List<T> = channel(0).toList()
+    suspend fun toList(): List<T> = channel(0 until size()).toList()
 }

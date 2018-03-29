@@ -89,7 +89,7 @@ fun <T> SuspendList<T>.asRestorableSource() = object : RestorableSource<Long, T>
 
     override fun restored(state: Long): ReceiveChannel<Item<Long, T>> = produce {
         var i = state + 1
-        this@asRestorableSource.channel(i).consumeEach {
+        channel(i until size()).consumeEach {
             send(Item(i++, it))
         }
     }
