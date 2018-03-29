@@ -43,14 +43,14 @@ suspend fun archive(
         reloadCount: Int,
         tradeLoadChunk: Int = 500
 ): Archive {
-    fun tradeAppendedLog(asset: String) = object : SyncFileList.Log<Trade> {
+    fun logTradeAppended(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {
             val lastTradeTime = items.last().time
             println("Trades cached: $asset $lastTradeTime")
         }
     }
 
-    fun spreadsAppendedLog() = object : SyncFileList.Log<Spreads> {
+    fun logSpreadsAppended() = object : SyncFileList.Log<Spreads> {
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
             val endPeriod = indices.last.toInt() + 1
             val time = space.timeOf(endPeriod)
@@ -116,12 +116,12 @@ suspend fun archive(
     trades.forEachAsync {
         it.sync(
                 TradeSource(it.market, currentPeriod.time(), tradeLoadChunk),
-                tradeAppendedLog(it.asset)
+                logTradeAppended(it.asset)
         )
     }
     spreadsList.sync(
             spreadsSource(currentPeriod),
-            spreadsAppendedLog()
+            logSpreadsAppended()
     )
 
     return object : Archive {
