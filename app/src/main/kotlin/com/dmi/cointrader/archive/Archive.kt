@@ -4,15 +4,12 @@ import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.collection.SuspendList
-import com.dmi.util.collection.chunked
-import com.dmi.util.concurrent.flatten
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
 import com.dmi.util.io.SyncFileList
 import com.dmi.util.io.SyncFileList.EmptyLog
 import com.dmi.util.io.syncFileList
 import com.dmi.util.restorable.*
-import kotlinx.coroutines.experimental.channels.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.list
@@ -22,8 +19,7 @@ import java.nio.file.Files.createDirectories
 
 typealias Spreads = List<Spread>
 
-interface Archive {
-    fun historyAt(range: PeriodRange): ReceiveChannel<Spreads>
+interface Archive : SuspendList<Spreads> {
     suspend fun sync(currentPeriod: Period)
 }
 
@@ -124,16 +120,8 @@ suspend fun archive(
     )
 
     return object : Archive {
-        var currentPeriod = currentPeriod
-
-        override fun historyAt(range: PeriodRange): ReceiveChannel<Spreads> {
-            require(range.endInclusive <= this.currentPeriod)
-            return range
-                        .chunked(size = 10000)
-                        .asReceiveChannel()
-                        .map { spreadsList.get(it) }
-                        .flatten()
-        }
+        suspend override fun size(): Long = spreadsList.size()
+        suspend override fun get(range: LongRange): List<Spreads> = spreadsList.get(range)
 
         override suspend fun sync(currentPeriod: Period) {
             trades.forEachAsync {
@@ -146,7 +134,6 @@ suspend fun archive(
                     spreadsSource(currentPeriod),
                     EmptyLog()
             )
-            this.currentPeriod = currentPeriod
         }
     }
 }

@@ -5,6 +5,7 @@ import com.dmi.cointrader.broker.*
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
+import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.appendText
@@ -128,7 +129,7 @@ suspend fun performTestTrades(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
-        archive: Archive,
+        archive: SuspendList<Spreads>,
         exchange: TestExchange
 ): List<TradeResult> {
     val indices = config.assets.all.withIndex().associate { it.value to it.index }

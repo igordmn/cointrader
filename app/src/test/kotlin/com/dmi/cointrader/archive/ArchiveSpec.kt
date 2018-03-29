@@ -6,8 +6,6 @@ import com.dmi.util.lang.minutes
 import com.dmi.util.test.Spec
 import com.dmi.util.test.instant
 import com.dmi.util.test.testFileSystem
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
 import io.kotlintest.matchers.shouldBe
 import kotlinx.coroutines.experimental.channels.toList
 
@@ -44,40 +42,40 @@ class ArchiveSpec : Spec() {
 
             "initial" {
                 val archive = archive(space, assets, currentPeriod = 10)
-                archive.historyAt(0L..10L).toList() shouldBe expectedSpreads
-                archive.historyAt(2L..8L).toList() shouldBe expectedSpreads.slice(2..8)
-                archive.historyAt(0L..0L).toList() shouldBe expectedSpreads.slice(0..0)
-                archive.historyAt(2L..2L).toList() shouldBe expectedSpreads.slice(2..2)
-                archive.historyAt(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
+                archive.channel(0L..10L).toList() shouldBe expectedSpreads
+                archive.channel(2L..8L).toList() shouldBe expectedSpreads.slice(2..8)
+                archive.channel(0L..0L).toList() shouldBe expectedSpreads.slice(0..0)
+                archive.channel(2L..2L).toList() shouldBe expectedSpreads.slice(2..2)
+                archive.channel(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
             }
 
             "sync once" {
                 val archive = archive(space, assets, currentPeriod = 7)
-                archive.historyAt(0L..7L).toList() shouldBe expectedSpreads.slice(0..7)
+                archive.channel(0L..7L).toList() shouldBe expectedSpreads.slice(0..7)
                 archive.sync(currentPeriod = 9)
-                archive.historyAt(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
-                archive.historyAt(9L..9L).toList() shouldBe expectedSpreads.slice(9..9)
+                archive.channel(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
+                archive.channel(9L..9L).toList() shouldBe expectedSpreads.slice(9..9)
             }
 
             "sync twice" {
                 val archive = archive(space, assets, currentPeriod = 7)
                 archive.sync(currentPeriod = 9)
                 archive.sync(currentPeriod = 10)
-                archive.historyAt(0L..10L).toList() shouldBe expectedSpreads.slice(0..10)
-                archive.historyAt(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
+                archive.channel(0L..10L).toList() shouldBe expectedSpreads.slice(0..10)
+                archive.channel(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
             }
 
             "restored" {
                 val archive1 = archive(space, assets, currentPeriod = 3)
-                archive1.historyAt(0L..3L).toList() shouldBe expectedSpreads.slice(0..3)
+                archive1.channel(0L..3L).toList() shouldBe expectedSpreads.slice(0..3)
                 archive1.sync(currentPeriod = 9)
-                archive1.historyAt(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
+                archive1.channel(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
 
                 val archive2 = archive(space, assets, currentPeriod = 1)
-                archive2.historyAt(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
+                archive2.channel(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
 
                 val archive3 = archive(space, assets, currentPeriod = 8)
-                archive3.historyAt(0L..8L).toList() shouldBe expectedSpreads.slice(0..8)
+                archive3.channel(0L..8L).toList() shouldBe expectedSpreads.slice(0..8)
             }
 
             /*
@@ -280,15 +278,15 @@ class ArchiveSpec : Spec() {
 
             "initial" {
                 val archive = archive(space, assets, currentPeriod = 5)
-                archive.historyAt(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
-                archive.historyAt(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
+                archive.channel(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
+                archive.channel(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
             }
 
             "sync" {
                 val archive = archive(space, assets, currentPeriod = 2)
-                archive.historyAt(0L..2L).toList() shouldBe expectedSpreads.slice(0..2)
+                archive.channel(0L..2L).toList() shouldBe expectedSpreads.slice(0..2)
                 archive.sync(currentPeriod = 5)
-                archive.historyAt(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
+                archive.channel(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
             }
 
             /*

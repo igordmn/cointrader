@@ -1,18 +1,12 @@
 package com.dmi.cointrader.train
 
-import com.dmi.cointrader.archive.Archive
-import com.dmi.cointrader.archive.PeriodProgression
-import com.dmi.cointrader.archive.PeriodRange
-import com.dmi.cointrader.archive.tradePeriods
+import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.neural.PortionsBatch
 import com.dmi.cointrader.neural.TradedHistoryBatch
 import com.dmi.cointrader.neural.clampForTradedHistory
 import com.dmi.cointrader.neural.tradedHistories
 import com.dmi.cointrader.trade.TradeConfig
-import com.dmi.util.collection.set
-import com.dmi.util.collection.size
-import com.dmi.util.collection.slice
-import com.dmi.util.collection.toInt
+import com.dmi.util.collection.*
 import com.dmi.util.concurrent.infiniteChannel
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.math.nextLong
@@ -39,7 +33,7 @@ fun trainBatches(
         trainPeriods: PeriodProgression,
         size: Int,
         config: TradeConfig,
-        archive: Archive
+        archive: SuspendList<Spreads>
 ): ReceiveChannel<TrainBatch> {
     fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
     fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }

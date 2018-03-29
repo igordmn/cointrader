@@ -2,6 +2,7 @@ package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
 import com.dmi.util.concurrent.map
 import com.dmi.util.concurrent.windowed
@@ -20,11 +21,11 @@ fun PeriodRange.clampForTradedHistory(config: TradeConfig): PeriodRange = with(c
 
 fun tradedHistories(
         config: TradeConfig,
-        archive: Archive,
+        archive: SuspendList<Spreads>,
         periods: PeriodProgression
 ): ReceiveChannel<TradedHistory> = with(config) {
     archive
-            .historyAt(periods.first - historyPeriods * historySize + 1..periods.last + tradeDelayPeriods)
+            .channel(periods.first - historyPeriods * historySize + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
             .windowed(historyPeriods * historySize + tradeDelayPeriods, periods.step.toInt())
             .map {
                 val history = it.slice(0 until historyPeriods * historySize).filterIndexed { i, _ ->
@@ -35,9 +36,9 @@ fun tradedHistories(
             }
 }
 
-suspend fun neuralHistory(config: TradeConfig, archive: Archive, period: Period): NeuralHistory = with(config) {
+suspend fun neuralHistory(config: TradeConfig, archive: SuspendList<Spreads>, period: Period): NeuralHistory = with(config) {
     return archive
-            .historyAt(period - historySize * historyPeriods + 1..period)
+            .channel(period - historySize * historyPeriods + 1..period, bufferSize = 10000)
             .filterIndexed { i, _ ->
                 (i + 1) % historyPeriods == 0
             }

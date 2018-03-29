@@ -1,17 +1,14 @@
 package com.dmi.util.collection
 
+import com.dmi.util.concurrent.flatten
 import kotlinx.coroutines.experimental.channels.*
 
 interface SuspendList<out T> {
     suspend fun size(): Long
     suspend fun get(range: LongRange): List<T>
 
-    fun channel(indices: LongRange, bufferSize: Long = 100): ReceiveChannel<T> = produce {
-        indices.chunked(bufferSize).asReceiveChannel().consumeEach { range ->
-            get(range).forEach { it ->
-                send(it)
-            }
-        }
+    fun channel(indices: LongRange, bufferSize: Long = 100): ReceiveChannel<T> {
+        return indices.chunked(bufferSize).asReceiveChannel().map { get(it) }.flatten()
     }
 
     fun <R> map(transform: (T) -> R): SuspendList<R> {
