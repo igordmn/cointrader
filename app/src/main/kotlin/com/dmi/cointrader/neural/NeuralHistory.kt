@@ -26,11 +26,6 @@ fun tradedHistories(
         tradeDelayPeriods: Int,
         periods: PeriodProgression
 ): ReceiveChannel<TradedHistory> = with(config) {
-    val x = runBlocking {
-        archive
-                .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
-                .windowed(size * count + tradeDelayPeriods, periods.step.toInt()).toList()
-    }
     archive
             .channel(periods.first - size * count + 1..periods.last + tradeDelayPeriods, bufferSize = 10000)
             .windowed(size * count + tradeDelayPeriods, periods.step.toInt())

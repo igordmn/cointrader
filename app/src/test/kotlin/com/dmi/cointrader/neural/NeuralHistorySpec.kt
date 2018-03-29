@@ -33,10 +33,10 @@ class NeuralHistorySpec: Spec({
                 TradedHistory(listOf(spreads3, spreads6), spreads7),
                 TradedHistory(listOf(spreads4, spreads7), spreads8)
         )
-//        tradedHistories(archive, historyPeriods, tradeDelayPeriods, 5L..7L step 2).toList() shouldBe listOf(
-//                TradedHistory(listOf(spreads2, spreads5), spreads6),
-//                TradedHistory(listOf(spreads4, spreads7), spreads8)
-//        )
+        tradedHistories(archive, historyPeriods, tradeDelayPeriods, 5L..7L step 2).toList() shouldBe listOf(
+                TradedHistory(listOf(spreads2, spreads5), spreads6),
+                TradedHistory(listOf(spreads4, spreads7), spreads8)
+        )
     }
 
     "neuralHistory" {
