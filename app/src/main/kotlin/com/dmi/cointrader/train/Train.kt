@@ -122,10 +122,12 @@ suspend fun train() = resourceContext {
             .chunked(trainConfig.logSteps)
             .withIndex()
             .consumeEach {
-                val step = it.index * trainConfig.logSteps
-                val testProfits = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange)
-                val validationProfits = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
-                saveNet(trainResult(step, it.value, testProfits, validationProfits))
+                saveNet(trainResult(
+                        step = it.index * trainConfig.logSteps,
+                        trainProfits = it.value,
+                        testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
+                        validationResults =performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
+                ))
             }
 }
 
