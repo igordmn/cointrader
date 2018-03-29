@@ -7,6 +7,8 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 fun Random.nextInt(range: IntRange) = range.first + nextInt(range.last - 1 - range.first)
+fun Random.nextLong(range: LongRange) = range.first + nextLong(range.last - 1 - range.first)
+fun Random.nextLong(max : Long) = nextLong() % max
 
 fun GeometricDistribution.sampleIn(range: IntRange): Int {
     var ran = sample()

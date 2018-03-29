@@ -2,9 +2,7 @@ package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
 import com.dmi.cointrader.trade.TradeConfig
-import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
-import com.dmi.util.collection.chunked
 import com.dmi.util.concurrent.map
 import com.dmi.util.concurrent.windowed
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
@@ -27,7 +25,7 @@ fun tradedHistories(
 ): ReceiveChannel<TradedHistory> = with(config) {
     archive
             .historyAt(periods.first - historyPeriods * historySize + 1..periods.last + tradeDelayPeriods)
-            .windowed(historyPeriods * historySize + tradeDelayPeriods, periods.step)
+            .windowed(historyPeriods * historySize + tradeDelayPeriods, periods.step.toInt())
             .map {
                 val history = it.slice(0 until historyPeriods * historySize).filterIndexed { i, _ ->
                     (i + 1) % historyPeriods == 0

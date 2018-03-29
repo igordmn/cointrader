@@ -63,7 +63,7 @@ suspend fun forEachRealTradePeriod(
         action: suspend (Clock, Period) -> Unit
 ) {
     val iterator = object {
-        var previousPeriod = Int.MIN_VALUE
+        var previousPeriod = Long.MIN_VALUE
 
         fun nextAfter(time: Instant): Period {
             val current = space.floor(time)

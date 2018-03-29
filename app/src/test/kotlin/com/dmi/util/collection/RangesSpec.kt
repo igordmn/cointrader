@@ -15,50 +15,50 @@ class RangesSpec : Spec() {
             )
         }
 
-        "IntProgression.size()" {
-            (4..10 step 2).size() shouldBe 4  // 4, 6, 8, 10
-            (4..9 step 2).size() shouldBe 3   // 4, 6, 8
-            (4..4 step 2).size() shouldBe 1   // 4
-            (4..10 step 1).size() shouldBe 7  // 4, 5, 6, 7, 8, 9, 10
-            (4..9 step 1).size() shouldBe 6   // 4, 5, 6, 7, 8, 9
-            (4..4 step 1).size() shouldBe 1   // 4
+        "LongProgression.size()" {
+            (4L..10L step 2L).size() shouldBe 4L  // 4, 6, 8, 10
+            (4L..9L step 2L).size() shouldBe 3L   // 4, 6, 8
+            (4L..4L step 2L).size() shouldBe 1L   // 4
+            (4L..10L step 1L).size() shouldBe 7L  // 4, 5, 6, 7, 8, 9, 10
+            (4L..9L step 1L).size() shouldBe 6L   // 4, 5, 6, 7, 8, 9
+            (4L..4L step 1L).size() shouldBe 1L   // 4
         }
 
-        "IntProgression.indices()" {
-            (4..10 step 2).indices() shouldBe 0..3
-            (4..9 step 2).indices() shouldBe 0..2
-            (4..10 step 1).indices() shouldBe 0..6
+        "LongProgression.indices()" {
+            (4L..10L step 2L).indices() shouldBe 0L..3L
+            (4L..9L step 2L).indices() shouldBe 0L..2L
+            (4L..10L step 1L).indices() shouldBe 0L..6L
         }
 
-        "IntProgression.slice()" {
-            (4..10 step 2).slice(0..0) shouldBe (4..4 step 2)
-            (4..10 step 2).slice(0..1) shouldBe (4..6 step 2)
-            (4..10 step 2).slice(0..3) shouldBe (4..10 step 2)
-            (4..10 step 2).slice(1..2) shouldBe (6..8 step 2)
-            (4..10 step 1).slice(1..2) shouldBe (5..6 step 1)
-            (4..4 step 2).slice(0..0) shouldBe (4..4 step 2)
+        "LongProgression.slice()" {
+            (4L..10L step 2L).slice(0L..0L) shouldBe (4L..4L step 2L)
+            (4L..10L step 2L).slice(0L..1L) shouldBe (4L..6L step 2L)
+            (4L..10L step 2L).slice(0L..3L) shouldBe (4L..10L step 2L)
+            (4L..10L step 2L).slice(1L..2L) shouldBe (6L..8L step 2L)
+            (4L..10L step 1L).slice(1L..2L) shouldBe (5L..6L step 1L)
+            (4L..4L step 2L).slice(0L..0L) shouldBe (4L..4L step 2L)
         }
 
         "contains" {
-            (3..5 in 3..5) shouldBe true
-            (3..5 in 3..6) shouldBe true
-            (3..3 in 3..5) shouldBe true
-            (5..5 in 3..5) shouldBe true
-            (3..4 in 3..5) shouldBe true
-            (2..5 in 3..5) shouldBe false
-            (3..6 in 3..5) shouldBe false
-            (6..7 in 3..5) shouldBe false
-            (1..2 in 3..5) shouldBe false
+            (3L..5L in 3L..5L) shouldBe true
+            (3L..5L in 3L..6L) shouldBe true
+            (3L..3L in 3L..5L) shouldBe true
+            (5L..5L in 3L..5L) shouldBe true
+            (3L..4L in 3L..5L) shouldBe true
+            (2L..5L in 3L..5L) shouldBe false
+            (3L..6L in 3L..5L) shouldBe false
+            (6L..7L in 3L..5L) shouldBe false
+            (1L..2L in 3L..5L) shouldBe false
         }
 
         "coerceIn" {
-            (3..7).coerceIn(3..3) shouldBe 3..3
-            (3..7).coerceIn(3..10) shouldBe 3..7
-            (3..7).coerceIn(4..10) shouldBe 4..7
-            (3..7).coerceIn(4..10) shouldBe 4..7
-            (3..7).coerceIn(1..3) shouldBe 3..3
-            (3..7).coerceIn(1..2) shouldBe 2..2
-            (3..7).coerceIn(8..9) shouldBe 8..8
+            (3L..7L).coerceIn(3L..3L) shouldBe 3L..3L
+            (3L..7L).coerceIn(3L..10L) shouldBe 3L..7L
+            (3L..7L).coerceIn(4L..10L) shouldBe 4L..7L
+            (3L..7L).coerceIn(4L..10L) shouldBe 4L..7L
+            (3L..7L).coerceIn(1L..3L) shouldBe 3L..3L
+            (3L..7L).coerceIn(1L..2L) shouldBe 2L..2L
+            (3L..7L).coerceIn(8L..9L) shouldBe 8L..8L
         }
     }
 }

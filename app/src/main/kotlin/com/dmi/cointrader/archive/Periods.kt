@@ -8,9 +8,9 @@ import com.dmi.util.lang.minus
 import com.dmi.util.math.ceilDiv
 import com.dmi.util.math.floorDiv
 
-typealias Period = Int
-typealias PeriodRange = IntRange
-typealias PeriodProgression = IntProgression
+typealias Period = Long
+typealias PeriodRange = LongRange
+typealias PeriodProgression = LongProgression
 
 @Serializable
 data class PeriodSpace(
@@ -20,13 +20,13 @@ data class PeriodSpace(
     fun floor(time: Instant): Period {
         val distMillis = (time - start).toMillis()
         val periodMillis = duration.toMillis()
-        return (distMillis floorDiv periodMillis).toInt()
+        return distMillis floorDiv periodMillis
     }
 
     fun ceil(time: Instant): Period {
         val distMillis = (time - start).toMillis()
         val periodMillis = duration.toMillis()
-        return (distMillis ceilDiv periodMillis).toInt()
+        return distMillis ceilDiv periodMillis
     }
 
     fun timeOf(period: Period): Instant {
@@ -44,7 +44,8 @@ fun periodSequence(start: Period = 0): Sequence<Period> = generateSequence(start
 fun InstantRange.periods(space: PeriodSpace): PeriodRange = space.ceil(start)..space.floor(endInclusive)
 
 fun PeriodRange.tradePeriods(tradeSize: Int): PeriodProgression {
-    return tradeSize * (start ceilDiv tradeSize)..tradeSize * (endInclusive floorDiv tradeSize) step tradeSize
+    val tradeSizeL = tradeSize.toLong()
+    return tradeSize * (start ceilDiv tradeSizeL)..tradeSize * (endInclusive floorDiv tradeSizeL) step tradeSizeL
 }
 
-fun Period.nextTradePeriod(tradeSize: Int): Period = ((this + 1) ceilDiv tradeSize) * tradeSize
+fun Period.nextTradePeriod(tradeSize: Int): Period = ((this + 1) ceilDiv tradeSize.toLong()) * tradeSize

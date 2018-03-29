@@ -10,28 +10,28 @@ class PeriodsSpec : Spec({
     val space = PeriodSpace(instant(21), millis(3))
 
     "floor" {
-        space.floor(instant(17)) shouldBe -2
-        space.floor(instant(18)) shouldBe -1
-        space.floor(instant(19)) shouldBe -1
-        space.floor(instant(20)) shouldBe -1
-        space.floor(instant(21)) shouldBe 0
-        space.floor(instant(22)) shouldBe 0
-        space.floor(instant(23)) shouldBe 0
-        space.floor(instant(24)) shouldBe 1
-        space.floor(instant(25)) shouldBe 1
-        space.floor(instant(26)) shouldBe 1
-        space.floor(instant(27)) shouldBe 2
+        space.floor(instant(17)) shouldBe -2L
+        space.floor(instant(18)) shouldBe -1L
+        space.floor(instant(19)) shouldBe -1L
+        space.floor(instant(20)) shouldBe -1L
+        space.floor(instant(21)) shouldBe 0L
+        space.floor(instant(22)) shouldBe 0L
+        space.floor(instant(23)) shouldBe 0L
+        space.floor(instant(24)) shouldBe 1L
+        space.floor(instant(25)) shouldBe 1L
+        space.floor(instant(26)) shouldBe 1L
+        space.floor(instant(27)) shouldBe 2L
     }
 
     "ceil" {
-        space.ceil(instant(18)) shouldBe -1
-        space.ceil(instant(19)) shouldBe 0
-        space.ceil(instant(20)) shouldBe 0
-        space.ceil(instant(21)) shouldBe 0
-        space.ceil(instant(22)) shouldBe 1
-        space.ceil(instant(23)) shouldBe 1
-        space.ceil(instant(24)) shouldBe 1
-        space.ceil(instant(25)) shouldBe 2
+        space.ceil(instant(18)) shouldBe -1L
+        space.ceil(instant(19)) shouldBe 0L
+        space.ceil(instant(20)) shouldBe 0L
+        space.ceil(instant(21)) shouldBe 0L
+        space.ceil(instant(22)) shouldBe 1L
+        space.ceil(instant(23)) shouldBe 1L
+        space.ceil(instant(24)) shouldBe 1L
+        space.ceil(instant(25)) shouldBe 2L
     }
 
     "timeOf" {
@@ -46,34 +46,34 @@ class PeriodsSpec : Spec({
     }
 
     "periodSequence" {
-        periodSequence(0).take(2).toList() shouldBe listOf(0, 1)
-        periodSequence(1).take(2).toList() shouldBe listOf(1, 2)
+        periodSequence(0).take(2).toList() shouldBe listOf(0L, 1L)
+        periodSequence(1).take(2).toList() shouldBe listOf(1L, 2L)
     }
 
     "periods" {
-        (instant(21)..instant(23)).periods(space) shouldBe 0..0
-        (instant(21)..instant(24)).periods(space) shouldBe 0..1
-        (instant(20)..instant(23)).periods(space) shouldBe 0..0
-        (instant(22)..instant(24)).periods(space) shouldBe 1..1
-        (instant(22)..instant(26)).periods(space) shouldBe 1..1
-        (instant(22)..instant(27)).periods(space) shouldBe 1..2
+        (instant(21)..instant(23)).periods(space) shouldBe 0L..0L
+        (instant(21)..instant(24)).periods(space) shouldBe 0L..1L
+        (instant(20)..instant(23)).periods(space) shouldBe 0L..0L
+        (instant(22)..instant(24)).periods(space) shouldBe 1L..1L
+        (instant(22)..instant(26)).periods(space) shouldBe 1L..1L
+        (instant(22)..instant(27)).periods(space) shouldBe 1L..2L
     }
 
     "tradePeriods" {
-        (0..9).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0, 3, 6, 9)
-        (0..8).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0, 3, 6)
-        (1..8).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3, 6)
-        (3..6).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3, 6)
-        (4..6).tradePeriods(tradeSize = 3).toList() shouldBe listOf(6)
-        (3..5).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3)
-        (4..5).tradePeriods(tradeSize = 3).toList() shouldBe emptyList<Int>()
+        (0L..9L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0L, 3L, 6L, 9L)
+        (0L..8L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(0L, 3L, 6L)
+        (1L..8L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3L, 6L)
+        (3L..6L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3L, 6L)
+        (4L..6L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(6L)
+        (3L..5L).tradePeriods(tradeSize = 3).toList() shouldBe listOf(3L)
+        (4L..5L).tradePeriods(tradeSize = 3).toList() shouldBe emptyList<Int>()
     }
 
     "nextTradePeriod" {
-        0.nextTradePeriod(tradeSize = 3) shouldBe 3
-        2.nextTradePeriod(tradeSize = 3) shouldBe 3
-        3.nextTradePeriod(tradeSize = 3) shouldBe 6
-        5.nextTradePeriod(tradeSize = 3) shouldBe 6
-        6.nextTradePeriod(tradeSize = 3) shouldBe 9
+        0L.nextTradePeriod(tradeSize = 3) shouldBe 3L
+        2L.nextTradePeriod(tradeSize = 3) shouldBe 3L
+        3L.nextTradePeriod(tradeSize = 3) shouldBe 6L
+        5L.nextTradePeriod(tradeSize = 3) shouldBe 6L
+        6L.nextTradePeriod(tradeSize = 3) shouldBe 9L
     }
 })

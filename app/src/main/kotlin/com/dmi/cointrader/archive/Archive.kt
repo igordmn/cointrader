@@ -5,7 +5,6 @@ import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.chunked
-import com.dmi.util.collection.toLong
 import com.dmi.util.concurrent.flatten
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
@@ -52,7 +51,7 @@ suspend fun archive(
 
     fun logSpreadsAppended() = object : SyncFileList.Log<Spreads> {
         override fun itemsAppended(items: List<Spreads>, indices: LongRange) {
-            val endPeriod = indices.last.toInt() + 1
+            val endPeriod = indices.last + 1
             val time = space.timeOf(endPeriod)
             println("Spreads cached: $time")
         }
@@ -132,7 +131,7 @@ suspend fun archive(
             return range
                         .chunked(size = 10000)
                         .asReceiveChannel()
-                        .map { spreadsList.get(it.toLong()) }
+                        .map { spreadsList.get(it) }
                         .flatten()
         }
 

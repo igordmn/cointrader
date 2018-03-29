@@ -44,40 +44,40 @@ class ArchiveSpec : Spec() {
 
             "initial" {
                 val archive = archive(space, assets, currentPeriod = 10)
-                archive.historyAt(0..10).toList() shouldBe expectedSpreads
-                archive.historyAt(2..8).toList() shouldBe expectedSpreads.slice(2..8)
-                archive.historyAt(0..0).toList() shouldBe expectedSpreads.slice(0..0)
-                archive.historyAt(2..2).toList() shouldBe expectedSpreads.slice(2..2)
-                archive.historyAt(10..10).toList() shouldBe expectedSpreads.slice(10..10)
+                archive.historyAt(0L..10L).toList() shouldBe expectedSpreads
+                archive.historyAt(2L..8L).toList() shouldBe expectedSpreads.slice(2..8)
+                archive.historyAt(0L..0L).toList() shouldBe expectedSpreads.slice(0..0)
+                archive.historyAt(2L..2L).toList() shouldBe expectedSpreads.slice(2..2)
+                archive.historyAt(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
             }
 
             "sync once" {
                 val archive = archive(space, assets, currentPeriod = 7)
-                archive.historyAt(0..7).toList() shouldBe expectedSpreads.slice(0..7)
+                archive.historyAt(0L..7L).toList() shouldBe expectedSpreads.slice(0..7)
                 archive.sync(currentPeriod = 9)
-                archive.historyAt(0..9).toList() shouldBe expectedSpreads.slice(0..9)
-                archive.historyAt(9..9).toList() shouldBe expectedSpreads.slice(9..9)
+                archive.historyAt(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
+                archive.historyAt(9L..9L).toList() shouldBe expectedSpreads.slice(9..9)
             }
 
             "sync twice" {
                 val archive = archive(space, assets, currentPeriod = 7)
                 archive.sync(currentPeriod = 9)
                 archive.sync(currentPeriod = 10)
-                archive.historyAt(0..10).toList() shouldBe expectedSpreads.slice(0..10)
-                archive.historyAt(10..10).toList() shouldBe expectedSpreads.slice(10..10)
+                archive.historyAt(0L..10L).toList() shouldBe expectedSpreads.slice(0..10)
+                archive.historyAt(10L..10L).toList() shouldBe expectedSpreads.slice(10..10)
             }
 
             "restored" {
                 val archive1 = archive(space, assets, currentPeriod = 3)
-                archive1.historyAt(0..3).toList() shouldBe expectedSpreads.slice(0..3)
+                archive1.historyAt(0L..3L).toList() shouldBe expectedSpreads.slice(0..3)
                 archive1.sync(currentPeriod = 9)
-                archive1.historyAt(0..9).toList() shouldBe expectedSpreads.slice(0..9)
+                archive1.historyAt(0L..9L).toList() shouldBe expectedSpreads.slice(0..9)
 
                 val archive2 = archive(space, assets, currentPeriod = 1)
-                archive2.historyAt(0..1).toList() shouldBe expectedSpreads.slice(0..1)
+                archive2.historyAt(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
 
                 val archive3 = archive(space, assets, currentPeriod = 8)
-                archive3.historyAt(0..8).toList() shouldBe expectedSpreads.slice(0..8)
+                archive3.historyAt(0L..8L).toList() shouldBe expectedSpreads.slice(0..8)
             }
 
             /*
@@ -280,15 +280,15 @@ class ArchiveSpec : Spec() {
 
             "initial" {
                 val archive = archive(space, assets, currentPeriod = 5)
-                archive.historyAt(0..5).toList() shouldBe expectedSpreads.slice(0..5)
-                archive.historyAt(0..1).toList() shouldBe expectedSpreads.slice(0..1)
+                archive.historyAt(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
+                archive.historyAt(0L..1L).toList() shouldBe expectedSpreads.slice(0..1)
             }
 
             "sync" {
                 val archive = archive(space, assets, currentPeriod = 2)
-                archive.historyAt(0..2).toList() shouldBe expectedSpreads.slice(0..2)
+                archive.historyAt(0L..2L).toList() shouldBe expectedSpreads.slice(0..2)
                 archive.sync(currentPeriod = 5)
-                archive.historyAt(0..5).toList() shouldBe expectedSpreads.slice(0..5)
+                archive.historyAt(0L..5L).toList() shouldBe expectedSpreads.slice(0..5)
             }
 
             /*

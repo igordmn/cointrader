@@ -12,8 +12,10 @@ import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.set
 import com.dmi.util.collection.size
 import com.dmi.util.collection.slice
+import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.infiniteChannel
 import com.dmi.util.concurrent.suspend
+import com.dmi.util.math.nextLong
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
 import java.util.*
@@ -42,19 +44,19 @@ fun trainBatches(
     fun initPortfolio(coinNumber: Int): DoubleArray = DoubleArray(coinNumber) { 1.0 / coinNumber }
     fun initPortfolios(size: Int, coinNumber: Int) = Array(size) { initPortfolio(coinNumber) }
 
-    val portfolios = initPortfolios(trainPeriods.size(), config.assets.all.size).also {
-        require(trainPeriods.first == 0)
+    val portfolios = initPortfolios(trainPeriods.size().toInt(), config.assets.all.size).also {
+        require(trainPeriods.first == 0L)
     }
 
     val random = Random(867979346)
 
     val randomBatch = suspend {
-        val startIndex = random.nextInt(trainPeriods.size() - size)
+        val startIndex = random.nextLong(trainPeriods.size() - size)
         val endIndex = startIndex + size
         val indices = startIndex until endIndex
         val batchPeriods = trainPeriods.slice(indices)
-        val portfolio = portfolios.slice(indices).map { it.toList() }
-        fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices, portfolio.map { it.toDoubleArray() }.toTypedArray())
+        val portfolio = portfolios.slice(indices.toInt()).map { it.toList() }
+        fun setPortfolio(portfolio: PortionsBatch) = portfolios.set(indices.toInt(), portfolio.map { it.toDoubleArray() }.toTypedArray())
         val history = tradedHistories(config, archive, batchPeriods).toList()
         TrainBatch(portfolio, ::setPortfolio, history)
     }

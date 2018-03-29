@@ -18,21 +18,21 @@ fun LongRange.chunked(size: Long): Sequence<LongRange> = buildSequence {
     }
 }
 
-fun IntRange.toLong() = start.toLong()..endInclusive.toLong()
+fun LongRange.toInt(): IntRange = start.toInt()..endInclusive.toInt()
 
-fun IntProgression.size() = 1 + ((last - first) floorDiv step)
+fun LongProgression.size() = 1 + ((last - first) floorDiv step)
 
-fun IntProgression.slice(indices: IntRange): IntProgression {
+fun LongProgression.slice(indices: LongRange): LongProgression {
     require(indices in this.indices())
     return first + step * indices.first..first + step * indices.last step step
 }
 
-fun IntProgression.indices() = 0 until size()
+fun LongProgression.indices() = 0 until size()
 
 operator fun <T : Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>): Boolean {
     return start <= another.start && another.endInclusive <= endInclusive
 }
 
-fun IntRange.coerceIn(other: IntRange): IntRange {
+fun LongRange.coerceIn(other: LongRange): LongRange {
     return start.coerceIn(other)..endInclusive.coerceIn(other)
 }
