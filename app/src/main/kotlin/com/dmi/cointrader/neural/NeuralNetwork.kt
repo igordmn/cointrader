@@ -88,7 +88,7 @@ class NeuralNetwork private constructor(
     }
 
     fun save(directory: Path) {
-        val fileStr = directory.resolve("net").toAbsolutePath().toString()
+        val fileStr = directory.resolve("net").toAbsolutePath().toString().replace("\\", "/")
         jep.eval("network.save(\"$fileStr\")")
         Files.write(directory.resolve("config"), dump(config))
     }
