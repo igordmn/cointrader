@@ -141,7 +141,8 @@ def compute_profits2(batch_size, best_portfolio, asks, bids, fee):
 def compute_profits(batch_size, predict_w, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
-    prices = (asks + bids) / 2.0
+    # prices = (asks + bids) / 2.0
+    prices = bids
     price_inc = prices[1:] / prices[:-1]
     predict_w = predict_w[:-1]
     future_portfolio = price_inc * predict_w
@@ -149,7 +150,7 @@ def compute_profits(batch_size, predict_w, asks, bids, fee):
 
     w0 = future_w[:batch_size - 2]
     w1 = predict_w[1:batch_size - 1]
-    cost = 1 - tf.reduce_sum(tf.abs(w1[:, 1:] - w0[:, 1:]), axis=1) * 0.0020  # w0 -> w1 commission for all steps except first step
+    cost = 1 - tf.reduce_sum(tf.abs(w1[:, 1:] - w0[:, 1:]), axis=1) * 0.0010  # w0 -> w1 commission for all steps except first step
 
     return batch_size - 1, tf.reduce_sum(future_portfolio, axis=1) * tf.concat([tf.ones(1), cost], axis=0)
 
