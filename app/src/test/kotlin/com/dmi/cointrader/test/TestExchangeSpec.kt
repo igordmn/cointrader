@@ -21,44 +21,51 @@ class TestExchangeSpec : Spec({
     }
 
     "brokers" {
-        exchange.broker("BTC", "LTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
-        exchange.broker("BTC", "ETH", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
-        exchange.broker("LTC", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
-        exchange.broker("ETH", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
+        exchange.broker("LTC", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
+        exchange.broker("ETH", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldNotBe null
+        exchange.broker("BTC", "LTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
+        exchange.broker("BTC", "ETH", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
         exchange.broker("ETH", "XXX", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
         exchange.broker("XXX", "BTC", BigDecimal.ZERO, BigDecimal.ZERO) shouldBe null
     }
 
-    "sell and buy" {
-        val broker = exchange.broker("BTC", "LTC", ask = BigDecimal("150"), bid = BigDecimal("100"))!!
+    "buy and sell" {
+        val broker = exchange.broker("LTC", "BTC", ask = BigDecimal("0.01"), bid = BigDecimal("0.005"))!!
 
-        broker.sell(BigDecimal("0.4"))
+        broker.buy(BigDecimal("40"))
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.600"),
-                "LTC" to BigDecimal("39.600"),    // 0.0 + 0.4 * 100 * (1 - 0.01)
+                "BTC" to BigDecimal("0.600"),     // 1 - 40 * 0.01
+                "LTC" to BigDecimal("39.600"),    // 40 * (1 - 0.01)
                 "ETH" to BigDecimal("0.000")
         )
 
-        broker.sell(BigDecimal("0.2"))
+        broker.buy(BigDecimal("20"))
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.400"),
-                "LTC" to BigDecimal("59.400"),    // 39.60 + 0.2 * 100 * (1 - 0.01)
+                "BTC" to BigDecimal("0.400"),     // 0.600 - 20 * 0.01
+                "LTC" to BigDecimal("59.400"),    // 39.600 + 20 * (1 - 0.01)
                 "ETH" to BigDecimal("0.000")
         )
 
-        broker.buy(BigDecimal("0.3"))
+        broker.sell(BigDecimal("6"))
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.697"),     // 0.40 + 0.3 * (1 - 0.01)
-                "LTC" to BigDecimal("14.400"),    // 59.40 - 0.3 * 150
+                "BTC" to BigDecimal("0.430"),     // 0.400 + 6 * 0.005 * (1 - 0.01)
+                "LTC" to BigDecimal("53.400"),
+                "ETH" to BigDecimal("0.000")
+        )
+
+        broker.sell(BigDecimal("53.400"))
+        exchange.portfolio().round() shouldBe mapOf(
+                "BTC" to BigDecimal("0.694"),     // 0.430 + 53.400 * 0.005 * (1 - 0.01)
+                "LTC" to BigDecimal("0.000"),
                 "ETH" to BigDecimal("0.000")
         )
 
         shouldThrow<Broker.OrderError.InsufficientBalance> {
-            broker.buy(BigDecimal("1.0"))
+            broker.buy(BigDecimal("1000.0"))
         }
 
         shouldThrow<Broker.OrderError.InsufficientBalance> {
-            broker.sell(BigDecimal("1.0"))
+            broker.sell(BigDecimal("1000.0"))
         }
     }
 })

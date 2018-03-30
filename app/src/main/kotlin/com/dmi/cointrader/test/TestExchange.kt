@@ -46,7 +46,7 @@ class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal)
             }
         }
 
-        return if (baseAsset == assets.main && quoteAsset in assets.alts) {
+        return if (quoteAsset == assets.main && baseAsset in assets.alts) {
             broker()
         } else {
             null

@@ -1,6 +1,5 @@
 package com.dmi.cointrader.trade
 
-import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.archive.Spreads
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.Portfolio
@@ -16,7 +15,6 @@ import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
-import java.math.BigDecimal
 
 suspend fun performTrade(
         assets: TradeAssets,
@@ -32,31 +30,24 @@ suspend fun performTrade(
         spreads: Spreads,
         getBestPortions: (current: Portions) -> Portions,
         getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?
-) = with(object {
-    suspend fun sell(altAsset: Asset, altPrice: BigDecimal, mainAmount: BigDecimal) {
-        brokerFrom(altAsset, altPrice).buy(mainAmount)
-    }
-
-    suspend fun buy(altAsset: Asset, altPrice: BigDecimal, mainAmount: BigDecimal) {
-        brokerFrom(altAsset, altPrice).sell(mainAmount)
-    }
-
-    fun brokerFrom(altAsset: Asset, altPrice: BigDecimal): Broker {
+) {
+    fun brokerFor(altAsset: Asset, altPrice: Double): Broker {
         val attempts = SafeBroker.Attempts(count = 10, amountMultiplier = 0.99)
         val normalBroker = getBroker(assets.main, altAsset)
         val reversedBroker = getBroker(altAsset, assets.main)
 
-        return if (normalBroker != null) {
-            normalBroker.safe(attempts)
+        return if (reversedBroker != null) {
+            reversedBroker.safe(attempts)
         } else {
-            reversedBroker!!.safe(attempts).reversed(altPrice)
+            normalBroker!!.safe(attempts).reversed(altPrice.toBigDecimal())
         }
     }
-}) {
+
     val amounts = portfolio.amountsOf(assets.all)
-    val asks = spreads.map { it.ask.toBigDecimal() }.withMainAsset()
-    val bids = spreads.map { it.bid.toBigDecimal() }.withMainAsset()
-    val capitals = amounts * bids
+    val asks = spreads.map { it.ask }.withMainAsset()
+    val bids = spreads.map { it.bid }.withMainAsset()
+    val capitals = amounts.toDouble() * bids
+
     val currentPortions = capitals.portions()
     val currentIndex = currentPortions.indexOfMax()
     val currentAsset = assets.all[currentIndex]
@@ -65,15 +56,18 @@ suspend fun performTrade(
     val buyIndex = bestPortions.indexOfMax()
     val buyAsset = assets.all[buyIndex]
 
-    val tradeAmount = capitals[currentIndex]
-    if (currentAsset != assets.main) {
-        val currentPrice = bids[currentIndex]
-        sell(currentAsset, currentPrice, tradeAmount)
-    }
-    if (buyAsset != assets.main) {
+    if (currentAsset != buyAsset) {
+        val sellPrice = bids[currentIndex]
         val buyPrice = asks[buyIndex]
-        buy(buyAsset, buyPrice, tradeAmount)
+        val sellAmount = amounts[currentIndex]
+        val buyAmount = sellAmount * (sellPrice / buyPrice).toBigDecimal()
+        if (currentAsset != assets.main) {
+            brokerFor(currentAsset, sellPrice).sell(sellAmount)
+        }
+        if (buyAsset != assets.main) {
+            brokerFor(buyAsset, buyPrice).buy(buyAmount)
+        }
     }
 }
 
-fun List<BigDecimal>.withMainAsset() = listOf(BigDecimal.ONE) + this
+fun List<Double>.withMainAsset() = listOf(1.0) + this

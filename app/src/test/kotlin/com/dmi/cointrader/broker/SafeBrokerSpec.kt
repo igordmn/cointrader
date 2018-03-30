@@ -17,8 +17,8 @@ class SafeBrokerSpec : Spec({
         val limitedBroker = object : Broker {
             val original = exchange.broker("BTC", "LTC", BigDecimal("100"), BigDecimal("100"))!!
             override val limits: Broker.Limits = limits
-            suspend override fun buy(amount: BigDecimal) = original.buy(amount)
-            suspend override fun sell(amount: BigDecimal) = original.sell(amount)
+            override suspend fun buy(amount: BigDecimal) = original.buy(amount)
+            override suspend fun sell(amount: BigDecimal) = original.sell(amount)
         }
         val attempts = SafeBroker.Attempts(count = 3, amountMultiplier = 0.99)
         return SafeBroker(limitedBroker, attempts)

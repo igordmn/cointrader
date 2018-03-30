@@ -7,6 +7,7 @@ import com.dmi.cointrader.broker.Broker
 import com.dmi.cointrader.neural.Portions
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.test.round
+import com.dmi.util.lang.indexOfMax
 import com.dmi.util.test.Spec
 import io.kotlintest.matchers.shouldBe
 import java.math.BigDecimal
@@ -24,21 +25,21 @@ class PerformTradeSpec : Spec({
 
     fun broker(baseAsset: Asset, quoteAsset: Asset, spread: Spread) = exchange.broker(
             baseAsset, quoteAsset,
-            BigDecimal.ONE.divide(BigDecimal(spread.bid), 8, BigDecimal.ROUND_UP),
-            BigDecimal.ONE.divide(BigDecimal(spread.ask), 8, BigDecimal.ROUND_DOWN)
+            spread.ask.toBigDecimal(),
+            spread.bid.toBigDecimal()
     )
 
     "performTrades" {
         fun getBestPortions(current: Portions) = when {
-            current[0] != 0.0 -> listOf(0.0, 1.0, 0.0)
-            current[1] != 0.0 -> listOf(0.0, 0.0, 1.0)
+            current.indexOfMax() == 0 -> listOf(0.0, 1.0, 0.0)
+            current.indexOfMax() == 1 -> listOf(0.0, 0.0, 1.0)
             else -> listOf(1.0, 0.0, 0.0)
         }
 
         val performTestTrade = object {
             suspend operator fun invoke(spreads: Spreads) {
                 fun broker(baseAsset: Asset, quoteAsset: Asset): Broker? {
-                    val index = assets.alts.indexOf(quoteAsset)
+                    val index = assets.alts.indexOf(baseAsset)
                     return if (index >= 0) broker(baseAsset, quoteAsset, spreads[index]) else null
                 }
                 performTrade(assets, exchange.portfolio(), spreads, ::getBestPortions, ::broker)
@@ -60,14 +61,14 @@ class PerformTradeSpec : Spec({
 
         performTestTrade(spreads[1])
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.000"),
+                "BTC" to BigDecimal("0.010"),
                 "ETH" to BigDecimal("0.000"),
-                "LTC" to BigDecimal("16.667")   // 5.000 * 0.2 / 0.06
+                "LTC" to BigDecimal("16.500")   // 5.000 * 0.99 * 0.2 / 0.06
         )
 
         performTestTrade(spreads[2])
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.833"),   // 16.666666666666666666666666666667 * 0.05
+                "BTC" to BigDecimal("0.835"),   // 0.010 + 16.500 * 0.05
                 "ETH" to BigDecimal("0.000"),
                 "LTC" to BigDecimal("0.000")
         )
@@ -76,7 +77,7 @@ class PerformTradeSpec : Spec({
         performTestTrade(spreads[2])
         exchange.portfolio().round() shouldBe mapOf(
                 "BTC" to BigDecimal("0.000"),
-                "ETH" to BigDecimal("2.083"),   // 0.83333333333333333333333333333335 / 0.4
+                "ETH" to BigDecimal("2.087"),   // 0.835 / 0.4
                 "LTC" to BigDecimal("0.000")
         )
     }
