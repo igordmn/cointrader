@@ -133,6 +133,8 @@ suspend fun performTestTrades(
         fun bidOf(asset: Asset) = bids[indices[asset]!!].toBigDecimal()
         fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
         performTrade(config.assets, network, portfolio, tradedHistory.history, ::broker)
-        testTradeResult(config.assets, exchange, bids)
+        testTradeResult(config.assets, exchange, bids.withMainAsset())
     }.toList()
 }
+
+private fun List<Double>.withMainAsset() = listOf(1.0) + this
