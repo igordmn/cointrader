@@ -12,10 +12,10 @@ class SafeBrokerSpec : Spec({
     val assets = TradeAssets(main = "BTC", alts = listOf("LTC"))
     val exchange = TestExchange(assets, BigDecimal.ZERO)
 
-    fun safeBroker(amountStep: BigDecimal = BigDecimal("0.02")): SafeBroker {
+    fun safeBroker(amountStep: BigDecimal = BigDecimal("0.2")): SafeBroker {
         val limits = Broker.Limits(minAmount = BigDecimal("0.1"), amountStep = amountStep)
         val limitedBroker = object : Broker {
-            val original = exchange.broker("BTC", "LTC", BigDecimal("100"), BigDecimal("100"))!!
+            val original = exchange.broker("LTC", "BTC", BigDecimal("0.01"), BigDecimal("0.01"))!!
             override val limits: Broker.Limits = limits
             override suspend fun buy(amount: BigDecimal) = original.buy(amount)
             override suspend fun sell(amount: BigDecimal) = original.sell(amount)
@@ -52,43 +52,43 @@ class SafeBrokerSpec : Spec({
         )
     }
 
-    "can sell/buy amount not multiply by amount step" {
+    "can buy/sell amount not multiply by amount step" {
         val safeBroker = safeBroker()
-        safeBroker.sell(BigDecimal("0.15"))
+        safeBroker.buy(BigDecimal("10.1"))
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.860"),
-                "LTC" to BigDecimal("14.000")
+                "BTC" to BigDecimal("0.900"),
+                "LTC" to BigDecimal("10.000")
         )
 
-        safeBroker.buy(BigDecimal("0.13"))
+        safeBroker.sell(BigDecimal("9.9"))
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.980"),
-                "LTC" to BigDecimal("2.000")
-        )
-    }
-
-    "decrease amount by 0.99 when first sell unsuccessful with insufficient balance" {
-        val safeBroker = safeBroker(amountStep = BigDecimal("0.002"))
-        safeBroker.sell(BigDecimal("1.01")) // 1.01 * 0.99 = 0.9999, round(0.9999, 0.002) = 0.998
-        exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.002"),
-                "LTC" to BigDecimal("99.800")
+                "BTC" to BigDecimal("0.998"),
+                "LTC" to BigDecimal("0.200")
         )
     }
 
-    "decrease amount by 0.99 when first and second sell unsuccessful with insufficient balance" {
-        val safeBroker = safeBroker(amountStep = BigDecimal("0.002"))
-        safeBroker.sell(BigDecimal("1.02")) // 1.02 * 0.99 * 0.99 = 0.999702  round(0.999702, 0.002) = 0.998
+    "decrease amount by 0.99 when first buy unsuccessful with insufficient balance" {
+        val safeBroker = safeBroker()
+        safeBroker.buy(BigDecimal("100.2")) // 100.2 * 0.99 = 99.198, round(99.198, 0.2) = 99
         exchange.portfolio().round() shouldBe mapOf(
-                "BTC" to BigDecimal("0.002"),
-                "LTC" to BigDecimal("99.800")
+                "BTC" to BigDecimal("0.010"),
+                "LTC" to BigDecimal("99.000")
         )
     }
 
-    "fourth attempt not allowed when first, second and third sell unsuccessful with insufficient balance" {
-        val safeBroker = safeBroker(amountStep = BigDecimal("0.002"))
+    "decrease amount by 0.99 when first and second buy unsuccessful with insufficient balance" {
+        val safeBroker = safeBroker()
+        safeBroker.buy(BigDecimal("101.5")) // 101.5 * 0.99 * 0.99 = 99.48015,  round(99.48015, 0.2) = 99.4
+        exchange.portfolio().round() shouldBe mapOf(
+                "BTC" to BigDecimal("0.006"),
+                "LTC" to BigDecimal("99.400")
+        )
+    }
+
+    "fourth attempt not allowed when first, second and third buy unsuccessful with insufficient balance" {
+        val safeBroker = safeBroker()
         shouldThrow<Broker.OrderError.InsufficientBalance> {
-            safeBroker.buy(BigDecimal("1.03")) // 1.03 * 0.99 * 0.99 = 1.009503 > 1.0
+            safeBroker.buy(BigDecimal("102.3")) // 102.3 * 0.99 * 0.99 = 100.26423, round(100.26423, 0.2) = 100.2 > 100
         }
     }
 
