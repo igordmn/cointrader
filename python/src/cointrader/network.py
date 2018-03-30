@@ -2,12 +2,6 @@ import tflearn
 import tensorflow as tf
 
 
-# standard python 'print' doesn't work in jep
-def debug(obj, name=""):
-    from java.lang import System
-    System.out.println(name + " " + str(obj))
-
-
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
     width = net.get_shape()[2]
     return tflearn.layers.conv_2d(

@@ -1,13 +1,18 @@
 package com.dmi.cointrader.neural
 
 import jep.Jep
+import jep.JepConfig
 import jep.NDArray
 import java.nio.file.Paths
 
 typealias NDDoubleArray = NDArray<DoubleArray>
 typealias NDFloatArray = NDArray<FloatArray>
 
-fun jep() = Jep(false, Paths.get("python/src").toAbsolutePath().toString()).apply {
+fun jep() = Jep(
+        JepConfig()
+                .setIncludePath(Paths.get("python/src").toAbsolutePath().toString())
+                .setRedirectOutputStreams(true)
+).apply {
     try {
         eval("import sys")
         eval("sys.argv=[''] ")
@@ -41,7 +46,7 @@ fun numpyArray(n1: Int,
     var k = 0
     for (i1 in 0 until n1)
         for (i2 in 0 until n2)
-                    data[k++] = value(i1, i2)
+            data[k++] = value(i1, i2)
     return NDArray(data, n1, n2)
 }
 
