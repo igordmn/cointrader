@@ -127,13 +127,13 @@ suspend fun performTestTrades(
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
     return tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).map { tradedHistory ->
         val portfolio = exchange.portfolio()
-        val asks = tradedHistory.tradeTimeSpreads.map { it.ask }
-        val bids = tradedHistory.tradeTimeSpreads.map { it.bid }
+        val asks = tradedHistory.tradeTimeSpreads.map { it.ask }.withMainAsset()
+        val bids = tradedHistory.tradeTimeSpreads.map { it.bid }.withMainAsset()
         fun askOf(asset: Asset) = asks[indices[asset]!!].toBigDecimal()
         fun bidOf(asset: Asset) = bids[indices[asset]!!].toBigDecimal()
         fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
         performTrade(config.assets, network, portfolio, tradedHistory.history, ::broker)
-        testTradeResult(config.assets, exchange, bids.withMainAsset())
+        testTradeResult(config.assets, exchange, bids)
     }.toList()
 }
 
