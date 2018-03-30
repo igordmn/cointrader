@@ -33,5 +33,5 @@ data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test
         override fun toString() = "$dayProfit\t$hourlyNegativeDeviation\t$hourlyMaximumDrawdawn)"
     }
 
-    override fun toString() = "$step\t$trainDayProfit\t$test\t$validation)"
+    override fun toString() = "$step\t$trainDayProfit\t$test\t$validation"
 }
