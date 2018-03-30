@@ -50,7 +50,7 @@ suspend fun train() = resourceContext {
 
     fun saveNet(result: TrainResult) {
         net.save(netFolder(result.step))
-        resultsFile.appendText(result.toString())
+        resultsFile.appendText(result.toString() + "\n")
         println(result.toString())
     }
 
