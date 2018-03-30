@@ -100,7 +100,7 @@ suspend fun performRealTrade(
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
         }
-        performTrade(config.assets, network, portfolio, history, ::broker)
+        performTrade(config.assets, portfolio, history, network, ::broker)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
         writeCapital(result,  config, period)
@@ -132,9 +132,7 @@ suspend fun performTestTrades(
         fun askOf(asset: Asset) = asks[indices[asset]!!].toBigDecimal()
         fun bidOf(asset: Asset) = bids[indices[asset]!!].toBigDecimal()
         fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
-        performTrade(config.assets, network, portfolio, tradedHistory.history, ::broker)
+        performTrade(config.assets, portfolio, tradedHistory.history, network, ::broker)
         testTradeResult(config.assets, exchange, bids)
     }.toList()
 }
-
-private fun List<Double>.withMainAsset() = listOf(1.0) + this
