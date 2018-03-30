@@ -32,7 +32,6 @@ suspend fun performTrade(
         brokerFrom(altAsset, altPrice).sell(mainAmount)
     }
 
-    // todo maybe use indices? it is faster for tests. must profile tests
     fun brokerFrom(altAsset: Asset, altPrice: BigDecimal): Broker {
         val attempts = SafeBroker.Attempts(count = 10, amountMultiplier = 0.99)
         val normalBroker = broker(assets.main, altAsset)
