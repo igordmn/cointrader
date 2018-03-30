@@ -45,10 +45,14 @@ class NeuralNetworkSpec: Spec({
                 }
                 geometricMeanProfit should beGreaterThan(0.0)
 
+                repeat(200) {
+                    trainer.train(portfolio, history)
+                }
+
                 bestPortfolio1 = network.bestPortfolio(portfolio(), history())
                 bestPortfolio1!!.size shouldBe 1 + altAssetNumber
 
-                repeat(100) {
+                repeat(200) {
                     val bestPortfolio2 = network.bestPortfolio(portfolio(), history())
                     bestPortfolio2.size shouldBe 1 + altAssetNumber
                     bestPortfolio2 shouldBe bestPortfolio1
