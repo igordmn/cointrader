@@ -21,7 +21,7 @@ class NeuralNetworkSpec: Spec({
             val batchSize = 4
             val dir = tempDirectory()
 
-            fun portfolio() = listOf(1.0, 0.0)
+            fun portfolio() = listOf(1.0, 1.0, 0.0)
             fun spread() = Spread(1.0, 1.0)
             fun spreads(): Spreads = listOf(spread(), spread())
             fun history() = listOf(spreads(), spreads(), spreads())
@@ -47,6 +47,12 @@ class NeuralNetworkSpec: Spec({
 
                 bestPortfolio1 = network.bestPortfolio(portfolio(), history())
                 bestPortfolio1!!.size shouldBe 1 + altAssetNumber
+
+                repeat(100) {
+                    val bestPortfolio2 = network.bestPortfolio(portfolio(), history())
+                    bestPortfolio2.size shouldBe 1 + altAssetNumber
+                    bestPortfolio2 shouldBe bestPortfolio1
+                }
 
                 Files.createDirectories(dir)
                 network.save(dir)
