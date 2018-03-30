@@ -10,9 +10,7 @@ import com.binance.api.client.domain.general.ServerTime
 import com.binance.api.client.domain.market.*
 import com.google.common.util.concurrent.RateLimiter
 import com.dmi.cointrader.binance.api.model.NewOrderResponse
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.newSingleThreadContext
+import kotlinx.coroutines.experimental.*
 
 class BinanceAPI(
         private val service: BinanceAPIService,
@@ -118,9 +116,9 @@ class BinanceAPI(
     }
 
     private suspend fun <T> perform(action: suspend () -> Deferred<T>): T {
-        return async(thread) {
+        return withContext(thread) {
             rateLimiter.acquire()
             action().await()
-        }.await()
+        }
     }
 }
