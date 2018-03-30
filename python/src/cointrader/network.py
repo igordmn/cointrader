@@ -117,7 +117,7 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, best_portfolio, asks, bids, fee):
+def compute_profits2(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
     prices = (asks + bids) / 2.0
@@ -135,7 +135,23 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * costs[:, 1:], axis=1)
     profit = tf.reduce_sum(price_incs * best_portfolio, axis=1)
 
-    return batch_size - 2, profit * cost
+    return batch_size - 2, profit * (1 - 0.0022)
+
+
+def compute_profits(batch_size, predict_w, asks, bids, fee):
+    asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
+    bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
+    prices = (asks + bids) / 2.0
+    price_inc = prices[1:] / prices[:-1]
+    predict_w = predict_w[:-1]
+    future_portfolio = price_inc * predict_w
+    future_w = future_portfolio / tf.reduce_sum(future_portfolio, axis=1)[:, None]
+
+    w0 = future_w[:batch_size - 2]
+    w1 = predict_w[1:batch_size - 1]
+    cost = 1 - tf.reduce_sum(tf.abs(w1[:, 1:] - w0[:, 1:]), axis=1) * 0.0020  # w0 -> w1 commission for all steps except first step
+
+    return batch_size - 1, tf.reduce_sum(future_portfolio, axis=1) * tf.concat([tf.ones(1), cost], axis=0)
 
 
 class NeuralTrainer:
