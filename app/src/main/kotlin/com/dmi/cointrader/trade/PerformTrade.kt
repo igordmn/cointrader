@@ -63,7 +63,7 @@ suspend fun performTrade(
         val currentPrice = bids[currentIndex].toBigDecimal()
         sell(currentAsset, currentPrice, tradeAmount)
     }
-    if (currentAsset != assets.main) {
+    if (buyAsset != assets.main) {
         val buyPrice = asks[buyIndex].toBigDecimal()
         buy(buyAsset, buyPrice, tradeAmount)
     }
