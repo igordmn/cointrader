@@ -7,12 +7,12 @@ import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
 import kotlin.math.pow
 
-fun trainResult(space: PeriodSpace, step: Int, trainProfits: Profits, testResults: List<TradeResult>, validationResults: List<TradeResult>): TrainResult {
+fun trainResult(space: PeriodSpace, step: Int, trainProfits: Profits, testCapitals: List<Capital>, validationCapitals: List<Capital>): TrainResult {
     val periodsPerDay = space.periodsPerDay()
     val period = space.duration
 
-    fun trainTestResult(tradeResults: List<TradeResult>): TrainResult.Test {
-        val profits = tradeResults.capitals().profits()
+    fun trainTestResult(tradeCapitals: List<Capital>): TrainResult.Test {
+        val profits = tradeCapitals.profits()
         val dayProfit = profits.daily(period).let(::geoMean)
         val hourlyProfits = profits.hourly(period)
         val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
@@ -23,8 +23,8 @@ fun trainResult(space: PeriodSpace, step: Int, trainProfits: Profits, testResult
     return TrainResult(
             step,
             geoMean(trainProfits).pow(periodsPerDay),
-            trainTestResult(testResults),
-            trainTestResult(validationResults)
+            trainTestResult(testCapitals),
+            trainTestResult(validationCapitals)
     )
 }
 

@@ -9,6 +9,7 @@ import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.cointrader.trade.performTestTrades
+import com.dmi.cointrader.trade.performTestTradesFast
 import com.dmi.cointrader.trade.saveTradeConfig
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendText
@@ -64,8 +65,8 @@ suspend fun train() = resourceContext {
                     space = tradeConfig.periodSpace,
                     step = i,
                     trainProfits = trainProfits,
-                    testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
-                    validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
+                    testCapitals = performTestTradesFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+                    validationCapitals = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
             ))
             trainProfits = ArrayList(trainConfig.logSteps)
         }

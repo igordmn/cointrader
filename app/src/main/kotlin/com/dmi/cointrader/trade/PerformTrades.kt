@@ -10,6 +10,7 @@ import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.appendText
 import com.dmi.util.io.resourceContext
+import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
 import com.dmi.util.log.rootLog
 import kotlinx.coroutines.experimental.NonCancellable.isActive
@@ -21,6 +22,8 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
+import com.dmi.util.math.portions
+import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
 import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
@@ -140,5 +143,44 @@ suspend fun performTestTrades(
         )
         performTrade(config.assets, portfolio, tradedHistory.history, network, ::broker)
         testTradeResult(config.assets, exchange, bids)
+    }.toList()
+}
+
+suspend fun performTestTradesFast(
+        periods: PeriodProgression,
+        config: TradeConfig,
+        network: NeuralNetwork,
+        archive: SuspendList<Spreads>,
+        fee: Double
+): List<Capital> {
+    val portfolio = (listOf(1.0) + List(config.assets.alts.size) { 0.0 }).toMutableList()
+
+    return tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).map { tradedHistory ->
+        val spreads = tradedHistory.tradeTimeSpreads
+        val asks = spreads.map { it.ask }.withMainAsset()
+        val bids = spreads.map { it.bid }.withMainAsset()
+
+        val portions = portfolio.portions()
+        val bestPortions = network.bestPortfolio(portions, tradedHistory.history)
+
+        val currentIndex = portions.indexOfMax()
+        val buyIndex = bestPortions.indexOfMax()
+
+        if (currentIndex != buyIndex) {
+            if (currentIndex != 0) {
+                val amount = portfolio[currentIndex]
+                val sellPrice = bids[currentIndex]
+                portfolio[currentIndex] = 0.0
+                portfolio[0] = amount * sellPrice * (1 - fee)
+            }
+            if (buyIndex != 0) {
+                val amount = portfolio[0]
+                val buyPrice = asks[buyIndex]
+                portfolio[0] = 0.0
+                portfolio[buyIndex] = amount / buyPrice * (1 - fee)
+            }
+        }
+
+        (portfolio * bids).sum()
     }.toList()
 }
