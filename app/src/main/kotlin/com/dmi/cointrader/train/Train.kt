@@ -62,7 +62,7 @@ suspend fun train() = resourceContext {
         if (i % trainConfig.logSteps == 0) {
             saveNet(trainResult(
                     space = tradeConfig.periodSpace,
-                    step = i / trainConfig.logSteps,
+                    step = i,
                     trainProfits = trainProfits,
                     testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
                     validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
