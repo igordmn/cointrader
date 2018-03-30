@@ -12,6 +12,7 @@ import com.dmi.util.io.appendText
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import kotlinx.coroutines.experimental.channels.consumeEach
+import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.withIndex
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -51,17 +52,20 @@ suspend fun train() = resourceContext {
     }
 
     saveTradeConfig(tradeConfig)
-    batches.channel()
-            .map(::train)
-            .chunked(trainConfig.logSteps)
-            .withIndex()
-            .consumeEach {
-                saveNet(trainResult(
-                        space = tradeConfig.periodSpace,
-                        step = it.index * trainConfig.logSteps,
-                        trainProfits = it.value,
-                        testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
-                        validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
-                ))
-            }
+
+    var trainProfits = ArrayList<Double>(trainConfig.logSteps)
+    batches.channel().consumeEachIndexed { (i, it) ->
+        val trainProfit = train(it)
+        trainProfits.add(trainProfit)
+        if (i % trainConfig.logSteps == 0) {
+            saveNet(trainResult(
+                    space = tradeConfig.periodSpace,
+                    step = i / trainConfig.logSteps,
+                    trainProfits = trainProfits,
+                    testResults = performTestTrades(testPeriods, tradeConfig, net, archive, testExchange),
+                    validationResults = performTestTrades(validationPeriods, tradeConfig, net, archive, testExchange)
+            ))
+            trainProfits = ArrayList(trainConfig.logSteps)
+        }
+    }
 }
