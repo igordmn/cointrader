@@ -1,19 +1,20 @@
 package com.dmi.cointrader.train
 
-import com.dmi.cointrader.archive.*
+import com.dmi.cointrader.archive.archive
+import com.dmi.cointrader.archive.periods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
-import com.dmi.cointrader.neural.*
+import com.dmi.cointrader.neural.jep
+import com.dmi.cointrader.neural.networkTrainer
+import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.test.TestExchange
-import com.dmi.cointrader.trade.*
+import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.cointrader.trade.performTestTrades
+import com.dmi.cointrader.trade.saveTradeConfig
 import com.dmi.util.collection.contains
-import com.dmi.util.concurrent.chunked
-import com.dmi.util.concurrent.map
 import com.dmi.util.io.appendText
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
-import kotlinx.coroutines.experimental.channels.consumeEach
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
-import kotlinx.coroutines.experimental.channels.withIndex
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -49,6 +50,7 @@ suspend fun train() = resourceContext {
     fun saveNet(result: TrainResult) {
         net.save(netFolder(result.step))
         resultsFile.appendText(result.toString())
+        println(result.toString())
     }
 
     saveTradeConfig(tradeConfig)
