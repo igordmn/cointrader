@@ -12,6 +12,7 @@ import com.dmi.cointrader.trade.performTestTrades
 import com.dmi.cointrader.trade.performTestTradesFast
 import com.dmi.cointrader.trade.saveTradeConfig
 import com.dmi.util.collection.contains
+import com.dmi.util.io.appendLine
 import com.dmi.util.io.appendText
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
@@ -50,7 +51,7 @@ suspend fun train() = resourceContext {
 
     fun saveNet(result: TrainResult) {
         net.save(netFolder(result.step))
-        resultsFile.appendText(result.toString() + "\n")
+        resultsFile.appendLine(result.toString())
         println(result.toString())
     }
 

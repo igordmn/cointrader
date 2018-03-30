@@ -8,6 +8,7 @@ import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
+import com.dmi.util.io.appendLine
 import com.dmi.util.io.appendText
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
@@ -119,7 +120,7 @@ private fun writeCapital(result: TradeResult, config: TradeConfig, period: Perio
     val time = config.periodSpace.timeOf(period)
     val capital = result.totalCapital
     createDirectories(Paths.get("data/logs"))
-    Paths.get("data/logs/capitals.log").appendText("$time\t$capital\n")
+    Paths.get("data/logs/capitals.log").appendLine("$time\t$capital")
 }
 
 suspend fun performTestTrades(
