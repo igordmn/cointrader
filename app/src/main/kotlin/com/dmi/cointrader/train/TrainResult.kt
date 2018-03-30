@@ -2,19 +2,20 @@ package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.PeriodSpace
 import com.dmi.cointrader.trade.*
+import com.dmi.util.lang.times
 import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
 import kotlin.math.pow
 
-fun trainResult(space: PeriodSpace, step: Int, trainProfits: Profits, testCapitals: List<Capital>, validationCapitals: List<Capital>): TrainResult {
+fun trainResult(space: PeriodSpace, tradePeriods: Int, step: Int, trainProfits: Profits, testCapitals: List<Capital>, validationCapitals: List<Capital>): TrainResult {
     val periodsPerDay = space.periodsPerDay()
-    val period = space.duration
+    val tradeDuration = space.duration * tradePeriods
 
     fun trainTestResult(tradeCapitals: List<Capital>): TrainResult.Test {
         val profits = tradeCapitals.profits()
-        val dayProfit = profits.daily(period).let(::geoMean)
-        val hourlyProfits = profits.hourly(period)
+        val dayProfit = profits.daily(tradeDuration).let(::geoMean)
+        val hourlyProfits = profits.hourly(tradeDuration)
         val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
         val maximumDrawdawn: Double = hourlyProfits.let(::maximumDrawdawn)
         return TrainResult.Test(dayProfit, downsideDeviation, maximumDrawdawn)

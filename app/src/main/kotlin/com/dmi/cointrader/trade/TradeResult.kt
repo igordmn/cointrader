@@ -63,7 +63,6 @@ typealias Capital = Double
 typealias Capitals = List<Capital>
 typealias Profits = List<Double>
 
-fun Collection<TradeResult>.capitals(): Capitals = map(TradeResult::totalCapital)
 fun Capitals.profits(): Profits = zipWithNext { c, n -> n / c }
 
 fun Profits.daily(period: Duration): Profits {
