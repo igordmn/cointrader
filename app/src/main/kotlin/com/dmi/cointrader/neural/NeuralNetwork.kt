@@ -192,10 +192,20 @@ private fun List<NeuralHistory>.toNumpy(): NDDoubleArray {
     val batchSize = size
     val historySize = first().size
     val coinsSize = first().first().size
-    fun value(b: Int, c: Int, h: Int, i: Int): Double {
-        return this[b][h][c].historyIndicator(i)
+
+    val data = DoubleArray(batchSize * coinsSize* historySize* historyIndicatorNumber)
+    var k = 0
+    for (b in this) {
+        for (h in b) {
+            for (c in h) {
+                for (i in 0 until historyIndicatorNumber) {
+                    data[k++] = c.historyIndicator(i)
+                }
+            }
+        }
     }
-    return numpyArray(batchSize, coinsSize, historySize, historyIndicatorNumber, ::value)
+
+    return NDArray(data, batchSize, coinsSize, historySize, historyIndicatorNumber)
 }
 
 @JvmName("toNumpy2")
@@ -204,19 +214,30 @@ private fun List<List<Double>>.toNumpy(): NDDoubleArray = toNumpy({ it })
 private fun <T> List<List<T>>.toNumpy(value: (T) -> Double): NDDoubleArray {
     val batchSize = size
     val portfolioSize = first().size
-    fun value(b: Int, c: Int) = value(this[b][c])
-    return numpyArray(batchSize, portfolioSize, ::value)
+
+    val data = DoubleArray(batchSize * portfolioSize)
+    var k = 0
+    for (b in this)
+        for (c in b)
+            data[k++] = value(c)
+    return NDArray(data, batchSize, portfolioSize)
 }
 
 private fun NDFloatArray.toPortionsBatch(): PortionsBatch {
-    val portfolios = ArrayList<Portions>(dimensions[0])
-    (0 until dimensions[0]).forEach { b ->
-        val portfolio = ArrayList<Double>(dimensions[1])
-        (0 until dimensions[1]).forEach { c ->
-            portfolio.add(this[b, c].toDouble())
+    val n = dimensions[0]
+    val m = dimensions[1]
+
+    val portfolios = ArrayList<Portions>(n)
+    var portfolio = ArrayList<Double>(m)
+
+    for (x in data) {
+        portfolio.add(x.toDouble())
+        if (portfolio.size == m) {
+            portfolios.add(portfolio)
+            portfolio = ArrayList(m)
         }
-        portfolios.add(portfolio)
     }
+
     return portfolios
 }
 
