@@ -24,8 +24,8 @@ class PerformTradeSpec : Spec({
 
     fun broker(baseAsset: Asset, quoteAsset: Asset, spread: Spread) = exchange.broker(
             baseAsset, quoteAsset,
-            BigDecimal.ONE.divide(BigDecimal(spread.bid), 8, BigDecimal.ROUND_HALF_UP),
-            BigDecimal.ONE.divide(BigDecimal(spread.ask), 8, BigDecimal.ROUND_HALF_DOWN)
+            BigDecimal.ONE.divide(BigDecimal(spread.bid), 8, BigDecimal.ROUND_UP),
+            BigDecimal.ONE.divide(BigDecimal(spread.ask), 8, BigDecimal.ROUND_DOWN)
     )
 
     "performTrades" {
