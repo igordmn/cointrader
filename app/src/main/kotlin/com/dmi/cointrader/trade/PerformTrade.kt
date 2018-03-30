@@ -30,7 +30,7 @@ suspend fun performTrade(
         assets: TradeAssets,
         portfolio: Portfolio,
         spreads: Spreads,
-        getBestPortions: (currentPortions: Portions) -> Portions,
+        getBestPortions: (current: Portions) -> Portions,
         getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?
 ) = with(object {
     suspend fun sell(altAsset: Asset, altPrice: BigDecimal, mainAmount: BigDecimal) {
@@ -53,9 +53,9 @@ suspend fun performTrade(
         }
     }
 }) {
-    val amounts = portfolio.amountsOf(assets.all).toDouble()
-    val asks = spreads.map { it.ask }.withMainAsset()
-    val bids = spreads.map { it.bid }.withMainAsset()
+    val amounts = portfolio.amountsOf(assets.all)
+    val asks = spreads.map { it.ask.toBigDecimal() }.withMainAsset()
+    val bids = spreads.map { it.bid.toBigDecimal() }.withMainAsset()
     val capitals = amounts * bids
     val currentPortions = capitals.portions()
     val currentIndex = currentPortions.indexOfMax()
@@ -65,15 +65,15 @@ suspend fun performTrade(
     val buyIndex = bestPortions.indexOfMax()
     val buyAsset = assets.all[buyIndex]
 
-    val tradeAmount = capitals[currentIndex].toBigDecimal()
+    val tradeAmount = capitals[currentIndex]
     if (currentAsset != assets.main) {
-        val currentPrice = bids[currentIndex].toBigDecimal()
+        val currentPrice = bids[currentIndex]
         sell(currentAsset, currentPrice, tradeAmount)
     }
     if (buyAsset != assets.main) {
-        val buyPrice = asks[buyIndex].toBigDecimal()
+        val buyPrice = asks[buyIndex]
         buy(buyAsset, buyPrice, tradeAmount)
     }
 }
 
-fun List<Double>.withMainAsset() = listOf(1.0) + this
+fun List<BigDecimal>.withMainAsset() = listOf(BigDecimal.ONE) + this

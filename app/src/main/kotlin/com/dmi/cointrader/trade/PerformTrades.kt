@@ -21,6 +21,8 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
+import com.dmi.util.math.toDouble
+import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
@@ -127,12 +129,16 @@ suspend fun performTestTrades(
     val indices = config.assets.all.withIndex().associate { it.value to it.index }
     return tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).map { tradedHistory ->
         val portfolio = exchange.portfolio()
-        val asks = tradedHistory.tradeTimeSpreads.map { it.ask }.withMainAsset()
-        val bids = tradedHistory.tradeTimeSpreads.map { it.bid }.withMainAsset()
-        fun askOf(asset: Asset) = asks[indices[asset]!!].toBigDecimal()
-        fun bidOf(asset: Asset) = bids[indices[asset]!!].toBigDecimal()
-        fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(baseAsset, quoteAsset, askOf(quoteAsset), bidOf(quoteAsset))
+        val asks = tradedHistory.tradeTimeSpreads.map { it.ask.toBigDecimal() }.withMainAsset()
+        val bids = tradedHistory.tradeTimeSpreads.map { it.bid.toBigDecimal() }.withMainAsset()
+        fun askOf(asset: Asset) = asks[indices[asset]!!]
+        fun bidOf(asset: Asset) = bids[indices[asset]!!]
+        fun broker(baseAsset: Asset, quoteAsset: Asset) = exchange.broker(
+                baseAsset, quoteAsset,
+                BigDecimal.ONE.divide(bidOf(quoteAsset), 8, BigDecimal.ROUND_HALF_UP),
+                BigDecimal.ONE.divide(askOf(quoteAsset), 8, BigDecimal.ROUND_HALF_DOWN)
+        )
         performTrade(config.assets, portfolio, tradedHistory.history, network, ::broker)
-        testTradeResult(config.assets, exchange, bids)
+        testTradeResult(config.assets, exchange, bids.toDouble())
     }.toList()
 }
