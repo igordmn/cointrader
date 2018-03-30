@@ -30,8 +30,16 @@ fun trainResult(space: PeriodSpace, step: Int, trainProfits: Profits, testResult
 
 data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test, val validation: Test) {
     data class Test(val dayProfit: Double, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double) {
-        override fun toString() = "$dayProfit\t$hourlyNegativeDeviation\t$hourlyMaximumDrawdawn"
+        override fun toString(): String {
+            val dayProfit = "%.3f".format(dayProfit)
+            val hourlyNegativeDeviation = "%.5f".format(hourlyNegativeDeviation)
+            val hourlyMaximumDrawdawn = "%.2f".format(hourlyMaximumDrawdawn)
+            return "$dayProfit\t$hourlyNegativeDeviation\t$hourlyMaximumDrawdawn"
+        }
     }
 
-    override fun toString() = "$step\t$trainDayProfit\t$test\t$validation"
+    override fun toString(): String {
+        val trainDayProfit = "%.3f".format(trainDayProfit)
+        return "$step\t$trainDayProfit\t$test\t$validation"
+    }
 }
