@@ -205,7 +205,7 @@ suspend fun performTestTradesFast2(
 
         val portfolioBtc = portfolio * bids
         val portions = portfolioBtc.portions()
-        val bestPortions = network.bestPortfolio(portions, tradedHistory.history)
+        val bestPortions = network.bestPortfolio(portions, tradedHistory.history).portions()
 
         val capital = portfolioBtc.sum()
         val desiredPortfolio = bestPortions * capital
