@@ -177,7 +177,7 @@ suspend fun performTestTradesFast(
             }
             if (buyIndex != 0) {
                 val amount = portfolio[0]
-                val buyPrice = bids[buyIndex]
+                val buyPrice = asks[buyIndex]
                 portfolio[0] = 0.0
                 portfolio[buyIndex] = amount / buyPrice * (1 - fee)
             }
