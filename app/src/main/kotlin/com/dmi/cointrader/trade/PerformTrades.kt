@@ -149,7 +149,7 @@ suspend fun performTestTrades(
     }.toList()
 }
 
-suspend fun performTestTradesFast1(
+suspend fun performTestTradesFast(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
@@ -188,7 +188,7 @@ suspend fun performTestTradesFast1(
     }.toList()
 }
 
-suspend fun performTestTradesFast(
+suspend fun performTestTradesFast2(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
