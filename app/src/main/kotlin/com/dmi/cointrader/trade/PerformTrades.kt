@@ -200,6 +200,8 @@ suspend fun performTestTradesFast2(
         val spreads = tradedHistory.tradeTimeSpreads
         val asks = spreads.map { it.ask }.withMainAsset()
         val bids = spreads.map { it.bid }.withMainAsset()
+        val prices = asks.zip(bids) { a, b -> (a + b) / 2.0 }
+        val fees = bids.zip(prices) { a, b -> 1 - a / b * (1.0 - fee) }
 
         val portfolioBtc = portfolio * bids
         val portions = portfolioBtc.portions()
@@ -208,7 +210,7 @@ suspend fun performTestTradesFast2(
         val capital = portfolioBtc.sum()
         val desiredPortfolio = bestPortions * capital
 
-        val totalFee = desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1).sum() * fee
+        val totalFee = (desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1) * fees).sum()
         val capitalAfterFee = capital - totalFee
 
         val newPortfolioBtc = bestPortions * capitalAfterFee
