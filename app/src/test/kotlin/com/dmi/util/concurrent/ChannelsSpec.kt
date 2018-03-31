@@ -3,7 +3,9 @@ package com.dmi.util.concurrent
 import com.dmi.util.test.Spec
 import com.dmi.util.test.channelOf
 import io.kotlintest.matchers.shouldBe
+import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.toList
+import kotlinx.coroutines.experimental.runBlocking
 
 class ChannelsSpec : Spec() {
     init {
@@ -132,6 +134,10 @@ class ChannelsSpec : Spec() {
                 channelOf(1, 2, 3, 4, 5).windowed(4, 2).toList() shouldBe listOf(listOf(1, 2, 3, 4))
                 channelOf(1, 2, 3, 4, 5, 6).windowed(5, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5), listOf(2, 3, 4, 5, 6))
                 channelOf(1, 2, 3, 4, 5, 6).windowed(6, 1).toList() shouldBe listOf(listOf(1, 2, 3, 4, 5, 6))
+            }
+
+            "bug1" {
+                (1805251..1810890).asReceiveChannel().windowed(2400, 30).toList().size shouldBe 109
             }
         }
     }

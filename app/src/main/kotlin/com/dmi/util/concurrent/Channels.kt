@@ -102,11 +102,11 @@ fun <T> ReceiveChannel<T>.windowed(size: Int, step: Int): ReceiveChannel<List<T>
     consumeEach {
         list.add(it)
         if (list.size >= size) {
-            if ((i + size - 1) % step == 0) {
+            if (i % step == 0) {
                 send(ArrayList(list))
             }
             list.removeFirst()
+            i++
         }
-        i++
     }
 }
