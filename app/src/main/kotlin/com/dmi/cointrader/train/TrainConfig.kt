@@ -8,7 +8,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 data class TrainConfig(
-        val fee: Double = 0.0010,
+        val fee: Double = 0.0007,
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-03-19T20:20:00", zoneOffset("+3")),
 
         val testDays: Double = 20.0,        //  days for test every log step, train includes these days
