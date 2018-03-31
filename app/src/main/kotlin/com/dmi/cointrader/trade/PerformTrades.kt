@@ -96,7 +96,7 @@ suspend fun performRealTrade(
             .market(baseAsset, quoteAsset)
             ?.broker(clock)
             ?.log(log, baseAsset, quoteAsset)
-            ?.fileLog(Paths.get("data/logs/slippage.log"), baseAsset, quoteAsset)
+            ?.fileLog(Paths.get("data/logs/trades.log"), baseAsset, quoteAsset)
 
     try {
         archive.sync(period)
