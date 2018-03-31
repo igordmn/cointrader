@@ -9,7 +9,6 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.appendLine
-import com.dmi.util.io.appendText
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
 import com.dmi.util.lang.max
@@ -26,9 +25,7 @@ import com.dmi.util.lang.minus
 import com.dmi.util.math.div
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
-import com.dmi.util.math.toDouble
 import java.lang.Math.abs
-import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
@@ -99,7 +96,7 @@ suspend fun performRealTrade(
             .market(baseAsset, quoteAsset)
             ?.broker(clock)
             ?.log(log, baseAsset, quoteAsset)
-            ?.slippageLog(Paths.get("data/logs/slippage.log"), baseAsset, quoteAsset)
+            ?.fileLog(Paths.get("data/logs/slippage.log"), baseAsset, quoteAsset)
 
     try {
         archive.sync(period)
