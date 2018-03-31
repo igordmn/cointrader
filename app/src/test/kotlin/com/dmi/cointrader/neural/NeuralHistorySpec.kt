@@ -20,22 +20,39 @@ class NeuralHistorySpec: Spec({
     val archive = listOf(spreads0, spreads1, spreads2, spreads3, spreads4, spreads5, spreads6, spreads7, spreads8).asSuspend()
 
     val historyPeriods = HistoryPeriods(count = 2, size = 3)
-    val tradeDelayPeriods = 1
 
-    "clampForTradedHistory" {
-        (1L..20L).clampForTradedHistory(historyPeriods, tradeDelayPeriods) shouldBe (6L..19L)
-        (0L..8L).clampForTradedHistory(historyPeriods, tradeDelayPeriods) shouldBe (5L..7L)
+    "clampForTradedHistory1" {
+        (1L..20L).clampForTradedHistory(historyPeriods, 1) shouldBe (6L..19L)
+        (0L..8L).clampForTradedHistory(historyPeriods, 1) shouldBe (5L..7L)
     }
 
-    "tradedHistories" {
-        tradedHistories(archive, historyPeriods, tradeDelayPeriods, 5L..7L).toList() shouldBe listOf(
+    "clampForTradedHistory2" {
+        (1L..20L).clampForTradedHistory(historyPeriods, 0) shouldBe (6L..20L)
+        (0L..8L).clampForTradedHistory(historyPeriods, 0) shouldBe (5L..8L)
+    }
+
+    "tradedHistories1" {
+        tradedHistories(archive, historyPeriods, 1, 5L..7L).toList() shouldBe listOf(
                 TradedHistory(listOf(spreads2, spreads5), spreads6),
                 TradedHistory(listOf(spreads3, spreads6), spreads7),
                 TradedHistory(listOf(spreads4, spreads7), spreads8)
         )
-        tradedHistories(archive, historyPeriods, tradeDelayPeriods, 5L..7L step 2).toList() shouldBe listOf(
+        tradedHistories(archive, historyPeriods, 1, 5L..7L step 2).toList() shouldBe listOf(
                 TradedHistory(listOf(spreads2, spreads5), spreads6),
                 TradedHistory(listOf(spreads4, spreads7), spreads8)
+        )
+    }
+
+    "tradedHistories2" {
+        tradedHistories(archive, historyPeriods, 0, 5L..8L).toList() shouldBe listOf(
+                TradedHistory(listOf(spreads2, spreads5), spreads5),
+                TradedHistory(listOf(spreads3, spreads6), spreads6),
+                TradedHistory(listOf(spreads4, spreads7), spreads7),
+                TradedHistory(listOf(spreads5, spreads8), spreads8)
+        )
+        tradedHistories(archive, historyPeriods, 0, 5L..8L step 2).toList() shouldBe listOf(
+                TradedHistory(listOf(spreads2, spreads5), spreads5),
+                TradedHistory(listOf(spreads4, spreads7), spreads7)
         )
     }
 
