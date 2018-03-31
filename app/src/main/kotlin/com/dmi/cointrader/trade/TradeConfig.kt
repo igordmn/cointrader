@@ -38,17 +38,16 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "TRX", "ETH", "ICX", "NCASH", "XRP", "EOS", "NANO", "NEO", "ONT", "ADA", "QTUM", "LTC", "DGD", "IOST", "XVG",
-                        "VEN", "XLM", "BCC", "IOTA", "GVT", "MTL", "AION", "NEBL", "ETC", "XMR", "ENJ", "BCPT", "SUB", "DASH", "OMG", "WAVES",
-                        "LINK", "ZIL", "WTC", "CTR", "ELF", "NULS", "BQX", "AST", "MCO", "STRAT", "ENG", "TRIG", "INS", "POWR", "TNT", "SNT",
-                        "BTG", "EDO", "SALT", "LSK", "VIB", "POE", "RCN", "REQ"
+                        "USDT", "ETH", "TRX", "NANO", "NCASH", "XRP", "DGD", "VEN", "NEO", "LTC", "ADA", "ETC", "ICX", "BCPT", "EOS", "WTC", "XLM", "XMR", "GVT",
+                        "MTL", "BCH", "IOST", "IOTA", "OMG", "NEBL", "BCD", "AION", "XVG", "INS", "SUB", "LSK", "QTUM", "CND", "WAVES", "ELF", "DASH",
+                        "STRAT", "GXS", "BQX", "BTG", "CTR"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
-                duration = seconds(10)
+                duration = seconds(60)
         ),
-        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 160, size = 5 * periodSpace.periodsPerMinute().toInt()),
-        val tradePeriods: TradePeriods = TradePeriods(size = 5 * periodSpace.periodsPerMinute().toInt(), delay = 1),
+        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 5 * periodSpace.periodsPerMinute().toInt()),
+        val tradePeriods: TradePeriods = TradePeriods(size = 5 * periodSpace.periodsPerMinute().toInt(), delay = 0),
         val archiveReloadPeriods: Int = 6 * 10
 )
