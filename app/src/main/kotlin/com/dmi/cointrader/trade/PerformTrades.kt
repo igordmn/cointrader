@@ -210,7 +210,7 @@ suspend fun performTestTradesFast2(
         val capital = portfolioBtc.sum()
         val desiredPortfolio = bestPortions * capital
 
-        val totalFee = (desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1) * fees).sum()
+        val totalFee = (desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1) * fees.drop(1)).sum()
         val capitalAfterFee = capital - totalFee
 
         val newPortfolioBtc = bestPortions * capitalAfterFee
