@@ -148,7 +148,7 @@ class NeuralTrainer:
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train_tensor = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        self.train_tensor = tf.train.AdamOptimizer(0.00028 * 2).minimize(loss)
 
         self.batch_size = network.batch_size
         self.history = network.history

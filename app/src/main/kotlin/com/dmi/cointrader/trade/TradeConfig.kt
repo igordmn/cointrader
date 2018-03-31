@@ -48,6 +48,6 @@ data class TradeConfig(
                 duration = seconds(10)
         ),
         val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 5 * periodSpace.periodsPerMinute().toInt()),
-        val tradePeriods: TradePeriods = TradePeriods(size = 1 * periodSpace.periodsPerMinute().toInt(), delay = 0),
+        val tradePeriods: TradePeriods = TradePeriods(size = 1 * periodSpace.periodsPerMinute().toInt(), delay = 1),
         val archiveReloadPeriods: Int = 6 * 10
 )
