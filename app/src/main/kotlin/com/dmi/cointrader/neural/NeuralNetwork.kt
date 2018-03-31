@@ -189,38 +189,38 @@ class NeuralTrainer(
 
 @JvmName("toNumpy1")
 private fun List<NeuralHistory>.toNumpy(): NDDoubleArray {
-    val batchSize = size
-    val historySize = first().size
-    val coinsSize = first().first().size
+    val batchCount = size
+    val historyCount = first().size
+    val assetCount = first().first().size
 
-    val data = DoubleArray(batchSize * coinsSize* historySize* historyIndicatorNumber)
+    val data = DoubleArray(batchCount * assetCount * historyCount* historyIndicatorNumber)
     var k = 0
     for (b in this) {
-        for (h in b) {
-            for (c in h) {
+        for (a in 0 until assetCount) {
+            for (h in b) {
                 for (i in 0 until historyIndicatorNumber) {
-                    data[k++] = c.historyIndicator(i)
+                    data[k++] = h[a].historyIndicator(i)
                 }
             }
         }
     }
 
-    return NDArray(data, batchSize, coinsSize, historySize, historyIndicatorNumber)
+    return NDArray(data, batchCount, assetCount, historyCount, historyIndicatorNumber)
 }
 
 @JvmName("toNumpy2")
 private fun List<List<Double>>.toNumpy(): NDDoubleArray = toNumpy({ it })
 
 private fun <T> List<List<T>>.toNumpy(value: (T) -> Double): NDDoubleArray {
-    val batchSize = size
-    val portfolioSize = first().size
+    val batchCount = size
+    val assetCount = first().size
 
-    val data = DoubleArray(batchSize * portfolioSize)
+    val data = DoubleArray(batchCount * assetCount)
     var k = 0
     for (b in this)
-        for (c in b)
-            data[k++] = value(c)
-    return NDArray(data, batchSize, portfolioSize)
+        for (a in b)
+            data[k++] = value(a)
+    return NDArray(data, batchCount, assetCount)
 }
 
 private fun NDFloatArray.toPortionsBatch(): PortionsBatch {
