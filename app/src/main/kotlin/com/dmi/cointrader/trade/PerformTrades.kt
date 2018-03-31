@@ -41,6 +41,7 @@ suspend fun askAndPerformRealTrades() {
 }
 
 suspend fun performRealTrades() = resourceContext {
+    createDirectories(Paths.get("data/logs"))
     val log = rootLog()
     val config = savedTradeConfig()
     val network = trainedNetwork()
@@ -98,6 +99,7 @@ suspend fun performRealTrade(
             .market(baseAsset, quoteAsset)
             ?.broker(clock)
             ?.log(log, baseAsset, quoteAsset)
+            ?.slippageLog(Paths.get("data/logs/slippage.log"), baseAsset, quoteAsset)
 
     try {
         archive.sync(period)
@@ -209,7 +211,7 @@ suspend fun performTestTradesFast2(
         val capital = portfolioBtc.sum()
         val desiredPortfolio = bestPortions * capital
 
-        val totalFee = desiredPortfolio.zip(portfolioBtc) { a,b -> abs(a-b) }.drop(1).sum() * fee
+        val totalFee = desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1).sum() * fee
         val capitalAfterFee = capital - totalFee
 
         val newPortfolioBtc = bestPortions * capitalAfterFee
