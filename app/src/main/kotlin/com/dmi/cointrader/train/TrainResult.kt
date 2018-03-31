@@ -9,7 +9,7 @@ import com.dmi.util.math.maximumDrawdawn
 import kotlin.math.pow
 
 fun trainResult(space: PeriodSpace, tradePeriods: Int, step: Int, trainProfits: Profits, testCapitals: List<Capital>, validationCapitals: List<Capital>): TrainResult {
-    val periodsPerDay = space.periodsPerDay()
+    val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
     val tradeDuration = space.duration * tradePeriods
 
     fun trainTestResult(tradeCapitals: List<Capital>): TrainResult.Test {
@@ -23,7 +23,7 @@ fun trainResult(space: PeriodSpace, tradePeriods: Int, step: Int, trainProfits: 
 
     return TrainResult(
             step,
-            geoMean(trainProfits).pow(periodsPerDay),
+            geoMean(trainProfits).pow(tradePeriodsPerDay),
             trainTestResult(testCapitals),
             trainTestResult(validationCapitals)
     )
