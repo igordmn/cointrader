@@ -23,9 +23,11 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import com.dmi.util.lang.minus
+import com.dmi.util.math.div
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
+import java.lang.Math.abs
 import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
@@ -147,7 +149,7 @@ suspend fun performTestTrades(
     }.toList()
 }
 
-suspend fun performTestTradesFast(
+suspend fun performTestTradesFast1(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
@@ -176,12 +178,47 @@ suspend fun performTestTradesFast(
             }
             if (buyIndex != 0) {
                 val amount = portfolio[0]
-                val buyPrice = asks[buyIndex]
+                val buyPrice = bids[buyIndex]
                 portfolio[0] = 0.0
                 portfolio[buyIndex] = amount / buyPrice * (1 - fee)
             }
         }
 
         (portfolio * bids).sum()
+    }.toList()
+}
+
+suspend fun performTestTradesFast(
+        periods: PeriodProgression,
+        config: TradeConfig,
+        network: NeuralNetwork,
+        archive: SuspendList<Spreads>,
+        fee: Double
+): List<Capital> {
+    val portfolio = (listOf(1.0) + List(config.assets.alts.size) { 0.0 }).toMutableList()
+
+    return tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).map { tradedHistory ->
+        val spreads = tradedHistory.tradeTimeSpreads
+        val asks = spreads.map { it.ask }.withMainAsset()
+        val bids = spreads.map { it.bid }.withMainAsset()
+
+        val portfolioBtc = portfolio * bids
+        val portions = portfolioBtc.portions()
+        val bestPortions = network.bestPortfolio(portions, tradedHistory.history)
+
+        val capital = portfolioBtc.sum()
+        val desiredPortfolio = bestPortions * capital
+
+        val totalFee = desiredPortfolio.zip(portfolioBtc) { a,b -> abs(a-b) }.drop(1).sum() * fee
+        val capitalAfterFee = capital - totalFee
+
+        val newPortfolioBtc = bestPortions * capitalAfterFee
+        val newPortfolio = newPortfolioBtc / bids
+
+        portfolio.indices.forEach {
+            portfolio[it] = newPortfolio[it]
+        }
+
+        capitalAfterFee
     }.toList()
 }
