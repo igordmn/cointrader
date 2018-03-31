@@ -4,7 +4,6 @@ import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.trade.TradeAssets
 import com.dmi.util.collection.SuspendList
-import com.dmi.util.collection.toInt
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
 import com.dmi.util.io.SyncFileList
@@ -17,72 +16,11 @@ import kotlinx.serialization.list
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files.createDirectories
-import java.sql.DriverManager
-import java.time.Instant
 
 typealias Spreads = List<Spread>
 
 interface Archive : SuspendList<Spreads> {
     suspend fun sync(currentPeriod: Period)
-}
-
-private typealias Prices = Array<Double>
-
-suspend fun archive2(
-        space: PeriodSpace,
-        assets: TradeAssets,
-        exchange: BinanceExchange,
-        currentPeriod: Period,
-        fileSystem: FileSystem = FileSystems.getDefault(),
-        reloadCount: Int,
-        tradeLoadChunk: Int = 500
-): Archive {
-    val prices = Array((currentPeriod + 1).toInt()) { DoubleArray(assets.alts.size) { -1.0 } }
-
-    val nameToIndex: Map<Asset, Int> = assets.alts.indices.associate { assets.alts[it] to it }
-
-    Class.forName("org.sqlite.JDBC")
-    val connection = DriverManager.getConnection("jdbc:sqlite:D:/Development/Projects/cointrader/coins.db")
-    connection.prepareStatement("SELECT coin, closeTime, close FROM History where exchange=\"binance\"").use {
-        it.fetchSize = 1000
-        it.executeQuery().use { rs ->
-            while (rs.next()) {
-                val coin = rs.getString(1)
-                val closeTime = Instant.ofEpochSecond(rs.getLong(2))
-                val close = rs.getDouble(3)
-                val index = nameToIndex[coin]
-                if (index != null) {
-                    val period = space.floor(closeTime)
-                    if (period <= currentPeriod) {
-                        prices[period.toInt()][index] = close
-                    }
-                }
-            }
-        }
-    }
-
-    for (a in assets.alts.indices) {
-        for (i in 1..currentPeriod.toInt()) {
-            if (prices[i][a] < 0) {
-                prices[i][a] = prices[i - 1][a]
-            }
-        }
-    }
-
-    for (a in assets.alts.indices) {
-        for (i in currentPeriod.toInt() - 1 downTo 0) {
-            if (prices[i][a] < 0) {
-                prices[i][a] = prices[i + 1][a]
-            }
-        }
-    }
-
-    return object : Archive {
-        override suspend fun size(): Long = prices.size.toLong()
-        override suspend fun get(range: LongRange): List<Spreads> = prices.slice(range.toInt()).map { it.map { Spread(it, it) } }
-
-        override suspend fun sync(currentPeriod: Period) = Unit
-    }
 }
 
 @Serializable
