@@ -14,6 +14,6 @@ data class TrainConfig(
         val testDays: Double = 20.0,        //  days for test every log step, train includes these days
         val validationDays: Double = 1.0,   //  days for check overfitting, train doesn't include these days
 
-        val logSteps: Int = 500,
+        val logSteps: Int = 1000,
         val batchSize: Int = 109
 )
