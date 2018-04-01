@@ -64,7 +64,7 @@ suspend fun train() = resourceContext {
                     step = i,
                     trainProfits = trainProfits,
                     testCapitals = performTestTradesFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
-                    validationCapitals = performTestTradesFast2(testPeriods, tradeConfig, net, archive, trainConfig.fee)
+                    validationCapitals = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
             ))
             trainProfits = ArrayList(trainConfig.logSteps)
         }
