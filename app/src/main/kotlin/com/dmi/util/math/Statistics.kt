@@ -19,12 +19,12 @@ fun Random.nextLong(n: Long): Long {
     return res
 }
 
-fun GeometricDistribution.sampleIn(range: IntRange): Int {
+fun GeometricDistribution.limitSample(max: Int): Int {
     var ran = sample()
-    while (ran > range.endInclusive + 1 - range.start) {
+    while (ran > max) {
         ran = sample()
     }
-    return range.endInclusive + 1 - ran
+    return ran
 }
 
 fun maximumDrawdawn(profits: List<Double>): Double {

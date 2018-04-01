@@ -15,5 +15,6 @@ data class TrainConfig(
         val validationDays: Double = 1.0,   //  days for check overfitting, train doesn't include these days
 
         val logSteps: Int = 1000,
-        val batchSize: Int = 109
+        val batchSize: Int = 109,
+        val tradePeriodGeometricBias: Double = 5e-5
 )

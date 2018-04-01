@@ -9,8 +9,9 @@ import com.dmi.cointrader.trade.HistoryPeriods
 import com.dmi.cointrader.trade.TradeConfig
 import com.dmi.util.collection.*
 import com.dmi.util.concurrent.infiniteChannel
-import com.dmi.util.math.nextLong
+import com.dmi.util.math.limitSample
 import kotlinx.coroutines.experimental.channels.toList
+import org.apache.commons.math3.distribution.GeometricDistribution
 import java.util.*
 
 fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig) = this
@@ -46,7 +47,8 @@ fun trainBatches(
         trainConfig.batchSize,
         tradeConfig.assets.all.size,
         tradeConfig.historyPeriods,
-        tradeConfig.tradePeriods.delay
+        tradeConfig.tradePeriods.delay,
+        trainConfig.tradePeriodGeometricBias
 )
 
 class TrainBatches(
@@ -55,12 +57,15 @@ class TrainBatches(
         private val batchSize: Int,
         private val assetsSize: Int,
         private val historyPeriods: HistoryPeriods,
-        private val tradeDelayPeriods: Int
+        private val tradeDelayPeriods: Int,
+        tradePeriodGeometricBias: Double = 5e-7
 ) {
     private fun initPortfolio(): DoubleArray = DoubleArray(assetsSize) { 1.0 / assetsSize }
     private val portfolios = Array(periods.size().toInt()) { initPortfolio() }
 
-    private val random = Random(867979346)
+    private val random = GeometricDistribution(tradePeriodGeometricBias).apply {
+        reseedRandomGenerator(657567L)
+    }
 
     val size = periods.size() - batchSize
 
@@ -76,7 +81,11 @@ class TrainBatches(
         return TrainBatch(portfolio, ::setPortfolio, history)
     }
 
-    fun channel() = infiniteChannel { get(random.nextLong(size)) }
+    fun channel() = infiniteChannel {
+        val lastIndex = size - 1
+        val randomPeriod = lastIndex - random.limitSample(lastIndex.toInt())
+        get(randomPeriod)
+    }
 }
 
 class TrainBatch(

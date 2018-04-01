@@ -28,7 +28,6 @@ suspend fun train() = resourceContext {
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
     require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
-    val testExchange = TestExchange(tradeConfig.assets, trainConfig.fee.toBigDecimal())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
     val archive = archive(
             tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
