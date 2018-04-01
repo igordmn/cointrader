@@ -10,6 +10,20 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
     )
 
 
+def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
+    width = net.get_shape()[2]
+    net = tflearn.layers.conv_2d(
+        net, 1, [1, width],
+        padding="valid",
+        regularizer=regularizer,
+        weight_decay=weight_decay
+    )
+    net = net[:, :, 0, 0]
+    btc_bias = tf.ones((batch_size, 1))
+    net = tf.concat([btc_bias, net], 1)
+    return tflearn.layers.core.activation(net, activation="softmax")
+
+
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay):
     width = net.get_shape()[2]
     height = net.get_shape()[1]
