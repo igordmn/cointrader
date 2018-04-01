@@ -47,7 +47,7 @@ data class TradeConfig(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
                 duration = seconds(10)
         ),
-        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 5 * periodSpace.periodsPerMinute().toInt()),
-        val tradePeriods: TradePeriods = TradePeriods(size = 1 * periodSpace.periodsPerMinute().toInt(), delay = 1),
+        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 160, size = 5 * periodSpace.periodsPerMinute().toInt()),
+        val tradePeriods: TradePeriods = TradePeriods(size = 5 * periodSpace.periodsPerMinute().toInt(), delay = 1),
         val archiveReloadPeriods: Int = 6 * 10
 )
