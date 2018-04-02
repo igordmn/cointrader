@@ -39,7 +39,7 @@ fun trainResult(
 
     val allProfits = testCapitals.profits() + validationCapitals.profits()
     val averageProfits = allProfits.windowed(tradePeriodsPerDay.toInt()) { ln(product(it)) }.toDoubleArray()
-    val profitDays = averageProfits.indices.map { (tradePeriodsPerDay - 1 + it) / tradePeriodsPerDay  }.toDoubleArray()
+    val profitDays = averageProfits.indices.map { (tradePeriodsPerDay.toInt() - 1 + it) / tradePeriodsPerDay  }.toDoubleArray()
 
     return TrainResult(
             step,
@@ -47,8 +47,8 @@ fun trainResult(
             trainTestResult(testCapitals, previousResults.map { it.test }),
             trainTestResult(validationCapitals, previousResults.map { it.validation }),
             dayProfitsChart = TrainResult.ChartData(
-                    averageProfits,
-                    profitDays
+                    profitDays,
+                    averageProfits
             )
     )
 }
