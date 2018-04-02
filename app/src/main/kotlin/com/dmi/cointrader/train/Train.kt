@@ -51,7 +51,7 @@ suspend fun train() = resourceContext {
 
     fun saveChart(result: TrainResult) {
         val chart = XYChart(1280, 720).apply {
-            addSeries("Capital", result.allProfitsChart.x, result.allProfitsChart.y).apply {
+            addSeries("Capital", result.dayProfitsChart.x, result.dayProfitsChart.y).apply {
                 marker = None()
                 markerColor = Color(0, 0, 0, 0)
             }
@@ -85,7 +85,6 @@ suspend fun train() = resourceContext {
                     tradePeriods = tradeConfig.tradePeriods.size,
                     step = i,
                     movingAverageCount = trainConfig.logMovingAverageCount,
-                    chartMovingAverageDays = trainConfig.chartMovingAverageDays,
                     previousResults = logResults,
                     trainProfits = trainProfits,
                     testCapitals = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
