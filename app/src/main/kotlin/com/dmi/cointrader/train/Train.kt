@@ -49,19 +49,24 @@ suspend fun train() = resourceContext {
     saveTradeConfig(tradeConfig)
 
     var trainProfits = ArrayList<Double>(trainConfig.logSteps)
+    val logResults = ArrayList<TrainResult>()
     batches.channel().consumeEachIndexed { (i, it) ->
         val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
         it.setCurrentPortfolio(newPortions)
         trainProfits.add(trainProfit)
         if (i % trainConfig.logSteps == 0) {
-            saveNet(trainResult(
+            val result = trainResult(
                     space = tradeConfig.periodSpace,
                     tradePeriods = tradeConfig.tradePeriods.size,
                     step = i,
+                    movingAverageCount = trainConfig.logMovingAverageCount,
+                    previousResults = logResults,
                     trainProfits = trainProfits,
                     testProfits = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee).profits(),
                     validationProfits = performTestTradesFast2(validationPeriods, tradeConfig, net, archive, trainConfig.fee).profits()
-            ))
+            )
+            logResults.add(result)
+            saveNet(result)
             trainProfits = ArrayList(trainConfig.logSteps)
         }
     }
