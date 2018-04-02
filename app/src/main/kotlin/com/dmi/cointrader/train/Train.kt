@@ -61,8 +61,7 @@ suspend fun train() = resourceContext {
 
     fun saveChart(result: TrainResult) {
         Platform.runLater {
-            val xAxis = NumberAxis().apply {
-            }
+            val xAxis = NumberAxis()
             val yAxis = NumberAxis().apply {
                 isAutoRanging = false
                 lowerBound = -0.15
@@ -78,7 +77,7 @@ suspend fun train() = resourceContext {
                 data.add(series)
                 isLegendVisible = false
             }
-            val scene = Scene(chart, 1280.0, 720.0)
+            val scene = Scene(chart, 1600.0, 900.0)
             val image = scene.snapshot(null)
 
             chartFile(result.step).toFile().outputStream().buffered().use {
