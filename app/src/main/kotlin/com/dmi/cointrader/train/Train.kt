@@ -15,6 +15,7 @@ import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.knowm.xchart.style.markers.None
+import java.awt.Color
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -55,6 +56,7 @@ suspend fun train() = resourceContext {
         val chart = XYChart(1280, 720).apply {
             addSeries("Capital", days, capitals).apply {
                 marker = None()
+                markerColor = Color(0, 0, 0, 0)
             }
             styler.isYAxisLogarithmic = true
             styler.antiAlias = true
