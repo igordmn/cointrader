@@ -8,6 +8,12 @@ operator fun List<Double>.times(other: List<Double>): List<Double> {
     return zip(other, Double::times)
 }
 
+@JvmName("times2")
+operator fun List<BigDecimal>.times(other: List<BigDecimal>): List<BigDecimal> {
+    require(other.size == size)
+    return zip(other, BigDecimal::times)
+}
+
 operator fun List<Double>.times(other: Double): List<Double> {
     return map { it * other }
 }
@@ -18,8 +24,6 @@ operator fun List<Double>.div(other: List<Double>): List<Double> {
     return zip(other, Double::div)
 }
 
-@JvmName("times2")
-operator fun List<BigDecimal>.times(other: List<BigDecimal>): List<BigDecimal> {
-    require(other.size == size)
-    return zip(other, BigDecimal::times)
+operator fun List<Double>.div(other: Double): List<Double> {
+    return map { it / other }
 }
