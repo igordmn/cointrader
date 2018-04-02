@@ -6,24 +6,32 @@ import com.dmi.cointrader.binance.binanceExchangeForInfo
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
-import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.trade.*
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
-import com.dmi.util.io.appendText
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
-import com.dmi.util.math.geoMean
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
+import org.knowm.xchart.BitmapEncoder
+import org.knowm.xchart.XYChart
+import org.knowm.xchart.style.markers.None
 import java.nio.file.Files
 import java.nio.file.Paths
 
 suspend fun train() = resourceContext {
-    val networksFolder = Paths.get("data/networks")
-    networksFolder.deleteRecursively()
-    Files.createDirectory(networksFolder)
-    fun netFolder(step: Int) = networksFolder.resolve(step.toString())
-    val resultsFile = networksFolder.resolve("results.log")
+    val resultsDir = Paths.get("data/results")
+    resultsDir.deleteRecursively()
+    Files.createDirectory(resultsDir)
+
+    val networksDir = resultsDir.resolve("networks")
+    Files.createDirectory(networksDir)
+    fun netDir(step: Int) = networksDir.resolve(step.toString())
+
+    val chartsDir = resultsDir.resolve("charts")
+    Files.createDirectory(chartsDir)
+    fun chartFile(step: Int) = chartsDir.resolve("$step.png")
+
+    val resultsLogFile = resultsDir.resolve("results.log")
 
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
@@ -40,9 +48,28 @@ suspend fun train() = resourceContext {
     val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
     val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
 
+    fun saveChart(result: TrainResult) {
+        val capitals = result.test.capitals + result.validation.capitals
+        val days = capitals.indices.map { it * tradeConfig.tradePeriods.size / tradeConfig.periodSpace.periodsPerDay() }
+
+        val chart = XYChart(1280, 720).apply {
+            addSeries("Capital", days, capitals).apply {
+                marker = None()
+            }
+            styler.isYAxisLogarithmic = true
+            styler.antiAlias = true
+            styler.plotMargin = 1
+        }
+
+        chartFile(result.step).toFile().outputStream().buffered().use {
+            BitmapEncoder.saveBitmap(chart, it, BitmapEncoder.BitmapFormat.PNG)
+        }
+    }
+
     fun saveNet(result: TrainResult) {
-        net.save(netFolder(result.step))
-        resultsFile.appendLine(result.toString())
+        net.save(netDir(result.step))
+        saveChart(result)
+        resultsLogFile.appendLine(result.toString())
         println(result.toString())
     }
 
@@ -62,8 +89,8 @@ suspend fun train() = resourceContext {
                     movingAverageCount = trainConfig.logMovingAverageCount,
                     previousResults = logResults,
                     trainProfits = trainProfits,
-                    testProfits = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee).profits(),
-                    validationProfits = performTestTradesFast2(validationPeriods, tradeConfig, net, archive, trainConfig.fee).profits()
+                    testCapitals = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
+                    validationCapitals = performTestTradesFast2(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
             )
             logResults.add(result)
             saveNet(result)
