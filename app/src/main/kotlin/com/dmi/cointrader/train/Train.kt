@@ -55,7 +55,6 @@ suspend fun train() = resourceContext {
                 marker = None()
                 markerColor = Color(0, 0, 0, 0)
             }
-            styler.isYAxisLogarithmic = true
             styler.antiAlias = true
             styler.plotMargin = 1
         }
