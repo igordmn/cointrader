@@ -21,8 +21,9 @@ def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
         weights_init='xavier'
     )
     net = net[:, :, 0, 0]
-    btc_bias = tf.ones((batch_size, 1))
-    net = tf.concat([btc_bias, net], 1)
+    main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
+    main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
+    net = tf.concat([main_asset_bias, net], 1)
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
