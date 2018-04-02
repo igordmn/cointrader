@@ -68,7 +68,7 @@ def build_best_portfolio(
         weight_decay=0,
         weights_init='xavier'
     )
-    # net = tflearn.batch_normalization(net, decay=0.999)
+    net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_dense(
         net,
@@ -77,7 +77,7 @@ def build_best_portfolio(
         regularizer="L2",
         weight_decay=5e-9
     )
-    # net = tflearn.batch_normalization(net, decay=0.999)
+    net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
@@ -166,7 +166,7 @@ class NeuralTrainer:
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train_tensor = tf.train.AdamOptimizer(0.00028 * 2).minimize(loss)
+        self.train_tensor = tf.train.AdamOptimizer(0.00028).minimize(loss)
 
         self.batch_size = network.batch_size
         self.history = network.history
