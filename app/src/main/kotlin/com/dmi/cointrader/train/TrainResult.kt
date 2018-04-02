@@ -6,6 +6,8 @@ import com.dmi.util.lang.times
 import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
+import java.time.Duration
+import kotlin.math.ln
 import kotlin.math.pow
 
 fun trainResult(
@@ -13,6 +15,7 @@ fun trainResult(
         tradePeriods: Int,
         step: Int,
         movingAverageCount: Int,
+        chartMovingAverageDays: Double,
         previousResults: List<TrainResult>,
         trainProfits: Profits,
         testCapitals: Capitals,
@@ -20,6 +23,7 @@ fun trainResult(
 ): TrainResult {
     val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
     val tradeDuration = space.duration * tradePeriods
+    val chartMovingAveragePeriods = (chartMovingAverageDays * tradePeriodsPerDay).toInt()
 
     fun trainTestResult(capitals: Capitals, previousResults: List<TrainResult.Test>): TrainResult.Test {
         val profits = capitals.profits()
@@ -32,19 +36,27 @@ fun trainResult(
         val hourlyProfits = profits.hourly(tradeDuration)
         val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
         val maximumDrawdawn: Double = hourlyProfits.let(::maximumDrawdawn)
-        return TrainResult.Test(capitals, dayProfit, averageDayProfit, downsideDeviation, maximumDrawdawn)
+        return TrainResult.Test(dayProfit, averageDayProfit, downsideDeviation, maximumDrawdawn)
     }
+
+    val allProfits = testCapitals.profits() + validationCapitals.profits()
+    val averageProfits = allProfits.map { ln(it) }.windowed(chartMovingAveragePeriods) { it.average() }.toDoubleArray()
+    val profitDays = averageProfits.indices.map { (chartMovingAveragePeriods - 1 + it) / tradePeriodsPerDay  }.toDoubleArray()
 
     return TrainResult(
             step,
             geoMean(trainProfits).pow(tradePeriodsPerDay),
             trainTestResult(testCapitals, previousResults.map { it.test }),
-            trainTestResult(validationCapitals, previousResults.map { it.validation })
+            trainTestResult(validationCapitals, previousResults.map { it.validation }),
+            allProfitsChart = TrainResult.ChartData(
+                    averageProfits,
+                    profitDays
+            )
     )
 }
 
-data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test, val validation: Test) {
-    data class Test(val capitals: Capitals, val dayProfit: Double, val averageDayProfit: Double?, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double) {
+data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test, val validation: Test, val allProfitsChart: ChartData) {
+    data class Test(val dayProfit: Double, val averageDayProfit: Double?, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double) {
         override fun toString(): String {
             val dayProfit = "%.3f".format(dayProfit)
             val averageDayProfit = "%.3f".format(averageDayProfit)
@@ -53,6 +65,8 @@ data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test
             return "$dayProfit $averageDayProfit $hourlyNegativeDeviation $hourlyMaximumDrawdawn"
         }
     }
+
+    data class ChartData(val x: DoubleArray, val y: DoubleArray)
 
     override fun toString(): String {
         val trainDayProfit = "%.3f".format(trainDayProfit)

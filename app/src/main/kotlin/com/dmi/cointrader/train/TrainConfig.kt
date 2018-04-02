@@ -1,8 +1,10 @@
 package com.dmi.cointrader.train
 
 import com.dmi.util.lang.InstantRange
+import com.dmi.util.lang.days
 import com.dmi.util.lang.parseInstantRange
 import com.dmi.util.lang.zoneOffset
+import java.time.Duration
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -16,6 +18,7 @@ data class TrainConfig(
 
         val logSteps: Int = 1000,
         val logMovingAverageCount: Int = 10,
+        val chartMovingAverageDays: Double = 1.0,
         val batchSize: Int = 109,
         val tradePeriodGeometricBias: Double = 5e-8
 )
