@@ -21,7 +21,7 @@ fun trainResult(
     val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
     val tradeDuration = space.duration * tradePeriods
 
-    fun trainTestResult(capitals: Profits, previousResults: List<TrainResult.Test>): TrainResult.Test {
+    fun trainTestResult(capitals: Capitals, previousResults: List<TrainResult.Test>): TrainResult.Test {
         val profits = capitals.profits()
         val dayProfit = profits.daily(tradeDuration).let(::geoMean)
         val averageDayProfit = if (previousResults.size >= movingAverageCount) {
