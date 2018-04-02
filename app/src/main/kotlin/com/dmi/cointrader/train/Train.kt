@@ -6,18 +6,26 @@ import com.dmi.cointrader.binance.binanceExchangeForInfo
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
-import com.dmi.cointrader.trade.*
+import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.cointrader.trade.performTestTradesFast
+import com.dmi.cointrader.trade.performTestTradesFast2
+import com.dmi.cointrader.trade.saveTradeConfig
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
+import javafx.application.Platform
+import javafx.embed.swing.SwingFXUtils
+import javafx.scene.Scene
+import javafx.scene.chart.LineChart
+import javafx.scene.chart.NumberAxis
+import javafx.scene.chart.XYChart
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
-import org.knowm.xchart.BitmapEncoder
-import org.knowm.xchart.XYChart
-import org.knowm.xchart.style.markers.None
-import java.awt.Color
 import java.nio.file.Files
 import java.nio.file.Paths
+import javax.imageio.ImageIO
+import com.sun.javafx.application.PlatformImpl
+
 
 suspend fun train() = resourceContext {
     val resultsDir = Paths.get("data/results")
@@ -49,18 +57,33 @@ suspend fun train() = resourceContext {
     val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
     val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
 
-    fun saveChart(result: TrainResult) {
-        val chart = XYChart(1280, 720).apply {
-            addSeries("Capital", result.dayProfitsChart.x, result.dayProfitsChart.y).apply {
-                marker = None()
-                markerColor = Color(0, 0, 0, 0)
-            }
-            styler.antiAlias = true
-            styler.plotMargin = 1
-        }
+    PlatformImpl.startup({})
 
-        chartFile(result.step).toFile().outputStream().buffered().use {
-            BitmapEncoder.saveBitmap(chart, it, BitmapEncoder.BitmapFormat.PNG)
+    fun saveChart(result: TrainResult) {
+        Platform.runLater {
+            val xAxis = NumberAxis().apply {
+            }
+            val yAxis = NumberAxis().apply {
+                isAutoRanging = false
+                lowerBound = -0.15
+                upperBound = 0.15
+                tickUnit = 0.01
+            }
+            val series = XYChart.Series<Number, Number>().apply {
+                data.addAll(result.dayProfitsChart.x.zip(result.dayProfitsChart.y) { x, y -> XYChart.Data(x as Number, y as Number) })
+            }
+            val chart = LineChart(xAxis, yAxis).apply {
+                animated = false
+                createSymbols = false
+                data.add(series)
+                isLegendVisible = false
+            }
+            val scene = Scene(chart, 1280.0, 720.0)
+            val image = scene.snapshot(null)
+
+            chartFile(result.step).toFile().outputStream().buffered().use {
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", it)
+            }
         }
     }
 
