@@ -203,15 +203,18 @@ suspend fun performTestTradesFast2(
         val prices = asks.zip(bids) { a, b -> (a + b) / 2.0 }
         val fees = bids.zip(prices) { a, b -> 1 - a / b * (1.0 - fee) }
 
-        val bestPortions = network.bestPortfolio(portfolio.portions(), tradedHistory.history).portions()
+        val portfolioBtc = portfolio * bids
+        val portions = portfolioBtc.portions()
+        val bestPortions = network.bestPortfolio(portions, tradedHistory.history).portions()
 
-        val capital = portfolio.sum()
+        val capital = portfolioBtc.sum()
         val desiredPortfolio = bestPortions * capital
 
-        val totalFee = (desiredPortfolio.zip(portfolio) { a, b -> abs(a - b) }.drop(1) * fees.drop(1)).sum()
+        val totalFee = (desiredPortfolio.zip(portfolioBtc) { a, b -> abs(a - b) }.drop(1) * fees.drop(1)).sum()
         val capitalAfterFee = capital - totalFee
 
-        val newPortfolio = bestPortions * capitalAfterFee
+        val newPortfolioBtc = bestPortions * capitalAfterFee
+        val newPortfolio = newPortfolioBtc / bids
 
         portfolio.indices.forEach {
             portfolio[it] = newPortfolio[it]
