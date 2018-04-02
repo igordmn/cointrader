@@ -6,7 +6,8 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
     width = net.get_shape()[2]
     return tflearn.layers.conv_2d(
         net, filter_number, [1, width], [1, 1], "valid", activation_function,
-        regularizer=regularizer, weight_decay=weight_decay
+        regularizer=regularizer, weight_decay=weight_decay,
+        weights_init='xavier'
     )
 
 
@@ -16,7 +17,8 @@ def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
         net, 1, [1, width],
         padding="valid",
         regularizer=regularizer,
-        weight_decay=weight_decay
+        weight_decay=weight_decay,
+        weights_init='xavier'
     )
     net = net[:, :, 0, 0]
     btc_bias = tf.ones((batch_size, 1))
@@ -35,7 +37,8 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
         net, 1, [1, 1],
         padding="valid",
         regularizer=regularizer,
-        weight_decay=weight_decay
+        weight_decay=weight_decay,
+        weights_init='xavier'
     )
     net = net[:, :, 0, 0]
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
