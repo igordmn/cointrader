@@ -22,7 +22,9 @@ interface SuspendList<out T> {
     suspend fun toList(): List<T> = channel(0 until size()).toList()
 }
 
-fun <T> List<T>.asSuspend()= object : SuspendList<T> {
+fun <T> List<T>.asSuspend() = object : SuspendList<T> {
     override suspend fun size(): Long = size.toLong()
     override suspend fun get(range: LongRange): List<T> = slice(range.toInt())
 }
+
+suspend fun <T> SuspendList<T>.cache() = toList().asSuspend()
