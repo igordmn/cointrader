@@ -27,4 +27,4 @@ fun <T> List<T>.asSuspend() = object : SuspendList<T> {
     override suspend fun get(range: LongRange): List<T> = slice(range.toInt())
 }
 
-suspend fun <T> SuspendList<T>.cache() = toList().asSuspend()
+suspend fun <T> SuspendList<T>.memoryCache() = toList().asSuspend()
