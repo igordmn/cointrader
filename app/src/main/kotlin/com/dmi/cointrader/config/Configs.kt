@@ -4,9 +4,7 @@ import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.archive.PeriodSpace
 import com.dmi.util.io.readBytes
 import com.dmi.util.io.writeBytes
-import com.dmi.util.lang.parseInstant
-import com.dmi.util.lang.seconds
-import com.dmi.util.lang.zoneOffset
+import com.dmi.util.lang.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.CBOR.Companion.load
 import kotlinx.serialization.cbor.CBOR.Companion.dump
@@ -49,4 +47,17 @@ data class TradeConfig(
         val historyPeriods: HistoryPeriods = HistoryPeriods(count = 160, size = 5 * periodSpace.periodsPerMinute().toInt()),
         val tradePeriods: TradePeriods = TradePeriods(size = 5 * periodSpace.periodsPerMinute().toInt(), delay = 1),
         val archiveReloadPeriods: Int = 6 * 10
+)
+
+data class TrainConfig(
+        val fee: Double = 0.0007,
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-02T15:50:00", zoneOffset("+3")),
+
+        val testDays: Double = 1.0,        //  days for test every log step, train includes these days
+        val validationDays: Double = 30.0,   //  days for check overfitting, train doesn't include these days
+
+        val logSteps: Int = 1000,
+        val logMovingAverageCount: Int = 10,
+        val batchSize: Int = 109,
+        val tradePeriodGeometricBias: Double = 5e-7
 )
