@@ -37,19 +37,26 @@ fun trainResult(
         return TrainResult.Test(dayProfit, averageDayProfit, downsideDeviation, maximumDrawdawn)
     }
 
-    val allProfits = testCapitals.profits() + validationCapitals.profits()
-    val averageProfits = allProfits.windowed(tradePeriodsPerDay.toInt()) { ln(product(it)) }.toDoubleArray()
-    val profitDays = averageProfits.indices.map { (tradePeriodsPerDay.toInt() - 1 + it) / tradePeriodsPerDay  }.toDoubleArray()
+    val dayProfitsChart = run {
+        val allProfits = testCapitals.profits() + validationCapitals.profits()
+        val allCapitals = ArrayList<Capital>(allProfits)
+        var capital = 1.0
+        allProfits.forEach {
+            allCapitals.add(capital)
+            capital *= it
+        }
+        val profitDays = allCapitals.indices.map {
+            (tradePeriodsPerDay.toInt() - 1 + it) / tradePeriodsPerDay
+        }
+        TrainResult.ChartData(profitDays.toDoubleArray(), allCapitals.toDoubleArray())
+    }
 
     return TrainResult(
             step,
             geoMean(trainProfits).pow(tradePeriodsPerDay),
             trainTestResult(testCapitals, previousResults.map { it.test }),
             trainTestResult(validationCapitals, previousResults.map { it.validation }),
-            dayProfitsChart = TrainResult.ChartData(
-                    profitDays,
-                    averageProfits
-            )
+            dayProfitsChart
     )
 }
 
@@ -64,7 +71,7 @@ data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test
         }
     }
 
-    data class ChartData(val x: DoubleArray, val y: DoubleArray)
+    class ChartData(val x: DoubleArray, val y: DoubleArray)
 
     override fun toString(): String {
         val trainDayProfit = "%.3f".format(trainDayProfit)
