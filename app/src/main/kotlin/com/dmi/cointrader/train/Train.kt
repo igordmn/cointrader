@@ -63,12 +63,7 @@ suspend fun train() = resourceContext {
     fun saveChart(result: TrainResult) {
         Platform.runLater {
             val xAxis = NumberAxis()
-            val yAxis = NumberAxis().apply {
-                isAutoRanging = false
-                lowerBound = -0.15
-                upperBound = 0.15
-                tickUnit = 0.01
-            }
+            val yAxis = NumberAxis()
             val series = XYChart.Series<Number, Number>().apply {
                 data.addAll(result.dayProfitsChart.x.zip(result.dayProfitsChart.y) { x, y -> XYChart.Data(x as Number, y as Number) })
             }
