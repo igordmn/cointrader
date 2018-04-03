@@ -7,7 +7,7 @@ interface SuspendList<out T> {
     suspend fun size(): Long
     suspend fun get(range: LongRange): List<T>
 
-    fun channel(indices: LongRange, bufferSize: Long = 100): ReceiveChannel<T> {
+    fun channel(indices: LongRange, bufferSize: Long = 10000): ReceiveChannel<T> {
         return indices.chunked(bufferSize).asReceiveChannel().map { get(it) }.flatten()
     }
 
