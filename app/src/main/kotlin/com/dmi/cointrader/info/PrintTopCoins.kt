@@ -13,8 +13,8 @@ fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val daylyVolumes: List<Double>)
 
     val days = 30
-    val minDayVolume = 150
-    val averageByDays = 3
+    val minDayVolume = 200   // in BTC
+    val maxByDays = 3
     val excludedPairs = setOf("BNBBTC", "CTRBTC")
 
     val api = binanceAPI()
@@ -34,13 +34,14 @@ fun printTopCoins() = runBlocking {
 
     val coins = coinVolumes
             .filter {
-                val averageVolumes = it.daylyVolumes.windowed(averageByDays) { it.average() }
-                averageVolumes.any { it > minDayVolume }
+                val maxVolumes = it.daylyVolumes.windowed(maxByDays) { it.max()!! }
+                maxVolumes.all { it > minDayVolume }
             }
             .map { it.coin }
 
     val printList = listOf("USDT") + coins
     println(printList.joinToString(", ") { "\"$it\"" })
+    println(printList.size)
 }
 
 private suspend fun daylyVolumes(client: BinanceAPI, coin: String, before: Instant): ReceiveChannel<Double> {
