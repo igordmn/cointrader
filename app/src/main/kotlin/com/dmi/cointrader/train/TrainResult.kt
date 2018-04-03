@@ -31,7 +31,7 @@ fun trainResult(
         } else {
             null
         }
-        val hourlyProfits = profits.hourly(tradeDuration)
+        val hourlyProfits = profits   //.hourly(tradeDuration)
         val downsideDeviation: Double = hourlyProfits.let(::downsideDeviation)
         val maximumDrawdawn: Double = hourlyProfits.let(::maximumDrawdawn)
         return TrainResult.Test(dayProfit, averageDayProfit, downsideDeviation, maximumDrawdawn)
