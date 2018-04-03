@@ -12,7 +12,7 @@ fun printTopCoins() = runBlocking {
     val beforeTime = Instant.now() - days(20)
     val minVolume = 150
     val topCount = 70
-    val excludedCoins = setOf("BNBBTC")
+    val excludedCoins = setOf("BNBBTC", "CTRBTC")
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
