@@ -22,7 +22,7 @@ fun printTopCoins() = runBlocking {
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
-    val time = Instant.ofEpochMilli(api.serverTime().serverTime)
+    val time = api.serverTime().serverTime
     val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
 
     val allPairs = info.keys
@@ -34,6 +34,7 @@ fun printTopCoins() = runBlocking {
                         daylyVolumes = daylyVolumes(api, it, time).take(days).toList()
                 )
             }
+            .filter { it.daylyVolumes.size == days }
 
     val coins = coinVolumes
             .filter {
@@ -47,12 +48,12 @@ fun printTopCoins() = runBlocking {
     println(printList.size)
 }
 
-private suspend fun daylyVolumes(client: BinanceAPI, coin: String, before: Instant): ReceiveChannel<Double> {
-    return hourlyVolumes(client, coin, before).chunked(24).map { it.sum() }
+private suspend fun daylyVolumes(client: BinanceAPI, coin: String, beforeTime: Long): ReceiveChannel<Double> {
+    return hourlyVolumes(client, coin, beforeTime).chunked(24).map { it.sum() }
 }
 
-private suspend fun hourlyVolumes(client: BinanceAPI, coin: String, before: Instant): ReceiveChannel<Double> = produce {
-    var t = before.toEpochMilli()
+private suspend fun hourlyVolumes(client: BinanceAPI, coin: String, beforeTime: Long): ReceiveChannel<Double> = produce {
+    var t = beforeTime
     while (true) {
         val values = client.getCandlestickBars(coin, "1h", 500, null, t)
         values.map { it.quoteAssetVolume.toDouble() }.reversed().forEach {
