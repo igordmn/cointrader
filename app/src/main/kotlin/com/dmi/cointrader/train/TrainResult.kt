@@ -39,7 +39,7 @@ fun trainResult(
 
     val dayProfitsChart = run {
         val allProfits = testCapitals.profits() + validationCapitals.profits()
-        val allCapitals = ArrayList<Capital>(allProfits)
+        val allCapitals = ArrayList<Capital>(allProfits.size)
         var capital = 1.0
         allProfits.forEach {
             allCapitals.add(capital)
