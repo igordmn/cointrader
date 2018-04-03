@@ -49,8 +49,8 @@ suspend fun <CONFIG : Any, SOURCE_STATE : Any, ITEM> syncFileList(
 
         override suspend fun get(range: LongRange): List<ITEM> {
             val size = size()
-            require(range.start in 0 until size)
-            require(range.endInclusive in 0 until size)
+            require(range.start in 0 until size) { "Wrong range: $range. Max size: $size" }
+            require(range.endInclusive in 0 until size) { "Wrong range: $range. Max size: $size" }
             return fileArray.get(range)
         }
 

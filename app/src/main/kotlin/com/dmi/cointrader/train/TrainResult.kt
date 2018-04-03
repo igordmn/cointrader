@@ -45,9 +45,7 @@ fun trainResult(
             allCapitals.add(capital)
             capital *= it
         }
-        val profitDays = allCapitals.indices.map {
-            (tradePeriodsPerDay.toInt() - 1 + it) / tradePeriodsPerDay
-        }
+        val profitDays = allCapitals.indices.map { it / tradePeriodsPerDay }
         TrainResult.ChartData(profitDays.toDoubleArray(), allCapitals.toDoubleArray())
     }
 
