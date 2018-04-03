@@ -1,13 +1,13 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.config.TrainConfig
+import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.neural.PortionsBatch
 import com.dmi.cointrader.neural.TradedHistoryBatch
 import com.dmi.cointrader.neural.clampForTradedHistory
 import com.dmi.cointrader.neural.tradedHistories
-import com.dmi.cointrader.config.HistoryPeriods
-import com.dmi.cointrader.config.TradeConfig
+import com.dmi.cointrader.HistoryPeriods
+import com.dmi.cointrader.TradeConfig
 import com.dmi.util.collection.*
 import com.dmi.util.concurrent.infiniteChannel
 import com.dmi.util.math.limitSample

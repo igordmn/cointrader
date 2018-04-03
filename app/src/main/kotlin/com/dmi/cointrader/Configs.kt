@@ -1,4 +1,4 @@
-package com.dmi.cointrader.config
+package com.dmi.cointrader
 
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.archive.PeriodSpace

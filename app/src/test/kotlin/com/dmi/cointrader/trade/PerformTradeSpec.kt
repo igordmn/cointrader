@@ -4,7 +4,7 @@ import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.archive.Spreads
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.broker.Broker
-import com.dmi.cointrader.config.TradeAssets
+import com.dmi.cointrader.TradeAssets
 import com.dmi.cointrader.neural.Portions
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.cointrader.test.round

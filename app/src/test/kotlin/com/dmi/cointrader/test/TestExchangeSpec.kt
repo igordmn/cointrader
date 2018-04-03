@@ -2,7 +2,7 @@ package com.dmi.cointrader.test
 
 import com.dmi.cointrader.binance.Portfolio
 import com.dmi.cointrader.broker.Broker
-import com.dmi.cointrader.config.TradeAssets
+import com.dmi.cointrader.TradeAssets
 import com.dmi.util.test.Spec
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldNotBe

@@ -3,7 +3,7 @@ package com.dmi.cointrader.test
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.Portfolio
 import com.dmi.cointrader.broker.Broker
-import com.dmi.cointrader.config.TradeAssets
+import com.dmi.cointrader.TradeAssets
 import java.math.BigDecimal
 
 class TestExchange(private val assets: TradeAssets, private val fee: BigDecimal) {

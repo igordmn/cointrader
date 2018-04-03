@@ -3,8 +3,8 @@ package com.dmi.cointrader.trade
 import com.dmi.cointrader.binance.*
 import com.dmi.cointrader.broker.*
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.config.TradeConfig
-import com.dmi.cointrader.config.savedTradeConfig
+import com.dmi.cointrader.TradeConfig
+import com.dmi.cointrader.savedTradeConfig
 import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList

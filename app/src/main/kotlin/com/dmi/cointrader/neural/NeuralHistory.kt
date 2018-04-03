@@ -1,7 +1,7 @@
 package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.config.HistoryPeriods
+import com.dmi.cointrader.HistoryPeriods
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
 import com.dmi.util.concurrent.map

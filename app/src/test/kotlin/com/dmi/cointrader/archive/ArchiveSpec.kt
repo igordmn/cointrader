@@ -1,7 +1,7 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.cointrader.binance.binanceExchangeForTest
-import com.dmi.cointrader.config.TradeAssets
+import com.dmi.cointrader.TradeAssets
 import com.dmi.util.lang.minutes
 import com.dmi.util.test.Spec
 import com.dmi.util.test.instant

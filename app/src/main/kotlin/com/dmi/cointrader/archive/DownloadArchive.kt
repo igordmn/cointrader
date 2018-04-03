@@ -1,7 +1,7 @@
 package com.dmi.cointrader.archive
 
 import com.dmi.cointrader.binance.binanceExchangeForInfo
-import com.dmi.cointrader.config.TradeConfig
+import com.dmi.cointrader.TradeConfig
 import java.nio.file.FileSystems
 
 suspend fun downloadArchive() {

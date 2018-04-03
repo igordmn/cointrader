@@ -2,7 +2,7 @@ package com.dmi.cointrader.archive
 
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
-import com.dmi.cointrader.config.TradeAssets
+import com.dmi.cointrader.TradeAssets
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.forEachAsync
 import com.dmi.util.io.FixedListSerializer
