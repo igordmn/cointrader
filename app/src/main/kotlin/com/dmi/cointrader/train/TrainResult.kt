@@ -38,15 +38,15 @@ fun trainResult(
     }
 
     val dayProfitsChart = run {
-        val allProfits = testCapitals.profits() + validationCapitals.profits()
-        val allCapitals = ArrayList<Capital>(allProfits.size)
-        var capital = 1.0
-        allProfits.forEach {
-            allCapitals.add(capital)
-            capital *= it
-        }
-        val profitDays = allCapitals.indices.map { it / tradePeriodsPerDay }
-        TrainResult.ChartData(profitDays.toDoubleArray(), allCapitals.toDoubleArray())
+//        val allProfits = testCapitals.profits() + validationCapitals.profits()
+//        val allCapitals = ArrayList<Capital>(allProfits.size)
+//        var capital = 1.0
+//        allProfits.forEach {
+//            allCapitals.add(capital)
+//            capital *= it
+//        }
+        val profitDays = testCapitals.indices.map { it / tradePeriodsPerDay }
+        TrainResult.ChartData(profitDays.toDoubleArray(), testCapitals.toDoubleArray())
     }
 
     return TrainResult(
