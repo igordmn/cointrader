@@ -1,4 +1,4 @@
-package com.dmi.cointrader.train
+package com.dmi.cointrader.config
 
 import com.dmi.util.lang.InstantRange
 import com.dmi.util.lang.days

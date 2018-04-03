@@ -1,18 +1,18 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.*
+import com.dmi.cointrader.config.TrainConfig
 import com.dmi.cointrader.neural.PortionsBatch
 import com.dmi.cointrader.neural.TradedHistoryBatch
 import com.dmi.cointrader.neural.clampForTradedHistory
 import com.dmi.cointrader.neural.tradedHistories
-import com.dmi.cointrader.trade.HistoryPeriods
-import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.cointrader.config.HistoryPeriods
+import com.dmi.cointrader.config.TradeConfig
 import com.dmi.util.collection.*
 import com.dmi.util.concurrent.infiniteChannel
 import com.dmi.util.math.limitSample
 import kotlinx.coroutines.experimental.channels.toList
 import org.apache.commons.math3.distribution.GeometricDistribution
-import java.util.*
 
 fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig) = this
         .clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay)

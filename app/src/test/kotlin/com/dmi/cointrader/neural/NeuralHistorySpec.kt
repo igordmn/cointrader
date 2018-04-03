@@ -1,7 +1,7 @@
 package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.Spread
-import com.dmi.cointrader.trade.HistoryPeriods
+import com.dmi.cointrader.config.HistoryPeriods
 import com.dmi.util.collection.asSuspend
 import com.dmi.util.test.Spec
 import io.kotlintest.matchers.shouldBe

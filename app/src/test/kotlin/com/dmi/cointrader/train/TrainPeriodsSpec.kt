@@ -2,7 +2,7 @@ package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.Spread
 import com.dmi.cointrader.neural.TradedHistory
-import com.dmi.cointrader.trade.HistoryPeriods
+import com.dmi.cointrader.config.HistoryPeriods
 import com.dmi.util.collection.asSuspend
 import com.dmi.util.concurrent.suspend
 import com.dmi.util.test.Spec

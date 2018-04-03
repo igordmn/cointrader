@@ -1,7 +1,7 @@
 package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.trade.TradeConfig
+import com.dmi.cointrader.config.TradeConfig
 import com.dmi.util.io.ResourceContext
 import com.dmi.util.lang.unsupported
 import jep.Jep

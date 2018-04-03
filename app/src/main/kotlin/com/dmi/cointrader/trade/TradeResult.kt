@@ -3,6 +3,7 @@ package com.dmi.cointrader.trade
 import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.binance.amountsOf
+import com.dmi.cointrader.config.TradeAssets
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR

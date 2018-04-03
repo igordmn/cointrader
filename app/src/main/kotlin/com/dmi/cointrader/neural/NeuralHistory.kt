@@ -1,7 +1,7 @@
 package com.dmi.cointrader.neural
 
 import com.dmi.cointrader.archive.*
-import com.dmi.cointrader.trade.HistoryPeriods
+import com.dmi.cointrader.config.HistoryPeriods
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.collection.coerceIn
 import com.dmi.util.concurrent.map
@@ -9,7 +9,6 @@ import com.dmi.util.concurrent.windowed
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.filterIndexed
 import kotlinx.coroutines.experimental.channels.toList
-import kotlinx.coroutines.experimental.runBlocking
 
 typealias NeuralHistory = List<Spreads>
 

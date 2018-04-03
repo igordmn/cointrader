@@ -8,6 +8,7 @@ import com.dmi.cointrader.broker.Broker
 import com.dmi.cointrader.broker.SafeBroker
 import com.dmi.cointrader.broker.reversed
 import com.dmi.cointrader.broker.safe
+import com.dmi.cointrader.config.TradeAssets
 import com.dmi.cointrader.neural.NeuralHistory
 import com.dmi.cointrader.neural.NeuralNetwork
 import com.dmi.cointrader.neural.Portions
