@@ -19,5 +19,5 @@ data class TrainConfig(
         val logSteps: Int = 1000,
         val logMovingAverageCount: Int = 10,
         val batchSize: Int = 109,
-        val tradePeriodGeometricBias: Double = 5e-6
+        val tradePeriodGeometricBias: Double = 5e-7
 )
