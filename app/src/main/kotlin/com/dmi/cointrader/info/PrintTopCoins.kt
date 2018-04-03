@@ -15,7 +15,10 @@ fun printTopCoins() = runBlocking {
     val days = 30
     val minDayVolume = 200   // in BTC
     val maxByDays = 3
-    val excludedPairs = setOf("BNBBTC", "CTRBTC")
+    val excludedPairs = setOf(
+            "BNBBTC", // BNB for feess
+            "CTRBTC"  // scam ico
+    )
 
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
