@@ -62,7 +62,7 @@ data class TrainResult(val step: Int, val trainDayProfit: Double, val test: Test
     data class Test(val dayProfit: Double, val averageDayProfit: Double?, val hourlyNegativeDeviation: Double, val hourlyMaximumDrawdawn: Double) {
         override fun toString(): String {
             val dayProfit = "%.3f".format(dayProfit)
-            val averageDayProfit = "%.3f".format(averageDayProfit)
+            val averageDayProfit = if (averageDayProfit != null) "%.3f".format(averageDayProfit) else "-----"
             val hourlyNegativeDeviation = "%.5f".format(hourlyNegativeDeviation)
             val hourlyMaximumDrawdawn = "%.2f".format(hourlyMaximumDrawdawn)
             return "$dayProfit $averageDayProfit $hourlyNegativeDeviation $hourlyMaximumDrawdawn"
