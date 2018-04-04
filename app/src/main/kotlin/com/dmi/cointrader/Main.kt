@@ -1,6 +1,7 @@
 package com.dmi.cointrader
 
 import com.dmi.cointrader.archive.downloadArchive
+import com.dmi.cointrader.dl4j.simpleToy
 import com.dmi.cointrader.info.printTopCoins
 import com.dmi.cointrader.trade.askAndPerformRealTrades
 import com.dmi.cointrader.trade.performRealTrades
@@ -14,6 +15,7 @@ fun main(args: Array<String>) {
             "train" -> train()
             "realtrades" -> askAndPerformRealTrades()
             "topcoins" -> printTopCoins()
+            "dl4jtest" -> simpleToy()
         }
     }
 }
