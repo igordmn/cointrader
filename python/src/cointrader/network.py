@@ -63,7 +63,7 @@ def build_best_portfolio(
         filter_size=[1, 2],
         strides=[1, 1],
         padding="valid",
-        activation="leaky_relu",
+        activation="relu",
         regularizer=None,
         weight_decay=0,
         weights_init='xavier'
@@ -73,7 +73,7 @@ def build_best_portfolio(
     net = eiie_dense(
         net,
         filter_number=10,
-        activation_function="leaky_relu",
+        activation_function="relu",
         regularizer="L2",
         weight_decay=5e-9
     )
