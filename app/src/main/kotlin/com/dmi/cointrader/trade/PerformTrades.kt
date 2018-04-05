@@ -40,7 +40,8 @@ suspend fun askAndPerformRealTrades() {
 }
 
 suspend fun performRealTrades() = resourceContext {
-    createDirectories(Paths.get("data/logs"))
+    System.setProperty("log4j.configurationFile", "log4j2-realtrade.xml")
+    createDirectories(Paths.get("data/log"))
     val log = rootLog()
     val config = savedTradeConfig()
     val network = trainedNetwork()
