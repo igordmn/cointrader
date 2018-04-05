@@ -150,7 +150,7 @@ suspend fun performTestTrades(
     }.toList()
 }
 
-suspend fun performTestTradesFast(
+suspend fun performTestTradesAllInFast(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
@@ -189,7 +189,7 @@ suspend fun performTestTradesFast(
     }.toList()
 }
 
-suspend fun performTestTradesFast2(
+suspend fun performTestTradesPartialFast(
         periods: PeriodProgression,
         config: TradeConfig,
         network: NeuralNetwork,
@@ -224,45 +224,4 @@ suspend fun performTestTradesFast2(
 
         capitalAfterFee
     }.toList()
-}
-
-suspend fun performTestTradesFast3(
-        periods: PeriodProgression,
-        config: TradeConfig,
-        network: NeuralNetwork,
-        archive: SuspendList<Spreads>,
-        fee: Double
-): List<Capital> {
-    val histories = tradedHistories(archive, config.historyPeriods, config.tradePeriods.delay, periods).toList()
-    val portfolio = (listOf(1.0) + List(config.assets.alts.size) { 0.0 }).toMutableList()
-    val bestPorfolioA = List(histories.size) { emptyList<Double>() }.toMutableList()
-    bestPorfolioA.indices.forEach {
-        val previous = if (it == 0) {
-            portfolio
-        } else {
-            bestPorfolioA[it - 1]
-        }
-        val best = network.bestPortfolio(previous, histories[it].history)
-        bestPorfolioA[it] = best
-    }
-    var bestPorfolio = bestPorfolioA.toList()
-
-    val asks = histories.map { listOf(1.0) + it.tradeTimeSpreads.map { it.ask } }
-    val bids = histories.map { listOf(1.0) + it.tradeTimeSpreads.map { it.bid } }
-    val prices = asks.zip(bids) { a, b -> a.zip(b) { c, d -> (c + d) / 2.0 } }
-
-    var fees = bids.zip(prices) { a, b -> a.zip(b) { c, d -> 1 - (1.0 - fee) * (c / d) } }
-    var priceIncs = prices.zipWithNext { c, n -> n / c }
-    fees = fees.dropLast(1)
-    bestPorfolio = bestPorfolio.dropLast(1)
-    var futurePortfolio = priceIncs.zip(bestPorfolio) { a, b -> a * b / (a * b).sum() }
-
-    priceIncs = priceIncs.drop(1)
-    fees = fees.drop(1)
-    bestPorfolio = bestPorfolio.drop(1)
-    val current_portfolio = futurePortfolio.dropLast(1)
-    val diff = bestPorfolio.zip(current_portfolio) { a, b -> (a - b).map { abs(it) } }
-    val cost = diff.zip(fees) { a, b -> 1 - (a * b).drop(1).sum() }
-    val profit = priceIncs.zip(bestPorfolio) { a, b -> (a * b).sum() }
-    return profit.zip(cost) { a, b -> a * b }
 }

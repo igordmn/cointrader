@@ -59,20 +59,20 @@ def build_best_portfolio(
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=3,
-        filter_size=[1, 2],
+        nb_filter=6,
+        filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
         activation="relu",
-        regularizer=None,
-        weight_decay=0,
+        regularizer="L2",
+        weight_decay=5e-9,
         weights_init='xavier'
     )
     # net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_dense(
         net,
-        filter_number=10,
+        filter_number=20,
         activation_function="relu",
         regularizer="L2",
         weight_decay=5e-9
@@ -166,7 +166,7 @@ class NeuralTrainer:
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train_tensor = tf.train.AdamOptimizer(0.00028).minimize(loss)
+        self.train_tensor = tf.train.AdamOptimizer(0.00014).minimize(loss)
 
         self.batch_size = network.batch_size
         self.history = network.history

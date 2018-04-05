@@ -1,19 +1,12 @@
 package com.dmi.cointrader.dl4j
 
-import java.io.IOException
-import org.deeplearning4j.rl4j.learning.ILearning
-import org.deeplearning4j.rl4j.learning.Learning
 import org.deeplearning4j.rl4j.learning.async.nstep.discrete.AsyncNStepQLearningDiscrete
 import org.deeplearning4j.rl4j.learning.async.nstep.discrete.AsyncNStepQLearningDiscreteDense
 import org.deeplearning4j.rl4j.learning.sync.qlearning.QLearning
 import org.deeplearning4j.rl4j.learning.sync.qlearning.discrete.QLearningDiscreteDense
-import org.deeplearning4j.rl4j.mdp.MDP
 import org.deeplearning4j.rl4j.mdp.toy.HardDeteministicToy
 import org.deeplearning4j.rl4j.mdp.toy.SimpleToy
-import org.deeplearning4j.rl4j.mdp.toy.SimpleToyState
 import org.deeplearning4j.rl4j.network.dqn.DQNFactoryStdDense
-import org.deeplearning4j.rl4j.network.dqn.IDQN
-import org.deeplearning4j.rl4j.space.DiscreteSpace
 import org.deeplearning4j.rl4j.util.DataManager
 
 var TOY_QL = QLearning.QLConfiguration(
@@ -52,67 +45,33 @@ var TOY_ASYNC_QL = AsyncNStepQLearningDiscrete.AsyncNStepQLConfiguration(
 var TOY_NET: DQNFactoryStdDense.Configuration = DQNFactoryStdDense.Configuration.builder()
         .l2(0.01).learningRate(1e-2).numLayer(3).numHiddenNodes(16).build()
 
-
 fun dl4jtest() {
-    //record the training data in rl4j-data in a new folder
+    hardToy()
+    //toyAsyncNstep()
+}
+
+fun simpleToy() {
     val manager = DataManager()
-
-    //define the mdp from toy (toy length)
     val mdp = SimpleToy(20)
-
-    //define the training method
     val dql = QLearningDiscreteDense(mdp, TOY_NET, TOY_QL, manager)
-
-    //enable some logging for debug purposes on toy mdp
     mdp.setFetchable(dql)
-
-    //start the training
     dql.train()
-
-    //useless on toy but good practice!
     mdp.close()
-
 }
 
 fun hardToy() {
-
-    //record the training data in rl4j-data in a new folder
     val manager = DataManager()
-
-    //define the mdp from toy (toy length)
     val mdp = HardDeteministicToy()
-
-    //define the training
     val dql = QLearningDiscreteDense(mdp, TOY_NET, TOY_QL, manager)
-
-    //start the training
     dql.train()
-
-    //useless on toy but good practice!
     mdp.close()
-
-
 }
 
-
 fun toyAsyncNstep() {
-
-    //record the training data in rl4j-data in a new folder
     val manager = DataManager()
-
-    //define the mdp
     val mdp = SimpleToy(20)
-
-    //define the training
     val dql = AsyncNStepQLearningDiscreteDense(mdp, TOY_NET, TOY_ASYNC_QL, manager)
-
-    //enable some logging for debug purposes on toy mdp
     mdp.setFetchable(dql)
-
-    //start the training
     dql.train()
-
-    //useless on toy but good practice!
     mdp.close()
-
 }

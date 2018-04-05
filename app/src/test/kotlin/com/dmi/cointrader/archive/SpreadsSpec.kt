@@ -9,11 +9,11 @@ class SpreadsSpec: Spec({
     "trades to spreads" - {
         fun List<Trade>.toSpreads(): List<TimeSpread?> {
             val spreads = ArrayList<TimeSpread?>()
-            var billet = this[0].initialSpreadBillet()
-            spreads.add(if (billet.isReady()) billet.build() else null)
+            var spread = this[0].initialSpread()
+            spreads.add(spread)
             for (i in 1 until size) {
-                billet = this[i].nextSpreadBillet(billet)
-                spreads.add(if (billet.isReady()) billet.build() else null)
+                spread = this[i].nextSpread(spread)
+                spreads.add(spread)
             }
             return spreads
         }

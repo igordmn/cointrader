@@ -8,8 +8,8 @@ import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.TradeConfig
-import com.dmi.cointrader.trade.performTestTradesFast
-import com.dmi.cointrader.trade.performTestTradesFast2
+import com.dmi.cointrader.trade.performTestTradesAllInFast
+import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.cointrader.saveTradeConfig
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
@@ -65,7 +65,7 @@ suspend fun train() = resourceContext {
             val xAxis = NumberAxis()
             val yAxis = NumberAxis()
             val series = XYChart.Series<Number, Number>().apply {
-                data.addAll(result.dayProfitsChart.x.zip(result.dayProfitsChart.y) { x, y -> XYChart.Data(x as Number, y as Number) })
+                data.addAll(result.firstTestChart.x.zip(result.firstTestChart.y) { x, y -> XYChart.Data(x as Number, y as Number) })
             }
             val chart = LineChart(xAxis, yAxis).apply {
                 animated = false
@@ -105,8 +105,10 @@ suspend fun train() = resourceContext {
                     movingAverageCount = trainConfig.logMovingAverageCount,
                     previousResults = logResults,
                     trainProfits = trainProfits,
-                    testCapitals = performTestTradesFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                    validationCapitals = performTestTradesFast2(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                    testCapitals = listOf(
+                            performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
+                            performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                    )
             )
             logResults.add(result)
             saveNet(result)
