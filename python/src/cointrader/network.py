@@ -2,6 +2,17 @@ import tflearn
 import tensorflow as tf
 
 
+def lstm(net, alt_asset_number):
+    neuron_number = 10
+    net = tf.transpose(net, [0, 2, 3, 1])
+    resultlist = []
+    for i in range(alt_asset_number):
+        resultlist.append(tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=0.5, scope="lstm1", reuse=i > 0))
+    net = tf.stack(resultlist)
+    net = tf.transpose(net, [1, 0, 2])
+    return tf.reshape(net, [-1, alt_asset_number, 1, neuron_number])
+
+
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
     width = net.get_shape()[2]
     return tflearn.layers.conv_2d(
@@ -49,7 +60,7 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 
 
 def build_best_portfolio(
-        batch_size, history, current_portfolio
+        batch_size, alt_asset_number, history, current_portfolio
 ):
     # [batch, asset, history, indicator]
     net = history
@@ -97,7 +108,7 @@ class NeuralNetwork:
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
-        self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.history, self.current_portfolio)
+        self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history, self.current_portfolio)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
