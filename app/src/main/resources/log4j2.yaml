@@ -5,7 +5,7 @@ Configutation:
       name: SystemOutAppender
       target: SYSTEM_OUT
       PatternLayout:
-        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n"
+        pattern: "%d{yyyy-MM-dd HH:mm:ss} %msg%n"
       Filters:
         ThresholdFilter:
           - level: fatal
@@ -23,7 +23,7 @@ Configutation:
       name: SystemErrAppender
       target: SYSTEM_ERR
       PatternLayout:
-        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n"
+        pattern: "%d{yyyy-MM-dd HH:mm:ss} %msg%n"
       Filters:
         ThresholdFilter:
           - level: fatal
@@ -42,7 +42,7 @@ Configutation:
           - interval: 1
           - modulate: true
       PatternLayout:
-        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %msg%n"
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSSSS} [%thread] %-5level %msg%n"
   Loggers:
     Root:
       level: trace
