@@ -27,7 +27,6 @@ import java.nio.file.Paths
 import javax.imageio.ImageIO
 import com.sun.javafx.application.PlatformImpl
 
-
 suspend fun train() = resourceContext {
     val resultsDir = Paths.get("data/results")
     resultsDir.deleteRecursively()
