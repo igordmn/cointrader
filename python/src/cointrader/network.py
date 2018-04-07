@@ -1,6 +1,13 @@
 import tflearn
 import tensorflow as tf
 
+import numpy as np
+from tensorflow.contrib.layers import batch_norm
+from tensorflow.python.framework import ops
+from tensorflow.python.ops import math_ops
+
+from cointrader.amsgrad import AMSGrad
+
 
 def lstm(net, alt_asset_number):
     neuron_number = 10
@@ -79,7 +86,11 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init='xavier'
     )
-    # net = tflearn.batch_normalization(net, decay=0.99)
+    # net = batch_norm(net, is_training=tflearn.get_training_mode(), decay=0.99)
+    # net = batch_norm(net, is_training=tflearn.get_training_mode(), decay=0.999)
+    # net = batch_norm(net, is_training=tflearn.get_training_mode(), renorm=True, renorm_decay=0.9, decay=0.9,)
+    # net = tflearn.batch_normalization(net, decay=0.999)
+    # net = tflearn.activations.relu(net)
 
     net = eiie_dense(
         net,
@@ -88,7 +99,9 @@ def build_best_portfolio(
         regularizer="L2",
         weight_decay=5e-9
     )
-    # net = tflearn.batch_normalization(net, decay=0.99)
+    # net = batch_norm(net, is_training=tflearn.get_training_mode(), renorm=True, renorm_decay=0.9, decay=0.9,)
+    # net = tflearn.batch_normalization(net, decay=0.999)
+    # net = tflearn.activations.relu(net)
 
     net = eiie_output_withw(
         net,
@@ -167,6 +180,13 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
+def clr(global_step, base_lr=0.00004, max_lr=0.00028 * 2, step_size=5000., decay=0.8):
+    global_step = math_ops.cast(global_step, tf.float32)
+    cycle = tf.floor(1 + global_step / (2 * step_size))
+    x = tf.abs(global_step / step_size - 2 * cycle + 1)
+    return base_lr + (max_lr - base_lr) * tf.maximum(0.0, (1 - x)) * (decay ** cycle)
+
+
 class NeuralTrainer:
     def __init__(self, network, fee):
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
@@ -177,7 +197,14 @@ class NeuralTrainer:
 
         loss = -tf.reduce_mean(tf.log(profits))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-        self.train_tensor = tf.train.AdamOptimizer(0.00014).minimize(loss)
+
+        global_step = tf.Variable(0, trainable=False)
+        learning_rate = clr(global_step)
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, epsilon=1e-9).minimize(loss, global_step=global_step)
+        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
+        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9).minimize(loss, global_step=global_step)
+        # self.train_tensor = AMSGrad(0.01).minimize(loss)
 
         self.batch_size = network.batch_size
         self.history = network.history
