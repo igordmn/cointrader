@@ -200,11 +200,11 @@ class NeuralTrainer:
 
         global_step = tf.Variable(0, trainable=False)
         learning_rate = clr(global_step)
-        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
         # self.train_tensor = tf.train.AdamOptimizer(learning_rate, epsilon=1e-9).minimize(loss, global_step=global_step)
-        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
-        self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9).minimize(loss, global_step=global_step)
-        # self.train_tensor = AMSGrad(0.01).minimize(loss)
+        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9999).minimize(loss, global_step=global_step)
+        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9).minimize(loss, global_step=global_step)
+        # self.train_tensor = AMSGrad(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history
