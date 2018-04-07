@@ -10,7 +10,7 @@ typealias NDFloatArray = NDArray<FloatArray>
 
 fun jep() = Jep(
         JepConfig()
-                .setIncludePath(Paths.get("python/src").toAbsolutePath().toString())
+                .setIncludePath(Paths.get("python").toAbsolutePath().toString())
                 .setRedirectOutputStreams(true)
 ).apply {
     try {
