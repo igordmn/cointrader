@@ -1,13 +1,10 @@
 import tflearn
 import tensorflow as tf
 
-import numpy as np
-from tensorflow.contrib.layers import batch_norm
-from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 
+from cointrader.AdamWOptimizer import AdamWOptimizer
 from cointrader.amsgrad import AMSGrad
-
 
 def lstm(net, alt_asset_number):
     neuron_number = 10
@@ -72,7 +69,10 @@ def build_best_portfolio(
     # [batch, asset, history, indicator]
     net = history
 
-    net = net / net[:, :, -1, 0, None, None]  # divide on last ask
+    last_ask = net[:, :, -1, 0, None, None]
+    last_bid = net[:, :, -1, 1, None, None]
+    last_price = (last_ask + last_bid) / 2.0
+    net = net / last_price
     net = tf.log(net)
 
     net = tflearn.layers.conv_2d(
@@ -180,7 +180,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, base_lr=0.00004, max_lr=0.00028 * 2, step_size=5000., decay=0.8):
+def clr(global_step, base_lr=0.00007, max_lr=0.00028, step_size=8000., decay=0.92):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)
@@ -200,11 +200,10 @@ class NeuralTrainer:
 
         global_step = tf.Variable(0, trainable=False)
         learning_rate = clr(global_step)
+        # learning_rate = tf.train.cosine_decay_restarts(0.00040, global_step, alpha=0.00007, first_decay_steps=1000)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
-        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, epsilon=1e-9).minimize(loss, global_step=global_step)
-        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9999).minimize(loss, global_step=global_step)
-        # self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.9).minimize(loss, global_step=global_step)
-        # self.train_tensor = AMSGrad(learning_rate).minimize(loss, global_step=global_step)
+        # self.train_tensor = AdamWOptimizer(5e-9, learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
+        # self.train_tensor = AMSGrad(learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history
