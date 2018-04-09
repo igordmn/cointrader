@@ -25,7 +25,7 @@ fun ResourceContext.trainedNetwork(): NeuralNetwork {
 }
 
 fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwork {
-    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.alts.size, config.historyPeriods.count), gpuMemoryFraction = 0.5).use()
+    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.alts.size, config.historyPeriods.count), gpuMemoryFraction = 0.2).use()
 }
 
 fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double): NeuralTrainer {
