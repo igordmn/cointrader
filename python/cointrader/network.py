@@ -74,8 +74,8 @@ def normalize_history(history):
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = (last_ask + last_bid) / 2.0
-    history = 1 - history / last_price
-    # history = np.log(history) * 10
+    history = history / last_price
+    history = np.log(history)
 
     return history
 
