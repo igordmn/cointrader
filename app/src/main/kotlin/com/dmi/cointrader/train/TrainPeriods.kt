@@ -80,7 +80,7 @@ class TrainBatches(
             portfolios[indices.toInt()] = portfolioArray
         }
         val history = tradedHistories(archive, historyPeriods, tradeDelayPeriods, batchPeriods).toList()
-        return TrainBatch(portfolio, ::setPortfolio, history)
+        return TrainBatch(portfolio, ::setPortfolio, history, batchPeriods)
     }
 
     private fun PeriodProgression.randomOffset(): PeriodProgression {
@@ -98,5 +98,6 @@ class TrainBatches(
 class TrainBatch(
         val currentPortfolio: PortionsBatch,
         val setCurrentPortfolio: (PortionsBatch) -> Unit,
-        val history: TradedHistoryBatch
+        val history: TradedHistoryBatch,
+        val periods: PeriodProgression
 )

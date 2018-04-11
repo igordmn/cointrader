@@ -16,7 +16,6 @@ import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
-import com.dmi.util.math.geoMean
 import javafx.application.Platform
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Scene
@@ -101,6 +100,8 @@ suspend fun train() = resourceContext {
         it.setCurrentPortfolio(newPortions)
         trainProfits.add(trainProfit)
         if (i % trainConfig.logSteps == 0) {
+            val tradePeriodsPerDay = tradeConfig.periodSpace.periodsPerDay() / tradeConfig.tradePeriods.size.toDouble()
+            println(pow(trainer.test(tradedHistories(archive, tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay, validationPeriods).toList()), tradePeriodsPerDay))
             val result = trainResult(
                     space = tradeConfig.periodSpace,
                     tradePeriods = tradeConfig.tradePeriods.size,

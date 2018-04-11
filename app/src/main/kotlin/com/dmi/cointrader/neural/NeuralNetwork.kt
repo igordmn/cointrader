@@ -144,6 +144,10 @@ class NeuralTrainer(
                 def train(current_portfolio, history, asks, bids):
                     return trainer.train(current_portfolio, history, asks, bids)
             """.trimIndent())
+        jep.eval("""
+                def test(history, asks, bids):
+                    return trainer.test(history, asks, bids)
+            """.trimIndent())
         jep.invoke("create_trainer")
     }
 
@@ -176,6 +180,20 @@ class NeuralTrainer(
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
         return ResultMatrix(newPortions, geometricMeanProfit)
+    }
+
+    fun test(history: TradedHistoryBatch): Double {
+        return test(
+                history.map { it.history }.toNumpy(),
+                history.map { it.tradeTimeSpreads }.toNumpy(Spread::ask),
+                history.map { it.tradeTimeSpreads }.toNumpy(Spread::bid)
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun test(history: NDDoubleArray, asks: NDDoubleArray, bids: NDDoubleArray): Double {
+        val result = jep.invoke("test", history, asks, bids) as Double
+        return result as Double
     }
 
     override fun close() {

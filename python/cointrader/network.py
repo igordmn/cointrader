@@ -1,10 +1,12 @@
 import tflearn
 import tensorflow as tf
+import numpy as np
 
 from tensorflow.python.ops import math_ops
 
 from cointrader.AdamWOptimizer import AdamWOptimizer
 from cointrader.amsgrad import AMSGrad
+
 
 def lstm(net, alt_asset_number):
     neuron_number = 10
@@ -39,7 +41,8 @@ def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
-    return tflearn.layers.core.activation(net, activation="softmax")
+    vote = net
+    return vote, tflearn.layers.core.activation(net, activation="softmax")
 
 
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay):
@@ -60,7 +63,56 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
-    return tflearn.layers.core.activation(net, activation="softmax")
+    vote = net
+    return vote, tflearn.layers.core.activation(net, activation="softmax")
+
+
+def mad(arr):
+    """ Median Absolute Deviation: a "Robust" version of standard deviation.
+        Indices variabililty of the sample.
+        https://en.wikipedia.org/wiki/Median_absolute_deviation
+    """
+    arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
+    med = np.median(arr)
+    return np.median(np.abs(arr - med))
+
+
+def normalize_history(history):
+    usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
+    history = history / usds
+    last_ask = history[:, :, -1, 0, None, None]
+    last_bid = history[:, :, -1, 1, None, None]
+    last_price = (last_ask + last_bid) / 2.0
+    history = history / last_price
+    # history = np.log(history)
+
+    for a in range(history.shape[1]):
+        x = history[:, a, :, :]
+        history[:, a, :, :] = (x - np.mean(x))
+        # history[:, a, :, :] = 0.0001 * (x - np.median(x)) / (0.0000001 + mad(x))
+        # history[:, a, :, :] = (0.5 * x * np.tanh(0.01 * (x - np.mean(x)) / (0.0000001 + np.std(x))) + 0.5)
+
+    return history
+
+
+def normalize_history2(history):
+    usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
+    history = history / usds
+    last_ask = history[:, :, -1, 0, None, None]
+    last_bid = history[:, :, -1, 1, None, None]
+    last_price = (last_ask + last_bid) / 2.0
+    history = history / last_price
+    # history = np.log(history)
+
+    for a in range(history.shape[1]):
+        x = history[:, a, :, :]
+        history[:, a, :, :] = (x - np.mean(x))
+        if a == 2:
+            print(np.mean(x))
+        # history[:, a, :, :] = 0.0001 * (x - np.median(x)) / (0.0000001 + mad(x))
+        # history[:, a, :, :] = (0.5 * x * np.tanh(0.01 * (x - np.mean(x)) / (0.0000001 + np.std(x))) + 0.5)
+
+    return history
 
 
 def build_best_portfolio(
@@ -68,12 +120,6 @@ def build_best_portfolio(
 ):
     # [batch, asset, history, indicator]
     net = history
-
-    last_ask = net[:, :, -1, 0, None, None]
-    last_bid = net[:, :, -1, 1, None, None]
-    last_price = (last_ask + last_bid) / 2.0
-    net = net / last_price
-    net = tf.log(net)
 
     net = tflearn.layers.conv_2d(
         net,
@@ -103,7 +149,7 @@ def build_best_portfolio(
     # net = tflearn.batch_normalization(net, decay=0.999)
     # net = tflearn.activations.relu(net)
 
-    net = eiie_output_withw(
+    vote, net = eiie_output(
         net,
         batch_size,
         current_portfolio,
@@ -111,7 +157,7 @@ def build_best_portfolio(
         weight_decay=5e-8
     )
 
-    return net
+    return vote, net
 
 
 class NeuralNetwork:
@@ -121,7 +167,8 @@ class NeuralNetwork:
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
-        self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history, self.current_portfolio)
+        self.vote, self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history,
+                                                                     self.current_portfolio)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -146,7 +193,7 @@ class NeuralNetwork:
         tflearn.is_training(False, self.session)
         result = self.session.run(self.best_portfolio_tensor, feed_dict={
             self.current_portfolio: current_portfolio,
-            self.history: history,
+            self.history: normalize_history(history),
             self.batch_size: history.shape[0]
         })
         return result
@@ -169,7 +216,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     fees = fees[:-1]
     best_portfolio = best_portfolio[:-1]
     future_portfolio = price_incs * best_portfolio / tf.reduce_sum(price_incs * best_portfolio, axis=1)[:, None]
-    
+
     price_incs = price_incs[1:]
     fees = fees[1:]
     best_portfolio = best_portfolio[1:]
@@ -189,6 +236,10 @@ def clr(global_step, base_lr=0.00007, max_lr=0.00028, step_size=8000., decay=0.9
 
 class NeuralTrainer:
     def __init__(self, network, fee):
+        self.i = 0
+        self.vote = network.vote
+        self.net = network
+
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
         self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 
@@ -225,12 +276,56 @@ class NeuralTrainer:
                 geometric_mean_profit
         """
         tflearn.is_training(True, self.session)
-        results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit], feed_dict={
+        results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit, self.vote], feed_dict={
             self.current_portfolio: current_portfolio,
-            self.history: history,
+            self.history: normalize_history(history),
             self.asks: asks,
             self.bids: bids,
             self.batch_size: history.shape[0]
         })
 
+        if self.i % 1000 == 0:
+            print("" + str(results[3][0][0]) + " " + str(results[3][0][1]) + " " + str(results[3][0][2]) + " " + str(results[3][0][3]))
+        self.i += 1
+
         return results[1], float(results[2])
+
+    def test(self, history, asks, bids):
+        batch_size = history.shape[0]
+
+        p = np.zeros(32)
+        p[0] = 1.0
+
+        best_portfolio = self.net.best_portfolio(np.zeros([batch_size, 31]), history)
+        best_portfolio2 = np.zeros([batch_size, 32])
+        # for i in range(batch_size):
+        #     p = self.net.best_portfolio(p[np.newaxis, 1:], history[i:i + 1, :, :, :])[0]
+        #     best_portfolio2[i] = p
+        best_portfolio2[0] = self.net.best_portfolio(p[np.newaxis, 1:], history[0:0 + 1, :, :, :])[0]
+        best_portfolio3 = self.net.best_portfolio(np.zeros([batch_size, 31]), history)
+        print("normalize_history1 ")
+        print(normalize_history2(history[0:0 + 1, :, :, :])[0])
+        print("normalize_history2 ")
+        print(normalize_history2(history)[0])
+        print("best_portfolio1 " + str(best_portfolio[0][0]) + " " + str(best_portfolio[0][1]))
+        print("best_portfolio2 " + str(best_portfolio2[0][0]) + " " + str(best_portfolio2[0][1]))
+        print("best_portfolio3 " + str(best_portfolio3[0][0]) + " " + str(best_portfolio3[0][1]))
+
+        # best_portfolio = best_portfolio2
+        asks = np.concatenate([np.ones([batch_size, 1]), asks], axis=1)  # add main asset price
+        bids = np.concatenate([np.ones([batch_size, 1]), bids], axis=1)  # add main asset price
+        prices = (asks + bids) / 2.0
+        fees = 1 - (1.0 - 0.0007) * (bids / prices)
+
+        price_incs = prices[1:] / prices[:-1]
+        fees = fees[:-1]
+        best_portfolio = best_portfolio[:-1]
+        future_portfolio = price_incs * best_portfolio / np.sum(price_incs * best_portfolio, axis=1)[:, None]
+
+        price_incs = price_incs[1:]
+        fees = fees[1:]
+        best_portfolio = best_portfolio[1:]
+        current_portfolio = future_portfolio[:-1]
+        cost = 1.0 - np.sum(np.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * fees[:, 1:], axis=1)
+        profit = np.sum(price_incs * best_portfolio, axis=1)
+        return np.prod(profit * cost) ** (1.0 / (batch_size - 2))
