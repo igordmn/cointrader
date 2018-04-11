@@ -8,6 +8,7 @@ import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.TradeConfig
+import com.dmi.cointrader.neural.tradedHistories
 import com.dmi.cointrader.trade.performTestTradesAllInFast
 import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.cointrader.saveTradeConfig
@@ -15,6 +16,7 @@ import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
+import com.dmi.util.math.geoMean
 import javafx.application.Platform
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Scene
@@ -26,6 +28,8 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import javax.imageio.ImageIO
 import com.sun.javafx.application.PlatformImpl
+import kotlinx.coroutines.experimental.channels.toList
+import java.lang.Math.pow
 
 suspend fun train() = resourceContext {
     val resultsDir = Paths.get("data/results")
@@ -101,7 +105,6 @@ suspend fun train() = resourceContext {
                     space = tradeConfig.periodSpace,
                     tradePeriods = tradeConfig.tradePeriods.size,
                     step = i,
-                    movingAverageCount = trainConfig.logMovingAverageCount,
                     previousResults = logResults,
                     trainProfits = trainProfits,
                     testCapitals = listOf(

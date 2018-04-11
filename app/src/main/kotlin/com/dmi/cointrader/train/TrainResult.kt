@@ -12,7 +12,7 @@ fun trainResult(
         space: PeriodSpace,
         tradePeriods: Int,
         step: Int,
-        movingAverageCount: Int,
+        movingAverageCount: Int = 10,
         previousResults: List<TrainResult>,
         trainProfits: Profits,
         testCapitals: List<Capitals>
