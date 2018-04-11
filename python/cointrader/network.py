@@ -249,8 +249,8 @@ class NeuralTrainer:
             self.batch_size: history.shape[0]
         })
 
-        if self.i % 1000 == 0:
-            print("" + str(results[3][0][0]) + " " + str(results[3][0][1]) + " " + str(results[3][0][2]) + " " + str(results[3][0][3]))
+        # if self.i % 1000 == 0:
+        #     print("" + str(results[3][0][0]) + " " + str(results[3][0][1]) + " " + str(results[3][0][2]) + " " + str(results[3][0][3]))
         self.i += 1
 
         return results[1], float(results[2])
