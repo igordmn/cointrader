@@ -2,6 +2,7 @@ import tflearn
 import tensorflow as tf
 import numpy as np
 from statsmodels import robust
+from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
 
@@ -86,6 +87,8 @@ def build_best_portfolio(
     # [batch, asset, history, indicator]
     net = history
 
+    # activation = tf.nn.selu if params.activation == 'selu' else params.activation
+
     net = tflearn.layers.conv_2d(
         net,
         nb_filter=6,
@@ -97,11 +100,6 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init='xavier'
     )
-    # net = batch_norm(net, is_training=tflearn.get_training_mode(), decay=0.99)
-    # net = batch_norm(net, is_training=tflearn.get_training_mode(), decay=0.999)
-    # net = batch_norm(net, is_training=tflearn.get_training_mode(), renorm=True, renorm_decay=0.9, decay=0.9,)
-    # net = tflearn.batch_normalization(net, decay=0.999)
-    # net = tflearn.activations.relu(net)
 
     net = eiie_dense(
         net,
@@ -110,9 +108,6 @@ def build_best_portfolio(
         regularizer="L2",
         weight_decay=5e-9
     )
-    # net = batch_norm(net, is_training=tflearn.get_training_mode(), renorm=True, renorm_decay=0.9, decay=0.9,)
-    # net = tflearn.batch_normalization(net, decay=0.999)
-    # net = tflearn.activations.relu(net)
 
     vote, net = eiie_output_withw(
         net,
@@ -192,7 +187,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 2, step_size=85000., decay=0.92):
+def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 2, step_size=5000., decay=0.92):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)

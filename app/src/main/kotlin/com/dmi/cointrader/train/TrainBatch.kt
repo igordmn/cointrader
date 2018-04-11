@@ -20,7 +20,7 @@ import kotlinx.coroutines.experimental.channels.take
 import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
 
-suspend fun trainBatch() = resourceContext {
+suspend fun trainBatch() {
     val resultsDir = Paths.get("data/resultsBatch")
     resultsDir.deleteRecursively()
     createDirectory(resultsDir)
@@ -28,8 +28,8 @@ suspend fun trainBatch() = resourceContext {
     val resultsDetailLogFile = resultsDir.resolve("resultsDetail.log")
     val resultsShortLogFile = resultsDir.resolve("resultsShort.log")
 
-    val steps = 40000
-    val scoresSkipSteps = 10000
+    val steps = 400
+    val scoresSkipSteps = 100
 
     var num = 0
 
@@ -50,7 +50,7 @@ suspend fun trainBatch() = resourceContext {
             resultsShortLogFile.appendLine(score.toString())
         }
 
-        suspend fun trainSingle(repeat: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double {
+        suspend fun trainSingle(repeat: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double = resourceContext {
             resultsDetailLogFile.appendLine("repeat $repeat")
             resultsShortLogFile.appendLine("repeat $repeat")
 
@@ -85,15 +85,64 @@ suspend fun trainBatch() = resourceContext {
                             )
                     )
                     results.add(result)
+                    print(result.toString())
                     resultsDetailLogFile.appendLine(result.toString())
                     trainProfits = ArrayList(trainConfig.logSteps)
                 }
             }
             fun TrainResult.score() = tests[0].dayProfit
             val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
-            return scores[scores.size * 3 / 4]
+            scores[scores.size * 3 / 4]
         }
     }) {
-        train(TradeConfig(), TrainConfig(logSteps = 300), "{}")
+        fun historyPeriods(count: Int) = TradeConfig().historyPeriods.copy(count = count)
+
+        train(TradeConfig(), TrainConfig(logSteps = 100), "{}")
+        train(TradeConfig(), TrainConfig(logSteps = 100), "{}")
+//        train(TradeConfig(), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 60)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 40)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 30)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 20)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
+//        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
+//        train(TradeConfig(), TrainConfig(batchSize = 40), "{}")
+//        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
+//        train(TradeConfig(), TrainConfig(batchSize = 200), "{}")
+//        train(TradeConfig(), TrainConfig(batchSize = 400), "{}")
+//        train(TradeConfig(), TrainConfig(), "{activation='prelu'}")
+//        train(TradeConfig(), TrainConfig(), "{activation='elu'}")
+//        train(TradeConfig(), TrainConfig(), "{activation='leaky_relu'}")
+//        train(TradeConfig(), TrainConfig(), "{activation='selu'}")
+//        train(TradeConfig(), TrainConfig(), "{activation='crelu'}")
+//        train(TradeConfig(), TrainConfig(), "{activation='relu6'}")
+//        train(TradeConfig(), TrainConfig(), "{kernel_size=7}")
+//        train(TradeConfig(), TrainConfig(), "{kernel_size=3}")
+//        train(TradeConfig(), TrainConfig(), "{kernel_size=2}")
+//        train(TradeConfig(), TrainConfig(), "{nb_filter=20}")
+//        train(TradeConfig(), TrainConfig(), "{nb_filter=12}")
+//        train(TradeConfig(), TrainConfig(), "{nb_filter=10}")
+//        train(TradeConfig(), TrainConfig(), "{nb_filter=8}")
+//        train(TradeConfig(), TrainConfig(), "{nb_filter=3}")
+//        train(TradeConfig(), TrainConfig(), "{filter_number=16}")
+//        train(TradeConfig(), TrainConfig(), "{filter_number=32}")
+//        train(TradeConfig(), TrainConfig(), "{filter_number=12}")
+//        train(TradeConfig(), TrainConfig(), "{filter_number=10}")
+//        train(TradeConfig(), TrainConfig(), "{filter_number=24}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-10}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-8}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-7}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-6}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay_last=5e-10}")
+//        train(TradeConfig(), TrainConfig(), "{weight_decay_last=5e-6}")
+//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028}")
+//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 4}")
+//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 8}")
+//        train(TradeConfig(), TrainConfig(), "{lr_beta=0.99}")
+//        train(TradeConfig(), TrainConfig(), "{lr_beta=0.9}")
+//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-6}")
+//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-4}")
+//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-10}")
     }
 }

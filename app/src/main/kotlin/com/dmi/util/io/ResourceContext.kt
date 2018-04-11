@@ -13,8 +13,8 @@ class ResourceContext: AutoCloseable {
     }
 }
 
-inline fun resourceContext(consume: ResourceContext.() -> Unit) {
-    ResourceContext().use {
+inline fun <T> resourceContext(consume: ResourceContext.() -> T): T {
+    return ResourceContext().use {
         consume(it)
     }
 }
