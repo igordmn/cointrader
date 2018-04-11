@@ -24,7 +24,7 @@ fun ResourceContext.trainedNetwork(): NeuralNetwork {
     return NeuralNetwork.load(jep, dir, gpuMemoryFraction = 0.2).use()
 }
 
-fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig, additionalParams: String = ""): NeuralNetwork {
+fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig, additionalParams: String = "{}"): NeuralNetwork {
     return NeuralNetwork.init(
             jep,
             NeuralNetwork.Config(config.assets.alts.size, config.historyPeriods.count),
@@ -33,7 +33,7 @@ fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig, additionalPar
     ).use()
 }
 
-fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double, additionalParams: String = ""): NeuralTrainer {
+fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double, additionalParams: String = "{}"): NeuralTrainer {
     return NeuralTrainer(jep, net, fee, additionalParams).use()
 }
 
@@ -114,7 +114,7 @@ class NeuralNetwork private constructor(
     )
 
     companion object {
-        fun init(jep: Jep, config: Config, gpuMemoryFraction: Double = 0.2, additionalParams: String = ""): NeuralNetwork {
+        fun init(jep: Jep, config: Config, gpuMemoryFraction: Double = 0.2, additionalParams: String = "{}"): NeuralNetwork {
             return NeuralNetwork(jep, config, gpuMemoryFraction, null, additionalParams)
         }
 
