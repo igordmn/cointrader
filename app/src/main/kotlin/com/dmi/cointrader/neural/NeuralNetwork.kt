@@ -61,7 +61,6 @@ class NeuralNetwork private constructor(
         if (neuralNetworkCreated.getAndSet(true)) {
             unsupported("Two created neural networks doesn't support")
         }
-
         jep.eval("from cointrader.network import NeuralNetwork")
         jep.eval("network = None")
         jep.eval("""

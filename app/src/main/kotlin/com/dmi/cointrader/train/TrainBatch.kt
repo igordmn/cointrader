@@ -21,6 +21,8 @@ import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
 
 suspend fun trainBatch() {
+    val jep = jep()
+
     val resultsDir = Paths.get("data/resultsBatch")
     resultsDir.deleteRecursively()
     createDirectory(resultsDir)
@@ -52,7 +54,6 @@ suspend fun trainBatch() {
 
         suspend fun trainSingle(repeat: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double = resourceContext {
             resultsDetailLogFile.appendLine("repeat $repeat")
-            resultsShortLogFile.appendLine("repeat $repeat")
 
             val binanceExchange = binanceExchangeForInfo()
             require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
@@ -61,12 +62,10 @@ suspend fun trainBatch() {
                     tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
                     reloadCount = tradeConfig.archiveReloadPeriods
             )
-            val jep = jep()
             val net = trainingNetwork(jep, tradeConfig, additionalParams)
             val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
             val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
-
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
             batches.channel().take(steps).consumeEachIndexed { (i, it) ->
@@ -85,7 +84,7 @@ suspend fun trainBatch() {
                             )
                     )
                     results.add(result)
-                    print(result.toString())
+                    println(result.toString())
                     resultsDetailLogFile.appendLine(result.toString())
                     trainProfits = ArrayList(trainConfig.logSteps)
                 }
@@ -97,20 +96,19 @@ suspend fun trainBatch() {
     }) {
         fun historyPeriods(count: Int) = TradeConfig().historyPeriods.copy(count = count)
 
-        train(TradeConfig(), TrainConfig(logSteps = 100), "{}")
-        train(TradeConfig(), TrainConfig(logSteps = 100), "{}")
-//        train(TradeConfig(), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 60)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 40)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 30)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 20)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
-//        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
-//        train(TradeConfig(), TrainConfig(batchSize = 40), "{}")
-//        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
-//        train(TradeConfig(), TrainConfig(batchSize = 200), "{}")
-//        train(TradeConfig(), TrainConfig(batchSize = 400), "{}")
+        train(TradeConfig(), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 60)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 40)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 30)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 20)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
+        train(TradeConfig(), TrainConfig(batchSize = 40), "{}")
+        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(), TrainConfig(batchSize = 200), "{}")
+        train(TradeConfig(), TrainConfig(batchSize = 400), "{}")
+
 //        train(TradeConfig(), TrainConfig(), "{activation='prelu'}")
 //        train(TradeConfig(), TrainConfig(), "{activation='elu'}")
 //        train(TradeConfig(), TrainConfig(), "{activation='leaky_relu'}")

@@ -9,7 +9,7 @@ import java.nio.file.Paths
 typealias NDDoubleArray = NDArray<DoubleArray>
 typealias NDFloatArray = NDArray<FloatArray>
 
-fun ResourceContext.jep(): Jep = Jep(
+fun jep(): Jep = Jep(
         JepConfig()
                 .setIncludePath(Paths.get("python").toAbsolutePath().toString())
                 .setRedirectOutputStreams(true)
@@ -21,4 +21,4 @@ fun ResourceContext.jep(): Jep = Jep(
         close()
         throw e
     }
-}.use()
+}
