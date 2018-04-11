@@ -30,8 +30,6 @@ suspend fun trainBatch() = resourceContext {
 
     val steps = 40000
     val scoresSkipSteps = 10000
-    val repeat = 5
-    val percentile = 3.0 / 4
 
     var num = 0
 
@@ -43,7 +41,7 @@ suspend fun trainBatch() = resourceContext {
             resultsDetailLogFile.appendLine(tradeConfig.toString())
             resultsDetailLogFile.appendLine(trainConfig.toString())
 
-            val score = (1..repeat).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.sorted()[(repeat * percentile).toInt()]
+            val score = (1..3).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.max()
 
             resultsShortLogFile.appendLine("")
             resultsShortLogFile.appendLine("    $num")
@@ -93,7 +91,7 @@ suspend fun trainBatch() = resourceContext {
             }
             fun TrainResult.score() = tests[0].dayProfit
             val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
-            return scores[(scores.size * percentile).toInt()]
+            return scores[scores.size * 3 / 4]
         }
     }) {
         train(TradeConfig(), TrainConfig(logSteps = 250), "{learning_rate: 0.00028}")
