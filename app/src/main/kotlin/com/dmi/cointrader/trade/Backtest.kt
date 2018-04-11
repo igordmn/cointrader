@@ -12,7 +12,6 @@ import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.io.resourceContext
 import java.awt.Desktop
 import java.nio.file.Files
-import java.nio.file.Paths
 
 suspend fun backtest(days: Double) = resourceContext {
     val config = savedTradeConfig()

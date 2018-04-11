@@ -1,6 +1,7 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
+from statsmodels import robust
 
 from tensorflow.python.ops import math_ops
 
@@ -67,50 +68,32 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
     return vote, tflearn.layers.core.activation(net, activation="softmax")
 
 
-def mad(arr):
-    """ Median Absolute Deviation: a "Robust" version of standard deviation.
-        Indices variabililty of the sample.
-        https://en.wikipedia.org/wiki/Median_absolute_deviation
-    """
-    arr = np.ma.array(arr).compressed()  # should be faster to not use masked arrays.
-    med = np.median(arr)
-    return np.median(np.abs(arr - med))
-
-
 def normalize_history(history):
     usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
     history = history / usds
+
+    # history = (history - mean) / (0.00001 + std)
+    # history = (history - median) / (0.00001 + mad)
+
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = (last_ask + last_bid) / 2.0
     history = history / last_price
-    # history = np.log(history)
+    history = np.log(history)
 
-    for a in range(history.shape[1]):
-        x = history[:, a, :, :]
-        history[:, a, :, :] = (x - np.mean(x))
-        # history[:, a, :, :] = 0.0001 * (x - np.median(x)) / (0.0000001 + mad(x))
-        # history[:, a, :, :] = (0.5 * x * np.tanh(0.01 * (x - np.mean(x)) / (0.0000001 + np.std(x))) + 0.5)
+    mean = np.mean(history, axis=(2, 3))[:, :, None, None]
+    std = np.std(history, axis=(2, 3))[:, :, None, None]
+    median = np.median(history, axis=(2, 3))[:, :, None, None]
+    mad = robust.mad(history, axis=(2, 3))[:, :, None, None]
 
-    return history
+    history = history / (0.00001 + std) * 0.001
+    # history = (history - median) #/ (0.00001 + mad)
+    # print("ghkjghkgh")
+    # print(mad)
 
 
-def normalize_history2(history):
-    usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
-    history = history / usds
-    last_ask = history[:, :, -1, 0, None, None]
-    last_bid = history[:, :, -1, 1, None, None]
-    last_price = (last_ask + last_bid) / 2.0
-    history = history / last_price
-    # history = np.log(history)
 
-    for a in range(history.shape[1]):
-        x = history[:, a, :, :]
-        history[:, a, :, :] = (x - np.mean(x))
-        if a == 2:
-            print(np.mean(x))
-        # history[:, a, :, :] = 0.0001 * (x - np.median(x)) / (0.0000001 + mad(x))
-        # history[:, a, :, :] = (0.5 * x * np.tanh(0.01 * (x - np.mean(x)) / (0.0000001 + np.std(x))) + 0.5)
+    # history = (0.5 * history * np.tanh(0.01 * (history - mean) / (0.00001 + std)) + 0.5)
 
     return history
 
@@ -149,7 +132,7 @@ def build_best_portfolio(
     # net = tflearn.batch_normalization(net, decay=0.999)
     # net = tflearn.activations.relu(net)
 
-    vote, net = eiie_output(
+    vote, net = eiie_output_withw(
         net,
         batch_size,
         current_portfolio,
@@ -227,7 +210,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, base_lr=0.00007, max_lr=0.00028, step_size=8000., decay=0.92):
+def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 4, step_size=8000., decay=0.92):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)
@@ -289,43 +272,3 @@ class NeuralTrainer:
         self.i += 1
 
         return results[1], float(results[2])
-
-    def test(self, history, asks, bids):
-        batch_size = history.shape[0]
-
-        p = np.zeros(32)
-        p[0] = 1.0
-
-        best_portfolio = self.net.best_portfolio(np.zeros([batch_size, 31]), history)
-        best_portfolio2 = np.zeros([batch_size, 32])
-        # for i in range(batch_size):
-        #     p = self.net.best_portfolio(p[np.newaxis, 1:], history[i:i + 1, :, :, :])[0]
-        #     best_portfolio2[i] = p
-        best_portfolio2[0] = self.net.best_portfolio(p[np.newaxis, 1:], history[0:0 + 1, :, :, :])[0]
-        best_portfolio3 = self.net.best_portfolio(np.zeros([batch_size, 31]), history)
-        print("normalize_history1 ")
-        print(normalize_history2(history[0:0 + 1, :, :, :])[0])
-        print("normalize_history2 ")
-        print(normalize_history2(history)[0])
-        print("best_portfolio1 " + str(best_portfolio[0][0]) + " " + str(best_portfolio[0][1]))
-        print("best_portfolio2 " + str(best_portfolio2[0][0]) + " " + str(best_portfolio2[0][1]))
-        print("best_portfolio3 " + str(best_portfolio3[0][0]) + " " + str(best_portfolio3[0][1]))
-
-        # best_portfolio = best_portfolio2
-        asks = np.concatenate([np.ones([batch_size, 1]), asks], axis=1)  # add main asset price
-        bids = np.concatenate([np.ones([batch_size, 1]), bids], axis=1)  # add main asset price
-        prices = (asks + bids) / 2.0
-        fees = 1 - (1.0 - 0.0007) * (bids / prices)
-
-        price_incs = prices[1:] / prices[:-1]
-        fees = fees[:-1]
-        best_portfolio = best_portfolio[:-1]
-        future_portfolio = price_incs * best_portfolio / np.sum(price_incs * best_portfolio, axis=1)[:, None]
-
-        price_incs = price_incs[1:]
-        fees = fees[1:]
-        best_portfolio = best_portfolio[1:]
-        current_portfolio = future_portfolio[:-1]
-        cost = 1.0 - np.sum(np.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * fees[:, 1:], axis=1)
-        profit = np.sum(price_incs * best_portfolio, axis=1)
-        return np.prod(profit * cost) ** (1.0 / (batch_size - 2))
