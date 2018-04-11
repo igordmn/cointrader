@@ -86,7 +86,7 @@ def normalize_history(history):
     median = np.median(history, axis=(2, 3))[:, :, None, None]
     mad = robust.mad(history, axis=(2, 3))[:, :, None, None]
 
-    history = history / (0.00001 + std) * 0.001
+    history = history / (0.0000001 + std) * 0.0001
     # history = (history - median) #/ (0.00001 + mad)
     # print("ghkjghkgh")
     # print(mad)

@@ -83,8 +83,7 @@ suspend fun trainBatch() = resourceContext {
                             previousResults = results,
                             trainProfits = trainProfits,
                             testCapitals = listOf(
-                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)

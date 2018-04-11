@@ -55,7 +55,7 @@ class NeuralNetwork private constructor(
         val config: Config,
         gpuMemoryFraction: Double,
         savedFile: Path?,
-        additionalParams: String = ""
+        additionalParams: String = "{}"
 ) : AutoCloseable {
     init {
         if (neuralNetworkCreated.getAndSet(true)) {
@@ -129,7 +129,7 @@ class NeuralTrainer(
         private val jep: Jep,
         private val net: NeuralNetwork,
         fee: Double,
-        additionalParams: String = ""
+        additionalParams: String = "{}"
 ) : AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
