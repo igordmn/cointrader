@@ -30,7 +30,9 @@ suspend fun backtest(days: Int) = resourceContext {
     val periods = (firstPeriod..lastPeriod)
             .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
             .tradePeriods(config.tradePeriods.size)
+
     val results = performTestTrades(periods, config, network, archive, testExchange)
+
     val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
     saveChart(summary.chartData, Paths.get("data/backtest.png"))
     print(summary)
