@@ -12,7 +12,7 @@ import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.io.resourceContext
 import java.nio.file.Paths
 
-suspend fun backtest(days: Int) = resourceContext {
+suspend fun backtest(days: Double) = resourceContext {
     val config = savedTradeConfig()
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()

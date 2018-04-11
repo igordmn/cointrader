@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
             "archive" -> downloadArchive()
             "train" -> train()
             "trainbatch" -> trainBatch()
-            "backtest" -> backtest(days = args[1].toInt())
+            "backtest" -> backtest(days = args[1].toDouble())
             "realtrades" -> askAndPerformRealTrades()
             "topcoins" -> printTopCoins()
             "dl4jtest" -> dl4jtest()
