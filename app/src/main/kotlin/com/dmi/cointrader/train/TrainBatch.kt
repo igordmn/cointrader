@@ -94,6 +94,6 @@ suspend fun trainBatch() = resourceContext {
             return scores[scores.size * 3 / 4]
         }
     }) {
-        train(TradeConfig(), TrainConfig(), "{learning_rate: 0.00028}")
+        train(TradeConfig(), TrainConfig(), "{}")
     }
 }

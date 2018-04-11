@@ -71,35 +71,17 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 def normalize_history(history):
     usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
     history = history / usds
-
-    # history = (history - mean) / (0.00001 + std)
-    # history = (history - median) / (0.00001 + mad)
-
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = (last_ask + last_bid) / 2.0
-    history = history / last_price
-    history = np.log(history)
-
-    mean = np.mean(history, axis=(2, 3))[:, :, None, None]
-    std = np.std(history, axis=(2, 3))[:, :, None, None]
-    median = np.median(history, axis=(2, 3))[:, :, None, None]
-    mad = robust.mad(history, axis=(2, 3))[:, :, None, None]
-
-    history = history / (0.0000001 + std) * 0.0001
-    # history = (history - median) #/ (0.00001 + mad)
-    # print("ghkjghkgh")
-    # print(mad)
-
-
-
-    # history = (0.5 * history * np.tanh(0.01 * (history - mean) / (0.00001 + std)) + 0.5)
+    history = 1 - history / last_price
+    # history = np.log(history) * 10
 
     return history
 
 
 def build_best_portfolio(
-        batch_size, alt_asset_number, history, current_portfolio
+        batch_size, alt_asset_number, history, current_portfolio, params
 ):
     # [batch, asset, history, indicator]
     net = history
@@ -151,7 +133,7 @@ class NeuralNetwork:
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
         self.vote, self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history,
-                                                                     self.current_portfolio)
+                                                                     self.current_portfolio, params)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
