@@ -10,6 +10,8 @@ import com.dmi.cointrader.neural.trainedNetwork
 import com.dmi.cointrader.savedTradeConfig
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.io.resourceContext
+import java.awt.Desktop
+import java.nio.file.Files
 import java.nio.file.Paths
 
 suspend fun backtest(days: Double) = resourceContext {
@@ -34,6 +36,8 @@ suspend fun backtest(days: Double) = resourceContext {
     val results = performTestTrades(periods, config, network, archive, testExchange)
 
     val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
-    saveChart(summary.chartData, Paths.get("data/backtest.png"))
+    val file = Files.createTempFile("", "")
+    saveChart(summary.chartData, file)
     print(summary)
+    Desktop.getDesktop().open(file.toFile())
 }
