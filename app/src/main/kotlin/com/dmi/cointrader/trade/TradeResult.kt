@@ -4,12 +4,13 @@ import com.dmi.cointrader.binance.Asset
 import com.dmi.cointrader.binance.BinanceExchange
 import com.dmi.cointrader.binance.amountsOf
 import com.dmi.cointrader.TradeAssets
+import com.dmi.cointrader.archive.PeriodSpace
+import com.dmi.cointrader.info.ChartData
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.lang.MILLIS_PER_DAY
 import com.dmi.util.lang.MILLIS_PER_HOUR
-import com.dmi.util.math.product
-import com.dmi.util.math.times
-import com.dmi.util.math.toDouble
+import com.dmi.util.lang.times
+import com.dmi.util.math.*
 import java.time.Clock
 import java.time.Duration
 import kotlin.math.pow
@@ -57,6 +58,49 @@ data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalC
             "$asset=$capital"
         }
         return "$totalCapital $mainAsset ($assetCapitals)"
+    }
+}
+
+fun tradeSummary(
+        space: PeriodSpace,
+        tradePeriods: Int,
+        capitals: Capitals,
+        previous: List<TradeSummary>,
+        movingAverageCount: Int = 10
+): TradeSummary {
+    val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
+    val tradeDuration = space.duration * tradePeriods
+    val profits = capitals.profits()
+
+    return TradeSummary(
+            dayProfit = profits.daily(tradeDuration).let(::geoMean),
+            averageDayProfit = if (previous.size >= movingAverageCount) {
+                geoMean(previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfit })
+            } else {
+                null
+            },
+            downsideDeviation = profits.let(::downsideDeviation),
+            maximumDrawdawn = profits.let(::maximumDrawdawn),
+            chartData = run {
+                val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
+                ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
+            }
+    )
+}
+
+data class TradeSummary(
+        val dayProfit: Double,
+        val averageDayProfit: Double?,
+        val downsideDeviation: Double,
+        val maximumDrawdawn: Double,
+        val chartData: ChartData
+) {
+    override fun toString(): String {
+        val dayProfit = "%.3f".format(dayProfit)
+        val averageDayProfit = if (averageDayProfit != null) "%.3f".format(averageDayProfit) else "-----"
+        val negativeDeviation = "%.5f".format(downsideDeviation)
+        val maximumDrawdawn = "%.2f".format(maximumDrawdawn)
+        return "$dayProfit $averageDayProfit $negativeDeviation $maximumDrawdawn"
     }
 }
 

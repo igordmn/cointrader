@@ -5,6 +5,7 @@ import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.periods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
+import com.dmi.cointrader.info.saveChart
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
@@ -16,16 +17,9 @@ import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
-import javafx.application.Platform
-import javafx.embed.swing.SwingFXUtils
-import javafx.scene.Scene
-import javafx.scene.chart.LineChart
-import javafx.scene.chart.NumberAxis
-import javafx.scene.chart.XYChart
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
-import javax.imageio.ImageIO
 
 suspend fun train() = resourceContext {
     val resultsDir = Paths.get("data/results")
@@ -59,31 +53,9 @@ suspend fun train() = resourceContext {
 
     PlatformImpl.startup({})
 
-    fun saveChart(result: TrainResult) {
-        Platform.runLater {
-            val xAxis = NumberAxis()
-            val yAxis = NumberAxis()
-            val series = XYChart.Series<Number, Number>().apply {
-                data.addAll(result.firstTestChart.x.zip(result.firstTestChart.y) { x, y -> XYChart.Data(x as Number, y as Number) })
-            }
-            val chart = LineChart(xAxis, yAxis).apply {
-                animated = false
-                createSymbols = false
-                data.add(series)
-                isLegendVisible = false
-            }
-            val scene = Scene(chart, 1600.0, 900.0)
-            val image = scene.snapshot(null)
-
-            chartFile(result.step).toFile().outputStream().buffered().use {
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", it)
-            }
-        }
-    }
-
     fun saveNet(result: TrainResult) {
         net.save(netDir(result.step))
-        saveChart(result)
+        saveChart(result.tests[0].chartData, chartFile(result.step))
         resultsLogFile.appendLine(result.toString())
         println(result.toString())
     }
