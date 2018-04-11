@@ -1,21 +1,21 @@
 package com.dmi.cointrader.train
 
+import com.dmi.cointrader.TradeConfig
+import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.periods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
-import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
-import com.dmi.cointrader.TradeConfig
-import com.dmi.cointrader.neural.tradedHistories
+import com.dmi.cointrader.saveTradeConfig
 import com.dmi.cointrader.trade.performTestTradesAllInFast
 import com.dmi.cointrader.trade.performTestTradesPartialFast
-import com.dmi.cointrader.saveTradeConfig
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
+import com.sun.javafx.application.PlatformImpl
 import javafx.application.Platform
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Scene
@@ -23,24 +23,21 @@ import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
-import java.nio.file.Files
+import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
 import javax.imageio.ImageIO
-import com.sun.javafx.application.PlatformImpl
-import kotlinx.coroutines.experimental.channels.toList
-import java.lang.Math.pow
 
 suspend fun train() = resourceContext {
     val resultsDir = Paths.get("data/results")
     resultsDir.deleteRecursively()
-    Files.createDirectory(resultsDir)
+    createDirectory(resultsDir)
 
     val networksDir = resultsDir.resolve("networks")
-    Files.createDirectory(networksDir)
+    createDirectory(networksDir)
     fun netDir(step: Int) = networksDir.resolve(step.toString())
 
     val chartsDir = resultsDir.resolve("charts")
-    Files.createDirectory(chartsDir)
+    createDirectory(chartsDir)
     fun chartFile(step: Int) = chartsDir.resolve("$step.png")
 
     val resultsLogFile = resultsDir.resolve("results.log")
@@ -94,26 +91,24 @@ suspend fun train() = resourceContext {
     saveTradeConfig(tradeConfig)
 
     var trainProfits = ArrayList<Double>(trainConfig.logSteps)
-    val logResults = ArrayList<TrainResult>()
+    val results = ArrayList<TrainResult>()
     batches.channel().consumeEachIndexed { (i, it) ->
         val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
         it.setCurrentPortfolio(newPortions)
         trainProfits.add(trainProfit)
         if (i % trainConfig.logSteps == 0) {
-            val tradePeriodsPerDay = tradeConfig.periodSpace.periodsPerDay() / tradeConfig.tradePeriods.size.toDouble()
-            println(pow(trainer.test(tradedHistories(archive, tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay, validationPeriods).toList()), tradePeriodsPerDay))
             val result = trainResult(
                     space = tradeConfig.periodSpace,
                     tradePeriods = tradeConfig.tradePeriods.size,
                     step = i,
-                    previousResults = logResults,
+                    previousResults = results,
                     trainProfits = trainProfits,
                     testCapitals = listOf(
                             performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
                             performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                     )
             )
-            logResults.add(result)
+            results.add(result)
             saveNet(result)
             trainProfits = ArrayList(trainConfig.logSteps)
         }

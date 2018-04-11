@@ -8,6 +8,8 @@ import com.dmi.util.math.geoMean
 import com.dmi.util.math.maximumDrawdawn
 import kotlin.math.pow
 
+typealias TrainScore = Double
+
 fun trainResult(
         space: PeriodSpace,
         tradePeriods: Int,

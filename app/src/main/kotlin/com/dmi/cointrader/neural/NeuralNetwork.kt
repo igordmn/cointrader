@@ -112,7 +112,7 @@ class NeuralNetwork private constructor(
             return NeuralNetwork(jep, config, gpuMemoryFraction, null)
         }
 
-        fun load(jep: Jep, directory: Path, gpuMemoryFraction: Double = 0.2): NeuralNetwork {
+        fun load(jep: Jep, directory: Path, gpuMemoryFraction: Double = 0.5): NeuralNetwork {
             val config: Config = load(Files.readAllBytes(directory.resolve("config")))
             return NeuralNetwork(jep, config, gpuMemoryFraction, directory.resolve("net"))
         }
