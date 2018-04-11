@@ -1,5 +1,6 @@
 package com.dmi.cointrader.train
 
+import com.dmi.cointrader.HistoryPeriods
 import com.dmi.cointrader.TradeConfig
 import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
@@ -32,21 +33,28 @@ suspend fun trainBatch() = resourceContext {
     val repeat = 5
     val percentile = 3.0 / 4
 
+    var num = 0
+
     with(object{
         suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
+            num++
             resultsDetailLogFile.appendLine("")
+            resultsDetailLogFile.appendLine("    $num")
             resultsDetailLogFile.appendLine(tradeConfig.toString())
             resultsDetailLogFile.appendLine(trainConfig.toString())
+
+            val score = (1..repeat).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.sorted()[(repeat * percentile).toInt()]
+
             resultsShortLogFile.appendLine("")
+            resultsShortLogFile.appendLine("    $num")
             resultsShortLogFile.appendLine(tradeConfig.toString())
             resultsShortLogFile.appendLine(trainConfig.toString())
-            val score = (1..repeat).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.sorted()[(repeat * percentile).toInt()]
             resultsShortLogFile.appendLine(score.toString())
         }
 
-        suspend fun trainSingle(num: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double {
-            resultsDetailLogFile.appendLine("$num")
-            resultsShortLogFile.appendLine("$num")
+        suspend fun trainSingle(repeat: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double {
+            resultsDetailLogFile.appendLine("repeat $repeat")
+            resultsShortLogFile.appendLine("repeat $repeat")
 
             val binanceExchange = binanceExchangeForInfo()
             require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
@@ -89,6 +97,6 @@ suspend fun trainBatch() = resourceContext {
             return scores[(scores.size * percentile).toInt()]
         }
     }) {
-        train(TradeConfig(), TrainConfig(), "{learning_rate: 0.00028}")
+        train(TradeConfig(), TrainConfig(logSteps = 250), "{learning_rate: 0.00028}")
     }
 }
