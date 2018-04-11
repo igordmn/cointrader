@@ -42,6 +42,7 @@ suspend fun trainBatch() {
             resultsDetailLogFile.appendLine("    $num")
             resultsDetailLogFile.appendLine(tradeConfig.toString())
             resultsDetailLogFile.appendLine(trainConfig.toString())
+            resultsDetailLogFile.appendLine(additionalParams)
 
             val score = (1..3).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.max()
 
@@ -49,6 +50,7 @@ suspend fun trainBatch() {
             resultsShortLogFile.appendLine("    $num")
             resultsShortLogFile.appendLine(tradeConfig.toString())
             resultsShortLogFile.appendLine(trainConfig.toString())
+            resultsShortLogFile.appendLine(additionalParams)
             resultsShortLogFile.appendLine(score.toString())
         }
 
