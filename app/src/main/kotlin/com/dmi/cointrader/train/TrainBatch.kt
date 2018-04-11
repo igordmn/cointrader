@@ -33,18 +33,18 @@ suspend fun trainBatch() = resourceContext {
     val percentile = 3.0 / 4
 
     with(object{
-        suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig) {
+        suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
             resultsDetailLogFile.appendLine("")
             resultsDetailLogFile.appendLine(tradeConfig.toString())
             resultsDetailLogFile.appendLine(trainConfig.toString())
             resultsShortLogFile.appendLine("")
             resultsShortLogFile.appendLine(tradeConfig.toString())
             resultsShortLogFile.appendLine(trainConfig.toString())
-            val score = (1..repeat).map { trainSingle(it, tradeConfig, trainConfig) }.sorted()[(repeat * percentile).toInt()]
+            val score = (1..repeat).map { trainSingle(it, tradeConfig, trainConfig, additionalParams) }.sorted()[(repeat * percentile).toInt()]
             resultsShortLogFile.appendLine(score.toString())
         }
 
-        suspend fun trainSingle(num: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig): Double {
+        suspend fun trainSingle(num: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double {
             resultsDetailLogFile.appendLine("$num")
             resultsShortLogFile.appendLine("$num")
 
@@ -56,8 +56,8 @@ suspend fun trainBatch() = resourceContext {
                     reloadCount = tradeConfig.archiveReloadPeriods
             )
             val jep = jep()
-            val net = trainingNetwork(jep, tradeConfig)
-            val trainer = networkTrainer(jep, net, trainConfig.fee)
+            val net = trainingNetwork(jep, tradeConfig, additionalParams)
+            val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
             val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
 
@@ -89,6 +89,6 @@ suspend fun trainBatch() = resourceContext {
             return scores[(scores.size * percentile).toInt()]
         }
     }) {
-        train(TradeConfig(), TrainConfig())
+        train(TradeConfig(), TrainConfig(), "{learning_rate: 0.00028}")
     }
 }

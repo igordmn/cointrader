@@ -24,12 +24,17 @@ fun ResourceContext.trainedNetwork(): NeuralNetwork {
     return NeuralNetwork.load(jep, dir, gpuMemoryFraction = 0.2).use()
 }
 
-fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig): NeuralNetwork {
-    return NeuralNetwork.init(jep, NeuralNetwork.Config(config.assets.alts.size, config.historyPeriods.count), gpuMemoryFraction = 0.5).use()
+fun ResourceContext.trainingNetwork(jep: Jep, config: TradeConfig, additionalParams: String = ""): NeuralNetwork {
+    return NeuralNetwork.init(
+            jep,
+            NeuralNetwork.Config(config.assets.alts.size, config.historyPeriods.count),
+            gpuMemoryFraction = 0.5,
+            additionalParams = additionalParams
+    ).use()
 }
 
-fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double): NeuralTrainer {
-    return NeuralTrainer(jep, net, fee).use()
+fun ResourceContext.networkTrainer(jep: Jep, net: NeuralNetwork, fee: Double, additionalParams: String = ""): NeuralTrainer {
+    return NeuralTrainer(jep, net, fee, additionalParams).use()
 }
 
 typealias Portions = List<Double>
@@ -49,7 +54,8 @@ class NeuralNetwork private constructor(
         private val jep: Jep,
         val config: Config,
         gpuMemoryFraction: Double,
-        savedFile: Path?
+        savedFile: Path?,
+        additionalParams: String = ""
 ) : AutoCloseable {
     init {
         if (neuralNetworkCreated.getAndSet(true)) {
@@ -61,7 +67,7 @@ class NeuralNetwork private constructor(
         jep.eval("""
                 def create_network(alt_asset_number, history_size, gpu_memory_fraction, saved_file):
                     global network
-                    network = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file)
+                    network = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file, $additionalParams)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(current_portfolio, history):
@@ -108,8 +114,8 @@ class NeuralNetwork private constructor(
     )
 
     companion object {
-        fun init(jep: Jep, config: Config, gpuMemoryFraction: Double = 0.2): NeuralNetwork {
-            return NeuralNetwork(jep, config, gpuMemoryFraction, null)
+        fun init(jep: Jep, config: Config, gpuMemoryFraction: Double = 0.2, additionalParams: String = ""): NeuralNetwork {
+            return NeuralNetwork(jep, config, gpuMemoryFraction, null, additionalParams)
         }
 
         fun load(jep: Jep, directory: Path, gpuMemoryFraction: Double = 0.5): NeuralNetwork {
@@ -122,7 +128,8 @@ class NeuralNetwork private constructor(
 class NeuralTrainer(
         private val jep: Jep,
         private val net: NeuralNetwork,
-        fee: Double
+        fee: Double,
+        additionalParams: String = ""
 ) : AutoCloseable {
     init {
         if (neuralTrainerCreated.getAndSet(true)) {
@@ -138,7 +145,7 @@ class NeuralTrainer(
                 def create_trainer():
                     global trainer
                     global network
-                    trainer = NeuralTrainer(network, $fee)
+                    trainer = NeuralTrainer(network, $fee, $additionalParams)
             """.trimIndent())
         jep.eval("""
                 def train(current_portfolio, history, asks, bids):
@@ -193,7 +200,7 @@ private fun List<NeuralHistory>.toNumpy(): NDDoubleArray {
     val historyCount = first().size
     val assetCount = first().first().size
 
-    val data = DoubleArray(batchCount * assetCount * historyCount* historyIndicatorNumber)
+    val data = DoubleArray(batchCount * assetCount * historyCount * historyIndicatorNumber)
     var k = 0
     for (b in this) {
         for (a in 0 until assetCount) {

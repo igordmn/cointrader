@@ -144,7 +144,7 @@ def build_best_portfolio(
 
 
 class NeuralNetwork:
-    def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file):
+    def __init__(self, alt_asset_number, history_size, history_indicator_number, gpu_memory_fraction, saved_file, params):
         tflearn.config.init_training_mode()
         self.alt_asset_number = alt_asset_number
         self.batch_size = tf.placeholder(tf.int32, shape=[])
@@ -218,7 +218,7 @@ def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 4, step_size=8000., decay
 
 
 class NeuralTrainer:
-    def __init__(self, network, fee):
+    def __init__(self, network, fee, params):
         self.i = 0
         self.vote = network.vote
         self.net = network
