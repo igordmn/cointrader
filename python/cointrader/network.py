@@ -192,7 +192,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 4, step_size=8000., decay=0.92):
+def clr(global_step, base_lr=0.00007, max_lr=0.00028, step_size=8000., decay=0.92):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)
