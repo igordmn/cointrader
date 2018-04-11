@@ -181,6 +181,8 @@ fun mainTask(name: String) = task(name, JavaExec::class) {
 
 mainTask("archive")
 mainTask("train")
+mainTask("trainbatch")
+mainTask("backtest")
 mainTask("realtrades")
 mainTask("topcoins")
 mainTask("dl4jtest")
