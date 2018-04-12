@@ -1,6 +1,7 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
 
@@ -111,7 +112,7 @@ def build_best_portfolio(
     net = eiie_dense(
         net,
         filter_number=filter_number,
-        activation_function="relu",
+        activation_function=activation,
         regularizer="L2",
         weight_decay=weight_decay,
         weights_init=weights_init
