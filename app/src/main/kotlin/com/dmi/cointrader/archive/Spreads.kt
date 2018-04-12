@@ -11,6 +11,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import java.nio.ByteBuffer
 import java.time.Instant
+import kotlin.math.exp
+import kotlin.math.ln
 
 @Serializable
 data class Spread(val ask: Double, val bid: Double) {
@@ -20,9 +22,24 @@ data class Spread(val ask: Double, val bid: Double) {
 }
 
 @Serializable
+data class SpreadN(val ask: Double, val bid: Double, val avgAsk: Double, val avgBid: Double) {
+    init {
+        require(ask >= bid)
+        require(avgAsk >= avgBid)
+    }
+}
+
+@Serializable
 data class TimeSpread(
         @Serializable(with = InstantSerializer::class) val time: Instant,
-        val spread: Spread)
+        val spread: Spread
+)
+
+@Serializable
+data class TimeSpreadN(
+        @Serializable(with = InstantSerializer::class) val time: Instant,
+        val spread: SpreadN
+)
 
 @Serializable
 data class PeriodSpread(val period: Period, val spread: Spread)
@@ -49,6 +66,40 @@ fun Trade.nextSpread(previous: TimeSpread): TimeSpread {
     }
 
     return TimeSpread(time, Spread(lastAsk, lastBid))
+}
+
+fun Trade.initialSpreadN() = TimeSpreadN(time, SpreadN(price, price, price, price))
+
+fun Trade.nextSpreadN(previous: TimeSpread): TimeSpreadN {
+    val lastAsk: Double?
+    val lastBid: Double?
+    if (isMakerBuyer) {
+        lastBid = price
+        lastAsk = if (price > previous.spread.ask) {
+            price
+        } else {
+            previous.spread.ask
+        }
+    } else {
+        lastAsk = price
+        lastBid = if (price < previous.spread.bid) {
+            price
+        } else {
+            previous.spread.bid
+        }
+    }
+
+    val avgBias = 0.1
+    val price = (lastAsk + lastBid) / 2.0
+    val cost = ln(lastBid / price)
+    val previousAvgPrice = (previous.spread.ask + previous.spread.bid) / 2.0
+    val previousAvgCost = ln(previous.spread.bid / previousAvgPrice)
+    val avgPrice = avgBias * price + (1 - avgBias) * previousAvgPrice
+    val avgCost = avgBias * cost + (1 - avgBias) * previousAvgCost
+    val avgBid = avgPrice * exp(avgCost)
+    val avgAsk = 2 * avgPrice - avgBid
+
+    return TimeSpreadN(time, SpreadN(lastAsk, lastBid, avgAsk, avgBid))
 }
 
 fun <SOURCE_STATE> spreadsStateSerializer(source: KSerializer<SOURCE_STATE>) =

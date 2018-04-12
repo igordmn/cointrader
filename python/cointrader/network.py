@@ -1,12 +1,9 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
-from statsmodels import robust
-from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
 
-from cointrader.AdamWOptimizer import AdamWOptimizer
 from cointrader.amsgrad import AMSGrad
 
 
@@ -21,23 +18,23 @@ def lstm(net, alt_asset_number):
     return tf.reshape(net, [-1, alt_asset_number, 1, neuron_number])
 
 
-def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay):
+def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay, weights_init):
     width = net.get_shape()[2]
     return tflearn.layers.conv_2d(
         net, filter_number, [1, width], [1, 1], "valid", activation_function,
         regularizer=regularizer, weight_decay=weight_decay,
-        weights_init='xavier'
+        weights_init=weights_init
     )
 
 
-def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
+def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
     width = net.get_shape()[2]
     net = tflearn.layers.conv_2d(
         net, 1, [1, width],
         padding="valid",
         regularizer=regularizer,
         weight_decay=weight_decay,
-        weights_init='xavier'
+        weights_init=weights_init
     )
     net = net[:, :, 0, 0]
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
@@ -47,7 +44,7 @@ def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay):
     return vote, tflearn.layers.core.activation(net, activation="softmax")
 
 
-def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay):
+def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
     width = net.get_shape()[2]
     height = net.get_shape()[1]
     features = net.get_shape()[3]
@@ -59,7 +56,7 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
         padding="valid",
         regularizer=regularizer,
         weight_decay=weight_decay,
-        weights_init='xavier'
+        weights_init=weights_init
     )
     net = net[:, :, 0, 0]
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
@@ -87,26 +84,36 @@ def build_best_portfolio(
     # [batch, asset, history, indicator]
     net = history
 
-    # activation = tf.nn.selu if params.activation == 'selu' else params.activation
+    activation = params.get('activation', 'relu')
+    kernel_size = params.get('kernel_size', 5)
+    weights_init = params.get('init', 'xavier')
+    nb_filter = params.get('nb_filter', 6)
+    filter_number = params.get('filter_number', 20)
+    weight_decay = params.get('weight_decay', 5e-9)
+    weight_decay_last = params.get('weight_decay_last', 5e-8)
+
+    if activation == 'selu':
+        activation = tf.nn.selu
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=6,
-        filter_size=[1, 5],
+        nb_filter=nb_filter,
+        filter_size=[1, kernel_size],
         strides=[1, 1],
         padding="valid",
-        activation="relu",
+        activation=activation,
         regularizer="L2",
-        weight_decay=5e-9,
-        weights_init='xavier'
+        weight_decay=weight_decay,
+        weights_init=weights_init
     )
 
     net = eiie_dense(
         net,
-        filter_number=20,
+        filter_number=filter_number,
         activation_function="relu",
         regularizer="L2",
-        weight_decay=5e-9
+        weight_decay=weight_decay,
+        weights_init=weights_init
     )
 
     vote, net = eiie_output_withw(
@@ -114,7 +121,8 @@ def build_best_portfolio(
         batch_size,
         current_portfolio,
         regularizer="L2",
-        weight_decay=5e-8
+        weight_decay=weight_decay_last,
+        weights_init=weights_init
     )
 
     return vote, net
@@ -187,11 +195,11 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, base_lr=0.00007, max_lr=0.00028 * 2, step_size=5000., decay=0.92):
+def clr(global_step, min, max, step_size=5000., decay=0.92):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)
-    return base_lr + (max_lr - base_lr) * tf.maximum(0.0, (1 - x)) * (decay ** cycle)
+    return min + (max - min) * tf.maximum(0.0, (1 - x)) * (decay ** cycle)
 
 
 class NeuralTrainer:
@@ -210,11 +218,13 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        learning_rate = clr(global_step)
-        # learning_rate = tf.train.cosine_decay_restarts(0.00040, global_step, alpha=0.00007, first_decay_steps=1000)
-        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
-        # self.train_tensor = AdamWOptimizer(5e-9, learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
-        # self.train_tensor = AMSGrad(learning_rate, beta2=0.99).minimize(loss, global_step=global_step)
+        lr_min = params.get('lr_min', 0.00007)
+        lr_max = params.get('lr_max', 0.00028 * 2)
+        lr_beta2 = params.get('lr_beta2', 0.999)
+        lr_epsilon = params.get('lr_epsilon', 1e-8)
+        learning_rate = clr(global_step, min=lr_min, max=lr_max)
+
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=lr_beta2, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history

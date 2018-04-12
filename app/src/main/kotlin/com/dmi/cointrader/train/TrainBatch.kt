@@ -34,12 +34,12 @@ suspend fun trainBatch() {
     val steps = 40000
     val scoresSkipSteps = 10000
     val breakSteps = 20000
-    val breakProfit = 1.04
+    val breakProfit = 1.05
     val repeats = 3
 
     var num = 0
 
-    with(object{
+    with(object {
         suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
             num++
             resultsDetailLogFile.appendLine("")
@@ -48,10 +48,15 @@ suspend fun trainBatch() {
             resultsDetailLogFile.appendLine(trainConfig.toString())
             resultsDetailLogFile.appendLine(additionalParams)
 
-            val score = (1..repeats).map {
-                resultsDetailLogFile.appendLine("repeat $it")
-                trainSingle(it, tradeConfig, trainConfig, additionalParams)
-            }.max()
+            val score = try {
+                (1..repeats).map {
+                    resultsDetailLogFile.appendLine("repeat $it")
+                    trainSingle(it, tradeConfig, trainConfig, additionalParams)
+                }.max()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                0.0
+            }
 
             resultsShortLogFile.appendLine("")
             resultsShortLogFile.appendLine("    $num")
@@ -96,7 +101,7 @@ suspend fun trainBatch() {
                     resultsDetailLogFile.appendLine(result.toString())
                     trainProfits = ArrayList(trainConfig.logSteps)
 
-                    if (i >= breakSteps && !results.any { it.tests[0].dayProfit >= breakProfit  }) {
+                    if (i >= breakSteps && !results.any { it.tests[0].dayProfit >= breakProfit }) {
                         channel.cancel()
                     }
                 }
@@ -110,55 +115,52 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-//        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods2(5), tradePeriods = tradePeriods(5)), TrainConfig(batchSize = 109), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods2(10), tradePeriods = tradePeriods(10)), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods2(30), tradePeriods = tradePeriods(30)), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(14), tradePeriods = tradePeriods(14)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
 
-//        train(TradeConfig(), TrainConfig(), "{init='variance_scaling'}")
-//        train(TradeConfig(), TrainConfig(), "{init='truncated_normal'}")
-//        train(TradeConfig(), TrainConfig(), "{init='normal'}")
-//        train(TradeConfig(), TrainConfig(), "{init='uniform_scaling'}")
-//        train(TradeConfig(), TrainConfig(), "{init='uniform_scaling'}")
-//        train(TradeConfig(), TrainConfig(), "{init='uniform'}")
-//        train(TradeConfig(), TrainConfig(), "{init='zeros'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='prelu'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='elu'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='leaky_relu'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='selu'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='crelu'}")
-//        train(TradeConfig(), TrainConfig(), "{activation='relu6'}")
-//        train(TradeConfig(), TrainConfig(), "{kernel_size=7}")
-//        train(TradeConfig(), TrainConfig(), "{kernel_size=3}")
-//        train(TradeConfig(), TrainConfig(), "{kernel_size=2}")
-//        train(TradeConfig(), TrainConfig(), "{nb_filter=20}")
-//        train(TradeConfig(), TrainConfig(), "{nb_filter=12}")
-//        train(TradeConfig(), TrainConfig(), "{nb_filter=10}")
-//        train(TradeConfig(), TrainConfig(), "{nb_filter=8}")
-//        train(TradeConfig(), TrainConfig(), "{nb_filter=3}")
-//        train(TradeConfig(), TrainConfig(), "{filter_number=16}")
-//        train(TradeConfig(), TrainConfig(), "{filter_number=32}")
-//        train(TradeConfig(), TrainConfig(), "{filter_number=12}")
-//        train(TradeConfig(), TrainConfig(), "{filter_number=10}")
-//        train(TradeConfig(), TrainConfig(), "{filter_number=24}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-10}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-8}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-7}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay=5e-6}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay_last=5e-10}")
-//        train(TradeConfig(), TrainConfig(), "{weight_decay_last=5e-6}")
-//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028}")
-//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 4}")
-//        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 8}")
-//        train(TradeConfig(), TrainConfig(), "{lr_min=0.00014}")
-//        train(TradeConfig(), TrainConfig(), "{lr_min=0.00014, lr_max=0.00042}")
-//        train(TradeConfig(), TrainConfig(), "{lr_beta=0.99}")
-//        train(TradeConfig(), TrainConfig(), "{lr_beta=0.9}")
-//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-6}")
-//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-4}")
-//        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-10}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='variance_scaling'}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='truncated_normal'}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='normal'}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='uniform_scaling'}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='uniform'}")
+//        train(TradeConfig(), TrainConfig(), "{'init'='zeros'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='prelu'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='elu'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='leaky_relu'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='selu'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='crelu'}")
+//        train(TradeConfig(), TrainConfig(), "{'activation'='relu6'}")
+//        train(TradeConfig(), TrainConfig(), "{'kernel_size'=7}")
+//        train(TradeConfig(), TrainConfig(), "{'kernel_size'=3}")
+//        train(TradeConfig(), TrainConfig(), "{'kernel_size'=2}")
+//        train(TradeConfig(), TrainConfig(), "{'nb_filter'=20}")
+//        train(TradeConfig(), TrainConfig(), "{'nb_filter'=12}")
+//        train(TradeConfig(), TrainConfig(), "{'nb_filter'=10}")
+//        train(TradeConfig(), TrainConfig(), "{'nb_filter'=8}")
+//        train(TradeConfig(), TrainConfig(), "{'nb_filter'=3}")
+//        train(TradeConfig(), TrainConfig(), "{'filter_number'=16}")
+//        train(TradeConfig(), TrainConfig(), "{'filter_number'=32}")
+//        train(TradeConfig(), TrainConfig(), "{'filter_number'=12}")
+//        train(TradeConfig(), TrainConfig(), "{'filter_number'=10}")
+//        train(TradeConfig(), TrainConfig(), "{'filter_number'=24}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay'=5e-10}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay'=5e-8}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay'=5e-7}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay'=5e-6}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay_last'=5e-10}")
+//        train(TradeConfig(), TrainConfig(), "{'weight_decay_last'=5e-6}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_max'=0.00028}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_max'=0.00028 * 4}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_max'=0.00028 * 8}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_min'=0.00014}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_min'=0.00014, 'lr_max'=0.00042}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_beta2'=0.99}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_beta2'=0.9}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_beta2'=0.9999}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_epsilon'=1e-6}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_epsilon'=1e-4}")
+//        train(TradeConfig(), TrainConfig(), "{'lr_epsilon'=1e-10}")
     }
 }
