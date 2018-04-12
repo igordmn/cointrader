@@ -2,6 +2,7 @@ package com.dmi.cointrader.train
 
 import com.dmi.cointrader.HistoryPeriods
 import com.dmi.cointrader.TradeConfig
+import com.dmi.cointrader.TradePeriods
 import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.periods
@@ -32,6 +33,9 @@ suspend fun trainBatch() {
 
     val steps = 40000
     val scoresSkipSteps = 10000
+    val breakSteps = 20000
+    val breakProfit = 4.5
+    val repeats = 3
 
     var num = 0
 
@@ -44,7 +48,7 @@ suspend fun trainBatch() {
             resultsDetailLogFile.appendLine(trainConfig.toString())
             resultsDetailLogFile.appendLine(additionalParams)
 
-            val score = (1..3).map {
+            val score = (1..repeats).map {
                 resultsDetailLogFile.appendLine("repeat $it")
                 trainSingle(it, tradeConfig, trainConfig, additionalParams)
             }.max()
@@ -71,7 +75,8 @@ suspend fun trainBatch() {
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
-            batches.channel().take(steps).consumeEachIndexed { (i, it) ->
+            val channel = batches.channel().take(steps)
+            channel.consumeEachIndexed { (i, it) ->
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
                 trainProfits.add(trainProfit)
@@ -90,6 +95,10 @@ suspend fun trainBatch() {
                     println(result.toString())
                     resultsDetailLogFile.appendLine(result.toString())
                     trainProfits = ArrayList(trainConfig.logSteps)
+
+                    if (i >= breakSteps && !results.any { it.tests[0].dayProfit >= breakProfit  }) {
+                        channel.cancel()
+                    }
                 }
             }
             fun TrainResult.score() = tests[0].dayProfit
@@ -98,20 +107,24 @@ suspend fun trainBatch() {
         }
     }) {
         fun historyPeriods(count: Int) = TradeConfig().historyPeriods.copy(count = count)
+        fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
+        fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 60)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 40)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 30)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 20)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
-        train(TradeConfig(), TrainConfig(batchSize = 40), "{}")
-        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
-        train(TradeConfig(), TrainConfig(batchSize = 200), "{}")
-        train(TradeConfig(), TrainConfig(batchSize = 400), "{}")
+//        train(TradeConfig(), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(5), tradePeriods = tradePeriods(5)), TrainConfig(batchSize = 109), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(10), tradePeriods = tradePeriods(10)), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(30), tradePeriods = tradePeriods(30)), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(batchSize = 60), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(batchSize = 60), "{}")
 
+//        train(TradeConfig(), TrainConfig(), "{init='variance_scaling'}")
+//        train(TradeConfig(), TrainConfig(), "{init='truncated_normal'}")
+//        train(TradeConfig(), TrainConfig(), "{init='normal'}")
+//        train(TradeConfig(), TrainConfig(), "{init='uniform_scaling'}")
+//        train(TradeConfig(), TrainConfig(), "{init='uniform_scaling'}")
+//        train(TradeConfig(), TrainConfig(), "{init='uniform'}")
+//        train(TradeConfig(), TrainConfig(), "{init='zeros'}")
 //        train(TradeConfig(), TrainConfig(), "{activation='prelu'}")
 //        train(TradeConfig(), TrainConfig(), "{activation='elu'}")
 //        train(TradeConfig(), TrainConfig(), "{activation='leaky_relu'}")
@@ -140,6 +153,8 @@ suspend fun trainBatch() {
 //        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028}")
 //        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 4}")
 //        train(TradeConfig(), TrainConfig(), "{lr_max=0.00028 * 8}")
+//        train(TradeConfig(), TrainConfig(), "{lr_min=0.00014}")
+//        train(TradeConfig(), TrainConfig(), "{lr_min=0.00014, lr_max=0.00042}")
 //        train(TradeConfig(), TrainConfig(), "{lr_beta=0.99}")
 //        train(TradeConfig(), TrainConfig(), "{lr_beta=0.9}")
 //        train(TradeConfig(), TrainConfig(), "{lr_epsilon=1e-6}")
