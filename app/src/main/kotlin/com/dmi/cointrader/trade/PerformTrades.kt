@@ -30,6 +30,7 @@ import com.dmi.util.math.times
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 suspend fun askAndPerformRealTrades() {
     println("Run trading real money? Enter 'yes'")
@@ -203,7 +204,7 @@ suspend fun performTestTradesPartialFast(
         val spreads = tradedHistory.tradeTimeSpreads
         val asks = spreads.map { it.ask }.withMainAsset()
         val bids = spreads.map { it.bid }.withMainAsset()
-        val prices = asks.zip(bids) { a, b -> (a + b) / 2.0 }
+        val prices = asks.zip(bids) { a, b -> sqrt(a * b) }
         val fees = bids.zip(prices) { a, b -> 1 - a / b * (1.0 - fee) }
 
         val portfolioBtc = portfolio * prices

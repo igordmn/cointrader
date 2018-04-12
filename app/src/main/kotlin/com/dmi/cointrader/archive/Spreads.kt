@@ -13,6 +13,7 @@ import java.nio.ByteBuffer
 import java.time.Instant
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.sqrt
 
 @Serializable
 data class Spread(val ask: Double, val bid: Double) {
@@ -90,14 +91,14 @@ fun Trade.nextSpreadN(previous: TimeSpread): TimeSpreadN {
     }
 
     val avgBias = 0.1
-    val price = (lastAsk + lastBid) / 2.0
+    val price = sqrt(lastAsk * lastBid)
     val cost = ln(lastBid / price)
     val previousAvgPrice = (previous.spread.ask + previous.spread.bid) / 2.0
     val previousAvgCost = ln(previous.spread.bid / previousAvgPrice)
     val avgPrice = avgBias * price + (1 - avgBias) * previousAvgPrice
     val avgCost = avgBias * cost + (1 - avgBias) * previousAvgCost
+    val avgAsk = avgPrice / exp(avgCost)
     val avgBid = avgPrice * exp(avgCost)
-    val avgAsk = 2 * avgPrice - avgBid
 
     return TimeSpreadN(time, SpreadN(lastAsk, lastBid, avgAsk, avgBid))
 }

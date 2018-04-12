@@ -68,11 +68,11 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 
 
 def normalize_history(history):
-    usds = (history[:, 0, None, :, 0, None] + history[:, 0, None, :, 1, None]) / 2
+    usds = np.sqrt(history[:, 0, None, :, 0, None] * history[:, 0, None, :, 1, None])
     history = history / usds
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
-    last_price = (last_ask + last_bid) / 2.0
+    last_price = np.sqrt(last_ask * last_bid)
     history = history / last_price
     history = np.log(history)
 
@@ -178,7 +178,7 @@ class NeuralNetwork:
 def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
-    prices = (asks + bids) / 2.0
+    prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
 
     price_incs = prices[1:] / prices[:-1]
