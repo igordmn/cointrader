@@ -115,7 +115,7 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(historyPeriods = historyPeriods2(15), tradePeriods = tradePeriods(15)), TrainConfig(), "{}")
+        train(TradeConfig(), TrainConfig(), "{}")
         train(TradeConfig(historyPeriods = historyPeriods(count = 100)), TrainConfig(), "{}")
         train(TradeConfig(historyPeriods = historyPeriods(count = 120)), TrainConfig(), "{}")
         train(TradeConfig(historyPeriods = historyPeriods(count = 160)), TrainConfig(), "{}")
