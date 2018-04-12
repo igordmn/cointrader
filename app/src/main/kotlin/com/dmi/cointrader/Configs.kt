@@ -53,8 +53,8 @@ data class TrainConfig(
         val fee: Double = 0.0007,
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-02T15:50:00", zoneOffset("+3")),
 
-        val testDays: Double = 60.0,        //  days for test every log step, train includes these days
-        val validationDays: Double = 20.0,   //  days for check overfitting, train doesn't include these days
+        val testDays: Double = 60.0,
+        val validationDays: Double = 20.0,
 
         val logSteps: Int = 1000,
         val batchSize: Int = 60,
