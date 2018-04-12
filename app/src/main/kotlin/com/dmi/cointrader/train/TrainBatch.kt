@@ -34,7 +34,7 @@ suspend fun trainBatch() {
     val steps = 40000
     val scoresSkipSteps = 10000
     val breakSteps = 20000
-    val breakProfit = 1.4
+    val breakProfit = 1.04
     val repeats = 3
 
     var num = 0
