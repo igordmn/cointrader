@@ -12,10 +12,10 @@ import kotlinx.serialization.cbor.CBOR.Companion.load
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
-private val neuralNetworkCreated = AtomicBoolean(false)
-private val neuralTrainerCreated = AtomicBoolean(false)
+private val neuralNetworkNum = AtomicInteger(0)
+private val neuralTrainerNum = AtomicInteger(0)
 
 fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
@@ -57,20 +57,19 @@ class NeuralNetwork private constructor(
         savedFile: Path?,
         additionalParams: String = "{}"
 ) : AutoCloseable {
+    val variable = "network" + neuralNetworkNum.getAndIncrement()
+
     init {
-        if (neuralNetworkCreated.getAndSet(true)) {
-            unsupported("Two created neural networks doesn't support")
-        }
         jep.eval("from cointrader.network import NeuralNetwork")
-        jep.eval("network = None")
+        jep.eval("$variable = None")
         jep.eval("""
                 def create_network(alt_asset_number, history_size, gpu_memory_fraction, saved_file):
-                    global network
-                    network = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file, $additionalParams)
+                    global $variable
+                    $variable = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file, $additionalParams)
             """.trimIndent())
         jep.eval("""
                 def best_portfolio(current_portfolio, history):
-                    return network.best_portfolio(current_portfolio, history)
+                    return $variable.best_portfolio(current_portfolio, history)
             """.trimIndent())
         jep.invoke(
                 "create_network",
@@ -96,14 +95,14 @@ class NeuralNetwork private constructor(
 
     fun save(directory: Path) {
         val fileStr = directory.resolve("net").toAbsolutePath().toString().replace("\\", "/")
-        jep.eval("network.save(\"$fileStr\")")
+        jep.eval("$variable.save(\"$fileStr\")")
         Files.write(directory.resolve("config"), dump(config))
     }
 
     override fun close() {
-        jep.eval("network.recycle()")
-        jep.eval("del network")
-        neuralNetworkCreated.set(false)
+        jep.eval("$variable.recycle()")
+        jep.eval("del $variable")
+        neuralNetworkNum.decrementAndGet()
     }
 
     @Serializable
@@ -130,25 +129,21 @@ class NeuralTrainer(
         fee: Double,
         additionalParams: String = "{}"
 ) : AutoCloseable {
-    init {
-        if (neuralTrainerCreated.getAndSet(true)) {
-            unsupported("Two created neural trainers doesn't support")
-        }
-        if (!neuralNetworkCreated.get()) {
-            unsupported("Neural network should be created")
-        }
+    private val networkVariable = net.variable
+    private val variable = "trainer" + neuralTrainerNum.getAndIncrement()
 
+    init {
         jep.eval("from cointrader.network import NeuralTrainer")
-        jep.eval("trainer = None")
+        jep.eval("$variable = None")
         jep.eval("""
                 def create_trainer():
-                    global trainer
-                    global network
-                    trainer = NeuralTrainer(network, $fee, $additionalParams)
+                    global $variable
+                    global $networkVariable
+                    $variable = NeuralTrainer($networkVariable, $fee, $additionalParams)
             """.trimIndent())
         jep.eval("""
                 def train(current_portfolio, history, asks, bids):
-                    return trainer.train(current_portfolio, history, asks, bids)
+                    return $variable.train(current_portfolio, history, asks, bids)
             """.trimIndent())
         jep.invoke("create_trainer")
     }
@@ -185,8 +180,8 @@ class NeuralTrainer(
     }
 
     override fun close() {
-        jep.eval("del trainer")
-        neuralTrainerCreated.set(false)
+        jep.eval("del $variable")
+        neuralTrainerNum.decrementAndGet()
     }
 
     private data class ResultMatrix(val newPortions: NDFloatArray, val geometricMeanProfit: Double)
