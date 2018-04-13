@@ -114,8 +114,6 @@ suspend fun trainBatch() {
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
         train(TradeConfig(), TrainConfig(), "{}")
-        train(TradeConfig(), TrainConfig(), "{'init':'variance_scaling'}")
-        train(TradeConfig(), TrainConfig(), "{'init':'normal'}")
 //        train(TradeConfig(), TrainConfig(), "{'activation':'prelu'}")
 //        train(TradeConfig(), TrainConfig(), "{'activation':'elu'}")
 //        train(TradeConfig(), TrainConfig(), "{'activation':'leaky_relu'}")

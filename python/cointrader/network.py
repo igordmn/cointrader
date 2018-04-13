@@ -61,7 +61,7 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
     )
     net = net[:, :, 0, 0]
     # todo conv from usd
-    main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
+    main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer, regularizer=tf.contrib.layers.l2_regularizer(0.001))
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
     vote = net
@@ -88,7 +88,7 @@ def build_best_portfolio(
 
     activation = params.get('activation', 'relu')
     kernel_size = params.get('kernel_size', 5)
-    weights_init = params.get('init', 'xavier')
+    weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
     nb_filter = params.get('nb_filter', 6)
     filter_number = params.get('filter_number', 20)
     weight_decay = params.get('weight_decay', 5e-9)
@@ -216,7 +216,7 @@ class NeuralTrainer:
         profits_size, profits = compute_profits(network.batch_size, network.best_portfolio_tensor, self.asks, self.bids, fee)
         self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / tf.to_float(profits_size))
 
-        loss = -tf.reduce_mean(tf.log(profits))
+        loss = -tf.reduce_prod(profits)
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
