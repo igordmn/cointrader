@@ -6,6 +6,7 @@ import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.periods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
 import com.dmi.cointrader.info.saveChart
+import com.dmi.cointrader.neural.NeuralNetwork
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
@@ -18,6 +19,7 @@ import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
+import kotlinx.coroutines.experimental.channels.take
 import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
 
@@ -28,11 +30,11 @@ suspend fun train() = resourceContext {
 
     val networksDir = resultsDir.resolve("networks")
     createDirectory(networksDir)
-    fun netDir(step: Int) = networksDir.resolve(step.toString())
+    fun netDir(repeat: Int, step: Int) = networksDir.resolve(repeat.toString()).resolve(step.toString())
 
     val chartsDir = resultsDir.resolve("charts")
     createDirectory(chartsDir)
-    fun chartFile(step: Int) = chartsDir.resolve("$step.png")
+    fun chartFile(repeat: Int, step: Int) = chartsDir.resolve(repeat.toString()).resolve("$step.png")
 
     val resultsLogFile = resultsDir.resolve("results.log")
 
@@ -46,43 +48,45 @@ suspend fun train() = resourceContext {
             reloadCount = tradeConfig.archiveReloadPeriods
     )
     val jep = jep()
-    val net = trainingNetwork(jep, tradeConfig)
-    val trainer = networkTrainer(jep, net, trainConfig.fee)
     val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
-    val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
 
     PlatformImpl.startup({})
-
-    fun saveNet(result: TrainResult) {
-        net.save(netDir(result.step))
-        saveChart(result.tests[0].chartData, chartFile(result.step))
-        resultsLogFile.appendLine(result.toString())
-        println(result.toString())
-    }
-
     saveTradeConfig(tradeConfig)
 
-    var trainProfits = ArrayList<Double>(trainConfig.logSteps)
-    val results = ArrayList<TrainResult>()
-    batches.channel().consumeEachIndexed { (i, it) ->
-        val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
-        it.setCurrentPortfolio(newPortions)
-        trainProfits.add(trainProfit)
-        if (i % trainConfig.logSteps == 0) {
-            val result = trainResult(
-                    space = tradeConfig.periodSpace,
-                    tradePeriods = tradeConfig.tradePeriods.size,
-                    step = i,
-                    previousResults = results,
-                    trainProfits = trainProfits,
-                    testCapitals = listOf(
-                            performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                            performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
-                    )
-            )
-            results.add(result)
-            saveNet(result)
-            trainProfits = ArrayList(trainConfig.logSteps)
+    repeat(trainConfig.repeats) { repeat ->
+        var trainProfits = ArrayList<Double>(trainConfig.logSteps)
+        val results = ArrayList<TrainResult>()
+        val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
+        val net = trainingNetwork(jep, tradeConfig)
+        val trainer = networkTrainer(jep, net, trainConfig.fee)
+
+        fun saveNet(result: TrainResult) {
+            net.save(netDir(repeat, result.step))
+            saveChart(result.tests[0].chartData, chartFile(repeat, result.step))
+            resultsLogFile.appendLine(result.toString())
+            println(result.toString())
+        }
+
+        batches.channel().take(trainConfig.steps).consumeEachIndexed { (i, it) ->
+            val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
+            it.setCurrentPortfolio(newPortions)
+            trainProfits.add(trainProfit)
+            if (i % trainConfig.logSteps == 0) {
+                val result = trainResult(
+                        space = tradeConfig.periodSpace,
+                        tradePeriods = tradeConfig.tradePeriods.size,
+                        step = i,
+                        previousResults = results,
+                        trainProfits = trainProfits,
+                        testCapitals = listOf(
+                                performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
+                                performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                        )
+                )
+                results.add(result)
+                saveNet(result)
+                trainProfits = ArrayList(trainConfig.logSteps)
+            }
         }
     }
 }

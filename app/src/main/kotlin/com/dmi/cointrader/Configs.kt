@@ -56,6 +56,8 @@ data class TrainConfig(
         val testDays: Double = 60.0,
         val validationDays: Double = 20.0,
 
+        val steps: Int = 150000,
+        val repeats: Int = 5,
         val logSteps: Int = 1000,
         val batchSize: Int = 60,
         val tradePeriodGeometricBias: Double = 5e-7
