@@ -39,9 +39,11 @@ suspend fun train() = resourceContext {
     PlatformImpl.startup({})
     saveTradeConfig(tradeConfig)
 
+
+    Paths.get("data/results").deleteRecursively()
+
     repeat(trainConfig.repeats) { repeat ->
         val resultsDir = Paths.get("data/results/$repeat")
-        resultsDir.deleteRecursively()
         createDirectory(resultsDir)
 
         val networksDir = resultsDir.resolve("networks")
