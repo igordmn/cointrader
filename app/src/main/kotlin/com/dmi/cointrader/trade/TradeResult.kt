@@ -82,6 +82,8 @@ fun tradeSummary(
             },
             downsideDeviation = profits.let(::downsideDeviation),
             maximumDrawdawn = profits.let(::maximumDrawdawn),
+            dailyDownsideDeviation = dailyProfits.let(::downsideDeviation),
+            dailyMaximumDrawdawn = dailyProfits.let(::maximumDrawdawn),
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
@@ -95,6 +97,8 @@ data class TradeSummary(
         val averageDayProfit: Double?,
         val downsideDeviation: Double,
         val maximumDrawdawn: Double,
+        val dailyDownsideDeviation: Double,
+        val dailyMaximumDrawdawn: Double,
         val chartData: ChartData
 ) {
     override fun toString(): String {
@@ -103,7 +107,9 @@ data class TradeSummary(
         val averageDayProfit = if (averageDayProfit != null) "%.3f".format(averageDayProfit) else "-----"
         val negativeDeviation = "%.5f".format(downsideDeviation)
         val maximumDrawdawn = "%.2f".format(maximumDrawdawn)
-        return "$dayProfitMean $dayProfitMedian $averageDayProfit $negativeDeviation $maximumDrawdawn"
+        val dailyDownsideDeviation = "%.5f".format(dailyDownsideDeviation)
+        val dailyMaximumDrawdawn = "%.2f".format(dailyMaximumDrawdawn)
+        return "$dayProfitMean $dayProfitMedian $averageDayProfit $negativeDeviation $maximumDrawdawn $dailyDownsideDeviation $dailyMaximumDrawdawn"
     }
 }
 
