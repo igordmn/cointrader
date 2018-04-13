@@ -1,6 +1,5 @@
 package com.dmi.cointrader.train
 
-import com.dmi.cointrader.HistoryPeriods
 import com.dmi.cointrader.TradeConfig
 import com.dmi.cointrader.TradePeriods
 import com.dmi.cointrader.TrainConfig
@@ -11,7 +10,6 @@ import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.trade.performTestTradesAllInFast
-import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
@@ -101,12 +99,12 @@ suspend fun trainBatch() {
                     resultsDetailLogFile.appendLine(result.toString())
                     trainProfits = ArrayList(trainConfig.logSteps)
 
-                    if (i >= breakSteps && !results.any { it.tests[0].dayProfit >= breakProfit }) {
+                    if (i >= breakSteps && !results.any { it.tests[0].dayProfitMean >= breakProfit }) {
                         channel.cancel()
                     }
                 }
             }
-            fun TrainResult.score() = tests[0].dayProfit
+            fun TrainResult.score() = tests[0].dayProfitMean
             val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
             scores[scores.size * 3 / 4]
         }
@@ -115,6 +113,7 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
+        train(TradeConfig(), TrainConfig(), "{}")
         train(TradeConfig(), TrainConfig(), "{'init':'variance_scaling'}")
         train(TradeConfig(), TrainConfig(), "{'init':'normal'}")
 //        train(TradeConfig(), TrainConfig(), "{'activation':'prelu'}")

@@ -71,11 +71,12 @@ fun tradeSummary(
     val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
     val tradeDuration = space.duration * tradePeriods
     val profits = capitals.profits()
-
+    val dailyProfits = profits.daily(tradeDuration)
     return TradeSummary(
-            dayProfit = profits.daily(tradeDuration).let(::geoMean),
+            dayProfitMean = dailyProfits.let(::geoMean),
+            dayProfitMedian = dailyProfits.median(),
             averageDayProfit = if (previous.size >= movingAverageCount) {
-                geoMean(previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfit })
+                geoMean(previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfitMean })
             } else {
                 null
             },
@@ -89,14 +90,15 @@ fun tradeSummary(
 }
 
 data class TradeSummary(
-        val dayProfit: Double,
+        val dayProfitMean: Double,
+        val dayProfitMedian: Double,
         val averageDayProfit: Double?,
         val downsideDeviation: Double,
         val maximumDrawdawn: Double,
         val chartData: ChartData
 ) {
     override fun toString(): String {
-        val dayProfit = "%.3f".format(dayProfit)
+        val dayProfit = "%.3f".format(dayProfitMean)
         val averageDayProfit = if (averageDayProfit != null) "%.3f".format(averageDayProfit) else "-----"
         val negativeDeviation = "%.5f".format(downsideDeviation)
         val maximumDrawdawn = "%.2f".format(maximumDrawdawn)

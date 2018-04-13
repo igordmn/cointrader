@@ -2,6 +2,7 @@ package com.dmi.util.math
 
 import org.apache.commons.math3.distribution.GeometricDistribution
 import java.util.*
+import java.util.Arrays.sort
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -50,5 +51,7 @@ fun downsideDeviation(values: List<Double>): Double {
     return sqrt(values.map(::g).average())
 }
 
+// todo to List<Double>.foo()
 fun product(values: List<Double>): Double = values.reduce { acc, value -> acc * value }
 fun geoMean(values: List<Double>): Double = Math.pow(product(values), 1.0 / values.size)
+fun List<Double>.median(): Double = sorted()[size / 2]

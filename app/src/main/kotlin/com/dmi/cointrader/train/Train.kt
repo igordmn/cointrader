@@ -79,8 +79,8 @@ suspend fun train() = resourceContext {
                         previousResults = results,
                         trainProfits = trainProfits,
                         testCapitals = listOf(
-                                performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                                performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+                                performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                         )
                 )
                 results.add(result)
