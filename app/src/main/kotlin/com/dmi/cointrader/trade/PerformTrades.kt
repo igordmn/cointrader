@@ -52,9 +52,14 @@ suspend fun performRealTrades() = resourceContext {
             config.periodSpace.floor(exchange.currentTime()),
             reloadCount = config.archiveReloadPeriods
     )
-    val syncClock = suspend { binanceClock(exchange) }
 
-    forEachRealTradePeriod(syncClock, config.periodSpace, config.tradePeriods.size) { clock, period ->
+    forEachRealTradePeriod(
+            { binanceClock(exchange) },
+            config.periodSpace,
+            config.tradePeriods.size,
+            config.preloadPeriods,
+            { archive.sync(it) }
+    ) { clock, period ->
         performRealTrade(config, exchange, archive, period, clock, network, log)
     }
 }
@@ -63,8 +68,12 @@ suspend fun forEachRealTradePeriod(
         syncClock: suspend () -> Clock,
         space: PeriodSpace,
         tradePeriods: Int,
+        preloadPeriods: Int,
+        preload: suspend (Period)  -> Unit,
         action: suspend (Clock, Period) -> Unit
 ) {
+    require(preloadPeriods in 0..tradePeriods)
+
     val iterator = object {
         var previousPeriod = Long.MIN_VALUE
 
@@ -79,10 +88,15 @@ suspend fun forEachRealTradePeriod(
 
     while (isActive) {
         val clock = syncClock()
-        val currentTime = clock.instant()
-        val nextPeriod = iterator.nextAfter(currentTime)
+        val nextPeriod = iterator.nextAfter(clock.instant())
         val nextTime = space.timeOf(nextPeriod)
-        delay(nextTime - currentTime)
+
+        val preloadPeriod = nextPeriod - preloadPeriods
+        val preloadTime = space.timeOf(preloadPeriod)
+        delay(preloadTime - clock.instant())
+        preload(preloadPeriod)
+
+        delay(nextTime - clock.instant())
         action(clock, nextPeriod)
     }
 }
