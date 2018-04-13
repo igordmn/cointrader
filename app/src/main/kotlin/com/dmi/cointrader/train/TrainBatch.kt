@@ -16,7 +16,7 @@ import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
-import java.nio.file.Files.createDirectory
+import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
 suspend fun trainBatch() {
@@ -24,7 +24,7 @@ suspend fun trainBatch() {
 
     val resultsDir = Paths.get("data/resultsBatch")
     resultsDir.deleteRecursively()
-    createDirectory(resultsDir)
+    createDirectories(resultsDir)
 
     val resultsDetailLogFile = resultsDir.resolve("resultsDetail.log")
     val resultsShortLogFile = resultsDir.resolve("resultsShort.log")

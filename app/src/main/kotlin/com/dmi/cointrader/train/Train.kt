@@ -20,7 +20,7 @@ import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
-import java.nio.file.Files.createDirectory
+import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
 suspend fun train() = resourceContext {
@@ -44,14 +44,14 @@ suspend fun train() = resourceContext {
 
     repeat(trainConfig.repeats) { repeat ->
         val resultsDir = Paths.get("data/results/$repeat")
-        createDirectory(resultsDir)
+        createDirectories(resultsDir)
 
         val networksDir = resultsDir.resolve("networks")
-        createDirectory(networksDir)
+        createDirectories(networksDir)
         fun netDir(step: Int) = networksDir.resolve(step.toString())
 
         val chartsDir = resultsDir.resolve("charts")
-        createDirectory(chartsDir)
+        createDirectories(chartsDir)
         fun chartFile(step: Int) = chartsDir.resolve("$step.png")
 
         val resultsLogFile = resultsDir.resolve("results.log")
