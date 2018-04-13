@@ -73,13 +73,13 @@ fun tradeSummary(
     val profits = capitals.profits()
     val dailyProfits = profits.daily(tradeDuration)
     return TradeSummary(
-            dayProfitMean = dailyProfits.let(::geoMean),
-            dayProfitMedian = dailyProfits.median(),
             averageDayProfit = if (previous.size >= movingAverageCount) {
                 geoMean(previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfitMean })
             } else {
                 null
             },
+            dayProfitMean = dailyProfits.let(::geoMean),
+            dayProfitMedian = dailyProfits.median(),
             downsideDeviation = profits.let(::downsideDeviation),
             maximumDrawdawn = profits.let(::maximumDrawdawn),
             dailyDownsideDeviation = dailyProfits.let(::downsideDeviation),
@@ -92,9 +92,9 @@ fun tradeSummary(
 }
 
 data class TradeSummary(
+        val averageDayProfit: Double?,
         val dayProfitMean: Double,
         val dayProfitMedian: Double,
-        val averageDayProfit: Double?,
         val downsideDeviation: Double,
         val maximumDrawdawn: Double,
         val dailyDownsideDeviation: Double,
@@ -109,7 +109,7 @@ data class TradeSummary(
         val maximumDrawdawn = "%.2f".format(maximumDrawdawn)
         val dailyDownsideDeviation = "%.5f".format(dailyDownsideDeviation)
         val dailyMaximumDrawdawn = "%.2f".format(dailyMaximumDrawdawn)
-        return "$dayProfitMean $dayProfitMedian $averageDayProfit $negativeDeviation $maximumDrawdawn $dailyDownsideDeviation $dailyMaximumDrawdawn"
+        return "$averageDayProfit $dayProfitMean $dayProfitMedian $negativeDeviation $maximumDrawdawn $dailyDownsideDeviation $dailyMaximumDrawdawn"
     }
 }
 
