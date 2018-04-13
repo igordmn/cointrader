@@ -24,20 +24,6 @@ import java.nio.file.Files.createDirectory
 import java.nio.file.Paths
 
 suspend fun train() = resourceContext {
-    val resultsDir = Paths.get("data/results")
-    resultsDir.deleteRecursively()
-    createDirectory(resultsDir)
-
-    val networksDir = resultsDir.resolve("networks")
-    createDirectory(networksDir)
-    fun netDir(repeat: Int, step: Int) = networksDir.resolve(repeat.toString()).resolve(step.toString())
-
-    val chartsDir = resultsDir.resolve("charts")
-    createDirectory(chartsDir)
-    fun chartFile(repeat: Int, step: Int) = chartsDir.resolve(repeat.toString()).resolve("$step.png")
-
-    val resultsLogFile = resultsDir.resolve("results.log")
-
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
@@ -54,6 +40,20 @@ suspend fun train() = resourceContext {
     saveTradeConfig(tradeConfig)
 
     repeat(trainConfig.repeats) { repeat ->
+        val resultsDir = Paths.get("data/results/$repeat")
+        resultsDir.deleteRecursively()
+        createDirectory(resultsDir)
+
+        val networksDir = resultsDir.resolve("networks")
+        createDirectory(networksDir)
+        fun netDir(step: Int) = networksDir.resolve(step.toString())
+
+        val chartsDir = resultsDir.resolve("charts")
+        createDirectory(chartsDir)
+        fun chartFile(step: Int) = chartsDir.resolve("$step.png")
+
+        val resultsLogFile = resultsDir.resolve("results.log")
+
         var trainProfits = ArrayList<Double>(trainConfig.logSteps)
         val results = ArrayList<TrainResult>()
         val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
@@ -61,8 +61,8 @@ suspend fun train() = resourceContext {
         val trainer = networkTrainer(jep, net, trainConfig.fee)
 
         fun saveNet(result: TrainResult) {
-            net.save(netDir(repeat, result.step))
-            saveChart(result.tests[0].chartData, chartFile(repeat, result.step))
+            net.save(netDir(result.step))
+            saveChart(result.tests[0].chartData, chartFile(result.step))
             resultsLogFile.appendLine(result.toString())
             println(result.toString())
         }
