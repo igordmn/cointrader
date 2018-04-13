@@ -49,7 +49,7 @@ suspend fun trainBatch() {
             val score = try {
                 (1..repeats).map {
                     resultsDetailLogFile.appendLine("repeat $it")
-                    trainSingle(it, tradeConfig, trainConfig, additionalParams)
+                    trainSingle(tradeConfig, trainConfig, additionalParams)
                 }.max()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -64,7 +64,7 @@ suspend fun trainBatch() {
             resultsShortLogFile.appendLine(score.toString())
         }
 
-        suspend fun trainSingle(repeat: Int, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double = resourceContext {
+        suspend fun trainSingle(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double = resourceContext {
             val binanceExchange = binanceExchangeForInfo()
             require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
             val periods = trainConfig.range.periods(tradeConfig.periodSpace)
