@@ -5,8 +5,6 @@ from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
 
-from cointrader.amsgrad import AMSGrad
-
 
 def lstm(net, alt_asset_number):
     neuron_number = 10
