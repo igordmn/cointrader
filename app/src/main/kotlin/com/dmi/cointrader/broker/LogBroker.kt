@@ -7,7 +7,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 
 fun Broker.log(log: Logger, baseAsset: Asset, quoteAsset: Asset): Broker = LogBroker(this, log, baseAsset, quoteAsset)
-fun Broker.fileLog(file: Path, baseAsset: Asset, quoteAsset: Asset): Broker = SlippageLogBroker(this, file, baseAsset, quoteAsset)
+fun Broker.fileLog(file: Path, baseAsset: Asset, quoteAsset: Asset): Broker = FileLogBroker(this, file, baseAsset, quoteAsset)
 
 class LogBroker(
         private val original: Broker,
@@ -32,7 +32,7 @@ class LogBroker(
     }
 }
 
-class SlippageLogBroker(
+class FileLogBroker(
         private val original: Broker,
         private val file: Path,
         private val baseAsset: Asset,
