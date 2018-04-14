@@ -1,6 +1,5 @@
 package com.dmi.cointrader.info
 
-import com.dmi.util.ext.javafx.LogarithmicNumberAxis
 import javafx.application.Platform
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Scene
