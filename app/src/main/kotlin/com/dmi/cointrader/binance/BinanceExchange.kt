@@ -65,7 +65,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
     suspend fun currentTime(): Instant = Instant.ofEpochMilli(api.serverTime().serverTime)
 
     suspend fun portfolio(clock: Clock): Portfolio {
-        val result = api.getAccount(5000, clock.instant().toEpochMilli())
+        val result = api.getAccount(8000, clock.instant().toEpochMilli())
         return result.balances.associate {
             it.asset to BigDecimal(it.free)
         }
@@ -135,7 +135,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
                     throw OrderError.WrongAmount
                 }
                 return try {
-                    api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 5000, timestamp.toEpochMilli())
+                    api.newOrder(name, side, OrderType.MARKET, null, amount.toString(), null, null, null, 8000, timestamp.toEpochMilli())
                 } catch (e: BinanceApiException) {
                     val msg = e.error.msg
                     val newException = when {
