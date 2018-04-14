@@ -4,7 +4,7 @@ import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.tradePeriods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
-import com.dmi.cointrader.info.saveChart
+import com.dmi.cointrader.info.saveLogChart
 import com.dmi.cointrader.neural.clampForTradedHistory
 import com.dmi.cointrader.neural.trainedNetwork
 import com.dmi.cointrader.savedTradeConfig
@@ -38,7 +38,7 @@ suspend fun backtest(days: Double) = resourceContext {
     val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
     val file = Files.createTempFile("", "")
     PlatformImpl.startup({})
-    saveChart(summary.chartData, file)
+    saveLogChart(summary.chartData, file)
     println(summary)
     Desktop.getDesktop().open(file.toFile())
 }

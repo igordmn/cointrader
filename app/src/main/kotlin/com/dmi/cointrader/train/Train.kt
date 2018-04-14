@@ -5,8 +5,7 @@ import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.archive.archive
 import com.dmi.cointrader.archive.periods
 import com.dmi.cointrader.binance.binanceExchangeForInfo
-import com.dmi.cointrader.info.saveChart
-import com.dmi.cointrader.neural.NeuralNetwork
+import com.dmi.cointrader.info.saveLogChart
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
@@ -64,7 +63,7 @@ suspend fun train() {
 
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
-                saveChart(result.tests[0].chartData, chartFile(result.step))
+                saveLogChart(result.tests[0].chartData, chartFile(result.step))
                 resultsLogFile.appendLine(result.toString())
                 println(result.toString())
             }

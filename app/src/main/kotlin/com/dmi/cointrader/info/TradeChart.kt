@@ -7,17 +7,24 @@ import javafx.scene.Scene
 import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
+import javafx.util.StringConverter
 import java.nio.file.Path
 import javax.imageio.ImageIO
+import kotlin.math.log2
 
 class ChartData(val x: DoubleArray, val y: DoubleArray)
 
-fun saveChart(data: ChartData, file: Path) {
+fun saveLogChart(data: ChartData, file: Path) {
     Platform.runLater {
         val xAxis = NumberAxis()
-        val yAxis = LogarithmicNumberAxis()
+        val yAxis = NumberAxis().apply {
+            tickLabelFormatter = object: StringConverter<Number>() {
+                override fun toString(num: Number): String = "2^$num"
+                override fun fromString(string: String): Number = throw UnsupportedOperationException()
+            }
+        }
         val series = XYChart.Series<Number, Number>().apply {
-            this.data.addAll(data.x.zip(data.y) { x, y -> XYChart.Data(x as Number, y as Number) })
+            this.data.addAll(data.x.zip(data.y) { x, y -> XYChart.Data(x as Number, log2(y) as Number) })
         }
         val chart = LineChart(xAxis, yAxis).apply {
             animated = false
