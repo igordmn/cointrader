@@ -33,7 +33,7 @@ suspend fun trainBatch() {
     val scoresSkipSteps = 10000
     val breakSteps = 20000
     val breakProfit = 1.06
-    val repeats = 3
+    val repeats = 5
 
     var num = 0
 
@@ -49,7 +49,9 @@ suspend fun trainBatch() {
             val score = try {
                 (1..repeats).map {
                     resultsDetailLogFile.appendLine("repeat $it")
-                    trainSingle(tradeConfig, trainConfig, additionalParams)
+                    val score = trainSingle(tradeConfig, trainConfig, additionalParams)
+                    resultsDetailLogFile.appendLine("score $score")
+                    score
                 }.max()
             } catch (e: Exception) {
                 e.printStackTrace()
