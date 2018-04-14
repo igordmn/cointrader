@@ -58,7 +58,7 @@ data class TradeResult(private val assetCapitals: Map<Asset, Double>, val totalC
             val capital = resultFormat.format(it.second)
             "$asset=$capital"
         }
-        return "$totalCapital $mainAsset ($assetCapitals)"
+        return "$totalCapital ($assetCapitals)"
     }
 }
 
