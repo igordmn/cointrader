@@ -176,6 +176,7 @@ fun mainTask(name: String, vararg args: String = arrayOf(name)) = task(name, Jav
 
     environment = environment + mapOf("PYTHONHOME" to pythonHome)
     workingDir = rootDir
+    standardInput = System.`in`
     this.args = args.toList()
 }
 
@@ -186,3 +187,4 @@ mainTask("backtest10", "backtest", 10.toString())
 mainTask("realTrades")
 mainTask("topcoins")
 mainTask("dl4jtest")
+mainTask("realtrades")
