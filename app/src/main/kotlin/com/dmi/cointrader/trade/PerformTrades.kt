@@ -9,7 +9,6 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
-import com.dmi.util.concurrent.suspend
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.indexOfMax
@@ -54,23 +53,21 @@ suspend fun performRealTrades() = resourceContext {
     )
 
     forEachRealTradePeriod(
-            { binanceClock(exchange) },
             config.periodSpace,
             config.tradePeriods.size,
             config.preloadPeriods,
             { archive.sync(it) }
-    ) { clock, period ->
-        performRealTrade(config, exchange, archive, period, clock, network, log)
+    ) { period ->
+        performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
     }
 }
 
 suspend fun forEachRealTradePeriod(
-        syncClock: suspend () -> Clock,
         space: PeriodSpace,
         tradePeriods: Int,
         preloadPeriods: Int,
         preload: suspend (Period)  -> Unit,
-        action: suspend (Clock, Period) -> Unit
+        action: suspend (Period) -> Unit
 ) {
     require(preloadPeriods in 0..tradePeriods)
 
@@ -87,7 +84,7 @@ suspend fun forEachRealTradePeriod(
     }
 
     while (isActive) {
-        val clock = syncClock()
+        val clock = Clock.systemUTC()
         val nextPeriod = iterator.nextAfter(clock.instant())
         val nextTime = space.timeOf(nextPeriod)
 
@@ -97,7 +94,7 @@ suspend fun forEachRealTradePeriod(
         preload(preloadPeriod)
 
         delay(nextTime - clock.instant())
-        action(clock, nextPeriod)
+        action(nextPeriod)
     }
 }
 
@@ -114,7 +111,7 @@ suspend fun performRealTrade(
             .market(baseAsset, quoteAsset)
             ?.broker(clock)
             ?.log(log, baseAsset, quoteAsset)
-            ?.fileLog(Paths.get("data/logs/trades.log"), baseAsset, quoteAsset)
+            ?.fileLog(Paths.get("data/log/trades.log"), baseAsset, quoteAsset)
 
     try {
         archive.sync(period)
@@ -138,8 +135,8 @@ suspend fun performRealTrade(
 private fun writeCapital(result: TradeResult, config: TradeConfig, period: Period) {
     val time = config.periodSpace.timeOf(period)
     val capital = result.totalCapital
-    createDirectories(Paths.get("data/logs"))
-    Paths.get("data/logs/capitals.log").appendLine("$time\t$capital")
+    createDirectories(Paths.get("data/log"))
+    Paths.get("data/log/capitals.log").appendLine("$time\t$capital")
 }
 
 suspend fun performTestTrades(

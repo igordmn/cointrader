@@ -3,7 +3,7 @@
     <name>Default</name>
     <Appenders>
         <Console name="SystemOutAppender" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss}  %msg%n"/>
             <Filters>
                 <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="err" onMatch="DENY" onMismatch="NEUTRAL"/>
@@ -12,7 +12,7 @@
             </Filters>
         </Console>
         <Console name="SystemErrAppender" target="SYSTEM_ERR">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss}  %msg%n"/>
             <Filters>
                 <ThresholdFilter level="fatal" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
                 <ThresholdFilter level="err" onMatch="ACCEPT" onMismatch="NEUTRAL"/>

@@ -15,6 +15,7 @@ import java.time.Clock
 import java.time.Duration
 import kotlin.math.pow
 
+private val additionalAssets = listOf("BNB")
 private val resultAsset = "BTC"
 private const val resultMin = 0.0001
 private val resultFormat = "%.4f"
@@ -22,7 +23,7 @@ private val resultFormat = "%.4f"
 suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, clock: Clock): TradeResult {
     val portfolio = exchange.portfolio(clock)
     val btcPrices = exchange.btcPrices()
-    val assetCapitals = assets.all
+    val assetCapitals = (assets.all + additionalAssets)
             .associate {
                 val capital = if (it == resultAsset) {
                     portfolio[it]!!
