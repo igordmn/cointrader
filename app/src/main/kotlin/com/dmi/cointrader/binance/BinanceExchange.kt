@@ -19,6 +19,7 @@ import kotlinx.coroutines.experimental.channels.produce
 import org.slf4j.Logger
 import java.io.File
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Clock
 import java.time.Instant
 
@@ -74,7 +75,7 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
         fun TickerPrice.toAssetPrice(): Pair<Asset, BigDecimal> {
             val isReversed = symbol.endsWith("BTC")
             val price = price.toBigDecimal()
-            val btcPrice = if (isReversed) price else BigDecimal.ONE.divide(price, 8)
+            val btcPrice = if (isReversed) price else BigDecimal.ONE.divide(price, 8, RoundingMode.DOWN)
             val asset = if (isReversed) symbol.removeSuffix("BTC") else symbol.removePrefix("BTC")
             return asset to btcPrice
         }

@@ -1,5 +1,6 @@
 package com.dmi.cointrader.info
 
+import com.dmi.util.ext.javafx.LogarithmicNumberAxis
 import javafx.application.Platform
 import javafx.embed.swing.SwingFXUtils
 import javafx.scene.Scene
@@ -14,7 +15,7 @@ class ChartData(val x: DoubleArray, val y: DoubleArray)
 fun saveChart(data: ChartData, file: Path) {
     Platform.runLater {
         val xAxis = NumberAxis()
-        val yAxis = NumberAxis()
+        val yAxis = LogarithmicNumberAxis()
         val series = XYChart.Series<Number, Number>().apply {
             this.data.addAll(data.x.zip(data.y) { x, y -> XYChart.Data(x as Number, y as Number) })
         }
