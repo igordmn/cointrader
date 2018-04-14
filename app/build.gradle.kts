@@ -165,7 +165,7 @@ tasks.withType(Test::class.java) {
     workingDir(rootDir)
 }
 
-fun mainTask(name: String) = task(name, JavaExec::class) {
+fun mainTask(name: String, vararg args: String = arrayOf(name)) = task(name, JavaExec::class) {
     group = "application"
     val javaPlugin = the<JavaPluginConvention>()
     val applicationPlugin = the<ApplicationPluginConvention>()
@@ -176,13 +176,13 @@ fun mainTask(name: String) = task(name, JavaExec::class) {
 
     environment = environment + mapOf("PYTHONHOME" to pythonHome)
     workingDir = rootDir
-    args = listOf(name)
+    this.args = args.toList()
 }
 
 mainTask("archive")
 mainTask("train")
 mainTask("trainBatch")
-mainTask("backtest")
+mainTask("backtest10", "backtest", 10.toString())
 mainTask("realTrades")
 mainTask("topcoins")
 mainTask("dl4jtest")
