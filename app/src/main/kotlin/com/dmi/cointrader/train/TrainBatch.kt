@@ -33,7 +33,7 @@ suspend fun trainBatch() {
     val scoresSkipSteps = 10000
     val breakSteps = 20000
     val breakProfit = 1.06
-    val repeats = 5
+    val repeats = 3
 
     var num = 0
 
@@ -115,7 +115,6 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), TrainConfig(), "{}")
         train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-5), "{}")
         train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-4), "{}")
         train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-6), "{}")
