@@ -116,6 +116,12 @@ suspend fun trainBatch() {
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
         train(TradeConfig(), TrainConfig(), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-5), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-4), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 5e-6), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 8e-5), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 2e-5), "{}")
+        train(TradeConfig(), TrainConfig(tradePeriodGeometricBias = 2e-6), "{}")
         train(TradeConfig(), TrainConfig(), "{'activation':'prelu'}")
         train(TradeConfig(), TrainConfig(), "{'activation':'elu'}")
         train(TradeConfig(), TrainConfig(), "{'activation':'leaky_relu'}")
