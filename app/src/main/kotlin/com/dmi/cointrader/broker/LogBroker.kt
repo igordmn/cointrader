@@ -43,14 +43,14 @@ class FileLogBroker(
     override suspend fun buy(amount: BigDecimal): Broker.OrderResult {
         return original.buy(amount).also {
             val slippage = it.slippage
-            file.appendLine("buy $baseAsset $quoteAsset $amount $slippage")
+            file.appendLine("buy $amount $baseAsset $slippage")
         }
     }
 
     override suspend fun sell(amount: BigDecimal): Broker.OrderResult {
         return original.sell(amount).also {
             val slippage = it.slippage
-            file.appendLine("sell $baseAsset $quoteAsset $amount $slippage")
+            file.appendLine("sell $amount $baseAsset $slippage")
         }
     }
 }
