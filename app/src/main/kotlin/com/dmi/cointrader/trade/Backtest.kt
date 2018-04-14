@@ -39,6 +39,6 @@ suspend fun backtest(days: Double) = resourceContext {
     val file = Files.createTempFile("", "")
     PlatformImpl.startup({})
     saveChart(summary.chartData, file)
-    print(summary)
+    println(summary)
     Desktop.getDesktop().open(file.toFile())
 }
