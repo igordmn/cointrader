@@ -1,7 +1,7 @@
 package com.dmi.cointrader
 
 import com.dmi.cointrader.archive.downloadArchive
-import com.dmi.cointrader.dl4j.dl4jtest
+//import com.dmi.cointrader.dl4j.dl4jtest
 import com.dmi.cointrader.info.printTopCoins
 import com.dmi.cointrader.trade.backtest
 import com.dmi.cointrader.trade.askAndPerformRealTrades
@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
             "backtest" -> backtest(days = args[1].toDouble())
             "realtrades" -> askAndPerformRealTrades()
             "topcoins" -> printTopCoins()
-            "dl4jtest" -> dl4jtest()
+//            "dl4jtest" -> dl4jtest()
         }
     }
 }
