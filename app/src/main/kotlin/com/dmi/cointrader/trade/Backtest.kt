@@ -10,6 +10,7 @@ import com.dmi.cointrader.neural.trainedNetwork
 import com.dmi.cointrader.savedTradeConfig
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.io.resourceContext
+import com.sun.javafx.application.PlatformImpl
 import java.awt.Desktop
 import java.nio.file.Files
 
@@ -36,6 +37,7 @@ suspend fun backtest(days: Double) = resourceContext {
 
     val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
     val file = Files.createTempFile("", "")
+    PlatformImpl.startup({})
     saveChart(summary.chartData, file)
     print(summary)
     Desktop.getDesktop().open(file.toFile())
