@@ -50,7 +50,11 @@ suspend fun performRealTrades() = resourceContext {
             config.preloadPeriods,
             { archive.sync(it) }
     ) { period ->
-        performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
+        try {
+            performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
+        } catch (e: Throwable) {
+            log.error("Error on trade", e)
+        }
     }
 }
 
@@ -58,7 +62,7 @@ suspend fun forEachRealTradePeriod(
         space: PeriodSpace,
         tradePeriods: Int,
         preloadPeriods: Int,
-        preload: suspend (Period)  -> Unit,
+        preload: suspend (Period) -> Unit,
         action: suspend (Period) -> Unit
 ) {
     require(preloadPeriods in 0..tradePeriods)
