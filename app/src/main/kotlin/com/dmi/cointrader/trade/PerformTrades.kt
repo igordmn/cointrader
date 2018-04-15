@@ -31,14 +31,6 @@ import java.nio.file.Paths
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-suspend fun askAndPerformRealTrades() {
-    println("Run trading real money? Enter 'yes'")
-    while (readLine() != "yes") {
-        println("Answer is not 'yes'")
-    }
-    performRealTrades()
-}
-
 suspend fun performRealTrades() = resourceContext {
     System.setProperty("log4j.configurationFile", "log4j2-realtrade.xml")
     createDirectories(Paths.get("data/log"))
