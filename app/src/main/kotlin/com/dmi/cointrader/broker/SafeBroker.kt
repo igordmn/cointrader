@@ -3,6 +3,8 @@ package com.dmi.cointrader.broker
 import com.dmi.cointrader.broker.Broker.OrderError
 import com.dmi.cointrader.broker.Broker.OrderResult
 import com.dmi.cointrader.broker.SafeBroker.Attempts
+import com.dmi.util.lang.retry
+import java.lang.Math.pow
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -22,20 +24,8 @@ class SafeBroker(private val original: Broker, private val attempts: Attempts) :
     }
 
     private suspend fun processAmount(amount: BigDecimal, order: Order): OrderResult {
-        var attempt = 0
-        var currentAmount = amount
-        while (true) {
-            try {
-                return limitAmount(currentAmount, order)
-            } catch (e: OrderError.InsufficientBalance) {
-                if (attempt == attempts.count - 1) {
-                    throw e
-                } else {
-                    attempt++
-                    currentAmount *= attempts.amountMultiplier.toBigDecimal()
-                    continue
-                }
-            }
+        return retry<OrderResult, OrderError.InsufficientBalance>(attempts.count) {
+            limitAmount(amount * pow(attempts.amountMultiplier, it.toDouble()).toBigDecimal(), order)
         }
     }
 

@@ -11,8 +11,7 @@ import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.resourceContext
-import com.dmi.util.lang.indexOfMax
-import com.dmi.util.lang.max
+import com.dmi.util.lang.*
 import com.dmi.util.log.rootLog
 import kotlinx.coroutines.experimental.NonCancellable.isActive
 import kotlinx.coroutines.experimental.channels.map
@@ -22,7 +21,6 @@ import java.awt.Toolkit
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import com.dmi.util.lang.minus
 import com.dmi.util.math.div
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
@@ -48,10 +46,19 @@ suspend fun performRealTrades() = resourceContext {
             config.periodSpace,
             config.tradePeriods.size,
             config.preloadPeriods,
-            { archive.sync(it) }
+            {
+                try {
+                    archive.sync(it)
+                } catch (e: Throwable) {
+                    log.error("Error on sync", e)
+                }
+            }
     ) { period ->
         try {
-            performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
+            retry<Unit, Throwable>(3) {
+                performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
+                delay(minutes(1))
+            }
         } catch (e: Throwable) {
             log.error("Error on trade", e)
         }
