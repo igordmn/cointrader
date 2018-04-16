@@ -125,6 +125,10 @@ suspend fun trainBatch() {
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
         train(TradeConfig(), trainConfig(), "{}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-8}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-7}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-6}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-10}")
         train(TradeConfig(), trainConfig(), "{'weight_decay_last':5e-10}")
         train(TradeConfig(), trainConfig(), "{'weight_decay_last':5e-6}")
         train(TradeConfig(), trainConfig(), "{'lr_max':0.00028}")

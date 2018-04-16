@@ -84,17 +84,14 @@ def build_best_portfolio(
     # [batch, asset, history, indicator]
     net = history
 
-    kernel_size = params.get('kernel_size', 5)
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
-    nb_filter = params.get('nb_filter', 6)
-    filter_number = params.get('filter_number', 20)
     weight_decay = params.get('weight_decay', 5e-9)
     weight_decay_last = params.get('weight_decay_last', 5e-8)
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=nb_filter,
-        filter_size=[1, kernel_size],
+        nb_filter=6,
+        filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
         activation='relu6',
@@ -105,7 +102,7 @@ def build_best_portfolio(
 
     net = eiie_dense(
         net,
-        filter_number=filter_number,
+        filter_number=20,
         activation_function='relu6',
         regularizer="L2",
         weight_decay=weight_decay,
