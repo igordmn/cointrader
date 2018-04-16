@@ -51,15 +51,15 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val fee: Double = 0.0007,
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-02T15:50:00", zoneOffset("+3")),
-
         val testDays: Double = 60.0,
         val validationDays: Double = 5.0,
 
         val steps: Int = 180000,
         val repeats: Int = 10,
         val logSteps: Int = 500,
+
+        val fee: Double = 0.0007,
         val batchSize: Int = 60,
         val tradePeriodGeometricBias: Double = 5e-7
 )
