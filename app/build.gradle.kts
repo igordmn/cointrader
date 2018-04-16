@@ -44,7 +44,6 @@ apply {
 
 val kotlinVersion: String by extra
 val serializationVersion: String by extra
-val objectboxVersion: String by extra
 
 dependencies {
     compile(kotlin("stdlib", kotlinVersion))
