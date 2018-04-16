@@ -147,6 +147,7 @@ configure<ApplicationPluginConvention> {
             .from("$rootDir")
             .include("data/**")
             .exclude("data/cache/**")
+            .exclude("data/log/**")
             .include("python/**")
             .include("lib/native/**")
             .into("bin")
