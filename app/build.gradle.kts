@@ -15,7 +15,7 @@ import java.net.URI
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.21"
+    kotlinVersion = "1.2.31"
     var serializationVersion: String by extra
     serializationVersion = "0.4.2"
 
@@ -34,7 +34,7 @@ buildscript {
 plugins {
     application
     java
-    kotlin("jvm") version "1.2.21"
+    kotlin("jvm") version "1.2.31"
 }
 
 apply {
@@ -99,7 +99,7 @@ dependencies {
     compile("io.arrow-kt:arrow-instances:0.6.1")
     compile("io.arrow-kt:arrow-syntax:0.6.1")
     compile("org.knowm.xchart:xchart:3.5.1")
-    kapt("io.arrow-kt:arrow-annotations-processor:0.6.1")
+//    kapt("io.arrow-kt:arrow-annotations-processor:0.6.1")
     testCompile("io.kotlintest:kotlintest:2.0.7")
     testCompile("com.google.jimfs:jimfs:1.1")
 }
