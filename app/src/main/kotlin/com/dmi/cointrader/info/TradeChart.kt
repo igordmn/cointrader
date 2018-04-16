@@ -7,6 +7,7 @@ import javafx.scene.chart.LineChart
 import javafx.scene.chart.NumberAxis
 import javafx.scene.chart.XYChart
 import javafx.util.StringConverter
+import java.lang.Math.pow
 import java.nio.file.Path
 import javax.imageio.ImageIO
 import kotlin.math.log2
@@ -18,7 +19,7 @@ fun saveLogChart(data: ChartData, file: Path) {
         val xAxis = NumberAxis()
         val yAxis = NumberAxis().apply {
             tickLabelFormatter = object: StringConverter<Number>() {
-                override fun toString(num: Number): String = "2^" + "%.2f".format(num)
+                override fun toString(num: Number): String = "%.0f".format(pow(2.0, num.toDouble()))
                 override fun fromString(string: String): Number = throw UnsupportedOperationException()
             }
         }
