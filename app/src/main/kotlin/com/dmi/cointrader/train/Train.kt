@@ -24,7 +24,7 @@ import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
 suspend fun train() {
-    val chartUpperBound = pow(2.0, 128.0)
+    val chartUpperBound = pow(2.0, 7.0)
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
 
