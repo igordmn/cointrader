@@ -61,6 +61,7 @@ suspend fun performRealTrades() = resourceContext {
                 delay(seconds(35))
             }
         } catch (e: Throwable) {
+            Toolkit.getDefaultToolkit().beep()
             log.error("Error on trade", e)
         }
     }
