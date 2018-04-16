@@ -14,10 +14,13 @@ import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
+import com.dmi.util.lang.parseInstantRange
+import com.dmi.util.lang.zoneOffset
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
+import java.time.format.DateTimeFormatter
 
 suspend fun trainBatch() {
     val jep = jep()
@@ -29,11 +32,17 @@ suspend fun trainBatch() {
     val resultsDetailLogFile = resultsDir.resolve("resultsDetail.log")
     val resultsShortLogFile = resultsDir.resolve("resultsShort.log")
 
-    val steps = 40000
     val scoresSkipSteps = 10000
     val breakSteps = 20000
     val breakProfit = 1.06
-    val repeats = 3
+
+    fun trainConfig() = TrainConfig(
+            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-02T15:50:00", zoneOffset("+3")),
+            validationDays = 20.0,
+            steps = 40000,
+            repeats = 3,
+            logSteps = 1000
+    )
 
     var num = 0
 
@@ -47,7 +56,7 @@ suspend fun trainBatch() {
             resultsDetailLogFile.appendLine(additionalParams)
 
             val score = try {
-                (1..repeats).map {
+                (1..trainConfig.repeats).map {
                     resultsDetailLogFile.appendLine("repeat $it")
                     val score = trainSingle(tradeConfig, trainConfig, additionalParams)
                     resultsDetailLogFile.appendLine("score $score")
@@ -80,7 +89,7 @@ suspend fun trainBatch() {
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
-            val channel = batches.channel().take(steps)
+            val channel = batches.channel().take(trainConfig.steps)
             channel.consumeEachIndexed { (i, it) ->
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
@@ -115,38 +124,20 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), TrainConfig(), "{'kernel_size':7}")
-        train(TradeConfig(), TrainConfig(), "{'kernel_size':3}")
-        train(TradeConfig(), TrainConfig(), "{'kernel_size':2}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':20}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':12}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':10}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':8}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':4}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':3}")
-        train(TradeConfig(), TrainConfig(), "{'nb_filter':2}")
-        train(TradeConfig(), TrainConfig(), "{'filter_number':32}")
-        train(TradeConfig(), TrainConfig(), "{'filter_number':16}")
-        train(TradeConfig(), TrainConfig(), "{'filter_number':12}")
-        train(TradeConfig(), TrainConfig(), "{'filter_number':10}")
-        train(TradeConfig(), TrainConfig(), "{'filter_number':24}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay':5e-10}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay':5e-8}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay':5e-7}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay':5e-6}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay_last':5e-10}")
-        train(TradeConfig(), TrainConfig(), "{'weight_decay_last':5e-6}")
-        train(TradeConfig(), TrainConfig(), "{'lr_max':0.00028}")
-        train(TradeConfig(), TrainConfig(), "{'lr_max':0.00028 * 4}")
-        train(TradeConfig(), TrainConfig(), "{'lr_max':0.00028 * 8}")
-        train(TradeConfig(), TrainConfig(), "{'lr_min':0.00014}")
-        train(TradeConfig(), TrainConfig(), "{'lr_min':0.00001}")
-        train(TradeConfig(), TrainConfig(), "{'lr_min':0.00014, 'lr_max':0.00042}")
-        train(TradeConfig(), TrainConfig(), "{'lr_beta2':0.99}")
-        train(TradeConfig(), TrainConfig(), "{'lr_beta2':0.9}")
-        train(TradeConfig(), TrainConfig(), "{'lr_beta2':0.9999}")
-        train(TradeConfig(), TrainConfig(), "{'lr_epsilon':1e-6}")
-        train(TradeConfig(), TrainConfig(), "{'lr_epsilon':1e-4}")
-        train(TradeConfig(), TrainConfig(), "{'lr_epsilon':1e-10}")
+        train(TradeConfig(), trainConfig(), "{}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay_last':5e-10}")
+        train(TradeConfig(), trainConfig(), "{'weight_decay_last':5e-6}")
+        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028}")
+        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028 * 4}")
+        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028 * 8}")
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00014}")
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00001}")
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00014, 'lr_max':0.00042}")
+        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.99}")
+        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.9}")
+        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.9999}")
+        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-6}")
+        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-4}")
+        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-10}")
     }
 }
