@@ -55,7 +55,7 @@ suspend fun performRealTrades() = resourceContext {
             }
     ) { period ->
         try {
-            retry<Unit, Throwable>(3) {
+            retry<Unit, Throwable>(attempts = 3) {
                 performRealTrade(config, exchange, archive, period, Clock.systemUTC(), network, log)
                 delay(seconds(35))
             }
