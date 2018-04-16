@@ -59,7 +59,7 @@ data class TrainConfig(
         val testDays: Double = 60.0,
         val validationDays: Double = 5.0,
 
-        val steps: Int = 120000,
+        val steps: Int = 180000,
         val repeats: Int = 10,
         val logSteps: Int = 500,
 
