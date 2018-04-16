@@ -19,12 +19,15 @@ import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
+import java.lang.Math.pow
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
 suspend fun train() {
+    val chartUpperBound = pow(2.0, 128.0)
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
+
     val binanceExchange = binanceExchangeForInfo()
     require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
@@ -63,7 +66,7 @@ suspend fun train() {
 
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
-                saveLogChart(result.tests[0].chartData, chartFile(result.step))
+                saveLogChart(result.tests[0].chartData, chartFile(result.step), chartUpperBound)
                 resultsLogFile.appendLine(result.toString())
                 println(result.toString())
             }

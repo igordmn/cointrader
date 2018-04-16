@@ -7,7 +7,7 @@ import java.math.BigDecimal
 import java.nio.file.Path
 
 fun Broker.log(log: Logger, baseAsset: Asset, quoteAsset: Asset): Broker = LogBroker(this, log, baseAsset, quoteAsset)
-fun Broker.fileLog(file: Path, baseAsset: Asset, quoteAsset: Asset): Broker = FileLogBroker(this, file, baseAsset, quoteAsset)
+fun Broker.slippageLog(file: Path, baseAsset: Asset): Broker = SlippageLogBroker(this, file, baseAsset)
 
 class LogBroker(
         private val original: Broker,
@@ -32,25 +32,24 @@ class LogBroker(
     }
 }
 
-class FileLogBroker(
+class SlippageLogBroker(
         private val original: Broker,
         private val file: Path,
-        private val baseAsset: Asset,
-        private val quoteAsset: Asset
+        private val baseAsset: Asset
 ) : Broker {
     override val limits: Broker.Limits = original.limits
 
     override suspend fun buy(amount: BigDecimal): Broker.OrderResult {
         return original.buy(amount).also {
             val slippage = it.slippage
-            file.appendLine("buy $amount $baseAsset $slippage")
+            file.appendLine("buy $baseAsset $slippage")
         }
     }
 
     override suspend fun sell(amount: BigDecimal): Broker.OrderResult {
         return original.sell(amount).also {
             val slippage = it.slippage
-            file.appendLine("sell $amount $baseAsset $slippage")
+            file.appendLine("sell $baseAsset $slippage")
         }
     }
 }
