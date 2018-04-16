@@ -19,7 +19,7 @@ fun saveLogChart(data: ChartData, file: Path) {
         val xAxis = NumberAxis()
         val yAxis = NumberAxis().apply {
             tickLabelFormatter = object: StringConverter<Number>() {
-                override fun toString(num: Number): String = "%.0f".format(pow(2.0, num.toDouble()))
+                override fun toString(num: Number): String = "%.2f".format(pow(2.0, num.toDouble()))
                 override fun fromString(string: String): Number = throw UnsupportedOperationException()
             }
         }
