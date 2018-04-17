@@ -79,14 +79,18 @@ def normalize_history(history):
 
 
 def build_best_portfolio(
-        batch_size, alt_asset_number, history, current_portfolio, params
+        batch_size, alt_asset_number, history, current_portfolio, params, period
 ):
     # [batch, asset, history, indicator]
     net = history
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
     weight_decay = params.get('weight_decay', 5e-9)
-    weight_decay_last = params.get('weight_decay_last', 5e-8)
+
+    # period = (period % (6.0 * 60 * 24)) / 6.0 * 60 * 24
+    period = period / 2208870.0
+    kl = tf.tile(period[:, None, None, None], (1, alt_asset_number, 80, 1))
+    net = tf.concat((net, kl), axis=3)
 
     net = tflearn.layers.conv_2d(
         net,
@@ -96,9 +100,22 @@ def build_best_portfolio(
         padding="valid",
         activation='relu6',
         regularizer="L2",
-        weight_decay=weight_decay,
+        weight_decay=5e-9,
         weights_init=weights_init
     )
+
+    # net = tflearn.layers.conv_2d(
+    #     net,
+    #     nb_filter=6,
+    #     filter_size=[1, 5],
+    #     strides=[1, 1],
+    #     padding="valid",
+    #     activation='relu6',
+    #     regularizer="L2",
+    #     weight_decay=5e-9,
+    #     weights_init=weights_init
+    # )
+
 
     net = eiie_dense(
         net,
@@ -114,7 +131,7 @@ def build_best_portfolio(
         batch_size,
         current_portfolio,
         regularizer="L2",
-        weight_decay=weight_decay_last,
+        weight_decay=5e-8,
         weights_init=weights_init
     )
 
@@ -127,9 +144,10 @@ class NeuralNetwork:
         self.alt_asset_number = alt_asset_number
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
+        self.period = tf.placeholder(tf.float32, shape=[None])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
         self.vote, self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history,
-                                                                     self.current_portfolio, params)
+                                                                     self.current_portfolio, params, self.period)
 
         tf_config = tf.ConfigProto()
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
@@ -141,7 +159,7 @@ class NeuralNetwork:
         else:
             self.session.run(tf.global_variables_initializer())
 
-    def best_portfolio(self, current_portfolio, history):
+    def best_portfolio(self, current_portfolio, history, period):
         """
             Args:
                 current_portfolio: batch_count x alt_asset_number
@@ -153,6 +171,7 @@ class NeuralNetwork:
 
         tflearn.is_training(False, self.session)
         result = self.session.run(self.best_portfolio_tensor, feed_dict={
+            self.period: period,
             self.current_portfolio: current_portfolio,
             self.history: normalize_history(history),
             self.batch_size: history.shape[0]
@@ -220,13 +239,14 @@ class NeuralTrainer:
         self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=lr_beta2, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
+        self.period = network.period
         self.history = network.history
         self.current_portfolio = network.current_portfolio
         self.best_portfolio_tensor = network.best_portfolio_tensor
         self.session = network.session
         self.session.run(tf.global_variables_initializer())
 
-    def train(self, current_portfolio, history, asks, bids):
+    def train(self, current_portfolio, history, asks, bids, period):
         """
             Args:
                 current_portfolio: batch_count x alt_asset_number
@@ -242,6 +262,7 @@ class NeuralTrainer:
         results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit, self.vote], feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: normalize_history(history),
+            self.period: period,
             self.asks: asks,
             self.bids: bids,
             self.batch_size: history.shape[0]
