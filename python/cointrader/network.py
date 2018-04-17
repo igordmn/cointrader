@@ -219,7 +219,6 @@ class NeuralTrainer:
         self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=lr_beta2, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
-        self.period = network.period
         self.history = network.history
         self.current_portfolio = network.current_portfolio
         self.best_portfolio_tensor = network.best_portfolio_tensor
