@@ -36,8 +36,12 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "QTUM", "OMG", "IOTA", "XVG", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ",
-                        "VEN", "XMR", "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "ICX", "NEBL", "INS", "IOST", "NANO", "NCASH", "ZIL"
+//                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "QTUM", "OMG", "IOTA", "XVG", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ",
+//                        "VEN", "XMR", "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "ICX", "NEBL", "INS", "IOST", "NANO", "NCASH", "ZIL"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
+                        "MTL", "SUB", "EOS", "ETC", "ENG", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR",
+                        "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
+                        "NANO", "ZIL", "ONT", "STORM", "NCASH"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -51,12 +55,12 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-16T16:40:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-19T01:30:00", zoneOffset("+3")),
         val testDays: Double = 60.0,
         val validationDays: Double = 0.0,
 
-        val steps: Int = 100000,
-        val repeats: Int = 10,
+        val steps: Int = 30000,
+        val repeats: Int = 30,
         val logSteps: Int = 500,
 
         val fee: Double = 0.0007,
