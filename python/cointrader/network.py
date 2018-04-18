@@ -83,7 +83,6 @@ def build_best_portfolio(
     net = history
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
-    weight_decay = params.get('weight_decay', 5e-9)
 
     net = tflearn.layers.conv_2d(
         net,
@@ -102,7 +101,7 @@ def build_best_portfolio(
         filter_number=20,
         activation_function='relu6',
         regularizer="L2",
-        weight_decay=weight_decay,
+        weight_decay=5e-9,
         weights_init=weights_init
     )
 
