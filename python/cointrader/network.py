@@ -206,10 +206,8 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        lr_epsilon = params.get('lr_epsilon', 1e-8)
         learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000)
-
-        self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.999, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history
