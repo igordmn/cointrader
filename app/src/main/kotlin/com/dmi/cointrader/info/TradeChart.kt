@@ -18,10 +18,6 @@ fun saveLogChart(data: ChartData, file: Path, upperBound: Double? = null) {
     Platform.runLater {
         val xAxis = NumberAxis()
         val yAxis = NumberAxis().apply {
-            if (upperBound != null) {
-                isAutoRanging = false
-                this.upperBound = upperBound
-            }
             tickLabelFormatter = object: StringConverter<Number>() {
                 override fun toString(num: Number): String = "%.2f".format(pow(2.0, num.toDouble()))
                 override fun fromString(string: String): Number = throw UnsupportedOperationException()

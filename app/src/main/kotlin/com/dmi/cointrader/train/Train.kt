@@ -22,9 +22,9 @@ import kotlinx.coroutines.experimental.channels.take
 import java.lang.Math.pow
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
+import kotlin.math.log2
 
 suspend fun train() {
-    val chartUpperBound = pow(2.0, 7.0)
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
 
@@ -66,7 +66,7 @@ suspend fun train() {
 
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
-                saveLogChart(result.tests[0].chartData, chartFile(result.step), chartUpperBound)
+                saveLogChart(result.tests[0].chartData, chartFile(result.step))
                 resultsLogFile.appendLine(result.toString())
                 println(result.toString())
             }
