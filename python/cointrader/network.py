@@ -74,13 +74,6 @@ def normalize_history(history):
     history = history / last_price
     history = np.log(history)
 
-    # mean = np.mean(history, axis=(2, 3))[:, :, None, None]
-    # std = np.std(history, axis=(2, 3))[:, :, None, None]
-    # median = np.median(history, axis=(2, 3))[:, :, None, None]
-    # mad = robust.mad(history, axis=(2, 3))[:, :, None, None]
-    #
-    # history = history / (0.00001 + mad) * 0.01
-
     return history
 
 
@@ -91,6 +84,8 @@ def build_best_portfolio(
     net = history
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
+
+    # net = tflearn.batch_normalization(net, decay=0.99)
 
     net = tflearn.layers.conv_2d(
         net,
@@ -104,6 +99,8 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
+    # net = tflearn.batch_normalization(net, decay=0.99)
+
     net = eiie_dense(
         net,
         filter_number=20,
@@ -112,6 +109,7 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init=weights_init
     )
+    # net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
