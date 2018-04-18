@@ -124,16 +124,6 @@ suspend fun trainBatch() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-8}")
-        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-7}")
-        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-6}")
-        train(TradeConfig(), trainConfig(), "{'weight_decay':5e-10}")
-        train(TradeConfig(), trainConfig(), "{'lr_min':0.00003, 'lr_max':0.00030}")
-        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.99}")
-        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.9}")
-        train(TradeConfig(), trainConfig(), "{'lr_beta2':0.9999}")
-        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-6}")
-        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-4}")
-        train(TradeConfig(), trainConfig(), "{'lr_epsilon':1e-10}")
+        train(TradeConfig(), trainConfig(), "{}")
     }
 }
