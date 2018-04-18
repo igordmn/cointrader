@@ -1,6 +1,7 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
+from statsmodels import robust
 from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
@@ -72,6 +73,13 @@ def normalize_history(history):
     last_price = np.sqrt(last_ask * last_bid)
     history = history / last_price
     history = np.log(history)
+
+    # mean = np.mean(history, axis=(2, 3))[:, :, None, None]
+    # std = np.std(history, axis=(2, 3))[:, :, None, None]
+    # median = np.median(history, axis=(2, 3))[:, :, None, None]
+    # mad = robust.mad(history, axis=(2, 3))[:, :, None, None]
+    #
+    # history = history / (0.00001 + mad) * 0.01
 
     return history
 
