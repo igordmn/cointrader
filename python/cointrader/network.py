@@ -39,8 +39,7 @@ def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay, 
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
-    vote = net
-    return vote, tflearn.layers.core.activation(net, activation="softmax")
+    return tflearn.layers.core.activation(net, activation="softmax")
 
 
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
@@ -62,8 +61,7 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer, regularizer=tf.contrib.layers.l2_regularizer(0.001))
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
-    vote = net
-    return vote, tflearn.layers.core.activation(net, activation="softmax")
+    return tflearn.layers.core.activation(net, activation="softmax")
 
 
 def normalize_history(history):
@@ -108,7 +106,7 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
-    vote, net = eiie_output_withw(
+    net = eiie_output_withw(
         net,
         batch_size,
         current_portfolio,
@@ -117,7 +115,7 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
-    return vote, net
+    return  net
 
 
 class NeuralNetwork:
@@ -127,7 +125,7 @@ class NeuralNetwork:
         self.batch_size = tf.placeholder(tf.int32, shape=[])
         self.history = tf.placeholder(tf.float32, shape=[None, alt_asset_number, history_size, history_indicator_number])
         self.current_portfolio = tf.placeholder(tf.float32, shape=[None, alt_asset_number])
-        self.vote, self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history,
+        self.best_portfolio_tensor = build_best_portfolio(self.batch_size, self.alt_asset_number, self.history,
                                                                      self.current_portfolio, params)
 
         tf_config = tf.ConfigProto()
@@ -196,8 +194,6 @@ def clr(global_step, min, max, step_size=5000., decay=0.92):
 
 class NeuralTrainer:
     def __init__(self, network, fee, params):
-        self.i = 0
-        self.vote = network.vote
         self.net = network
 
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
@@ -210,13 +206,10 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        lr_min = params.get('lr_min', 0.00007)
-        lr_max = params.get('lr_max', 0.00028 * 2)
-        lr_beta2 = params.get('lr_beta2', 0.999)
         lr_epsilon = params.get('lr_epsilon', 1e-8)
-        learning_rate = clr(global_step, min=lr_min, max=lr_max)
+        learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000)
 
-        self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=lr_beta2, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate, beta2=0.999, epsilon=lr_epsilon).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history
@@ -238,16 +231,12 @@ class NeuralTrainer:
                 geometric_mean_profit
         """
         tflearn.is_training(True, self.session)
-        results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit, self.vote], feed_dict={
+        results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit], feed_dict={
             self.current_portfolio: current_portfolio,
             self.history: normalize_history(history),
             self.asks: asks,
             self.bids: bids,
             self.batch_size: history.shape[0]
         })
-
-        # if self.i % 1000 == 0:
-        #     print("" + str(results[3][0][0]) + " " + str(results[3][0][1]) + " " + str(results[3][0][2]) + " " + str(results[3][0][3]))
-        self.i += 1
 
         return results[1], float(results[2])
