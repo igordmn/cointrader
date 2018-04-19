@@ -1,21 +1,8 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
-from statsmodels import robust
-from tensorflow.contrib.layers import batch_norm
 
 from tensorflow.python.ops import math_ops
-
-
-def lstm(net, alt_asset_number):
-    neuron_number = 10
-    net = tf.transpose(net, [0, 2, 3, 1])
-    resultlist = []
-    for i in range(alt_asset_number):
-        resultlist.append(tflearn.layers.lstm(net[:, :, :, i], neuron_number, dropout=0.5, scope="lstm1", reuse=i > 0))
-    net = tf.stack(resultlist)
-    net = tf.transpose(net, [1, 0, 2])
-    return tf.reshape(net, [-1, alt_asset_number, 1, neuron_number])
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay, weights_init):
@@ -85,8 +72,6 @@ def build_best_portfolio(
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
 
-    # net = tflearn.batch_normalization(net, decay=0.99)
-
     net = tflearn.layers.conv_2d(
         net,
         nb_filter=6,
@@ -99,8 +84,6 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
-    # net = tflearn.batch_normalization(net, decay=0.99)
-
     net = eiie_dense(
         net,
         filter_number=20,
@@ -109,7 +92,6 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init=weights_init
     )
-    # net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
