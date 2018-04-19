@@ -120,7 +120,7 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
-    return  net
+    return net
 
 
 class NeuralNetwork:
