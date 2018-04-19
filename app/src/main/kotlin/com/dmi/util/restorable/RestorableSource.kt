@@ -1,7 +1,6 @@
 package com.dmi.util.restorable
 
 import arrow.core.Option
-import arrow.syntax.applicative.pure
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.map
 import kotlinx.serialization.Serializable
@@ -11,6 +10,8 @@ import arrow.core.Option.Companion.pure
 import arrow.core.Option.Companion.empty
 import arrow.core.getOrElse
 import kotlinx.coroutines.experimental.channels.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 interface RestorableSource<STATE, out VALUE> {
     fun initial(): ReceiveChannel<Item<STATE, VALUE>>
@@ -101,6 +102,37 @@ fun <T> List<T>.asRestorableSource() = object : RestorableSource<Int, T> {
     override fun restored(state: Int): ReceiveChannel<Item<Int, T>> = produce {
         for (i in state + 1 until this@asRestorableSource.size) {
             send(Item(i, this@asRestorableSource[i]))
+        }
+    }
+}
+
+@Serializable
+data class WindowedState<out SOURCE_STATE, out VALUE>(val source: SOURCE_STATE, val lastItems: List<VALUE>)
+
+typealias WindowedItem<SOURCE_STATE, VALUE> = Item<WindowedState<SOURCE_STATE, VALUE>, List<VALUE>>
+
+fun <STATE, VALUE> RestorableSource<STATE, VALUE>.rightWindowed(size: Int) = object : RestorableSource<WindowedState<STATE, VALUE>, List<VALUE>> {
+    override fun initial(): ReceiveChannel<WindowedItem<STATE, VALUE>> = produce {
+        val items = LinkedList<VALUE>()
+        this@rightWindowed.initial().consumeEach {
+            items.addLast(it.value)
+            if (items.size > size) {
+                items.removeFirst()
+            }
+            val arrayItems = ArrayList(items)
+            send(WindowedItem(WindowedState(it.state, arrayItems), arrayItems))
+        }
+    }
+
+    override fun restored(state: WindowedState<STATE, VALUE>): ReceiveChannel<WindowedItem<STATE, VALUE>> = produce {
+        val items = LinkedList(state.lastItems)
+        this@rightWindowed.restored(state.source).consumeEach {
+            items.addLast(it.value)
+            if (items.size > size) {
+                items.removeFirst()
+            }
+            val arrayItems = ArrayList(items)
+            send(WindowedItem(WindowedState(it.state, arrayItems), arrayItems))
         }
     }
 }

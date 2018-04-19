@@ -76,4 +76,14 @@ class RestorableSourceSpec : Spec({
         source.restoredAfter(3) shouldBe listOf(18.1)
         source.restoredAfter(4) shouldBe emptyList<Int>()
     }
+
+    "rightWindowed" {
+        val source = fibonacci().rightWindowed(3)
+        source.initialValues() shouldBe listOf(listOf(1), listOf(1, 2), listOf(1, 2, 3), listOf(2, 3, 5), listOf(3, 5, 8))
+        source.restoredAfter(0) shouldBe listOf(listOf(1, 2), listOf(1, 2, 3), listOf(2, 3, 5), listOf(3, 5, 8))
+        source.restoredAfter(1) shouldBe listOf(listOf(1, 2, 3), listOf(2, 3, 5), listOf(3, 5, 8))
+        source.restoredAfter(2) shouldBe listOf(listOf(2, 3, 5), listOf(3, 5, 8))
+        source.restoredAfter(3) shouldBe listOf(listOf(3, 5, 8))
+        source.restoredAfter(4) shouldBe emptyList<Int>()
+    }
 })
