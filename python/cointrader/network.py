@@ -84,8 +84,6 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
-    net = tflearn.layers.batch_normalization(net, decay=0.99)
-
     net = eiie_dense(
         net,
         filter_number=20,
@@ -94,8 +92,6 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init=weights_init
     )
-
-    net = tflearn.layers.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
