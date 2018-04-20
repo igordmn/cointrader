@@ -156,7 +156,6 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
-    # feee = tf.reduce_mean(fees)
 
     price_incs = prices[1:] / prices[:-1]
     fees = fees[:-1]
@@ -173,7 +172,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     return batch_size - 2, profit * cost
 
 
-def clr(global_step, min, max, step_size=5000., decay=0.92):
+def clr(global_step, min, max, step_size, decay):
     global_step = math_ops.cast(global_step, tf.float32)
     cycle = tf.floor(1 + global_step / (2 * step_size))
     x = tf.abs(global_step / step_size - 2 * cycle + 1)
@@ -194,7 +193,7 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000)
+        learning_rate = clr(global_step, min=0.00007, max=0.00028 * 4, step_size=5000, decay=0.92)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
