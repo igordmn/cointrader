@@ -53,9 +53,9 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2018-02-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
         val testDays: Double = 30.0,
-        val validationDays: Double = 5.0,
+        val validationDays: Double = 30.0,
 
         val steps: Int = 60000,
         val repeats: Int = 30,
