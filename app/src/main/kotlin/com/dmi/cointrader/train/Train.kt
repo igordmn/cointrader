@@ -53,8 +53,10 @@ suspend fun train() {
             fun netDir(step: Int) = networksDir.resolve(step.toString())
 
             val chartsDir = resultsDir.resolve("charts")
+            val charts2Dir = resultsDir.resolve("charts2")
             createDirectories(chartsDir)
             fun chartFile(step: Int) = chartsDir.resolve("$step.png")
+            fun chartFile2(step: Int) = charts2Dir.resolve("$step.png")
 
             val resultsLogFile = resultsDir.resolve("results.log")
 
@@ -67,6 +69,7 @@ suspend fun train() {
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
                 saveLogChart(result.tests[0].chartData, chartFile(result.step))
+                saveLogChart(result.tests[1].chartData, chartFile2(result.step))
                 resultsLogFile.appendLine(result.toString())
                 println(result.toString())
             }
