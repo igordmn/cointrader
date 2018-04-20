@@ -59,7 +59,7 @@ data class TrainConfig(
 
         val steps: Int = 60000,
         val repeats: Int = 30,
-        val logSteps: Int = 1000,
+        val logSteps: Int = 500,
 
         val fee: Double = 0.0007,
         val batchSize: Int = 60,
