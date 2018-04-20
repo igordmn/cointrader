@@ -84,7 +84,7 @@ suspend fun train() {
                             trainProfits = trainProfits,
                             testCapitals = listOf(
                                     performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee)
+                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
 //                                    performTestTradesPartialFast(testPeriods, tradeConfig, net, archive, trainConfig.fee)
 //                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
