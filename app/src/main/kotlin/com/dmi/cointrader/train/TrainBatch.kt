@@ -38,7 +38,7 @@ suspend fun trainBatch() {
 
     fun trainConfig() = TrainConfig(
             range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
-            validationDays = 20.0,
+            validationDays = 30.0,
             steps = 40000,
             repeats = 3,
             logSteps = 1000
