@@ -84,6 +84,8 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
+    net = tflearn.layers.batch_normalization(net, decay=0.99)
+
     net = eiie_dense(
         net,
         filter_number=20,
@@ -92,6 +94,8 @@ def build_best_portfolio(
         weight_decay=5e-9,
         weights_init=weights_init
     )
+
+    net = tflearn.layers.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
@@ -156,6 +160,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
+    # feee = tf.reduce_mean(fees)
 
     price_incs = prices[1:] / prices[:-1]
     fees = fees[:-1]
