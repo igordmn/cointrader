@@ -55,6 +55,7 @@ suspend fun train() {
             val chartsDir = resultsDir.resolve("charts")
             val charts2Dir = resultsDir.resolve("charts2")
             createDirectories(chartsDir)
+            createDirectories(charts2Dir)
             fun chartFile(step: Int) = chartsDir.resolve("$step.png")
             fun chartFile2(step: Int) = charts2Dir.resolve("$step.png")
 
