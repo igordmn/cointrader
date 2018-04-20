@@ -48,7 +48,7 @@ data class TradeConfig(
                          */
                         //1000
                         /**
-                         * "USDT", "ETH", "NEO", "BCC", "QTUM", "MTL", "EOS", "TRX", "XRP", "GVT", "ADA", "XLM", "ICX", "NEBL", "NCASH"
+                         * "USDT", "ETH", "NEO", "BCC", "QTUM", "MTL", "EOS", "TRX", "XRP", "GVT", "ADA", "XLM", "ICX", "NEBL"
                          */
 
                 )

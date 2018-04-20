@@ -34,11 +34,11 @@ suspend fun trainBatch() {
 
     val scoresSkipSteps = 10000
     val breakSteps = 20000
-    val breakProfit = 1.06
+    val breakProfit = 1.03
 
     fun trainConfig() = TrainConfig(
-            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
-            validationDays = 30.0,
+//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
+//            validationDays = 30.0,
             steps = 40000,
             repeats = 3,
             logSteps = 1000
