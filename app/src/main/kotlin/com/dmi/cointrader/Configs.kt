@@ -78,7 +78,7 @@ data class TrainConfig(
         val repeats: Int = 30,
         val logSteps: Int = 1000,
 
-        val fee: Double = 0.0005,
+        val fee: Double = 0.0007,
         val batchSize: Int = 60,
         val tradePeriodGeometricBias: Double = 5e-7
 )
