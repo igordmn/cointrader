@@ -96,7 +96,7 @@ suspend fun trainBatch() {
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
                 trainProfits.add(trainProfit)
-                if (i % trainConfig.logSteps == 0 && i >= scoresSkipSteps) {
+                if (i % trainConfig.logSteps == 0) {
                     val result = trainResult(
                             space = tradeConfig.periodSpace,
                             tradePeriods = tradeConfig.tradePeriods.size,
@@ -118,7 +118,7 @@ suspend fun trainBatch() {
                 }
             }
             fun TrainResult.score() = tests[0].dayProfitMean
-            val scores = results.map { it.score() }.sorted()
+            val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
             scores[scores.size * 3 / 4]
         }
     }) {
