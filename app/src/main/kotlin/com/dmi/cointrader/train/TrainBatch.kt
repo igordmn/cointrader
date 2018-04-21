@@ -136,8 +136,8 @@ suspend fun trainBatch() {
         train(TradeConfig(), trainConfig(), "{filter_number=30}")
         train(TradeConfig(), trainConfig(), "{filter_number=50}")
         train(TradeConfig(), trainConfig(batchSize = 500), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(160)), trainConfig(batchSize = 500), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods(240)), trainConfig(batchSize = 500), "{}")
-        train(TradeConfig(historyPeriods = historyPeriods2(5), tradePeriods = tradePeriods(5)), trainConfig(batchSize = 500), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(160)), trainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(240)), trainConfig(), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(5), tradePeriods = tradePeriods(5)), trainConfig(), "{}")
     }
 }
