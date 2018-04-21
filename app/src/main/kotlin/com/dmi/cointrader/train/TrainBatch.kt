@@ -33,15 +33,17 @@ suspend fun trainBatch() {
     val resultsShortLogFile = resultsDir.resolve("resultsShort.log")
 
     val scoresSkipSteps = 10000
-    val breakSteps = 20000
-    val breakProfit = 1.03
+    val breakSteps = 12000
+    val breakProfit = 1.032
 
-    fun trainConfig() = TrainConfig(
+    fun trainConfig(batchSize: Int = 60, fee: Double = 0.0007) = TrainConfig(
 //            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
 //            validationDays = 30.0,
-            steps = 40000,
-            repeats = 3,
-            logSteps = 1000
+            steps = 25000,
+            repeats = 4,
+            logSteps = 500,
+            batchSize = batchSize,
+            fee = fee
     )
 
     var num = 0
@@ -94,7 +96,7 @@ suspend fun trainBatch() {
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
                 trainProfits.add(trainProfit)
-                if (i % trainConfig.logSteps == 0) {
+                if (i % trainConfig.logSteps == 0 && i >= scoresSkipSteps) {
                     val result = trainResult(
                             space = tradeConfig.periodSpace,
                             tradePeriods = tradeConfig.tradePeriods.size,
@@ -116,7 +118,7 @@ suspend fun trainBatch() {
                 }
             }
             fun TrainResult.score() = tests[0].dayProfitMean
-            val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
+            val scores = results.map { it.score() }.sorted()
             scores[scores.size * 3 / 4]
         }
     }) {
@@ -125,5 +127,17 @@ suspend fun trainBatch() {
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
         train(TradeConfig(), trainConfig(), "{}")
+        train(TradeConfig(), trainConfig(), "{kernel_size=7}")
+        train(TradeConfig(), trainConfig(), "{kernel_size=9}")
+        train(TradeConfig(), trainConfig(), "{kernel_size=2}")
+        train(TradeConfig(), trainConfig(), "{nb_filter=10}")
+        train(TradeConfig(), trainConfig(), "{nb_filter=20}")
+        train(TradeConfig(), trainConfig(), "{nb_filter=30}")
+        train(TradeConfig(), trainConfig(), "{filter_number=30}")
+        train(TradeConfig(), trainConfig(), "{filter_number=50}")
+        train(TradeConfig(), trainConfig(batchSize = 500), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(160)), trainConfig(batchSize = 500), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods(240)), trainConfig(batchSize = 500), "{}")
+        train(TradeConfig(historyPeriods = historyPeriods2(5), tradePeriods = tradePeriods(5)), trainConfig(batchSize = 500), "{}")
     }
 }

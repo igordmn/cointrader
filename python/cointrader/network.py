@@ -45,7 +45,6 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
         weights_init=weights_init
     )
     net = net[:, :, 0, 0]
-    # todo conv from usd
     main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer, regularizer=tf.contrib.layers.l2_regularizer(0.001))
     main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
     net = tf.concat([main_asset_bias, net], 1)
@@ -54,12 +53,12 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 
 def normalize_history(history):
     usds = np.sqrt(history[:, 0, None, :, 0, None] * history[:, 0, None, :, 1, None])
-    history = history / usds
+    # history = history / usds
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = np.sqrt(last_ask * last_bid)
     history = history / last_price
-    history = np.log(history)
+    history = 10 * np.log(history)
 
     return history
 
@@ -72,10 +71,14 @@ def build_best_portfolio(
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
 
+    nb_filter = params.get('nb_filter', 6)
+    kernel_size = params.get('kernel_size', 5)
+    filter_number = params.get('filter_number', 20)
+
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=6,
-        filter_size=[1, 5],
+        nb_filter=nb_filter,
+        filter_size=[1, kernel_size],
         strides=[1, 1],
         padding="valid",
         activation='relu6',
@@ -84,14 +87,18 @@ def build_best_portfolio(
         weights_init=weights_init
     )
 
+    # net = tflearn.batch_normalization(net, decay=0.99)
+
     net = eiie_dense(
         net,
-        filter_number=20,
+        filter_number=filter_number,
         activation_function='relu6',
         regularizer="L2",
         weight_decay=5e-9,
         weights_init=weights_init
     )
+
+    # net = tflearn.batch_normalization(net, decay=0.99)
 
     net = eiie_output_withw(
         net,
@@ -154,6 +161,7 @@ class NeuralNetwork:
 def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
+
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
 
@@ -166,7 +174,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     fees = fees[1:]
     best_portfolio = best_portfolio[1:]
     current_portfolio = future_portfolio[:-1]
-    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * fees[:, 1:], axis=1)
+    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * 0.0020, axis=1)
     profit = tf.reduce_sum(price_incs * best_portfolio, axis=1)
 
     return batch_size - 2, profit * cost
@@ -193,6 +201,7 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
+        # learning_rate = tf.train.cosine_decay_restarts(0.0014, global_step, alpha=0.00007, first_decay_steps=1000)
         learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
