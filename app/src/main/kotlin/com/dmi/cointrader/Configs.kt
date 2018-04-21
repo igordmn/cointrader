@@ -36,17 +36,23 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        // 200
                         "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
                         "MTL", "SUB", "EOS", "ETC", "ENG", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR",
                         "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
                         "NANO", "ZIL", "ONT", "STORM", "NCASH"
 
-                        //600
+                        // 200
+                        /**
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
+                        "MTL", "SUB", "EOS", "ETC", "ENG", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR",
+                        "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
+                        "NANO", "ZIL", "ONT", "STORM", "NCASH"
+*/
+                        // 600
                         /**
                          * "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN", "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
                          */
-                        //1000
+                        // 1000
                         /**
                          * "USDT", "ETH", "NEO", "BCC", "QTUM", "MTL", "EOS", "TRX", "XRP", "GVT", "ADA", "XLM", "ICX", "NEBL"
                          */
