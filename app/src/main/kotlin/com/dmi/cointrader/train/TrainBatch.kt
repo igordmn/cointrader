@@ -32,8 +32,8 @@ suspend fun trainBatch() {
     val resultsDetailLogFile = resultsDir.resolve("resultsDetail.log")
     val resultsShortLogFile = resultsDir.resolve("resultsShort.log")
 
-    val scoresSkipSteps = 10000
-    val breakSteps = 10000
+    val scoresSkipSteps = 8000
+    val breakSteps = 8000
     val breakProfit = 1.032
 
     fun trainConfig(batchSize: Int = 60, fee: Double = 0.0007) = TrainConfig(
