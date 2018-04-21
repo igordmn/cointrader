@@ -174,7 +174,7 @@ def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     fees = fees[1:]
     best_portfolio = best_portfolio[1:]
     current_portfolio = future_portfolio[:-1]
-    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * 0.0020, axis=1)
+    cost = 1.0 - tf.reduce_sum(tf.abs(best_portfolio[:, 1:] - current_portfolio[:, 1:]) * fees[:, 1:], axis=1)
     profit = tf.reduce_sum(price_incs * best_portfolio, axis=1)
 
     return batch_size - 2, profit * cost
