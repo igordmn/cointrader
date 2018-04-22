@@ -1,5 +1,6 @@
 package com.dmi.cointrader.train
 
+import com.dmi.cointrader.TradeAssets
 import com.dmi.cointrader.TradeConfig
 import com.dmi.cointrader.TradePeriods
 import com.dmi.cointrader.TrainConfig
@@ -26,13 +27,13 @@ suspend fun trainBatch() {
     val jep = jep()
 
     fun trainConfig() = TrainConfig(
-//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
-//            validationDays = 30.0,
-            steps = 25000,
-            repeats = 4,
+//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-23T00:00:00", zoneOffset("+3")),
+//            validationDays = 20.0,
+            steps = 13000,
+            repeats = 2,
             logSteps = 1000,
-            scoresSkipSteps = 10000,
-            breakSteps = 10000,
+            scoresSkipSteps = 4000,
+            breakSteps = 7000,
             breakProfit = 1.032
     )
 
@@ -54,17 +55,17 @@ suspend fun trainBatch() {
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
         train(TradeConfig(), trainConfig(), "{}")
-        train(TradeConfig(), trainConfig(), "{'kernel_size':7}")
-        train(TradeConfig(), trainConfig(), "{'kernel_size':9}")
-        train(TradeConfig(), trainConfig(), "{'kernel_size':2}")
-        train(TradeConfig(), trainConfig(), "{'nb_filter':10}")
-        train(TradeConfig(), trainConfig(), "{'nb_filter':20}")
-        train(TradeConfig(), trainConfig(), "{'nb_filter':30}")
-        train(TradeConfig(), trainConfig(), "{'filter_number':30}")
-        train(TradeConfig(), trainConfig(), "{'filter_number':50}")
-        train(TradeConfig(), trainConfig(), "{'activation':'prelu'}")
-        train(TradeConfig(), trainConfig(), "{'activation':'elu'}")
-        train(TradeConfig(), trainConfig(), "{'activation':'celu'}")
-        train(TradeConfig(), trainConfig(), "{'activation':'selu'}")
+
+//        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
+//                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
+//                "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM", "XVG"
+//        ))), TrainConfig(), "{}")
+//
+//        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
+//                "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
+//                "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
+//                "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG",
+//                "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM"
+//        ))), TrainConfig(), "{}")
     }
 }

@@ -68,21 +68,13 @@ def build_best_portfolio(
 
     weights_init = tflearn.initializations.variance_scaling(0.5, 'FAN_IN', True)
 
-    activation = params.get('activation', 'relu6')
-    nb_filter = params.get('nb_filter', 6)
-    kernel_size = params.get('kernel_size', 5)
-    filter_number = params.get('filter_number', 20)
-
-    if activation == 'selu':
-        activation = tf.nn.selu
-
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=nb_filter,
-        filter_size=[1, kernel_size],
+        nb_filter=16,
+        filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
-        activation=activation,
+        activation='relu6',
         regularizer="L2",
         weight_decay=5e-9,
         weights_init=weights_init
@@ -90,8 +82,8 @@ def build_best_portfolio(
 
     net = eiie_dense(
         net,
-        filter_number=filter_number,
-        activation_function=activation,
+        filter_number=24,
+        activation_function='relu6',
         regularizer="L2",
         weight_decay=5e-9,
         weights_init=weights_init

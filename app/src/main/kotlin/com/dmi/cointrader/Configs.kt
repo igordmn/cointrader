@@ -41,22 +41,18 @@ data class TradeConfig(
                         "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
                         "NANO", "ZIL", "ONT", "STORM", "NCASH"
 
-                        // 200
-                        /**
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
-                        "MTL", "SUB", "EOS", "ETC", "ENG", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR",
-                        "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
-                        "NANO", "ZIL", "ONT", "STORM", "NCASH"
-*/
-                        // 600
-                        /**
-                         * "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN", "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
-                         */
-                        // 1000
-                        /**
-                         * "USDT", "ETH", "NEO", "BCC", "QTUM", "MTL", "EOS", "TRX", "XRP", "GVT", "ADA", "XLM", "ICX", "NEBL"
-                         */
+                        /*
+                            200
 
+                            "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
+                            "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
+                            "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG",
+                            "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM"
+
+                             600
+                            "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
+                            "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
+                         */
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -74,8 +70,8 @@ data class TrainConfig(
         val testDays: Double = 30.0,
         val validationDays: Double = 90.0,
 
-        val steps: Int = 40000,
-        val repeats: Int = 30,
+        val steps: Int = 60000,
+        val repeats: Int = 5,
         val logSteps: Int = 1000,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
@@ -84,5 +80,4 @@ data class TrainConfig(
         val fee: Double = 0.0007,
         val batchSize: Int = 60,
         val tradePeriodGeometricBias: Double = 5e-7
-
 )
