@@ -43,9 +43,7 @@ suspend fun trainBatch() {
     with(object {
         suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
             try {
-                (1..trainConfig.repeats).forEach {
-                    train(jep, Paths.get("data/resultsBatch/$num"), tradeConfig, trainConfig, additionalParams)
-                }
+                train(jep, Paths.get("data/resultsBatch/$num"), tradeConfig, trainConfig, additionalParams)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
