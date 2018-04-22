@@ -25,14 +25,12 @@ import java.time.format.DateTimeFormatter
 suspend fun trainBatch() {
     val jep = jep()
 
-    fun trainConfig(batchSize: Int = 60, fee: Double = 0.0007) = TrainConfig(
+    fun trainConfig() = TrainConfig(
 //            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
 //            validationDays = 30.0,
             steps = 25000,
             repeats = 4,
             logSteps = 1000,
-            batchSize = batchSize,
-            fee = fee,
             scoresSkipSteps = 10000,
             breakSteps = 10000,
             breakProfit = 1.032
