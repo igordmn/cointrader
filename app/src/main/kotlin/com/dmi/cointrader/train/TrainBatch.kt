@@ -41,6 +41,7 @@ suspend fun trainBatch() {
     with(object {
         suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
             try {
+                println("   Num $num")
                 train(jep, Paths.get("data/resultsBatch/$num"), tradeConfig, trainConfig, additionalParams)
             } catch (e: Exception) {
                 e.printStackTrace()

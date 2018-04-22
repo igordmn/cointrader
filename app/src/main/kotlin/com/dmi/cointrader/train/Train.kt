@@ -72,6 +72,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             resultsLogFile.appendLine(trainConfig.toString())
             resultsLogFile.appendLine(additionalParams)
 
+            println("Repeat $repeat")
+
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
