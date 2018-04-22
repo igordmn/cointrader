@@ -17,17 +17,26 @@ import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
+import jep.Jep
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
 import java.lang.Math.pow
 import java.nio.file.Files.createDirectories
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.math.log2
+
+typealias TrainScore = Double
 
 suspend fun train() {
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
+    saveTradeConfig(tradeConfig)
+    val jep = jep()
+    train(jep, Paths.get("data/results"), tradeConfig, trainConfig, "{}")
+}
 
+suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
     val binanceExchange = binanceExchangeForInfo()
     require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
     val periods = trainConfig.range.periods(tradeConfig.periodSpace)
@@ -35,17 +44,15 @@ suspend fun train() {
             tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
             reloadCount = tradeConfig.archiveReloadPeriods
     )
-    val jep = jep()
     val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
 
     PlatformImpl.startup({})
-    saveTradeConfig(tradeConfig)
 
-    Paths.get("data/results").deleteRecursively()
+    path.deleteRecursively()
 
     repeat(trainConfig.repeats) { repeat ->
         resourceContext {
-            val resultsDir = Paths.get("data/results/$repeat")
+            val resultsDir = path.resolve("$repeat")
             createDirectories(resultsDir)
 
             val networksDir = resultsDir.resolve("networks")
@@ -61,11 +68,15 @@ suspend fun train() {
 
             val resultsLogFile = resultsDir.resolve("results.log")
 
+            resultsLogFile.appendLine(tradeConfig.toString())
+            resultsLogFile.appendLine(trainConfig.toString())
+            resultsLogFile.appendLine(additionalParams)
+
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
             val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
-            val net = trainingNetwork(jep, tradeConfig)
-            val trainer = networkTrainer(jep, net, trainConfig.fee)
+            val net = trainingNetwork(jep, tradeConfig, additionalParams)
+            val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
 
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
@@ -75,7 +86,8 @@ suspend fun train() {
                 println(result.toString())
             }
 
-            batches.channel().take(trainConfig.steps).consumeEachIndexed { (i, it) ->
+            val channel = batches.channel()
+            channel.take(trainConfig.steps).consumeEachIndexed { (i, it) ->
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
                 trainProfits.add(trainProfit)
@@ -96,8 +108,18 @@ suspend fun train() {
                     results.add(result)
                     saveNet(result)
                     trainProfits = ArrayList(trainConfig.logSteps)
+
+                    if (i >= trainConfig.breakSteps && !results.any { it.tests[0].dayProfitMean >= trainConfig.breakProfit }) {
+                        channel.cancel()
+                    }
                 }
             }
+
+            fun TrainResult.score() = tests[0].dayProfitMean
+            val scores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
+            val score = scores[scores.size * 3 / 4]
+            resultsLogFile.appendLine("Score $score")
+            println("Score $score")
         }
     }
 }

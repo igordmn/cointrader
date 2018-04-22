@@ -25,17 +25,6 @@ import java.time.format.DateTimeFormatter
 suspend fun trainBatch() {
     val jep = jep()
 
-    val resultsDir = Paths.get("data/resultsBatch")
-    resultsDir.deleteRecursively()
-    createDirectories(resultsDir)
-
-    val resultsDetailLogFile = resultsDir.resolve("resultsDetail.log")
-    val resultsShortLogFile = resultsDir.resolve("resultsShort.log")
-
-    val scoresSkipSteps = 10000
-    val breakSteps = 10000
-    val breakProfit = 1.032
-
     fun trainConfig(batchSize: Int = 60, fee: Double = 0.0007) = TrainConfig(
 //            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T00:45:00", zoneOffset("+3")),
 //            validationDays = 30.0,
@@ -43,83 +32,24 @@ suspend fun trainBatch() {
             repeats = 4,
             logSteps = 1000,
             batchSize = batchSize,
-            fee = fee
+            fee = fee,
+            scoresSkipSteps = 10000,
+            breakSteps = 10000,
+            breakProfit = 1.032
     )
 
     var num = 0
 
     with(object {
         suspend fun train(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String) {
-            num++
-            resultsDetailLogFile.appendLine("")
-            resultsDetailLogFile.appendLine("    $num")
-            resultsDetailLogFile.appendLine(tradeConfig.toString())
-            resultsDetailLogFile.appendLine(trainConfig.toString())
-            resultsDetailLogFile.appendLine(additionalParams)
-
-            val score = try {
-                (1..trainConfig.repeats).map {
-                    resultsDetailLogFile.appendLine("repeat $it")
-                    val score = trainSingle(tradeConfig, trainConfig, additionalParams)
-                    resultsDetailLogFile.appendLine("score $score")
-                    score
-                }.max()
+            try {
+                (1..trainConfig.repeats).forEach {
+                    train(jep, Paths.get("data/resultsBatch/$num"), tradeConfig, trainConfig, additionalParams)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                0.0
             }
-
-            resultsShortLogFile.appendLine("")
-            resultsShortLogFile.appendLine("    $num")
-            resultsShortLogFile.appendLine(tradeConfig.toString())
-            resultsShortLogFile.appendLine(trainConfig.toString())
-            resultsShortLogFile.appendLine(additionalParams)
-            resultsShortLogFile.appendLine(score.toString())
-        }
-
-        suspend fun trainSingle(tradeConfig: TradeConfig, trainConfig: TrainConfig, additionalParams: String): Double = resourceContext {
-            val binanceExchange = binanceExchangeForInfo()
-            require(trainConfig.range in tradeConfig.periodSpace.start..binanceExchange.currentTime())
-            val periods = trainConfig.range.periods(tradeConfig.periodSpace)
-            val archive = archive(
-                    tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
-                    reloadCount = tradeConfig.archiveReloadPeriods
-            )
-            val net = trainingNetwork(jep, tradeConfig, additionalParams)
-            val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
-            val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
-            val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
-            var trainProfits = ArrayList<Double>(trainConfig.logSteps)
-            val results = ArrayList<TrainResult>()
-            val channel = batches.channel().take(trainConfig.steps)
-            channel.consumeEachIndexed { (i, it) ->
-                val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
-                it.setCurrentPortfolio(newPortions)
-                trainProfits.add(trainProfit)
-                if (i % trainConfig.logSteps == 0) {
-                    val result = trainResult(
-                            space = tradeConfig.periodSpace,
-                            tradePeriods = tradeConfig.tradePeriods.size,
-                            step = i,
-                            previousResults = results,
-                            trainProfits = trainProfits,
-                            testCapitals = listOf(
-                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
-                            )
-                    )
-                    results.add(result)
-                    println(result.toString())
-                    resultsDetailLogFile.appendLine(result.toString())
-                    trainProfits = ArrayList(trainConfig.logSteps)
-
-                    if (i >= breakSteps && !results.any { it.tests[0].dayProfitMean >= breakProfit }) {
-                        channel.cancel()
-                    }
-                }
-            }
-            fun TrainResult.score() = tests[0].dayProfitMean
-            val scores = results.drop(scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
-            scores[scores.size * 3 / 4]
+            num++
         }
     }) {
         fun historyPeriods(count: Int) = TradeConfig().historyPeriods.copy(count = count)
