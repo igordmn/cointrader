@@ -61,5 +61,9 @@ suspend fun trainBatch() {
         train(TradeConfig(), trainConfig(), "{'nb_filter':30}")
         train(TradeConfig(), trainConfig(), "{'filter_number':30}")
         train(TradeConfig(), trainConfig(), "{'filter_number':50}")
+        train(TradeConfig(), trainConfig(), "{'activation':'prelu'}")
+        train(TradeConfig(), trainConfig(), "{'activation':'elu'}")
+        train(TradeConfig(), trainConfig(), "{'activation':'celu'}")
+        train(TradeConfig(), trainConfig(), "{'activation':'selu'}")
     }
 }
