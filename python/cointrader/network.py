@@ -52,14 +52,11 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 
 
 def normalize_history(history):
-    usds = np.sqrt(history[:, 0, None, :, 0, None] * history[:, 0, None, :, 1, None])
-    # history = history / usds
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = np.sqrt(last_ask * last_bid)
     history = history / last_price
-    history = 10 * np.log(history)
-
+    history = 20 * np.log(history)
     return history
 
 
