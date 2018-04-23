@@ -50,7 +50,10 @@ suspend fun trainMulti() {
 //                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
 //                "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM", "XVG"
 //        ))), trainConfig(), "{}")
-//
+//        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
+//                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
+//                "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
+//        ))), trainConfig(), "{}")
 //        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
 //                "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
 //                "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
