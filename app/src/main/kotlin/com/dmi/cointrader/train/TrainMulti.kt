@@ -14,15 +14,6 @@ suspend fun trainMulti() {
     val jep = jep()
 
     fun trainConfig() = TrainConfig(
-//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-23T01:15:00", zoneOffset("+3")),
-//            validationDays = 20.0,
-//            steps = 60000,
-//            repeats = 5,
-//            logSteps = 1000,
-//            scoresSkipSteps = 10000,
-//            breakSteps = 30000,
-//            breakProfit = 1.01
-
             steps = 16000,
             repeats = 2,
             logSteps = 1000,
@@ -32,7 +23,7 @@ suspend fun trainMulti() {
     )
 
     fun trainConfig2() = TrainConfig(
-            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T00:40:00", zoneOffset("+3")),
+            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T01:45:00", zoneOffset("+3")),
             validationDays = 20.0,
             steps = 30000,
             repeats = 3,
