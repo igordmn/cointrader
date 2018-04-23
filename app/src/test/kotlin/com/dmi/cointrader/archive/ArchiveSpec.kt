@@ -27,8 +27,8 @@ class ArchiveSpec : Spec() {
             val assets = TradeAssets(main = "BTC", alts = listOf("ETH", "NEO"))
             val space = PeriodSpace(instant(1500005040000L), minutes(5))
             val expectedSpreads = listOf(
-                    listOf(Spread(0.08640000, 0.08100000), Spread(0.00261000, 0.00245000)),  // 0 1500005040000
-                    listOf(Spread(0.08640000, 0.08100000), Spread(0.00261000, 0.00245000)),  // 1 1500005340000
+                    listOf(Spread(0.08000000, 0.08000000), Spread(0.00375000, 0.00375000)),  // 0 1500005040000
+                    listOf(Spread(0.08000000, 0.08000000), Spread(0.00375000, 0.00375000)),  // 1 1500005340000
                     listOf(Spread(0.08640000, 0.08640000), Spread(0.00261000, 0.00257000)),  // 2 1500005640000
                     listOf(Spread(0.08640000, 0.08562000), Spread(0.00261000, 0.00257000)),  // 3 1500005940000
                     listOf(Spread(0.08600000, 0.08600000), Spread(0.00265000, 0.00257000)),  // 4 1500006240000
