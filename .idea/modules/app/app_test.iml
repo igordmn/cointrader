@@ -15,10 +15,7 @@
           <option name="languageVersion" value="1.2" />
           <option name="apiVersion" value="1.2" />
           <option name="pluginOptions">
-            <array>
-              <option value="plugin:org.jetbrains.kotlin.kapt:output=D:\Development\Projects\cointrader\src\app\build\tmp\kapt\test\wrappers\annotations.test.txt" />
-              <option value="plugin:org.jetbrains.kotlin.kapt:inherited=true" />
-            </array>
+            <array />
           </option>
           <option name="pluginClasspaths">
             <array>

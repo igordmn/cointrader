@@ -182,7 +182,7 @@ fun mainTask(name: String, vararg args: String = arrayOf(name)) = task(name, Jav
 
 mainTask("archive")
 mainTask("train")
-mainTask("trainBatch")
+mainTask("trainMulti")
 mainTask("backtest10", "backtest", 10.toString())
 mainTask("realTrades")
 mainTask("topcoins")
