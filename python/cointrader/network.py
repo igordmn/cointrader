@@ -14,22 +14,6 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
     )
 
 
-def eiie_output(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
-    width = net.get_shape()[2]
-    net = tflearn.layers.conv_2d(
-        net, 1, [1, width],
-        padding="valid",
-        regularizer=regularizer,
-        weight_decay=weight_decay,
-        weights_init=weights_init
-    )
-    net = net[:, :, 0, 0]
-    main_asset_bias = tf.get_variable("main_asset_bias", [1, 1], dtype=tf.float32, initializer=tf.zeros_initializer)
-    main_asset_bias = tf.tile(main_asset_bias, [batch_size, 1])
-    net = tf.concat([main_asset_bias, net], 1)
-    return tflearn.layers.core.activation(net, activation="softmax")
-
-
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
     width = net.get_shape()[2]
     height = net.get_shape()[1]
@@ -52,6 +36,8 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
 
 
 def normalize_history(history):
+    usds = np.sqrt(history[:, 0, None, :, 0, None] * history[:, 0, None, :, 1, None])
+    history = history / usds
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = np.sqrt(last_ask * last_bid)
@@ -150,6 +136,8 @@ class NeuralNetwork:
 def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
+    # asks = asks / asks[:, 0]
+    # bids = bids / bids[:, 0]
 
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)

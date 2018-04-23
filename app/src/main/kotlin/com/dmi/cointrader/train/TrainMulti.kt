@@ -19,12 +19,12 @@ suspend fun trainMulti() {
 //            breakSteps = 30000,
 //            breakProfit = 1.01
 
-            steps = 20000,
+            steps = 16000,
             repeats = 2,
             logSteps = 1000,
             scoresSkipSteps = 4000,
-            breakSteps = 7000,
-            breakProfit = 1.00
+            breakSteps = 8000,
+            breakProfit = 1.025
     )
 
     var num = 0
