@@ -136,9 +136,6 @@ class NeuralNetwork:
 def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
-    usds = tf.sqrt(asks[:, 0, None] * bids[:, 0, None])
-    asks = asks / usds
-    bids = bids / usds
 
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
@@ -179,7 +176,7 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        # learning_rate = tf.train.cosine_decay_restarts(0.0014, global_step, alpha=0.00007, first_decay_steps=1000)
+        # learning_rate = tf.train.cosine_decay_restarts(0.00028 * 2, global_step, alpha=0.00007, first_decay_steps=1000)
         learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
