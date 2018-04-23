@@ -90,13 +90,23 @@ suspend fun forEachRealTradePeriod(
 
     while (isActive) {
         val clock = Clock.systemUTC()
-        val nextPeriod = iterator.nextAfter(clock.instant())
+        val time = clock.instant()
+        val nextPeriod = iterator.nextAfter(time)
         val nextTime = space.timeOf(nextPeriod)
 
         val preloadPeriod = nextPeriod - preloadPeriods
         val preloadTime = space.timeOf(preloadPeriod)
         delay(preloadTime - clock.instant())
         preload(preloadPeriod)
+
+        if ((nextTime - clock.instant()).toMillis() < 0) {
+            println("iterator.previousPeriod ${iterator.previousPeriod}")
+            println("time $time")
+            println("nextPeriod $nextPeriod")
+            println("nextTime $nextTime")
+            println("clock.instant() ${clock.instant()}")
+            println("(nextTime - clock.instant()).toMillis() ${(nextTime - clock.instant()).toMillis()}")
+        }
 
         delay(nextTime - clock.instant())
         action(nextPeriod)
