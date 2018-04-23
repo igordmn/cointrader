@@ -7,8 +7,8 @@ import io.kotlintest.matchers.shouldBe
 
 class SpreadsSpec: Spec({
     "trades to spreads" - {
-        fun List<Trade>.toSpreads(): List<TimeSpread?> {
-            val spreads = ArrayList<TimeSpread?>()
+        fun List<Trade>.toSpreads(): List<TimeSpread> {
+            val spreads = ArrayList<TimeSpread>()
             var spread = this[0].initialSpread()
             spreads.add(spread)
             for (i in 1 until size) {
@@ -36,8 +36,8 @@ class SpreadsSpec: Spec({
                     Trade(instant(19), 51.0, 0.0, true),
                     Trade(instant(20), 51.0, 0.0, false)
             ).toSpreads() shouldBe listOf(
-                    null,
-                    null,
+                    TimeSpread(instant(3), Spread(60.0, 60.0)),
+                    TimeSpread(instant(4), Spread(61.0, 60.0)),
                     TimeSpread(instant(5), Spread(61.0, 50.0)),
                     TimeSpread(instant(6), Spread(61.0, 50.1)),
                     TimeSpread(instant(7), Spread(61.0, 50.0)),
@@ -87,8 +87,8 @@ class SpreadsSpec: Spec({
 
                     Trade(instant(1502943673349L), 4266.29000000, 0.02033700, false)
             ).toSpreads() shouldBe listOf(
-                    null,
-                    null,
+                    TimeSpread(instant(1502942428322L), Spread(4261.48000000, 4261.48000000)),
+                    TimeSpread(instant(1502942432285L), Spread(4261.48000000, 4261.48000000)),
 
                     TimeSpread(instant(1502942432322L), Spread(4261.48000000, 4261.48000000)),
                     TimeSpread(instant(1502942568879L), Spread(4280.56000000, 4261.48000000)),
