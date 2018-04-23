@@ -136,8 +136,9 @@ class NeuralNetwork:
 def compute_profits(batch_size, best_portfolio, asks, bids, fee):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
-    asks = asks / asks[:, 0, None]
-    bids = bids / bids[:, 0, None]
+    usds = np.sqrt(asks[:, 0, None] * bids[:, 0, None])
+    asks = asks / usds
+    bids = bids / usds
 
     prices = tf.sqrt(asks * bids)
     fees = 1 - (1.0 - fee) * (bids / prices)
