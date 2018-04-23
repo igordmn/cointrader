@@ -5,7 +5,7 @@ import com.dmi.cointrader.info.printTopCoins
 import com.dmi.cointrader.trade.backtest
 import com.dmi.cointrader.trade.performRealTrades
 import com.dmi.cointrader.train.train
-import com.dmi.cointrader.train.trainBatch
+import com.dmi.cointrader.train.trainMulti
 import kotlinx.coroutines.experimental.runBlocking
 
 fun main(args: Array<String>) {
@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
         when (args[0].toLowerCase()) {
             "archive" -> downloadArchive()
             "train" -> train()
-            "trainbatch" -> trainBatch()
+            "trainmulti" -> trainMulti()
             "backtest" -> backtest(days = args[1].toDouble())
             "realtrades" -> performRealTrades()
             "topcoins" -> printTopCoins()
