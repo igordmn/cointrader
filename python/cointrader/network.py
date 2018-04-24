@@ -177,7 +177,7 @@ class NeuralTrainer:
 
         global_step = tf.Variable(0, trainable=False)
         learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92)
-        self.train_tensor = tf.train.AdamOptimizer(0.00028 * 2).minimize(loss, global_step=global_step)
+        self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
         self.history = network.history
