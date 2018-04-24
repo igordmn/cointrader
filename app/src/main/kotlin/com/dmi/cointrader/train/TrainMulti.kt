@@ -52,22 +52,6 @@ suspend fun trainMulti() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
-                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
-                "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
-        ))), trainConfig2(), "{}")
-        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
-                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
-                "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM", "XVG"
-        ))), trainConfig2(), "{}")
-        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
-                "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
-                "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
-                "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG",
-                "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM"
-        ))), trainConfig2(), "{}")
-        train(TradeConfig(assets = TradeAssets(main = "BTC", alts = listOf(
-                "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "XVG", "EOS", "TRX", "XRP", "GVT", "ADA", "XLM", "ICX", "NEBL", "IOST"
-        ))), trainConfig2(), "{}")
+
     }
 }
