@@ -24,17 +24,6 @@ suspend fun trainMulti() {
             breakProfit = 1.032
     )
 
-    fun trainConfig2() = TrainConfig(
-            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T01:45:00", zoneOffset("+3")),
-            validationDays = 60.0,
-            steps = 16000,
-            repeats = 2,
-            logSteps = 1000,
-            scoresSkipSteps = 8000,
-            breakSteps = 12000,
-            breakProfit = 1.02
-    )
-
     var num = 0
 
     with(object {
