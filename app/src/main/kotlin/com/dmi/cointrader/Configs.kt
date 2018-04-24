@@ -37,22 +37,9 @@ data class TradeConfig(
                 main = "BTC",
                 alts = listOf(
                         "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
-                        "MTL", "SUB", "EOS", "ETC", "ENG", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR",
-                        "BCPT", "GVT", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST",
-                        "NANO", "ZIL", "ONT", "STORM", "NCASH"
-
-                        /*
-                            200
-
-                            "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
-                            "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
-                            "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG",
-                            "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM"
-
-                             600
-                            "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "LINK", "MTL", "EOS", "ETC", "TRX", "XRP", "ENJ", "VEN",
-                            "XMR", "GVT", "DGD", "ADA", "XLM", "WAVES", "ICX", "AION", "NEBL", "IOST", "NANO", "NCASH", "STORM"
-                         */
+                        "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "DASH", "BTG", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS",
+                        "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG",
+                        "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -66,9 +53,9 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-20T20:10:00", zoneOffset("+3")),
-        val testDays: Double = 30.0,
-        val validationDays: Double = 40.0,
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T11:30:00", zoneOffset("+3")),
+        val testDays: Double = 50.0,
+        val validationDays: Double = 6.0,
 
         val steps: Int = 60000,
         val repeats: Int = 5,
@@ -77,7 +64,7 @@ data class TrainConfig(
         val breakSteps: Int = 10000,
         val breakProfit: Double = 1.000,
 
-        val fee: Double = 0.0007,
+        val fee: Double = 0.0005,
         val batchSize: Int = 60,
         val tradePeriodGeometricBias: Double = 5e-7
 )
