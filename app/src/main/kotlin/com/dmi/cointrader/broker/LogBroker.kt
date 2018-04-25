@@ -5,6 +5,7 @@ import com.dmi.util.io.appendLine
 import org.slf4j.Logger
 import java.math.BigDecimal
 import java.nio.file.Path
+import java.time.Instant
 
 fun Broker.log(log: Logger, baseAsset: Asset, quoteAsset: Asset): Broker = LogBroker(this, log, baseAsset, quoteAsset)
 fun Broker.slippageLog(file: Path, baseAsset: Asset): Broker = SlippageLogBroker(this, file, baseAsset)
@@ -42,14 +43,16 @@ class SlippageLogBroker(
     override suspend fun buy(amount: BigDecimal): Broker.OrderResult {
         return original.buy(amount).also {
             val slippage = it.slippage
-            file.appendLine("buy $baseAsset $slippage")
+            val time = Instant.now()
+            file.appendLine("$time\tbuy $baseAsset $slippage")
         }
     }
 
     override suspend fun sell(amount: BigDecimal): Broker.OrderResult {
         return original.sell(amount).also {
             val slippage = it.slippage
-            file.appendLine("sell $baseAsset $slippage")
+            val time = Instant.now()
+            file.appendLine("$time\tsell $baseAsset $slippage")
         }
     }
 }
