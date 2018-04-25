@@ -151,7 +151,8 @@ private fun writeCapital(result: TradeResult, config: TradeConfig, period: Perio
     val time = config.periodSpace.timeOf(period)
     val capital = result.totalCapital
     createDirectories(Paths.get("data/log"))
-    Paths.get("data/log/capitals.log").appendLine("$time\t$capital")
+    val asset = result.assetCapitals.entries.maxBy { it.value }!!.key
+    Paths.get("data/log/capitals.log").appendLine("$time\t$asset\t$capital")
 }
 
 suspend fun performTestTrades(
