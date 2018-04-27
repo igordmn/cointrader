@@ -56,7 +56,7 @@ def build_best_portfolio(
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=16,
+        nb_filter=10,
         filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
@@ -68,7 +68,7 @@ def build_best_portfolio(
 
     net = eiie_dense(
         net,
-        filter_number=24,
+        filter_number=20,
         activation_function='relu6',
         regularizer="L2",
         weight_decay=5e-9,
