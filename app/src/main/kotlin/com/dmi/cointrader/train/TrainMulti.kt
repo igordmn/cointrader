@@ -9,19 +9,20 @@ import com.dmi.util.lang.parseInstantRange
 import com.dmi.util.lang.zoneOffset
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 suspend fun trainMulti() {
     val jep = jep()
 
     fun trainConfig() = TrainConfig(
-            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T01:45:00", zoneOffset("+3")),
-            validationDays = 60.0,
-            steps = 16000,
+//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T01:45:00", zoneOffset("+3")),
+            validationDays = 50.0,
+            steps = 26000,
             repeats = 2,
-            logSteps = 1000,
-            scoresSkipSteps = 4000,
-            breakSteps = 8000,
-            breakProfit = 1.032
+            logSteps = 2000,
+            scoresSkipSteps = 10000,
+            breakSteps = 14000,
+            breakProfit = 1.040
     )
 
     var num = 0
@@ -41,6 +42,6 @@ suspend fun trainMulti() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-
+        train(TradeConfig(), trainConfig(), "{'x1':3, 'x2':20, 'x3': 5}")
     }
 }

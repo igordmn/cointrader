@@ -85,7 +85,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             fun saveNet(result: TrainResult) {
                 net.save(netDir(result.step))
                 saveLogChart(result.tests[0].chartData, chart1File(result.step))
-                saveLogChart(result.tests[1].chartData, chart2File(result.step))
+//                saveLogChart(result.tests[1].chartData, chart2File(result.step))
                 resultsLogFile.appendLine(result.toString())
                 println(result.toString())
             }
@@ -104,8 +104,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             trainProfits = trainProfits,
                             testCapitals = listOf(
                                     performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
+//                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)

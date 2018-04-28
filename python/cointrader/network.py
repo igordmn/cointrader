@@ -56,12 +56,12 @@ def build_best_portfolio(
 
     net = tflearn.layers.conv_2d(
         net,
-        nb_filter=10,
+        nb_filter=3,
         filter_size=[1, 5],
         strides=[1, 1],
         padding="valid",
         activation='relu6',
-        regularizer="L2",
+        regularizer=None,
         weight_decay=5e-9,
         weights_init=weights_init
     )
