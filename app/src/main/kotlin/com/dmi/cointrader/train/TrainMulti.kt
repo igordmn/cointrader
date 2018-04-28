@@ -1,6 +1,5 @@
 package com.dmi.cointrader.train
 
-import com.dmi.cointrader.TradeAssets
 import com.dmi.cointrader.TradeConfig
 import com.dmi.cointrader.TradePeriods
 import com.dmi.cointrader.TrainConfig
@@ -8,14 +7,13 @@ import com.dmi.cointrader.neural.jep
 import com.dmi.util.lang.parseInstantRange
 import com.dmi.util.lang.zoneOffset
 import java.nio.file.Paths
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 suspend fun trainMulti() {
     val jep = jep()
 
     fun trainConfig() = TrainConfig(
-//            range = DateTimeFormatter.ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-24T01:45:00", zoneOffset("+3")),
+            range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-28T00:40:00", zoneOffset("+3")),
             validationDays = 50.0,
             steps = 26000,
             repeats = 2,
