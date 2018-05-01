@@ -9,31 +9,26 @@ import com.dmi.cointrader.info.saveLogChart
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
-import com.dmi.cointrader.saveTradeConfig
 import com.dmi.cointrader.trade.performTestTradesAllInFast
-import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
+import com.dmi.util.io.writeBytes
 import com.sun.javafx.application.PlatformImpl
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
-import java.lang.Math.pow
+import kotlinx.serialization.cbor.CBOR.Companion.dump
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.math.abs
-import kotlin.math.ln
-import kotlin.math.log2
 
 typealias TrainScore = Double
 
 suspend fun train() {
     val tradeConfig = TradeConfig()
     val trainConfig = TrainConfig()
-    saveTradeConfig(tradeConfig)
     val jep = jep()
     train(jep, Paths.get("data/results"), tradeConfig, trainConfig, "{}")
 }
@@ -83,7 +78,9 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
 
             fun saveNet(result: TrainResult) {
-                net.save(netDir(result.step))
+                val netDir = netDir(result.step)
+                net.save(netDir)
+                netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
                 saveLogChart(result.tests[0].chartData, chart1File(result.step))
 //                saveLogChart(result.tests[1].chartData, chart2File(result.step))
                 resultsLogFile.appendLine(result.toString())
@@ -103,7 +100,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             previousResults = results,
                             trainProfits = trainProfits,
                             testCapitals = listOf(
-                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+//                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
                                     performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
 //                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )

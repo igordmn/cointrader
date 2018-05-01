@@ -11,8 +11,7 @@ import kotlinx.serialization.cbor.CBOR.Companion.dump
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-fun savedTradeConfig(): TradeConfig = load(Paths.get("data/tradeConfig").readBytes())
-fun saveTradeConfig(config: TradeConfig) = Paths.get("data/tradeConfig").writeBytes(dump(config))
+fun savedTradeConfig(): TradeConfig = load(Paths.get("data/net/tradeConfig").readBytes())
 
 @Serializable
 data class TradeAssets(val main: Asset, val alts: List<Asset>) {
@@ -55,11 +54,11 @@ data class TradeConfig(
 data class TrainConfig(
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
         val testDays: Double = 50.0,
-        val validationDays: Double = 6.0,
+        val validationDays: Double = 50.0,
 
         val steps: Int = 80000,
         val repeats: Int = 20,
-        val logSteps: Int = 500,
+        val logSteps: Int = 2000,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
         val breakProfit: Double = 1.000,
