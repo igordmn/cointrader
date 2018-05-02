@@ -11,7 +11,7 @@ import kotlinx.serialization.cbor.CBOR.Companion.dump
 import java.nio.file.Paths
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-fun savedTradeConfig(): TradeConfig = load(Paths.get("data/net/tradeConfig").readBytes())
+fun savedTradeConfig(): TradeConfig = load(Paths.get("data/network/tradeConfig").readBytes())
 
 @Serializable
 data class TradeAssets(val main: Asset, val alts: List<Asset>) {
