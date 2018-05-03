@@ -64,6 +64,6 @@ data class TrainConfig(
         val breakProfit: Double = 1.000,
 
         val fee: Double = 0.0005,
-        val batchSize: Int = 60,
+        val batchSize: Int = 30,
         val tradePeriodGeometricBias: Double = 5e-7
 )
