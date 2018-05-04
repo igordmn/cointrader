@@ -14,7 +14,7 @@ suspend fun trainMulti() {
 
     fun trainConfig() = TrainConfig(
             range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
-            validationDays = 50.0,
+            validationDays1 = 50.0,
             steps = 32000,
             repeats = 5,
             repeatsBreak = 2,
