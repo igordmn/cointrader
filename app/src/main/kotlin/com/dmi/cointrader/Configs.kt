@@ -40,10 +40,10 @@ data class TradeConfig(
                         "ENJ", "VEN", "RCN", "NULS", "XMR", "BCPT", "GVT", "POE", "BTS", "LSK", "DGD", "ADA", "PPT", "XLM", "TNB", "WAVES",
                         "GTO", "ICX", "ELF", "AION", "NEBL", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT", "STORM"
 
-//                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "LINK", "XVG", "SALT",
-//"MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "AST", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR", "BCPT",
-//"GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION", "NEBL", "EDO", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT",
-//"STORM", "XEM", "WAN", "QLC"
+//                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "LINK", "XVG",
+//                        "SALT", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "AST", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "ENJ",
+//                        "VEN", "RCN", "NULS", "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION",
+//                        "NEBL", "EDO", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "QLC"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
