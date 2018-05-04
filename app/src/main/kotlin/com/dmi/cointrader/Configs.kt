@@ -60,8 +60,10 @@ data class TrainConfig(
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
 //        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-05-05T00:00:00", zoneOffset("+3")),
         val testDays: Double = 40.0,
-        val validationDays1: Double = 10.0,
-        val validationDays2: Double = 30.0,
+        val validationDays1: Double = 50.0,
+        val validationDays2: Double = 0.0,
+//        val validationDays1: Double = 10.0,
+//        val validationDays2: Double = 30.0,
 
         val steps: Int = 50000,
         val repeats: Int = 20,
