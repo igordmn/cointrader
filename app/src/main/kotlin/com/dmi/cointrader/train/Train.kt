@@ -47,6 +47,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
     path.deleteRecursively()
 
+    val scores = ArrayList<Double>()
     repeat(trainConfig.repeats) { repeat ->
         resourceContext {
             val resultsDir = path.resolve("$repeat")
@@ -116,10 +117,14 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             }
 
             fun TrainResult.score() = tests[0].dayProfitMean
-            val scores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
-            val score = scores[scores.size * 3 / 4]
+            val localScores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
+            val score = localScores[scores.size * 3 / 4]
             resultsLogFile.appendLine("Score $score")
             println("Score $score")
+            scores.add(score)
+            if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore}) {
+                return
+            }
         }
     }
 }
