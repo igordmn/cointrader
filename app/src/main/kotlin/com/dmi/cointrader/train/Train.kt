@@ -93,7 +93,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 val (newPortions, trainProfit) = trainer.train(it.currentPortfolio, it.history)
                 it.setCurrentPortfolio(newPortions)
                 trainProfits.add(trainProfit)
-                if (i % trainConfig.logSteps == 0) {
+                if ((i + 1) % trainConfig.logSteps == 0) {
                     val result = trainResult(
                             space = tradeConfig.periodSpace,
                             tradePeriods = tradeConfig.tradePeriods.size,
@@ -118,7 +118,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
             fun TrainResult.score() = tests[0].dayProfitMean
             val localScores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
-            val score = localScores[scores.size * 3 / 4]
+            val score = localScores[localScores.size * 3 / 4]
             resultsLogFile.appendLine("Score $score")
             println("Score $score")
             scores.add(score)
