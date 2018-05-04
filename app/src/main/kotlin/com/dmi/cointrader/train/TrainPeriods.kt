@@ -37,6 +37,21 @@ fun PeriodProgression.splitForTrain(
     )
 }
 
+//fun PeriodProgression.splitForTrain(
+//        periodsPerDay: Double,
+//        testDays: Double,
+//        validationDays: Double
+//): TrainPeriods {
+//    val testSize = (testDays * periodsPerDay / step).toInt()
+//    val validationSize = (validationDays * periodsPerDay / step).toInt()
+//    val size = size()
+//    return TrainPeriods(
+//            train = slice(0 until size - validationSize),
+//            test = slice(size - testSize until size),
+//            validation = slice(size - validationSize  until size)
+//    )
+//}
+
 data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation1: PeriodProgression, val validation2: PeriodProgression)
 
 fun trainBatches(

@@ -1,8 +1,10 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
+from tensorflow.contrib.opt import PowerSignOptimizer, AddSignOptimizer, LazyAdamOptimizer, MovingAverageOptimizer
 
 from tensorflow.python.ops import math_ops
+from datetime import datetime
 
 
 def eiie_dense(net, filter_number, activation_function, regularizer, weight_decay, weights_init):
@@ -164,6 +166,8 @@ def clr(global_step, min, max, step_size, decay):
 
 class NeuralTrainer:
     def __init__(self, network, fee, params):
+        # tf.set_random_seed(datetime.now())
+
         self.net = network
 
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
@@ -176,9 +180,7 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        lr_min = params.get('lr_min', 0.00007)
-        lr_max = params.get('lr_max', 0.00028 * 2)
-        learning_rate = clr(global_step, min=lr_min, max=lr_max, step_size=5000, decay=0.92)
+        learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size

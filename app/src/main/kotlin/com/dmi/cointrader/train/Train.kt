@@ -104,7 +104,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 //                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
                                     performTestTradesAllInFast(validationPeriods1, tradeConfig, net, archive, trainConfig.fee)
 //                                    performTestTradesAllInFast(validationPeriods2, tradeConfig, net, archive, trainConfig.fee)
-//                                    performTestTradesPartialFast(validationPeriods1, tradeConfig, net, archive, trainConfig.fee)
+//                                    performTestTradesPartialFast(validationPeriods2, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)

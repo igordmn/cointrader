@@ -15,6 +15,7 @@ suspend fun trainMulti() {
     fun trainConfig() = TrainConfig(
             range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
             validationDays1 = 50.0,
+            validationDays2 = 0.0,
             steps = 32000,
             repeats = 5,
             repeatsBreak = 2,
@@ -42,10 +43,6 @@ suspend fun trainMulti() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), trainConfig(), "{'lr_min':0.00014}")   // 0
-        train(TradeConfig(), trainConfig(), "{'lr_min':0.00028}")   // 1
-        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028}")   // 2
-        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028 * 4}")   // 3
-        train(TradeConfig(), trainConfig(), "{'lr_min':0.00028, 'lr_max':0.00028 * 4}")   // 4
+        train(TradeConfig(), trainConfig(), "{}")   // 0
     }
 }
