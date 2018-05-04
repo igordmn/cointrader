@@ -15,41 +15,14 @@ suspend fun trainMulti() {
     fun trainConfig() = TrainConfig(
             range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
             validationDays = 50.0,
-            steps = 30000,
-            repeats = 3,
-            repeatsBreak = 3,
-            repeatsBreakScore = 1.054,
-            logSteps = 2000,
-            scoresSkipSteps = 10000,
-            breakSteps = 14000,
-            breakProfit = 1.048
-    )
-
-    fun trainConfig1() = TrainConfig(
-            range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
-            validationDays = 50.0,
             steps = 32000,
             repeats = 5,
-            repeatsBreak = 3,
-            repeatsBreakScore = 1.054,
+            repeatsBreak = 2,
+            repeatsBreakScore = 1.05,
             logSteps = 2000,
             scoresSkipSteps = 10000,
             breakSteps = 20000,
             breakProfit = 1.05
-    )
-
-    fun trainConfig0(x: Int) = TrainConfig(
-            range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
-            validationDays = 50.0,
-            steps = 32000,
-            repeats = 5,
-            repeatsBreak = 3,
-            repeatsBreakScore = 1.054,
-            logSteps = 2000,
-            scoresSkipSteps = 10000,
-            breakSteps = 20000,
-            breakProfit = 1.05,
-            batchSize = x
     )
 
     var num = 0
@@ -69,17 +42,17 @@ suspend fun trainMulti() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), trainConfig1(), "{'filter_number':14}")   // 0
-        train(TradeConfig(), trainConfig1(), "{'filter_number':16}")   // 1
-        train(TradeConfig(), trainConfig1(), "{'nb_filter':5}")   // 2
-        train(TradeConfig(), trainConfig1(), "{'nb_filter':6}")   // 3
-        train(TradeConfig(historyPeriods = historyPeriods(90)), trainConfig1(), "{}")   // 4
-        train(TradeConfig(), trainConfig1(), "{'bias_regularizer':1.0}")   // 5
+        train(TradeConfig(), trainConfig(), "{'filter_number':14}")   // 0
+        train(TradeConfig(), trainConfig(), "{'filter_number':16}")   // 1
+        train(TradeConfig(), trainConfig(), "{'nb_filter':5}")   // 2
+        train(TradeConfig(), trainConfig(), "{'nb_filter':6}")   // 3
+        train(TradeConfig(historyPeriods = historyPeriods(90)), trainConfig(), "{}")   // 4
+        train(TradeConfig(), trainConfig(), "{'bias_regularizer':1.0}")   // 5
 
-        train(TradeConfig(), trainConfig1(), "{'lr_min':0.00014}")   // 6
-        train(TradeConfig(), trainConfig1(), "{'lr_min':0.00028}")   // 7
-        train(TradeConfig(), trainConfig1(), "{'lr_max':0.00028}")   // 8
-        train(TradeConfig(), trainConfig1(), "{'lr_max':0.00028 * 4}")   // 9
-        train(TradeConfig(), trainConfig1(), "{'lr_min':0.00028, 'lr_max':0.00028 * 4}")   // 10
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00014}")   // 6
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00028}")   // 7
+        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028}")   // 8
+        train(TradeConfig(), trainConfig(), "{'lr_max':0.00028 * 4}")   // 9
+        train(TradeConfig(), trainConfig(), "{'lr_min':0.00028, 'lr_max':0.00028 * 4}")   // 10
     }
 }
