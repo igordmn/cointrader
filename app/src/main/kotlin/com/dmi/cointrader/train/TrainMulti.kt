@@ -21,7 +21,7 @@ suspend fun trainMulti() {
             repeatsBreakScore = 1.05,
             logSteps = 2000,
             scoresSkipSteps = 10000,
-            breakSteps = 20000,
+            breakSteps = 19999,
             breakProfit = 1.05
     )
 
