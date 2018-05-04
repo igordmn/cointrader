@@ -17,42 +17,24 @@ import org.apache.commons.math3.distribution.GeometricDistribution
 fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig) = this
         .clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay)
         .tradePeriods(tradeConfig.tradePeriods.size)
-        .splitForTrain(tradeConfig.periodSpace.periodsPerDay(), trainConfig.testDays, trainConfig.validationDays1, trainConfig.validationDays2)
+        .splitForTrain(tradeConfig.periodSpace.periodsPerDay(), trainConfig.testDays, trainConfig.validationDays)
 
 fun PeriodProgression.splitForTrain(
         periodsPerDay: Double,
         testDays: Double,
-        validationDays1: Double,
-        validationDays2: Double
+        validationDays: Double
 ): TrainPeriods {
     val testSize = (testDays * periodsPerDay / step).toInt()
-    val validationSize1 = (validationDays1 * periodsPerDay / step).toInt()
-    val validationSize2 = (validationDays2 * periodsPerDay / step).toInt()
+    val validationSize = (validationDays * periodsPerDay / step).toInt()
     val size = size()
     return TrainPeriods(
-            train = slice(0 until size - validationSize1 - validationSize2),
-            test = slice(size - testSize - validationSize1 - validationSize2 until size - validationSize1 - validationSize2),
-            validation1 = slice(size - validationSize1 - validationSize2  until size - validationSize2),
-            validation2 = slice(size - validationSize2 until size)
+            train = slice(0 until size - validationSize),
+            test = slice(size - testSize until size),
+            validation = slice(size - validationSize  until size)
     )
 }
 
-//fun PeriodProgression.splitForTrain(
-//        periodsPerDay: Double,
-//        testDays: Double,
-//        validationDays: Double
-//): TrainPeriods {
-//    val testSize = (testDays * periodsPerDay / step).toInt()
-//    val validationSize = (validationDays * periodsPerDay / step).toInt()
-//    val size = size()
-//    return TrainPeriods(
-//            train = slice(0 until size - validationSize),
-//            test = slice(size - testSize until size),
-//            validation = slice(size - validationSize  until size)
-//    )
-//}
-
-data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation1: PeriodProgression, val validation2: PeriodProgression)
+data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation: PeriodProgression)
 
 fun trainBatches(
         archive: SuspendList<Spreads>,

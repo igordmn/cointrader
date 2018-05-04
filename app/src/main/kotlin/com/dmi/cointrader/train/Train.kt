@@ -10,6 +10,7 @@ import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.trade.performTestTradesAllInFast
+import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
@@ -41,7 +42,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
             reloadCount = tradeConfig.archiveReloadPeriods
     )
-    val (trainPeriods, testPeriods, validationPeriods1, validationPeriods2) = periods.prepareForTrain(tradeConfig, trainConfig)
+    val (trainPeriods, testPeriods, validationPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
 
     PlatformImpl.startup({})
 
@@ -101,10 +102,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             previousResults = results,
                             trainProfits = trainProfits,
                             testCapitals = listOf(
-//                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesAllInFast(validationPeriods1, tradeConfig, net, archive, trainConfig.fee)
-//                                    performTestTradesAllInFast(validationPeriods2, tradeConfig, net, archive, trainConfig.fee)
-//                                    performTestTradesPartialFast(validationPeriods2, tradeConfig, net, archive, trainConfig.fee)
+                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)
