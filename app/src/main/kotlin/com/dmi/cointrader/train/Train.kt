@@ -98,11 +98,13 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                     val result = trainResult(
                             space = tradeConfig.periodSpace,
                             tradePeriods = tradeConfig.tradePeriods.size,
-                            step = i,
+                            step = i + 1,
                             previousResults = results,
                             trainProfits = trainProfits,
                             testCapitals = listOf(
-                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+//                                    performTestTradesPartialFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
+//                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
                                     performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
@@ -122,7 +124,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             resultsLogFile.appendLine("Score $score")
             println("Score $score")
             scores.add(score)
-            if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore}) {
+            if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore }) {
                 return
             }
         }
