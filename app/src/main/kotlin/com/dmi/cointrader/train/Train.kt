@@ -135,9 +135,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                         { it: TrainResult -> it.tests[0].dayProfitMean },
                         { it: TrainResult -> it.tests[0].dayProfitMedian },
                         { it: TrainResult -> -it.tests[1].downsideDeviation },
-                        { it: TrainResult -> -it.tests[1].maximumDrawdawn },
-                        { it: TrainResult -> -it.tests[1].dailyDownsideDeviation },
-                        { it: TrainResult -> -it.tests[1].dailyMaximumDrawdawn }
+                        { it: TrainResult -> -it.tests[1].maximumDrawdawn }
                 )
 
                 val linkedResults = LinkedList(results)
@@ -189,6 +187,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
             val bestResult = bestResult(results)
             saveBestNet(bestResult)
+            log("Best profit ${bestResult.tests[0].dayProfitMean}")
 
             if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore }) {
                 return
