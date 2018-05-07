@@ -103,7 +103,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             fun saveBestNet(result: TrainResult) {
                 FileUtils.copyDirectory(netDir(result.step).toFile(), bestPath.resolve("$repeat").toFile())
                 Files.copy(chart1File(result.step), bestPath.resolve("$repeat.png"))
-                bestPath.resolve("results.log").appendLine(result.toString())
+                bestPath.resolve("results.log").appendLine("$repeat $result")
             }
 
             fun bestResult(results: List<TrainResult>): TrainResult {
@@ -131,15 +131,13 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                         { it: TrainResult -> it.tests[1].neighborMean() },
                         { it: TrainResult -> it.tests[1].dayProfitMean },
                         { it: TrainResult -> it.tests[1].dayProfitMedian },
-                        { it: TrainResult -> it.tests[1].downsideDeviation },
-                        { it: TrainResult -> it.tests[1].maximumDrawdawn },
                         { it: TrainResult -> it.tests[0].neighborMean() },
                         { it: TrainResult -> it.tests[0].dayProfitMean },
-                        { it: TrainResult -> it.tests[0].dayProfitMedian }
-//                        { it: TrainResult -> it.tests[1].downsideDeviation },
-//                        { it: TrainResult -> it.tests[1].maximumDrawdawn },
-//                        { it: TrainResult -> -it.tests[0].dailyDownsideDeviation },
-//                        { it: TrainResult -> -it.tests[0].dailyMaximumDrawdawn }
+                        { it: TrainResult -> it.tests[0].dayProfitMedian },
+                        { it: TrainResult -> -it.tests[1].downsideDeviation },
+                        { it: TrainResult -> -it.tests[1].maximumDrawdawn },
+                        { it: TrainResult -> -it.tests[1].dailyDownsideDeviation },
+                        { it: TrainResult -> -it.tests[1].dailyMaximumDrawdawn }
                 )
 
                 val linkedResults = LinkedList(results)
