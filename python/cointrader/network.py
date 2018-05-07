@@ -166,8 +166,8 @@ def clr(global_step, min, max, step_size, decay):
 
 class NeuralTrainer:
     def __init__(self, network, fee, params):
-        # tf.set_random_seed(datetime.now())
-        tf.set_random_seed(6456456)
+        tf.set_random_seed(datetime.now())
+        # tf.set_random_seed(6456456)
 
         self.net = network
 

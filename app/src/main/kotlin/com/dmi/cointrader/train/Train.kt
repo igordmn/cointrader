@@ -9,6 +9,7 @@ import com.dmi.cointrader.info.saveLogChart
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
+import com.dmi.cointrader.trade.TradeSummary
 import com.dmi.cointrader.trade.performTestTradesAllInFast
 import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.util.collection.contains
@@ -21,9 +22,12 @@ import jep.Jep
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.serialization.cbor.CBOR.Companion.dump
+import java.lang.Math.pow
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
+import kotlin.math.sqrt
 
 typealias TrainScore = Double
 
@@ -48,6 +52,9 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
     path.deleteRecursively()
 
+    val bestPath = path.resolve("best")
+    bestPath.deleteRecursively()
+
     val scores = ArrayList<Double>()
     repeat(trainConfig.repeats) { repeat ->
         resourceContext {
@@ -65,13 +72,17 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             fun chart1File(step: Int) = charts1Dir.resolve("$step.png")
             fun chart2File(step: Int) = charts2Dir.resolve("$step.png")
 
-            val resultsLogFile = resultsDir.resolve("results.log")
-
-            resultsLogFile.appendLine(tradeConfig.toString())
-            resultsLogFile.appendLine(trainConfig.toString())
-            resultsLogFile.appendLine(additionalParams)
-
             println("Repeat $repeat")
+
+            val resultsLogFile = resultsDir.resolve("results.log")
+            fun log(msg: String) {
+                resultsLogFile.appendLine(msg)
+                println(msg)
+            }
+
+            log(tradeConfig.toString())
+            log(trainConfig.toString())
+            log(additionalParams)
 
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
@@ -85,8 +96,58 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
                 saveLogChart(result.tests[0].chartData, chart1File(result.step))
 //                saveLogChart(result.tests[1].chartData, chart2File(result.step))
-                resultsLogFile.appendLine(result.toString())
-                println(result.toString())
+                log(result.toString())
+            }
+
+            fun saveBestNet(result: TrainResult) {
+                val netDir = bestPath.resolve("$repeat")
+                net.save(netDir)
+                netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
+                saveLogChart(result.tests[0].chartData, bestPath.resolve("$repeat.png"))
+                bestPath.resolve("results.log").appendLine(result.toString())
+            }
+
+            fun bestResult(results: List<TrainResult>): TrainResult {
+                val tradeSummaryNeighborMean = IdentityHashMap<TradeSummary, Double>()
+
+                fun TradeSummary.neighborMean() = tradeSummaryNeighborMean[this] ?: 0.0
+
+                for (i in 2 until results.size - 2) {
+                    val r1 = results[i - 2]
+                    val r2 = results[i - 1]
+                    val r3 = results[i]
+                    val r4 = results[i + 1]
+                    val r5 = results[i + 2]
+                    r3.tests.forEachIndexed { ti, it ->
+                        tradeSummaryNeighborMean[it] = pow(
+                                r1.tests[ti].dayProfitMean *
+                                        r2.tests[ti].dayProfitMean *
+                                        r3.tests[ti].dayProfitMean *
+                                        r4.tests[ti].dayProfitMean *
+                                        r5.tests[ti].dayProfitMean, 0.2)
+                    }
+                }
+
+                val selectors = listOf(
+                        { it: TrainResult -> it.tests[1].neighborMean() },
+                        { it: TrainResult -> it.tests[1].dayProfitMean },
+                        { it: TrainResult -> it.tests[1].dayProfitMedian },
+                        { it: TrainResult -> it.tests[0].neighborMean() },
+                        { it: TrainResult -> it.tests[0].dayProfitMean },
+                        { it: TrainResult -> it.tests[0].dayProfitMedian },
+                        { it: TrainResult -> -it.tests[0].dailyDownsideDeviation }
+                )
+
+                val linkedResults = LinkedList(results)
+                var selInd = 0
+                while (linkedResults.size > 1) {
+                    val selector = selectors[selInd]
+                    val min = linkedResults.minBy(selector)
+                    linkedResults.remove(min)
+                    selInd = (selInd + 1) % selectors.size
+                }
+
+                return linkedResults.first
             }
 
             val channel = batches.channel()
@@ -103,8 +164,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             trainProfits = trainProfits,
                             testCapitals = listOf(
 //                                    performTestTradesPartialFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
-                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
-//                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
+//                                    performTestTradesPartialFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee),
+                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee),
                                     performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
@@ -121,9 +182,12 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             fun TrainResult.score() = tests[0].dayProfitMean
             val localScores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
             val score = localScores[localScores.size * 3 / 4]
-            resultsLogFile.appendLine("Score $score")
-            println("Score $score")
+            log("Score $score")
             scores.add(score)
+
+            val bestResult = bestResult(results)
+            saveBestNet(bestResult)
+
             if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore }) {
                 return
             }

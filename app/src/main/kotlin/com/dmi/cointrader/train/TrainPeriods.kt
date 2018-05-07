@@ -64,8 +64,8 @@ class TrainBatches(
     private val portfolios = Array(periods.size().toInt()) { initPortfolio() }
 
     private val random = GeometricDistribution(tradePeriodGeometricBias).apply {
-        reseedRandomGenerator(657567L)
-//        reseedRandomGenerator(System.nanoTime())
+//        reseedRandomGenerator(657567L)
+        reseedRandomGenerator(System.nanoTime())
     }
 
     val size = periods.size() - batchSize
