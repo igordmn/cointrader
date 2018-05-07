@@ -134,8 +134,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                         { it: TrainResult -> it.tests[0].neighborMean() },
                         { it: TrainResult -> it.tests[0].dayProfitMean },
                         { it: TrainResult -> it.tests[0].dayProfitMedian },
-                        { it: TrainResult -> -it.tests[1].downsideDeviation },
-                        { it: TrainResult -> -it.tests[1].maximumDrawdawn }
+                        { it: TrainResult -> -it.tests[0].downsideDeviation },
+                        { it: TrainResult -> -it.tests[0].maximumDrawdawn }
                 )
 
                 val linkedResults = LinkedList(results)
