@@ -42,6 +42,15 @@ suspend fun trainMulti() {
         fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
         fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
 
-        train(TradeConfig(), trainConfig(), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-05-05T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-25T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-15T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-05T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-03-25T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-03-15T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-03-05T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-02-25T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-02-15T10:40:00", zoneOffset("+3"))), "{}")   // 0
+        train(TradeConfig(), TrainConfig(range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-02-05T10:40:00", zoneOffset("+3"))), "{}")   // 0
     }
 }
