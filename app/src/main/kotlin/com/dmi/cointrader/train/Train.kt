@@ -11,7 +11,6 @@ import com.dmi.cointrader.neural.networkTrainer
 import com.dmi.cointrader.neural.trainingNetwork
 import com.dmi.cointrader.trade.TradeSummary
 import com.dmi.cointrader.trade.performTestTradesAllInFast
-import com.dmi.cointrader.trade.performTestTradesPartialFast
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
@@ -22,7 +21,9 @@ import jep.Jep
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.serialization.cbor.CBOR.Companion.dump
+import org.apache.commons.io.FileUtils
 import java.lang.Math.pow
+import java.nio.file.Files
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -100,10 +101,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             }
 
             fun saveBestNet(result: TrainResult) {
-                val netDir = bestPath.resolve("$repeat")
-                net.save(netDir)
-                netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
-                saveLogChart(result.tests[0].chartData, bestPath.resolve("$repeat.png"))
+                FileUtils.copyDirectory(netDir(result.step).toFile(), bestPath.resolve("$repeat").toFile())
+                Files.copy(chart1File(result.step), bestPath.resolve("$repeat.png"))
                 bestPath.resolve("results.log").appendLine(result.toString())
             }
 
@@ -132,10 +131,15 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                         { it: TrainResult -> it.tests[1].neighborMean() },
                         { it: TrainResult -> it.tests[1].dayProfitMean },
                         { it: TrainResult -> it.tests[1].dayProfitMedian },
+                        { it: TrainResult -> it.tests[1].downsideDeviation },
+                        { it: TrainResult -> it.tests[1].maximumDrawdawn },
                         { it: TrainResult -> it.tests[0].neighborMean() },
                         { it: TrainResult -> it.tests[0].dayProfitMean },
-                        { it: TrainResult -> it.tests[0].dayProfitMedian },
-                        { it: TrainResult -> -it.tests[0].dailyDownsideDeviation }
+                        { it: TrainResult -> it.tests[0].dayProfitMedian }
+//                        { it: TrainResult -> it.tests[1].downsideDeviation },
+//                        { it: TrainResult -> it.tests[1].maximumDrawdawn },
+//                        { it: TrainResult -> -it.tests[0].dailyDownsideDeviation },
+//                        { it: TrainResult -> -it.tests[0].dailyMaximumDrawdawn }
                 )
 
                 val linkedResults = LinkedList(results)
@@ -180,7 +184,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             }
 
             fun TrainResult.score() = tests[0].dayProfitMean
-            val localScores = results.drop(trainConfig.scoresSkipSteps / trainConfig.logSteps).map { it.score() }.sorted()
+            val localScores = results.map { it.score() }.sorted()
             val score = localScores[localScores.size * 3 / 4]
             log("Score $score")
             scores.add(score)

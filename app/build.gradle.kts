@@ -98,6 +98,8 @@ dependencies {
     compile("io.arrow-kt:arrow-instances:0.6.1")
     compile("io.arrow-kt:arrow-syntax:0.6.1")
     compile("org.knowm.xchart:xchart:3.5.1")
+    compile("org.apache.commons:commons-lang3:3.7")
+    compile("commons-io:commons-io:2.6")
 //    kapt("io.arrow-kt:arrow-annotations-processor:0.6.1")
     testCompile("io.kotlintest:kotlintest:2.0.7")
     testCompile("com.google.jimfs:jimfs:1.1")
