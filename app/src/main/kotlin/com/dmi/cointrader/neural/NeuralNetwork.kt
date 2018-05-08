@@ -68,7 +68,7 @@ class NeuralNetwork private constructor(
             """.trimIndent())
         jep.eval("""
                 def best_portfolio_$variable(current_portfolio, history):
-                    return $variable.best_portfolio_$variable(current_portfolio, history)
+                    return $variable.best_portfolio(current_portfolio, history)
             """.trimIndent())
         jep.invoke(
                 "create_network_$variable",
@@ -115,9 +115,9 @@ class NeuralNetwork private constructor(
             return NeuralNetwork(jep, config, gpuMemoryFraction, null, additionalParams)
         }
 
-        fun load(jep: Jep, directory: Path, gpuMemoryFraction: Double = 0.5): NeuralNetwork {
+        fun load(jep: Jep, directory: Path, gpuMemoryFraction: Double = 0.5, additionalParams: String = "{}"): NeuralNetwork {
             val config: Config = load(Files.readAllBytes(directory.resolve("config")))
-            return NeuralNetwork(jep, config, gpuMemoryFraction, directory.resolve("net"))
+            return NeuralNetwork(jep, config, gpuMemoryFraction, directory.resolve("net"), additionalParams)
         }
     }
 }
