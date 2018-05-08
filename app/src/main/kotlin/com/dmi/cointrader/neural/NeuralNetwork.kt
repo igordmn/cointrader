@@ -62,16 +62,16 @@ class NeuralNetwork private constructor(
         jep.eval("from cointrader.network import NeuralNetwork")
         jep.eval("$variable = None")
         jep.eval("""
-                def create_network(alt_asset_number, history_size, gpu_memory_fraction, saved_file):
+                def create_network_$variable(alt_asset_number, history_size, gpu_memory_fraction, saved_file):
                     global $variable
                     $variable = NeuralNetwork(alt_asset_number, history_size, $historyIndicatorNumber, gpu_memory_fraction, saved_file, $additionalParams)
             """.trimIndent())
         jep.eval("""
-                def best_portfolio(current_portfolio, history):
-                    return $variable.best_portfolio(current_portfolio, history)
+                def best_portfolio_$variable(current_portfolio, history):
+                    return $variable.best_portfolio_$variable(current_portfolio, history)
             """.trimIndent())
         jep.invoke(
-                "create_network",
+                "create_network_$variable",
                 config.altAssetNumber, config.historySize,
                 gpuMemoryFraction, savedFile?.toAbsolutePath()?.toString()
         )
@@ -89,7 +89,7 @@ class NeuralNetwork private constructor(
         require(histories.dimensions[2] == config.historySize)
         require(histories.dimensions[3] == historyIndicatorNumber)
 
-        return jep.invoke("best_portfolio", currentPortfolio, histories) as NDArray<FloatArray>
+        return jep.invoke("best_portfolio_$variable", currentPortfolio, histories) as NDArray<FloatArray>
     }
 
     fun save(directory: Path) {
@@ -135,16 +135,16 @@ class NeuralTrainer(
         jep.eval("from cointrader.network import NeuralTrainer")
         jep.eval("$variable = None")
         jep.eval("""
-                def create_trainer():
+                def create_trainer_$variable():
                     global $variable
                     global $networkVariable
                     $variable = NeuralTrainer($networkVariable, $fee, $additionalParams)
             """.trimIndent())
         jep.eval("""
-                def train(current_portfolio, history, asks, bids):
+                def train_$variable(current_portfolio, history, asks, bids):
                     return $variable.train(current_portfolio, history, asks, bids)
             """.trimIndent())
-        jep.invoke("create_trainer")
+        jep.invoke("create_trainer_$variable")
     }
 
     fun train(currentPortfolio: PortionsBatch, history: TradedHistoryBatch): Result {
@@ -172,7 +172,7 @@ class NeuralTrainer(
         require(bids.dimensions[0] == currentPortfolio.dimensions[0])
         require(bids.dimensions[1] == net.config.altAssetNumber)
 
-        val result = jep.invoke("train", currentPortfolio, history, asks, bids) as List<*>
+        val result = jep.invoke("train_$variable", currentPortfolio, history, asks, bids) as List<*>
         val newPortions = result[0] as NDArray<FloatArray>
         val geometricMeanProfit = result[1] as Double
         return ResultMatrix(newPortions, geometricMeanProfit)
