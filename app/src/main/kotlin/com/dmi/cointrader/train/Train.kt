@@ -112,7 +112,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             previousResults = results,
                             trainProfits = trainProfits,
                             testCapitals = listOf(
-                                    performTestTradesPartialFast(testPeriods, tradeConfig, net, archive, trainConfig.fee)
+                                    performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)
