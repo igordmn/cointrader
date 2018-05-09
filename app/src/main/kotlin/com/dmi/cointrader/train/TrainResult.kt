@@ -1,12 +1,9 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.archive.PeriodSpace
-import com.dmi.cointrader.info.ChartData
 import com.dmi.cointrader.trade.*
-import com.dmi.util.lang.times
-import com.dmi.util.math.downsideDeviation
 import com.dmi.util.math.geoMean
-import com.dmi.util.math.maximumDrawdawn
+import java.nio.file.Path
 import kotlin.math.pow
 
 fun trainResult(
@@ -39,3 +36,21 @@ data class TrainResult(val step: Int, val trainDayProfit: Double, val tests: Lis
         return "$step   $trainDayProfit   $tests"
     }
 }
+
+fun parseResults(file: Path): List<SavedTrainResult> {
+    return file.toFile()
+            .readLines()
+            .filter {
+                it.isNotEmpty() && it[0].isDigit()
+            }
+            .map {
+                val values = it.replace("  ", " ").replace("  ", " ").replace("  ", " ").split(" ")
+                SavedTrainResult(
+                        it,
+                        step = values[0].toInt(),
+                        test0DayProfitMedian = values[4].toDouble()
+                )
+            }
+}
+
+data class SavedTrainResult(val str: String, val step: Int, val test0DayProfitMedian: Double)

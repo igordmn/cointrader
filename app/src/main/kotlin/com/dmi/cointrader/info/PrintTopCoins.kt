@@ -12,7 +12,7 @@ import java.time.Instant
 fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val daylyVolumes: List<Double>)
 
-    val days = 40
+    val days = 50
     val minDayVolume = 150   // in BTC
     val maxByDays = 3
     val excludedPairs = setOf(
