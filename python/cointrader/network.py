@@ -1,7 +1,6 @@
 import tflearn
 import tensorflow as tf
 import numpy as np
-from tensorflow.contrib.opt import PowerSignOptimizer, AddSignOptimizer, LazyAdamOptimizer, MovingAverageOptimizer
 
 from tensorflow.python.ops import math_ops
 from datetime import datetime
@@ -103,7 +102,11 @@ class NeuralNetwork:
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
         self.session = tf.Session(config=tf_config)
         self.saver = tf.train.Saver(max_to_keep=None)
-        self.saved_file = saved_file
+
+        if saved_file:
+            self.saver.restore(self.session, saved_file)
+        else:
+            self.session.run(tf.global_variables_initializer())
 
     def best_portfolio(self, current_portfolio, history):
         """
@@ -177,7 +180,7 @@ class NeuralTrainer:
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
-        learning_rate = params.get('lr', clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92))
+        learning_rate = clr(global_step, min=0.00007, max=0.00028 * 2, step_size=5000, decay=0.92)
         self.train_tensor = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
         self.batch_size = network.batch_size
@@ -186,7 +189,6 @@ class NeuralTrainer:
         self.best_portfolio_tensor = network.best_portfolio_tensor
         self.session = network.session
         self.session.run(tf.global_variables_initializer())
-        network.saver.restore(self.session, network.saved_file)
 
     def train(self, current_portfolio, history, asks, bids):
         """
