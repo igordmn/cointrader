@@ -19,7 +19,7 @@ private val neuralTrainerNum = AtomicInteger(0)
 
 fun ResourceContext.trainedNetwork(): NeuralNetwork {
     val jep = jep().use()
-    val dir = Paths.get("data/network")
+    val dir = Paths.get("network")
     return NeuralNetwork.load(jep, dir, gpuMemoryFraction = 0.2).use()
 }
 
