@@ -38,8 +38,8 @@ data class TradeConfig(
                         "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "LINK", "XVG",
                         "SALT", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "AST", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "ENJ",
                         "VEN", "RCN", "NULS", "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION",
-                        "NEBL", "EDO", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT", "STORM"
-                )
+                        "NEBL", "EDO", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN"
+)
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
@@ -52,18 +52,18 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-05-09T22:18:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-11-01T00:00:00", "2018-05-14T02:10:00", zoneOffset("+3")),
         val testDays: Double = 50.0,
         val validationDays: Double = 0.0,
 
-        val steps: Int = 50000,
-        val repeats: Int = 50,
+        val steps: Int = 30000,
+        val repeats: Int = 40,
         val repeatsBreak: Int = 20,
         val repeatsBreakScore: Double = 1.000,
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
-        val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.03,
+        val breakSteps: Int = 1000000,
+        val breakProfit: Double = 1.00,
 
         val fee: Double = 0.0005,
         val batchSize: Int = 30,

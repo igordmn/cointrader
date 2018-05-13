@@ -7,13 +7,11 @@ import com.dmi.cointrader.TradeAssets
 import com.dmi.cointrader.archive.PeriodSpace
 import com.dmi.cointrader.info.ChartData
 import com.dmi.cointrader.test.TestExchange
-import com.dmi.util.lang.MILLIS_PER_DAY
-import com.dmi.util.lang.MILLIS_PER_HOUR
-import com.dmi.util.lang.times
 import com.dmi.util.math.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import java.lang.Math.pow
 import java.time.Clock
-import java.time.Duration
-import kotlin.math.pow
 
 private val additionalAssets = listOf("BNB")
 private val resultAsset = "BTC"
@@ -67,24 +65,24 @@ fun tradeSummary(
         tradePeriods: Int,
         capitals: Capitals,
         previous: List<TradeSummary>,
-        movingAverageCount: Int = 10
+        movingAverageCount: Int = 10,
+        scoreWindowSize: Int = 16
 ): TradeSummary {
     val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
-    val tradeDuration = space.duration * tradePeriods
     val profits = capitals.profits()
-    val dailyProfits = profits.daily(tradeDuration)
     return TradeSummary(
+            profits = profits,
             averageDayProfit = if (previous.size >= movingAverageCount) {
-                geoMean(previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfitMean })
+                previous.slice(previous.size - movingAverageCount until previous.size).map { it.dayProfit }.geoMean()
             } else {
                 null
             },
-            dayProfitMean = dailyProfits.let(::geoMean),
-            dayProfitMedian = dailyProfits.median(),
-            downsideDeviation = profits.let(::downsideDeviation),
-            maximumDrawdawn = profits.let(::maximumDrawdawn),
-            dailyDownsideDeviation = dailyProfits.let(::downsideDeviation),
-            dailyMaximumDrawdawn = dailyProfits.let(::maximumDrawdawn),
+            dayProfit = pow(profits.geoMean(), tradePeriodsPerDay),
+            score = profits
+                    .windowed(scoreWindowSize, transform = List<Double>::geoMean)
+                    .sortAndRemoveOutliers(percent = 0.25)
+                    .geoMean()
+                    .let { pow(it, tradePeriodsPerDay) },
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
@@ -92,25 +90,20 @@ fun tradeSummary(
     )
 }
 
+@Serializable
 data class TradeSummary(
+        val profits: List<Double>,
         val averageDayProfit: Double?,
-        val dayProfitMean: Double,
-        val dayProfitMedian: Double,
-        val downsideDeviation: Double,
-        val maximumDrawdawn: Double,
-        val dailyDownsideDeviation: Double,
-        val dailyMaximumDrawdawn: Double,
-        val chartData: ChartData
+        val dayProfit: Double,
+        val score: Double,
+        @Transient val chartData: ChartData = ChartData(DoubleArray(0), DoubleArray(0))
 ) {
     override fun toString(): String {
-        val dayProfitMean = "%.3f".format(dayProfitMean)
-        val dayProfitMedian = "%.3f".format(dayProfitMedian)
-        val averageDayProfit = if (averageDayProfit != null) "%.3f".format(averageDayProfit) else "-----"
-        val negativeDeviation = "%.5f".format(downsideDeviation)
-        val maximumDrawdawn = "%.2f".format(maximumDrawdawn)
-        val dailyDownsideDeviation = "%.5f".format(dailyDownsideDeviation)
-        val dailyMaximumDrawdawn = "%.2f".format(dailyMaximumDrawdawn)
-        return "$averageDayProfit $dayProfitMean $dayProfitMedian $negativeDeviation $maximumDrawdawn $dailyDownsideDeviation $dailyMaximumDrawdawn"
+        val averageDayProfit = "%.3f".format(averageDayProfit)
+        val dayProfit = "%.3f".format(dayProfit)
+        val score = "%.3f".format(score)
+        return "$averageDayProfit $dayProfit $score"
+        return "$dayProfit"
     }
 }
 
@@ -119,17 +112,3 @@ typealias Capitals = List<Capital>
 typealias Profits = List<Double>
 
 fun Capitals.profits(): Profits = zipWithNext { c, n -> n / c }
-
-fun Profits.daily(period: Duration): Profits {
-    val periodsPerDay = (MILLIS_PER_DAY / period.toMillis()).toInt()
-    return chunked(periodsPerDay).map {
-        product(it).pow(periodsPerDay.toDouble() / it.size)
-    }
-}
-
-fun Profits.hourly(period: Duration): Profits {
-    val periodsPerHour = (MILLIS_PER_HOUR / period.toMillis()).toInt()
-    return chunked(periodsPerHour).map {
-        product(it).pow(periodsPerHour.toDouble() / it.size)
-    }
-}

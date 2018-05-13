@@ -17,10 +17,8 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
 
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
     width = net.get_shape()[2]
-    height = net.get_shape()[1]
     features = net.get_shape()[3]
-    net = tf.reshape(net, [batch_size, int(height), 1, int(width * features)])
-    w = tf.reshape(previous_portfolio, [-1, int(height), 1, 1])
+    w = previous_portfolio[:, :, None, None]
     net = tf.concat([net, w], axis=3)
     net = tflearn.layers.conv_2d(
         net, 1, [1, 1],
@@ -36,14 +34,12 @@ def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_d
     return tflearn.layers.core.activation(net, activation="softmax")
 
 
-def normalize_history(history):
-    usds = np.sqrt(history[:, 0, None, :, 0, None] * history[:, 0, None, :, 1, None])
-    history = history / usds
+def normalize_history(history, params):
     last_ask = history[:, :, -1, 0, None, None]
     last_bid = history[:, :, -1, 1, None, None]
     last_price = np.sqrt(last_ask * last_bid)
     history = history / last_price
-    history = 20 * np.log(history)
+    history = 100 * np.log(history)
     return history
 
 
@@ -102,7 +98,7 @@ class NeuralNetwork:
         tf_config.gpu_options.per_process_gpu_memory_fraction = gpu_memory_fraction
         self.session = tf.Session(config=tf_config)
         self.saver = tf.train.Saver(max_to_keep=None)
-
+        self.params = params
         if saved_file:
             self.saver.restore(self.session, saved_file)
         else:
@@ -121,7 +117,7 @@ class NeuralNetwork:
         tflearn.is_training(False, self.session)
         result = self.session.run(self.best_portfolio_tensor, feed_dict={
             self.current_portfolio: current_portfolio,
-            self.history: normalize_history(history),
+            self.history: normalize_history(history, self.params),
             self.batch_size: history.shape[0]
         })
         return result
@@ -134,7 +130,7 @@ class NeuralNetwork:
         self.session.close()
 
 
-def compute_profits(batch_size, best_portfolio, asks, bids, fee):
+def compute_profits(batch_size, best_portfolio, asks, bids, fee, params):
     asks = tf.concat([tf.ones([batch_size, 1]), asks], axis=1)  # add main asset price
     bids = tf.concat([tf.ones([batch_size, 1]), bids], axis=1)  # add main asset price
 
@@ -173,7 +169,7 @@ class NeuralTrainer:
         self.asks = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
         self.bids = tf.placeholder(tf.float32, shape=[None, network.alt_asset_number])
 
-        profits_size, profits = compute_profits(network.batch_size, network.best_portfolio_tensor, self.asks, self.bids, fee)
+        profits_size, profits = compute_profits(network.batch_size, network.best_portfolio_tensor, self.asks, self.bids, fee, params)
         self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / tf.to_float(profits_size))
 
         loss = -tf.reduce_prod(profits)
@@ -189,6 +185,7 @@ class NeuralTrainer:
         self.best_portfolio_tensor = network.best_portfolio_tensor
         self.session = network.session
         self.session.run(tf.global_variables_initializer())
+        self.params = params
 
     def train(self, current_portfolio, history, asks, bids):
         """
@@ -205,7 +202,7 @@ class NeuralTrainer:
         tflearn.is_training(True, self.session)
         results = self.session.run([self.train_tensor, self.best_portfolio_tensor, self.geometric_mean_profit], feed_dict={
             self.current_portfolio: current_portfolio,
-            self.history: normalize_history(history),
+            self.history: normalize_history(history, self.params),
             self.asks: asks,
             self.bids: bids,
             self.batch_size: history.shape[0]

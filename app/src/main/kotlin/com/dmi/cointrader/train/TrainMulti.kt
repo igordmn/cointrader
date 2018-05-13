@@ -13,20 +13,6 @@ import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 suspend fun trainMulti() {
     val jep = jep()
-
-    fun trainConfig() = TrainConfig(
-            range = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-04-29T00:50:00", zoneOffset("+3")),
-            validationDays = 50.0,
-            steps = 32000,
-            repeats = 5,
-            repeatsBreak = 2,
-            repeatsBreakScore = 1.05,
-            logSteps = 2000,
-            scoresSkipSteps = 10000,
-            breakSteps = 19999,
-            breakProfit = 1.05
-    )
-
     var num = 0
 
     with(object {
@@ -40,8 +26,5 @@ suspend fun trainMulti() {
             num++
         }
     }) {
-        fun historyPeriods(count: Int) = TradeConfig().historyPeriods.copy(count = count)
-        fun historyPeriods2(minutes: Int) = TradeConfig().historyPeriods.copy(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt())
-        fun tradePeriods(minutes: Int): TradePeriods = TradePeriods(size = minutes * TradeConfig().periodSpace.periodsPerMinute().toInt(), delay = 1)
     }
 }

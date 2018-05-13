@@ -29,7 +29,7 @@ fun PeriodProgression.splitForTrain(
     val size = size()
     return TrainPeriods(
             train = slice(0 until size - validationSize),
-            test = slice(size - testSize until size),
+            test = slice(size - testSize - validationSize until size - validationSize),
             validation = slice(size - validationSize  until size)
     )
 }

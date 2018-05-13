@@ -8,11 +8,8 @@ import com.dmi.cointrader.binance.binanceExchangeForInfo
 import com.dmi.cointrader.info.saveLogChart
 import com.dmi.cointrader.neural.jep
 import com.dmi.cointrader.neural.networkTrainer
-import com.dmi.cointrader.neural.tradedHistories
 import com.dmi.cointrader.neural.trainingNetwork
-import com.dmi.cointrader.trade.TradeSummary
-import com.dmi.cointrader.trade.performTestTradesAllInFast
-import com.dmi.cointrader.trade.performTestTradesPartialFast
+import com.dmi.cointrader.trade.*
 import com.dmi.util.collection.contains
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
@@ -22,17 +19,12 @@ import com.sun.javafx.application.PlatformImpl
 import jep.Jep
 import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
-import kotlinx.coroutines.experimental.channels.toList
 import kotlinx.serialization.cbor.CBOR.Companion.dump
-import org.apache.commons.io.FileUtils
-import java.lang.Math.pow
-import java.nio.file.Files
+import kotlinx.serialization.list
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-
-typealias TrainScore = Double
 
 suspend fun train() {
     val tradeConfig = TradeConfig()
@@ -75,6 +67,8 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             println("Repeat $repeat")
 
             val resultsLogFile = resultsDir.resolve("results.log")
+            val resultsDumpFile = resultsDir.resolve("results.dump")
+
             fun log(msg: String) {
                 resultsLogFile.appendLine(msg)
                 println(msg)
@@ -113,23 +107,25 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                             trainProfits = trainProfits,
                             testCapitals = listOf(
                                     performTestTradesAllInFast(testPeriods, tradeConfig, net, archive, trainConfig.fee)
+//                                    performTestTradesAllInFast(validationPeriods, tradeConfig, net, archive, trainConfig.fee)
                             )
                     )
                     results.add(result)
                     saveNet(result)
                     trainProfits = ArrayList(trainConfig.logSteps)
-
-                    if (i >= trainConfig.breakSteps && !results.any { it.tests[0].dayProfitMean >= trainConfig.breakProfit }) {
+                    if (i >= trainConfig.breakSteps && !results.any { it.tests[0].dayProfit >= trainConfig.breakProfit }) {
                         channel.cancel()
                     }
                 }
             }
 
-            fun TrainResult.score() = tests[0].dayProfitMean
+            fun TrainResult.score() = tests.last().score
             val localScores = results.map { it.score() }.sorted()
             val score = localScores[localScores.size * 3 / 4]
             log("Score $score")
             scores.add(score)
+
+            resultsDumpFile.writeBytes(dump(TrainResult.serializer().list, results))
 
             if (repeat + 1 >= trainConfig.repeatsBreak && !scores.any { it >= trainConfig.repeatsBreakScore }) {
                 return

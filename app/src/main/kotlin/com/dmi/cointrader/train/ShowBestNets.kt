@@ -2,6 +2,9 @@ package com.dmi.cointrader.train
 
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
+import kotlinx.serialization.cbor.CBOR
+import kotlinx.serialization.cbor.CBOR.Companion.load
+import kotlinx.serialization.list
 import org.apache.commons.io.FileUtils.copyDirectory
 import java.nio.file.Files
 import java.nio.file.Files.copy
@@ -10,17 +13,21 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 fun showBestNets(count: Int) {
-    data class Info(val result: SavedTrainResult, val dir: Path) {
+    data class Info(val result: TrainResult, val dir: Path) {
         override fun toString(): String {
             return "$result ($dir)"
         }
+
+        fun netDir() = dir.resolve("networks").resolve(result.step.toString())
+        fun chartFile() = dir.resolve("charts1").resolve(result.step.toString() + ".png")
     }
 
     val dir = Paths.get("data/results")
     val info: List<Info> =
             Files.newDirectoryStream(dir).use {
                 it.map { repeatDir ->
-                    parseResults(repeatDir.resolve("results.log")).map { result ->
+                    val results = load(TrainResult.serializer().list, repeatDir.resolve("results.dump").toFile().readBytes())
+                    results.map { result ->
                         Info(result, repeatDir)
                     }
                 }
@@ -30,16 +37,15 @@ fun showBestNets(count: Int) {
     bestResultsDir.deleteRecursively()
     createDirectories(bestResultsDir)
 
-    val bestInfo = info.sortedByDescending { it.result.test0DayProfitMedian }.take(count)
+    val bestInfo = info.sortedByDescending { it.result.tests[0].score }.take(count)
     bestInfo.forEachIndexed { num, it ->
-        val netDir = it.dir.resolve("networks").resolve(it.result.step.toString())
-        val chartFile = it.dir.resolve("charts1").resolve(it.result.step.toString() + ".png")
-
-
-        copyDirectory(netDir.toFile(), bestResultsDir.resolve("net$num").toFile())
-        copy(chartFile, bestResultsDir.resolve("$num.png"))
+        copyDirectory(it.netDir().toFile(), bestResultsDir.resolve("net$num").toFile())
+        copy(it.chartFile(), bestResultsDir.resolve("$num.png"))
         val resultDir = it.dir
-        val resultStr = it.result.str
-        bestResultsDir.resolve("results.log").appendLine("$num    $resultStr ($resultDir)")
+        val result = it.result
+        bestResultsDir.resolve("results.log").appendLine("$num    $result ($resultDir)")
     }
+
+    Paths.get("network").deleteRecursively()
+    copyDirectory(bestInfo.first().netDir().toFile(), Paths.get("network").toFile())
 }
