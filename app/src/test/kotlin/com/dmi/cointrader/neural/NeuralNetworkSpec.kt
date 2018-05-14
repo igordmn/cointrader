@@ -17,14 +17,14 @@ class NeuralNetworkSpec: Spec({
     "test" {
         resourceContext {
             val altAssetNumber = 2
-            val historySize = 3
+            val historySize = 7
             val batchSize = 4
             val dir = tempDirectory()
 
             fun portfolio() = listOf(1.0, 1.0, 0.0)
             fun spread() = Spread(1.0, 1.0)
             fun spreads(): Spreads = listOf(spread(), spread())
-            fun history() = listOf(spreads(), spreads(), spreads())
+            fun history() = listOf(spreads(), spreads(), spreads(), spreads(), spreads(), spreads(), spreads())
             fun tradedHistory() = TradedHistory(history(), spreads())
 
             var bestPortfolio1: Portions? = null
