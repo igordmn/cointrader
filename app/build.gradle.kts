@@ -147,8 +147,12 @@ startScripts.windowsStartScriptGenerator = object : ScriptGenerator {
 configure<ApplicationPluginConvention> {
     applicationDistribution
             .from("$rootDir")
+            .include("network/**")
             .include("data/**")
             .exclude("data/cache/**")
+            .exclude("data/results/**")
+            .exclude("data/resultsBest/**")
+            .exclude("data/resultsMulti/**")
             .exclude("data/log/**")
             .include("python/**")
             .include("lib/native/**")
