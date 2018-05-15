@@ -9,6 +9,7 @@ import com.dmi.cointrader.neural.*
 import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
+import com.dmi.util.concurrent.safeDelay
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.*
@@ -106,19 +107,9 @@ suspend fun forEachRealTradePeriod(
             println("(nextTime - clock.instant()).toMillis() ${(nextTime - clock.instant()).toMillis()}")
         }
 
-        delay(preloadTime - clock.instant())
+        safeDelay(preloadTime - clock.instant())
         preload(preloadPeriod)
-
-        if ((nextTime - clock.instant()).toMillis() < 0) {
-            println("iterator.previousPeriod ${iterator.previousPeriod}")
-            println("time $time")
-            println("nextPeriod $nextPeriod")
-            println("nextTime $nextTime")
-            println("clock.instant() ${clock.instant()}")
-            println("(nextTime - clock.instant()).toMillis() ${(nextTime - clock.instant()).toMillis()}")
-        }
-
-        delay(nextTime - clock.instant())
+        safeDelay(nextTime - clock.instant())
         action(nextPeriod)
     }
 }

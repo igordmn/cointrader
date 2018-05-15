@@ -7,3 +7,9 @@ import java.util.concurrent.TimeUnit
 suspend fun delay(duration: Duration) {
     delay(duration.toNanos(), TimeUnit.NANOSECONDS)
 }
+
+suspend fun safeDelay(duration: Duration) {
+    if (duration > Duration.ZERO) {
+        delay(duration.toNanos(), TimeUnit.NANOSECONDS)
+    }
+}
