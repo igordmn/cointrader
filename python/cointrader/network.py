@@ -16,8 +16,6 @@ def eiie_dense(net, filter_number, activation_function, regularizer, weight_deca
 
 
 def eiie_output_withw(net, batch_size, previous_portfolio, regularizer, weight_decay, weights_init):
-    width = net.get_shape()[2]
-    features = net.get_shape()[3]
     w = previous_portfolio[:, :, None, None]
     net = tf.concat([net, w], axis=3)
     net = tflearn.layers.conv_2d(
