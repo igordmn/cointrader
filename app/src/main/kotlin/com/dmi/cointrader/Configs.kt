@@ -42,7 +42,7 @@ data class TradeConfig(
                         "LEND", "TNB", "WAVES", "GTO", "ICX", "OST", "ELF", "AION", "NEBL", "EDO", "LUN", "TRIG", "APPC", "VIBE", "INS",
                         "IOST", "CHAT", "STEEM", "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "WPR",
                         "QLC", "SYS"
-)
+                )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
