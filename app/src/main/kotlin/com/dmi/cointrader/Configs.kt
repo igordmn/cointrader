@@ -35,10 +35,13 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "LINK", "XVG",
-                        "SALT", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "DNT", "AST", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "ENJ",
-                        "VEN", "RCN", "NULS", "XMR", "BCPT", "GVT", "POE", "LSK", "DGD", "ADA", "XLM", "WAVES", "ICX", "ELF", "AION",
-                        "NEBL", "EDO", "TRIG", "IOST", "NANO", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "KNC",
+                        "FUN", "IOTA", "LINK", "XVG", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC", "MTH", "ENG", "DNT", "ZEC", "AST",
+                        "DASH", "BTG", "REQ", "VIB", "TRX", "POWR", "ARK", "XRP", "ENJ", "VEN", "KMD", "RCN", "NULS", "XMR", "AMB", "BAT",
+                        "BCPT", "ARN", "GVT", "CDT", "POE", "QSP", "BTS", "LSK", "FUEL", "DGD", "ADX", "ADA", "PPT", "CMT", "XLM", "CND",
+                        "LEND", "TNB", "WAVES", "GTO", "ICX", "OST", "ELF", "AION", "NEBL", "EDO", "LUN", "TRIG", "APPC", "VIBE", "INS",
+                        "IOST", "CHAT", "STEEM", "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "WPR",
+                        "QLC", "SYS"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -52,8 +55,8 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-11-01T00:00:00", "2018-05-14T02:10:00", zoneOffset("+3")),
-        val testDays: Double = 50.0,
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-12-01T00:00:00", "2018-05-14T17:50:00", zoneOffset("+3")),
+        val testDays: Double = 30.0,
         val validationDays: Double = 0.0,
 
         val steps: Int = 30000,

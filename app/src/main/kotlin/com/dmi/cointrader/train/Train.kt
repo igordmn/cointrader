@@ -88,8 +88,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 val netDir = netDir(result.step)
                 net.save(netDir)
                 netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
-                saveLogChart(result.tests[0].chartData, chart1File(result.step))
-//                saveLogChart(result.tests[1].chartData, chart2File(result.step))
+                saveLogChart(result.tests.last().chartData, chart1File(result.step))
                 log(result.toString())
             }
 
@@ -113,14 +112,13 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                     results.add(result)
                     saveNet(result)
                     trainProfits = ArrayList(trainConfig.logSteps)
-                    if (i >= trainConfig.breakSteps && !results.any { it.tests[0].dayProfit >= trainConfig.breakProfit }) {
+                    if (i >= trainConfig.breakSteps && !results.any { it.tests.last().dayProfit >= trainConfig.breakProfit }) {
                         channel.cancel()
                     }
                 }
             }
 
-            fun TrainResult.score() = tests.last().score
-            val localScores = results.map { it.score() }.sorted()
+            val localScores = results.map { it.tests.last().score }.sorted()
             val score = localScores[localScores.size * 3 / 4]
             log("Score $score")
             scores.add(score)
