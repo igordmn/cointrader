@@ -86,6 +86,13 @@ fun tradeSummary(
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
+            },
+            chartData2 = run {
+                val capitals2 = capitals
+                        .windowed(scoreWindowSize, transform = List<Double>::geoMean)
+                        .limitOutliers(percent = 0.25)
+                val profitDays = capitals2.indices.map { it / tradePeriodsPerDay }
+                ChartData(profitDays.toDoubleArray(), capitals2.toDoubleArray())
             }
     )
 }
@@ -96,7 +103,8 @@ data class TradeSummary(
         val averageDayProfit: Double?,
         val dayProfit: Double,
         val score: Double,
-        @Transient val chartData: ChartData = ChartData(DoubleArray(0), DoubleArray(0))
+        @Transient val chartData: ChartData = ChartData(DoubleArray(0), DoubleArray(0)),
+        @Transient val chartData2: ChartData = ChartData(DoubleArray(0), DoubleArray(0))
 ) {
     override fun toString(): String {
         val averageDayProfit = "%.3f".format(averageDayProfit)

@@ -89,6 +89,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 net.save(netDir)
                 netDir.resolve("tradeConfig").writeBytes(dump(tradeConfig))
                 saveLogChart(result.tests.last().chartData, chart1File(result.step))
+                saveLogChart(result.tests.last().chartData2, chart2File(result.step))
                 log(result.toString())
             }
 
