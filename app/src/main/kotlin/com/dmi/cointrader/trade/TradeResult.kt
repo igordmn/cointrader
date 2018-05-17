@@ -88,9 +88,15 @@ fun tradeSummary(
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
             },
             chartData2 = run {
-                val capitals2 = capitals
+                var acc = 1.0
+                val capitals2 = profits
                         .windowed(scoreWindowSize, transform = List<Double>::geoMean)
                         .limitOutliers(percent = 0.25)
+                        .map {
+                            val old = acc
+                            acc *= it
+                            old
+                        }
                 val profitDays = capitals2.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals2.toDoubleArray())
             }
