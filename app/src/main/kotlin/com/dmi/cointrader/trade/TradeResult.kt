@@ -103,7 +103,6 @@ data class TradeSummary(
         val dayProfit = "%.3f".format(dayProfit)
         val score = "%.3f".format(score)
         return "$averageDayProfit $dayProfit $score"
-        return "$dayProfit"
     }
 }
 
