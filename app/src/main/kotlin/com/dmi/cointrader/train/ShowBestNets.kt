@@ -2,7 +2,6 @@ package com.dmi.cointrader.train
 
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
-import kotlinx.serialization.cbor.CBOR
 import kotlinx.serialization.cbor.CBOR.Companion.load
 import kotlinx.serialization.list
 import org.apache.commons.io.FileUtils.copyDirectory
@@ -19,7 +18,8 @@ fun showBestNets(count: Int) {
         }
 
         fun netDir() = dir.resolve("networks").resolve(result.step.toString())
-        fun chartFile() = dir.resolve("charts1").resolve(result.step.toString() + ".png")
+        fun chart1File() = dir.resolve("charts1").resolve(result.step.toString() + ".png")
+        fun chart2File() = dir.resolve("charts2").resolve(result.step.toString() + ".png")
     }
 
     val dir = Paths.get("data/results")
@@ -35,12 +35,17 @@ fun showBestNets(count: Int) {
 
     val bestResultsDir = Paths.get("data/resultsBest")
     bestResultsDir.deleteRecursively()
+    val charts1Dir = bestResultsDir.resolve("charts1")
+    val charts2Dir = bestResultsDir.resolve("charts2")
     createDirectories(bestResultsDir)
+    createDirectories(charts1Dir)
+    createDirectories(charts2Dir)
 
     val bestInfo = info.sortedByDescending { it.result.tests[0].score }.take(count)
     bestInfo.forEachIndexed { num, it ->
         copyDirectory(it.netDir().toFile(), bestResultsDir.resolve("net$num").toFile())
-        copy(it.chartFile(), bestResultsDir.resolve("$num.png"))
+        copy(it.chart1File(), charts1Dir.resolve("$num.png"))
+        copy(it.chart2File(), charts2Dir.resolve("$num.png"))
         val resultDir = it.dir
         val result = it.result
         bestResultsDir.resolve("results.log").appendLine("$num    $result ($resultDir)")
