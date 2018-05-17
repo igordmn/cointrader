@@ -7,10 +7,9 @@ import com.dmi.util.concurrent.chunked
 import com.dmi.util.concurrent.map
 import kotlinx.coroutines.experimental.channels.*
 import kotlinx.coroutines.experimental.runBlocking
-import java.time.Instant
 
 fun printTopCoins() = runBlocking {
-    data class CoinVolumes(val coin: String, val daylyVolumes: List<Double>)
+    data class CoinVolumes(val coin: String, val dailyVolumes: List<Double>)
 
     val days = 50
     val minDayVolume = 150   // in BTC
@@ -31,14 +30,13 @@ fun printTopCoins() = runBlocking {
             .map {
                 CoinVolumes(
                         coin = it.removeSuffix("BTC"),
-                        daylyVolumes = daylyVolumes(api, it, time).take(days).toList()
+                        dailyVolumes = daylyVolumes(api, it, time).take(days).toList()
                 )
             }
-            .filter { it.daylyVolumes.size == days }
 
     val coins = coinVolumes
             .filter {
-                val maxVolumes = it.daylyVolumes.windowed(maxByDays) { it.max()!! }
+                val maxVolumes = it.dailyVolumes.windowed(maxByDays) { it.max()!! }
                 maxVolumes.all { it > minDayVolume }
             }
             .map { it.coin }
