@@ -119,7 +119,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 }
             }
 
-            val localScores = results.map { it.tests.last().score }.sorted()
+            val localScores = results.map { it.tests.last().dayProfit }.sorted()
             val score = localScores[localScores.size * 3 / 4]
             log("Score $score")
             scores.add(score)
