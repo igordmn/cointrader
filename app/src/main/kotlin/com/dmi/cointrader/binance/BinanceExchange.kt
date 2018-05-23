@@ -122,12 +122,12 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
 
             override suspend fun buy(amount: BigDecimal): OrderResult {
                 val result = newMarketOrder(OrderSide.BUY, amount, clock.instant())
-                return OrderResult(buySlippage(amount, result))
+                return OrderResult(price(result))
             }
 
             override suspend fun sell(amount: BigDecimal): OrderResult {
                 val result = newMarketOrder(OrderSide.SELL, amount, clock.instant())
-                return OrderResult(sellSlippage(amount, result))
+                return OrderResult(price(result))
             }
 
             private suspend fun newMarketOrder(side: OrderSide, amount: BigDecimal, timestamp: Instant): NewOrderResponse {
@@ -148,16 +148,10 @@ class BinanceExchange(private val api: BinanceAPI, private val info: Info) {
                 }
             }
 
-            private fun buySlippage(amount: BigDecimal, result: NewOrderResponse): Double {
-                val desiredSellingAmount = result.fills.first().price!!.toDouble() * amount.toDouble()
-                val factSellingAmount = result.fills.map { it.qty!!.toDouble() * it.price!!.toDouble() }.sum()
-                return desiredSellingAmount / factSellingAmount
-            }
-
-            private fun sellSlippage(amount: BigDecimal, result: NewOrderResponse): Double {
-                val desiredSellingAmount = result.fills.first().price!!.toDouble() * amount.toDouble()
-                val factSellingAmount = result.fills.map { it.qty!!.toDouble() * it.price!!.toDouble() }.sum()
-                return factSellingAmount / desiredSellingAmount
+            private fun price(result: NewOrderResponse): Double {
+                val quoteAmount = result.fills.sumByDouble { it.qty!!.toDouble() }
+                val baseAmount = result.fills.sumByDouble { it.qty!!.toDouble() * it.price!!.toDouble() }
+                return baseAmount / quoteAmount
             }
         }
     }

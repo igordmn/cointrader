@@ -10,7 +10,7 @@ interface Broker {
     data class Limits(val minAmount: BigDecimal, val amountStep: BigDecimal)
 
     data class OrderResult(
-            val slippage: Double
+            val price: Double
     )
 
     sealed class OrderError : Exception() {

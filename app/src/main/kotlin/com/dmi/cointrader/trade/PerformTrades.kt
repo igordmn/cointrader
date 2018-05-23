@@ -10,6 +10,7 @@ import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.safeDelay
+import com.dmi.util.io.append
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.*
@@ -25,7 +26,9 @@ import java.time.Instant
 import com.dmi.util.math.div
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
+import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -127,7 +130,6 @@ suspend fun performRealTrade(
             .market(baseAsset, quoteAsset)
             ?.broker(clock)
             ?.log(log, baseAsset, quoteAsset)
-            ?.slippageLog(Paths.get("data/log/slippages.log"), baseAsset)
 
     try {
         archive.sync(period)
@@ -138,13 +140,26 @@ suspend fun performRealTrade(
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
         }
-        performTrade(config.assets, portfolio, history, network, ::broker)
+        val tradeLog = RealTradeLog(Paths.get("data/log/trades.log"))
+        performTrade(config.assets, portfolio, history, network, ::broker, tradeLog)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
         writeCapital(result, config, period)
     } catch (e: Exception) {
         log.error("exception", e)
         Toolkit.getDefaultToolkit().beep()
+    }
+}
+
+private class RealTradeLog(private val file: Path) : TradeLog {
+    override fun afterSell(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
+        val factPrice = result.price
+        file.appendLine("Buy $amount $asset $price $factPrice")
+    }
+
+    override fun afterBuy(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
+        val factPrice = result.price
+        file.appendLine("Buy $amount $asset $price $factPrice")
     }
 }
 

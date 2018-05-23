@@ -16,21 +16,24 @@ import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
+import java.math.BigDecimal
 
 suspend fun performTrade(
         assets: TradeAssets,
         portfolio: Portfolio,
         history: NeuralHistory,
         network: NeuralNetwork,
-        getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?
-) = performTrade(assets, portfolio, history.last(), { network.bestPortfolio(it, history) }, getBroker)
+        getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?,
+        log: TradeLog = object : TradeLog {}
+) = performTrade(assets, portfolio, history.last(), { network.bestPortfolio(it, history) }, getBroker, log)
 
 suspend fun performTrade(
         assets: TradeAssets,
         portfolio: Portfolio,
         spreads: Spreads,
         getBestPortions: (current: Portions) -> Portions,
-        getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?
+        getBroker: (baseAsset: Asset, quoteAsset: Asset) -> Broker?,
+        log: TradeLog = object : TradeLog {}
 ) {
     fun brokerFor(altAsset: Asset, altPrice: Double): Broker {
         val attempts = SafeBroker.Attempts(count = 10, amountMultiplier = 0.99)
@@ -63,12 +66,19 @@ suspend fun performTrade(
         val sellAmount = amounts[currentIndex]
         val buyAmount = sellAmount * (sellPrice / buyPrice).toBigDecimal()
         if (currentAsset != assets.main) {
-            brokerFor(currentAsset, sellPrice).sell(sellAmount)
+            val result = brokerFor(currentAsset, sellPrice).sell(sellAmount)
+            log.afterBuy(currentAsset, sellAmount.toDouble(), sellPrice, result)
         }
         if (buyAsset != assets.main) {
-            brokerFor(buyAsset, buyPrice).buy(buyAmount)
+            val result = brokerFor(buyAsset, buyPrice).buy(buyAmount)
+            log.afterSell(buyAsset, buyAmount.toDouble(), buyPrice, result)
         }
     }
+}
+
+interface TradeLog {
+    fun afterSell(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) = Unit
+    fun afterBuy(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) = Unit
 }
 
 fun List<Double>.withMainAsset() = listOf(1.0) + this
