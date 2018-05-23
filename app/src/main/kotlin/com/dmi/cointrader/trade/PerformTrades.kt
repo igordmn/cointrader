@@ -10,7 +10,6 @@ import com.dmi.cointrader.test.TestExchange
 import com.dmi.util.collection.SuspendList
 import com.dmi.util.concurrent.delay
 import com.dmi.util.concurrent.safeDelay
-import com.dmi.util.io.append
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.resourceContext
 import com.dmi.util.lang.*
@@ -26,7 +25,6 @@ import java.time.Instant
 import com.dmi.util.math.div
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
-import java.math.BigDecimal
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths

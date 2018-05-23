@@ -16,7 +16,6 @@ import com.dmi.util.lang.indexOfMax
 import com.dmi.util.math.portions
 import com.dmi.util.math.times
 import com.dmi.util.math.toDouble
-import java.math.BigDecimal
 
 suspend fun performTrade(
         assets: TradeAssets,
