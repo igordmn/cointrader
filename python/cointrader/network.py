@@ -170,7 +170,7 @@ class NeuralTrainer:
         profits_size, profits = compute_profits(network.batch_size, network.best_portfolio_tensor, self.asks, self.bids, fee, params)
         self.geometric_mean_profit = tf.pow(tf.reduce_prod(profits), 1.0 / tf.to_float(profits_size))
 
-        loss = -tf.reduce_prod(profits)
+        loss = -tf.reduce_prod(profits) ** (10.0 / tf.to_float(profits_size))
         loss += tf.reduce_sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
         global_step = tf.Variable(0, trainable=False)
