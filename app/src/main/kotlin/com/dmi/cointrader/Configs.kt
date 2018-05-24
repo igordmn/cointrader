@@ -35,14 +35,11 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "LRC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "KNC",
-                        "FUN", "IOTA", "LINK", "XVG", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC", "MTH", "ENG", "DNT", "ZEC", "AST",
-                        "DASH", "BTG", "REQ", "VIB", "TRX", "POWR", "ARK", "XRP", "ENJ", "VEN", "KMD", "RCN", "NULS", "XMR", "AMB", "BAT",
-                        "BCPT", "ARN", "GVT", "CDT", "POE", "QSP", "BTS", "LSK", "FUEL", "DGD", "ADX", "ADA", "PPT", "CMT", "XLM", "CND",
-                        "LEND", "TNB", "WAVES", "GTO", "ICX", "OST", "ELF", "AION", "NEBL", "EDO", "LUN", "TRIG", "APPC", "VIBE", "INS",
-                        "IOST", "CHAT", "STEEM", "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "WPR",
-                        "QLC", "SYS"
-                )
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT", "MTL", "SUB",
+                        "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "VEN", "RCN", "NULS", "XMR",
+                        "BCPT", "ARN", "GVT", "QSP", "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "AION", "NEBL",
+                        "EDO", "LUN", "IOST", "STEEM", "NANO", "AE", "NCASH", "POA", "ZIL", "ONT", "STORM", "WAN", "QLC"
+)
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
@@ -55,18 +52,18 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-12-01T00:00:00", "2018-05-17T11:00:00", zoneOffset("+3")),
-        val testDays: Double = 50.0,
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-12-01T00:00:00", "2018-05-25T01:35:00", zoneOffset("+3")),
+        val testDays: Double = 60.0,
         val validationDays: Double = 0.0,
 
         val steps: Int = 30000,
-        val repeats: Int = 40,
-        val repeatsBreak: Int = 20,
-        val repeatsBreakScore: Double = 1.000,
+        val repeats: Int = 50,
+        val repeatsBreak: Int = 100,
+        val repeatsBreakScore: Double = 1.03,
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.045,
+        val breakProfit: Double = 1.04,
 
         val fee: Double = 0.0005,
         val batchSize: Int = 30,
