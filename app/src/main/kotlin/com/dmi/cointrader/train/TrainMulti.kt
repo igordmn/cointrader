@@ -1,15 +1,9 @@
 package com.dmi.cointrader.train
 
 import com.dmi.cointrader.TradeConfig
-import com.dmi.cointrader.TradePeriods
 import com.dmi.cointrader.TrainConfig
 import com.dmi.cointrader.neural.jep
-import com.dmi.util.lang.InstantRange
-import com.dmi.util.lang.days
-import com.dmi.util.lang.parseInstantRange
-import com.dmi.util.lang.zoneOffset
 import java.nio.file.Paths
-import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 suspend fun trainMulti() {
     val jep = jep()
@@ -26,5 +20,6 @@ suspend fun trainMulti() {
             num++
         }
     }) {
+        train(TradeConfig(), TrainConfig(), "{}")
     }
 }
