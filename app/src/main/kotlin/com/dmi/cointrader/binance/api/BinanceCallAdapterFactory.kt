@@ -49,10 +49,15 @@ class BinanceCallAdapterFactory : CallAdapter.Factory() {
                     if (response.isSuccessful) {
                         deferred.complete(response.body()!!)
                     } else {
-                        val error = retrofit
-                                .responseBodyConverter<BinanceApiError>(BinanceApiError::class.java, arrayOfNulls<Annotation>(0))
-                                .convert(response.errorBody()) as BinanceApiError
-                        deferred.completeExceptionally(BinanceApiException(error))
+                        try {
+                            val error = retrofit
+                                    .responseBodyConverter<BinanceApiError>(BinanceApiError::class.java, arrayOfNulls<Annotation>(0))
+                                    .convert(response.errorBody()) as BinanceApiError
+                            deferred.completeExceptionally(BinanceApiException(error))
+                        } catch (e: Exception) {
+                            val message = response.errorBody().toString()
+                            deferred.completeExceptionally(RuntimeException("Unknown error:\n$message"))
+                        }
                     }
                 }
             })
