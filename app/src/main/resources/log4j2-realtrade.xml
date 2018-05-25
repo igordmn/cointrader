@@ -22,12 +22,19 @@
         <RollingFile
                 name="RollingFileAppender"
                 fileName="data/log/realtrade.log"
-                filePattern="data/log/archive/realtrade.%d{yyyy-MM-dd}.log.zip"
-        >
+                filePattern="data/log/archive/realtrade.%d{yyyy-MM-dd}.log.zip">
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
             </Policies>
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %msg%n"/>
+            <Filters>
+                <ThresholdFilter level="fatal" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="err" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            </Filters>
         </RollingFile>
     </Appenders>
     <Loggers>
