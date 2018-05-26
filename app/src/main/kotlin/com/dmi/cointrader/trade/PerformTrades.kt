@@ -152,7 +152,7 @@ suspend fun performRealTrade(
 private class RealTradeLog(private val file: Path) : TradeLog {
     override fun afterSell(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
         val factPrice = result.price
-        file.appendLine("Buy $amount $asset $price $factPrice")
+        file.appendLine("Sell $amount $asset $price $factPrice")
     }
 
     override fun afterBuy(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
