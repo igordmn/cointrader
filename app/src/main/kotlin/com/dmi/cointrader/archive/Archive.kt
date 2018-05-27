@@ -88,7 +88,7 @@ suspend fun archive(
         }
     }
 
-    fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource(bufferSize = 3000)
+    fun SuspendList<Trade>.spreadSource(currentPeriod: Period) = asRestorableSource(bufferSize = 30000)
             .spreads()
             .periodical(space)
             .takeWhile { it.period <= currentPeriod }
@@ -104,7 +104,7 @@ suspend fun archive(
             PeriodicalState.serializer(spreadsStateSerializer(LongSerializer)).list,
             FixedListSerializer(assets.alts.size, SpreadFixedSerializer),
             SpreadsSourceConfig(space, assets.alts),
-            bufferSize = 100,
+            bufferSize = 10000,
             reloadCount = reloadCount
     )
 
