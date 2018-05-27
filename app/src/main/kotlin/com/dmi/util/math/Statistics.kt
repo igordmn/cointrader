@@ -25,7 +25,7 @@ fun List<Double>.normalGeoMean(): Double {
     var s = 0.0
     var ws = 0.0
     sorted().forEachIndexed { index, it ->
-        val x = 2 * index.toDouble() / (size - 1) - 1
+        val x = 2 * index.toDouble() / (size - 1) - 1  // From -1.0 to 1.0
         val w = exp(-(x * x) * PI)  // Normal distribution
         s += w * ln(it)
         ws += w
