@@ -66,7 +66,7 @@ fun tradeSummary(
         capitals: Capitals,
         previous: List<TradeSummary>,
         movingAverageCount: Int = 10,
-        scoreWindowSize: Int = 16
+        averageWindowSize: Int = 16
 ): TradeSummary {
     val tradePeriodsPerDay = space.periodsPerDay() / tradePeriods.toDouble()
     val profits = capitals.profits()
@@ -78,11 +78,7 @@ fun tradeSummary(
                 null
             },
             dayProfit = pow(profits.geoMean(), tradePeriodsPerDay),
-            score = profits
-                    .windowed(scoreWindowSize, transform = List<Double>::geoMean)
-                    .sortAndRemoveOutliers(percent = 0.25)
-                    .geoMean()
-                    .let { pow(it, tradePeriodsPerDay) },
+            score = profits.normalGeoMean().let { pow(it, tradePeriodsPerDay) },
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
@@ -90,7 +86,7 @@ fun tradeSummary(
             chartData2 = run {
                 var acc = 1.0
                 val capitals2 = profits
-                        .windowed(scoreWindowSize, transform = List<Double>::geoMean)
+                        .windowed(averageWindowSize, transform = List<Double>::geoMean)
                         .limitOutliers(percent = 0.25)
                         .map {
                             val old = acc

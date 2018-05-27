@@ -43,29 +43,29 @@ data class TradeConfig(
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
-                duration = seconds(10)
+                duration = seconds(900)
         ),
-        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 15 * periodSpace.periodsPerMinute().toInt()),
-        val tradePeriods: TradePeriods = TradePeriods(size = 15 * periodSpace.periodsPerMinute().toInt(), delay = 1),
+        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 1),
+        val tradePeriods: TradePeriods = TradePeriods(size = 1, delay = 0),
         val preloadPeriods: Int = (1.5 * periodSpace.periodsPerMinute()).toInt(),
         val archiveReloadPeriods: Int = 6 * 10
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-12-01T00:00:00", "2018-05-25T01:45:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-05-27T21:20:00", zoneOffset("+3")),
         val testDays: Double = 60.0,
         val validationDays: Double = 0.0,
 
         val steps: Int = 30000,
-        val repeats: Int = 50,
+        val repeats: Int = 60,
         val repeatsBreak: Int = 100,
         val repeatsBreakScore: Double = 1.03,
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.04,
+        val breakProfit: Double = 1.03,
 
-        val fee: Double = 0.0005,
+        val fee: Double = 0.0008,
         val batchSize: Int = 30,
         val tradePeriodGeometricBias: Double = 5e-7
 )
