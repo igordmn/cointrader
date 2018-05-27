@@ -138,7 +138,7 @@ suspend fun performRealTrade(
         if (timeForTrade >= Duration.ZERO) {
             delay(timeForTrade)
         }
-        val tradeLog = RealTradeLog(Paths.get("data/log/trades.log"))
+        val tradeLog = RealTradeLog(Paths.get("data/log/trades.csv"))
         performTrade(config.assets, portfolio, history, network, ::broker, tradeLog)
         val result = realTradeResult(config.assets, exchange, clock)
         log.info(result.toString())
@@ -152,12 +152,14 @@ suspend fun performRealTrade(
 private class RealTradeLog(private val file: Path) : TradeLog {
     override fun afterSell(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
         val factPrice = result.price
-        file.appendLine("Sell $amount $asset $price $factPrice")
+        val time = Instant.now()
+        file.appendLine("$time,Sell,$amount,$asset,$price,$factPrice")
     }
 
     override fun afterBuy(asset: Asset, amount: Double, price: Double, result: Broker.OrderResult) {
         val factPrice = result.price
-        file.appendLine("Buy $amount $asset $price $factPrice")
+        val time = Instant.now()
+        file.appendLine("$time,Buy,$amount,$asset,$price,$factPrice")
     }
 }
 
@@ -166,7 +168,7 @@ private fun writeCapital(result: TradeResult, config: TradeConfig, period: Perio
     val capital = result.totalCapital
     createDirectories(Paths.get("data/log"))
     val asset = result.assetCapitals.entries.maxBy { it.value }!!.key
-    Paths.get("data/log/capitals.log").appendLine("$time\t$asset\t$capital")
+    Paths.get("data/log/capitals.csv").appendLine("$time,$asset,$capital")
 }
 
 suspend fun performTestTrades(
