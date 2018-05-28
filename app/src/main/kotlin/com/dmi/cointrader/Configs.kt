@@ -35,11 +35,11 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT", "MTL", "SUB",
-                        "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "VEN", "RCN", "NULS", "XMR",
-                        "BCPT", "ARN", "GVT", "QSP", "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "AION", "NEBL",
-                        "EDO", "LUN", "IOST", "STEEM", "NANO", "AE", "NCASH", "POA", "ZIL", "ONT", "STORM", "WAN", "QLC"
-                )
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT",
+                        "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "VEN", "RCN", "NULS",
+                        "XMR", "BCPT", "ARN", "GVT", "POE", "BTS", "LSK", "ADA", "PPT", "XLM", "WAVES", "ICX", "ELF", "AION", "EDO",
+                        "LUN", "IOST", "STEEM", "NANO", "AE", "NCASH", "POA", "ZIL", "ONT", "STORM", "WAN", "QLC"
+)
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
@@ -52,18 +52,18 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-05-27T23:10:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-05-29T00:10:00", zoneOffset("+3")),
         val testDays: Double = 60.0,
         val validationDays: Double = 0.0,
 
         val steps: Int = 30000,
-        val repeats: Int = 60,
+        val repeats: Int = 120,
         val repeatsBreak: Int = 100,
         val repeatsBreakScore: Double = 1.03,
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.035,
+        val breakProfit: Double = 1.03,
 
         val fee: Double = 0.0008,
         val batchSize: Int = 30,
