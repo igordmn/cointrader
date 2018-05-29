@@ -33,6 +33,13 @@ fun List<Double>.normalGeoMean(): Double {
     return exp(s / ws)
 }
 
+
+fun List<Double>.sortAndRemoveOutliers(percent: Double): List<Double> {
+    val removeCount = (size * (percent / 2)).toInt()
+    return sorted().drop(removeCount).dropLast(removeCount)
+}
+
+
 fun List<Double>.limitOutliers(percent: Double): List<Double> {
     val removeCount = (size * (percent / 2)).toInt()
     val sorted = sorted().drop(removeCount).dropLast(removeCount)

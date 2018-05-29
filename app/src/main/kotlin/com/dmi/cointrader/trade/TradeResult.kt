@@ -78,7 +78,11 @@ fun tradeSummary(
                 null
             },
             dayProfit = pow(profits.geoMean(), tradePeriodsPerDay),
-            score = profits.normalGeoMean().let { pow(it, tradePeriodsPerDay) },
+            score = profits
+                    .windowed(averageWindowSize, transform = List<Double>::geoMean)
+                    .sortAndRemoveOutliers(percent = 0.25)
+                    .geoMean()
+                    .let { pow(it, tradePeriodsPerDay) },
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())
