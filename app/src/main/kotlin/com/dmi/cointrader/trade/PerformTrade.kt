@@ -66,11 +66,11 @@ suspend fun performTrade(
         val buyAmount = sellAmount * (sellPrice / buyPrice).toBigDecimal()
         if (currentAsset != assets.main) {
             val result = brokerFor(currentAsset, sellPrice).sell(sellAmount)
-            log.afterBuy(currentAsset, sellAmount.toDouble(), sellPrice, result)
+            log.afterSell(currentAsset, sellAmount.toDouble(), sellPrice, result)
         }
         if (buyAsset != assets.main) {
             val result = brokerFor(buyAsset, buyPrice).buy(buyAmount)
-            log.afterSell(buyAsset, buyAmount.toDouble(), buyPrice, result)
+            log.afterBuy(buyAsset, buyAmount.toDouble(), buyPrice, result)
         }
     }
 }
