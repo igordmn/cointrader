@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.Math.pow
 import java.time.Clock
+import kotlin.math.ln
 
 private val additionalAssets = listOf("BNB")
 private val resultAsset = "BTC"
@@ -78,11 +79,7 @@ fun tradeSummary(
                 null
             },
             dayProfit = pow(profits.geoMean(), tradePeriodsPerDay),
-            score = profits
-                    .windowed(averageWindowSize, transform = List<Double>::geoMean)
-                    .sortAndRemoveOutliers(percent = 0.25)
-                    .geoMean()
-                    .let { pow(it, tradePeriodsPerDay) },
+            score = profits.map(::ln).sharpeRatio(),
             chartData = run {
                 val profitDays = capitals.indices.map { it / tradePeriodsPerDay }
                 ChartData(profitDays.toDoubleArray(), capitals.toDoubleArray())

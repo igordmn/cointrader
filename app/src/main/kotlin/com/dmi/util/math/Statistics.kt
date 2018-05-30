@@ -6,6 +6,7 @@ import java.util.*
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.ln
+import kotlin.math.sqrt
 
 fun Random.nextInt(range: IntRange) = range.first + nextInt(range.last - 1 - range.first)
 
@@ -32,4 +33,12 @@ fun List<Double>.limitOutliers(percent: Double): List<Double> {
     val min = sorted.first()
     val max = sorted.last()
     return map { it.coerceIn(min..max) }
+}
+
+fun List<Double>.sharpeRatio() = average() / (1e-10 + stddev())
+
+fun List<Double>.stddev() : Double {
+    val mean = average()
+    fun f(x: Double) = (x - mean) * (x - mean)
+    return sqrt(map(::f).average())
 }
