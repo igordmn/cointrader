@@ -25,7 +25,7 @@ fun showBestNets(count: Int) {
     val dir = Paths.get("data/results")
     val info: List<Info> =
             Files.newDirectoryStream(dir).use {
-                it.map { repeatDir ->
+                it.filter { Files.exists(it.resolve("results.dump")) }.map { repeatDir ->
                     val results = load(TrainResult.serializer().list, repeatDir.resolve("results.dump").toFile().readBytes())
                     results.map { result ->
                         Info(result, repeatDir)
