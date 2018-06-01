@@ -42,6 +42,9 @@ suspend fun backtestBest(days: Double) = resourceContext {
             .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
             .tradePeriods(config.tradePeriods.size)
 
+    val path = Paths.get("data/resultBest")
+    val logPath = path.resolve("backtest.log")
+
     val f = object {
         suspend fun backtest(netDir: Path) = resourceContext {
             val jep = jep().use()
@@ -53,11 +56,10 @@ suspend fun backtestBest(days: Double) = resourceContext {
             val file = netDir.appendToFileName(".png")
             PlatformImpl.startup({})
             saveLogChart(summary.chartData, file)
-            netDir.parent.resolve("backtest.log").appendText("$netDir $summary")
+            logPath.appendText("$netDir $summary")
         }
     }
 
-    val path = Paths.get("resultBest")
     Files.newDirectoryStream(path.resolve("charts1")).use { chartDir ->
         chartDir.forEach {
             val num = it.toFile().nameWithoutExtension
