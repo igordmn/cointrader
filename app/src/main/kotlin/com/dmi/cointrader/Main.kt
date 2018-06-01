@@ -3,6 +3,7 @@ package com.dmi.cointrader
 import com.dmi.cointrader.archive.downloadArchive
 import com.dmi.cointrader.info.printTopCoins
 import com.dmi.cointrader.trade.backtest
+import com.dmi.cointrader.trade.backtestBest
 import com.dmi.cointrader.trade.performRealTrades
 import com.dmi.cointrader.train.showBestNets
 import com.dmi.cointrader.train.train
@@ -16,6 +17,7 @@ fun main(args: Array<String>) {
             "train" -> train()
             "trainmulti" -> trainMulti()
             "backtest" -> backtest(days = args[1].toDouble())
+            "backtestbest" -> backtestBest(days = args[1].toDouble())
             "realtrades" -> performRealTrades()
             "topcoins" -> printTopCoins()
             "bestnets" -> showBestNets(count = args[1].toInt())
