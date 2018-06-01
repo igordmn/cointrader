@@ -42,7 +42,7 @@ suspend fun backtestBest(days: Double) = resourceContext {
             .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
             .tradePeriods(config.tradePeriods.size)
 
-    val path = Paths.get("data/resultBest")
+    val path = Paths.get("data/resultsBest")
     val logPath = path.resolve("backtest.log")
 
     val f = object {
