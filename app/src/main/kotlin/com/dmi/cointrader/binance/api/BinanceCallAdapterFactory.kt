@@ -56,7 +56,8 @@ class BinanceCallAdapterFactory : CallAdapter.Factory() {
                             deferred.completeExceptionally(BinanceApiException(error))
                         } catch (e: Exception) {
                             val message = response.errorBody()?.string()
-                            deferred.completeExceptionally(RuntimeException("Unknown error:\n$message"))
+                            val code = response.code()
+                            deferred.completeExceptionally(RuntimeException("Unknown error ($code):\n$message"))
                         }
                     }
                 }
