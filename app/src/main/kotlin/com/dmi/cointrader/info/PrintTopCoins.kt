@@ -11,7 +11,7 @@ import kotlinx.coroutines.experimental.runBlocking
 fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val dailyVolumes: List<Double>)
 
-    val days = 30
+    val days = 50
     val minDayVolume = 300   // in BTC
     val maxByDays = 3
     val excludedPairs = setOf(
