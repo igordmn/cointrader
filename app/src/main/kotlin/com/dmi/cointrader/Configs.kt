@@ -35,12 +35,9 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "KNC", "FUN",
-                        "IOTA", "LINK", "XVG", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "REQ", "VIB",
-                        "TRX", "POWR", "ARK", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR", "DLT", "AMB", "BAT", "BCPT", "ARN", "GVT", "GXS",
-                        "POE", "QSP", "BTS", "LSK", "FUEL", "DGD", "ADA", "PPT", "CMT", "XLM", "CND", "WABI", "TNB", "WAVES", "GTO", "ICX",
-                        "OST", "ELF", "AION", "NEBL", "BRD", "EDO", "WINGS", "NAV", "LUN", "TRIG", "APPC", "RLC", "INS", "IOST", "CHAT", "STEEM",
-                        "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "WPR", "QLC", "GNT", "LOOM", "BCN"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT", "MTL", "SUB", "EOS", "SNT",
+                        "ENG", "TRX", "XRP", "VEN", "XMR", "ARN", "GVT", "ADA", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "EDO", "LUN",
+                        "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM", "WAN", "QLC", "BCN"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -54,7 +51,7 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-07T13:17:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-07T15:38:00", zoneOffset("+3")),
         val testDays: Double = 50.0,
         val validationDays: Double = 0.0,
 
