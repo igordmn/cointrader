@@ -35,11 +35,12 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "KNC", "FUN", "IOTA", "XVG",
-                        "SALT", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "POWR", "XRP", "VEN", "RCN",
-                        "NULS", "XMR", "BCPT", "ARN", "GVT", "POE", "BTS", "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF",
-                        "AION", "NEBL", "EDO", "LUN", "INS", "IOST", "STEEM", "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT",
-                        "STORM", "XEM", "WAN", "WPR", "QLC", "GNT"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "GAS", "HSR", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "KNC", "FUN",
+                        "IOTA", "LINK", "XVG", "SALT", "MDA", "MTL", "SUB", "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "REQ", "VIB",
+                        "TRX", "POWR", "ARK", "XRP", "ENJ", "VEN", "RCN", "NULS", "XMR", "DLT", "AMB", "BAT", "BCPT", "ARN", "GVT", "GXS",
+                        "POE", "QSP", "BTS", "LSK", "FUEL", "DGD", "ADA", "PPT", "CMT", "XLM", "CND", "WABI", "TNB", "WAVES", "GTO", "ICX",
+                        "OST", "ELF", "AION", "NEBL", "BRD", "EDO", "WINGS", "NAV", "LUN", "TRIG", "APPC", "RLC", "INS", "IOST", "CHAT", "STEEM",
+                        "NANO", "BLZ", "AE", "RPX", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "WPR", "QLC", "GNT", "LOOM", "BCN"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -53,7 +54,7 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-06T09:50:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-07T13:17:00", zoneOffset("+3")),
         val testDays: Double = 50.0,
         val validationDays: Double = 0.0,
 
