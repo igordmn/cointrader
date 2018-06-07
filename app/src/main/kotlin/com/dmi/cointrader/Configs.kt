@@ -36,8 +36,8 @@ data class TradeConfig(
                 main = "BTC",
                 alts = listOf(
                         "USDT", "ETH", "LTC", "NEO", "BCC", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT", "MTL", "SUB", "EOS", "SNT",
-                        "ENG", "TRX", "XRP", "VEN", "XMR", "ARN", "GVT", "ADA", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "EDO", "LUN",
-                        "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM", "WAN", "QLC", "BCN"
+                        "ENG", "DASH", "TRX", "XRP", "VEN", "XMR", "ARN", "GVT", "ADA", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "EDO",
+                        "IOST", "NANO", "NCASH", "ZIL", "ONT", "STORM", "WAN", "QLC"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
