@@ -12,7 +12,7 @@ fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val dailyVolumes: List<Double>)
 
     val days = 40
-    val minDayVolume = 500   // in BTC
+    val minDayVolume = 100   // in BTC
     val maxByDays = 3
     val excludedPairs = setOf(
             "BNBBTC", // BNB for fees

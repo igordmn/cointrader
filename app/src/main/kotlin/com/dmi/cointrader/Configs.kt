@@ -35,8 +35,10 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "OMG", "ZRX", "BQX", "XVG", "MTL", "SUB", "EOS", "SNT", "TRX", "XRP", "VEN", "XMR",
-                        "ARN", "GVT", "ADA", "WAVES", "ICX", "EDO", "IOST", "NANO", "ZIL", "ONT", "WAN"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "MCO", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SALT", "MTL",
+                        "SUB", "EOS", "SNT", "ETC", "ENG", "ZEC", "DASH", "VIB", "TRX", "POWR", "XRP", "VEN", "RCN", "NULS", "XMR", "BCPT",
+                        "ARN", "GVT", "BTS", "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "AION", "NEBL", "EDO", "LUN",
+                        "INS", "IOST", "STEEM", "NANO", "BLZ", "AE", "NCASH", "POA", "ZIL", "ONT", "STORM", "XEM", "WAN", "QLC"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -50,7 +52,7 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-09T00:10:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-10-01T00:00:00", "2018-06-09T11:46:00", zoneOffset("+3")),
         val testDays: Double = 40.0,
         val validationDays: Double = 0.0,
 
