@@ -193,4 +193,4 @@ mainTask("backtest", "backtest", 5.toString(), 10.toString(), 20.toString(), 40.
 mainTask("backtestBest", "backtestBest", 5.toString(), 10.toString(), 20.toString(), 40.toString(), 80.toString())
 mainTask("realTrades")
 mainTask("topcoins")
-mainTask("bestnets30", "bestnets", 30.toString())
+mainTask("bestnets60", "bestnets", 60.toString())

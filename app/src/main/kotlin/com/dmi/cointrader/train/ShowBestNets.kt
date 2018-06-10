@@ -41,7 +41,7 @@ fun showBestNets(count: Int) {
     createDirectories(charts1Dir)
     createDirectories(charts2Dir)
 
-    val bestInfo = info.sortedByDescending { it.result.tests[0].score2 }.take(count)
+    val bestInfo = info.sortedByDescending { it.result.tests[0].score1 }.take(count)
     bestInfo.forEachIndexed { num, it ->
         copyDirectory(it.netDir().toFile(), bestResultsDir.resolve("net$num").toFile())
         copy(it.chart1File(), charts1Dir.resolve("$num.png"))
