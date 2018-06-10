@@ -63,7 +63,7 @@ data class TrainConfig(
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.01,
+        val breakProfit: Double = 1.02,
 
         val fee: Double = 0.0007,
         val batchSize: Int = 30,
