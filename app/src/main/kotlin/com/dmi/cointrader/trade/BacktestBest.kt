@@ -25,14 +25,11 @@ import java.nio.file.Paths
 
 suspend fun backtestBest(daysList: List<Double>) = resourceContext {
     val path = Paths.get("data/resultsBest")
-
     val firstNetPath = path.toFile().listFiles().first { it.name.startsWith("net") }.toPath()
-
     val config: TradeConfig = load(firstNetPath.resolve("tradeConfig").readBytes())
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
     val jep = jep()
-
     val lastPeriod = config.periodSpace.floor(binanceExchange.currentTime())
     val archive = archive(
             config.periodSpace, config.assets, binanceExchange,

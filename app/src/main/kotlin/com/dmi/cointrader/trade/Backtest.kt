@@ -28,7 +28,6 @@ suspend fun backtest(daysList: List<Double>) = resourceContext {
             lastPeriod,
             reloadCount = config.archiveReloadPeriods
     )
-
     val path = Paths.get("data/resultsBest")
     val logPath = path.resolve("results.log")
 
