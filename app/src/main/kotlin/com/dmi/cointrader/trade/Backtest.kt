@@ -13,8 +13,6 @@ import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import com.dmi.util.io.resourceContext
 import com.sun.javafx.application.PlatformImpl
-import java.awt.Desktop
-import java.nio.file.Files
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
