@@ -36,11 +36,11 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
             lastPeriod,
             reloadCount = config.archiveReloadPeriods
     )
-    val backtestPathAll = path.resolve("backtest")
-    val logPath = backtestPathAll.resolve("results.log")
+    val backtestPath = path.resolve("backtest")
+    val logPath = backtestPath.resolve("results.log")
 
-    backtestPathAll.deleteRecursively()
-    createDirectories(backtestPathAll)
+    backtestPath.deleteRecursively()
+    createDirectories(backtestPath)
 
     for (days in daysList) {
         val firstPeriod = lastPeriod - (days * config.periodSpace.periodsPerDay()).toInt()
@@ -49,7 +49,6 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
                 .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
                 .tradePeriods(config.tradePeriods.size)
 
-        val backtestPath = backtestPathAll.resolve("backtest")
 
         val f = object {
             suspend fun backtest(num: String, netDir: Path) = resourceContext {
