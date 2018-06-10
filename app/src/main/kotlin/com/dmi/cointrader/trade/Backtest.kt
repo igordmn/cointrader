@@ -22,9 +22,7 @@ suspend fun backtest(daysList: List<Double>) = resourceContext {
     val binanceExchange = binanceExchangeForInfo()
     val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
     val network = trainedNetwork()
-
     val lastPeriod = config.periodSpace.floor(binanceExchange.currentTime())
-
     val archive = archive(
             config.periodSpace, config.assets, binanceExchange,
             lastPeriod,
