@@ -20,7 +20,6 @@ suspend fun backtest(daysList: List<Double>) = resourceContext {
     val config = savedTradeConfig()
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
-    val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
     val network = trainedNetwork()
     val lastPeriod = config.periodSpace.floor(binanceExchange.currentTime())
     val archive = archive(
@@ -43,6 +42,7 @@ suspend fun backtest(daysList: List<Double>) = resourceContext {
                 .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
                 .tradePeriods(config.tradePeriods.size)
 
+        val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
         val results = performTestTrades(periods, config, network, archive, testExchange)
         val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
 
