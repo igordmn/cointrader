@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
             "archive" -> downloadArchive()
             "train" -> train()
             "trainmulti" -> trainMulti()
-            "backtest" -> backtest(days = args[1].toDouble())
+            "backtest" -> backtest(daysList = args.drop(1).map { it.toDouble() })
             "backtestbest" -> backtestBest(daysList = args.drop(1).map { it.toDouble() })
             "realtrades" -> performRealTrades()
             "topcoins" -> printTopCoins()

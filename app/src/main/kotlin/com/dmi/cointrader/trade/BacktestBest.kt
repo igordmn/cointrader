@@ -36,6 +36,11 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
             reloadCount = config.archiveReloadPeriods
     )
     val path = Paths.get("data/resultsBest")
+    val backtestPathAll = path.resolve("backtest")
+    val logPath = backtestPathAll.resolve("results.log")
+
+    backtestPathAll.deleteRecursively()
+    createDirectories(backtestPathAll)
 
     for (days in daysList) {
         val firstPeriod = lastPeriod - (days * config.periodSpace.periodsPerDay()).toInt()
@@ -44,11 +49,7 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
                 .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
                 .tradePeriods(config.tradePeriods.size)
 
-        val backtestPath = path.resolve("backtest$days")
-        val logPath = backtestPath.resolve("results.log")
-
-        backtestPath.deleteRecursively()
-        createDirectories(backtestPath)
+        val backtestPath = backtestPathAll.resolve("backtest")
 
         val f = object {
             suspend fun backtest(num: String, netDir: Path) = resourceContext {
@@ -57,10 +58,10 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
                 val results = performTestTrades(periods, config, network, archive, testExchange)
                 val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
 
-                val file = backtestPath.resolve("$num.png")
+                val file = backtestPath.resolve("$days $num.png")
                 PlatformImpl.startup({})
                 saveLogChart(summary.chartData, file)
-                logPath.appendLine("$num $summary")
+                logPath.appendLine("$days $num $summary")
             }
         }
 
