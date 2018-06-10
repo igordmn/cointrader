@@ -99,15 +99,6 @@ suspend fun forEachRealTradePeriod(
         val preloadPeriod = nextPeriod - preloadPeriods
         val preloadTime = space.timeOf(preloadPeriod)
 
-        if ((preloadTime - clock.instant()).toMillis() < 0) {
-            println("iterator.previousPeriod ${iterator.previousPeriod}")
-            println("time $time")
-            println("nextPeriod $nextPeriod")
-            println("nextTime $nextTime")
-            println("clock.instant() ${clock.instant()}")
-            println("(nextTime - clock.instant()).toMillis() ${(nextTime - clock.instant()).toMillis()}")
-        }
-
         safeDelay(preloadTime - clock.instant())
         preload(preloadPeriod)
         safeDelay(nextTime - clock.instant())
