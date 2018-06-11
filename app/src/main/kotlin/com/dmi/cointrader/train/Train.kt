@@ -21,6 +21,7 @@ import kotlinx.coroutines.experimental.channels.consumeEachIndexed
 import kotlinx.coroutines.experimental.channels.take
 import kotlinx.serialization.cbor.CBOR.Companion.dump
 import kotlinx.serialization.list
+import java.nio.file.Files
 import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -45,10 +46,33 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
     PlatformImpl.startup({})
 
-    path.deleteRecursively()
+    if (Files.exists(path)) {
+        path
+                .toFile()
+                .listFiles()
+                .filter { it.isDirectory }
+                .filter { !Files.exists(it.toPath().resolve("results.dump")) }
+                .forEach {
+                    it.deleteRecursively()
+                }
+    }
+
+    val lastRepeat: Int = run {
+        if (Files.exists(path)) {
+            path
+                    .toFile()
+                    .listFiles()
+                    .filter { it.isDirectory }
+                    .map { it.name.toIntOrNull() }
+                    .findLast { it != null }
+                    ?: -1
+        } else {
+            -1
+        }
+    }
 
     val scores = ArrayList<Double>()
-    repeat(trainConfig.repeats) { repeat ->
+    (lastRepeat + 1 until trainConfig.repeats).forEach { repeat ->
         resourceContext {
             val resultsDir = path.resolve("$repeat")
             createDirectories(resultsDir)
