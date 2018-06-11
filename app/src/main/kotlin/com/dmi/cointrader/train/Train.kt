@@ -57,18 +57,16 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 }
     }
 
-    val lastRepeat: Int = run {
-        if (Files.exists(path)) {
-            path
-                    .toFile()
-                    .listFiles()
-                    .filter { it.isDirectory }
-                    .map { it.name.toIntOrNull() }
-                    .findLast { it != null }
-                    ?: -1
-        } else {
-            -1
-        }
+    val lastRepeat: Int = if (Files.exists(path)) {
+        path
+                .toFile()
+                .listFiles()
+                .filter { it.isDirectory }
+                .map { it.name.toIntOrNull() }
+                .findLast { it != null }
+                ?: -1
+    } else {
+        -1
     }
 
     val scores = ArrayList<Double>()
