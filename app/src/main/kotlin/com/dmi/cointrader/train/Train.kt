@@ -50,8 +50,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
         path
                 .toFile()
                 .listFiles()
-                .filter { it.isDirectory }
-                .filter { !Files.exists(it.toPath().resolve("results.dump")) }
+                .filter { it.isDirectory && !Files.exists(it.toPath().resolve("results.dump")) }
                 .forEach {
                     it.deleteRecursively()
                 }
@@ -63,7 +62,9 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                 .listFiles()
                 .filter { it.isDirectory }
                 .map { it.name.toIntOrNull() }
-                .findLast { it != null }
+                .filter { it != null }
+                .sortedBy { it!! }
+                .lastOrNull()
                 ?: -1
     } else {
         -1
