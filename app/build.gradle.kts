@@ -150,6 +150,7 @@ configure<ApplicationPluginConvention> {
             .include("network/**")
             .include("data/**")
             .exclude("data/cache/**")
+            .exclude("data/backtest/**")
             .exclude("data/results/**")
             .exclude("data/resultsBest/**")
             .exclude("data/resultsMulti/**")
