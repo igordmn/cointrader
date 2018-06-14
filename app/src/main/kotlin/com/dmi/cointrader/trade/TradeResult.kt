@@ -49,7 +49,7 @@ fun testTradeResult(assets: TradeAssets, exchange: TestExchange, bids: List<Doub
     return TradeResult(assetCapitals, totalCapital, resultAsset)
 }
 
-data class TradeResult(val assetCapitals: Map<Asset, Double>, val totalCapital: Capital, private val mainAsset: Asset) {
+data class TradeResult(val assetCapitals: Map<Asset, Double>, val totalCapital: Capital, val mainAsset: Asset) {
     override fun toString(): String {
         val totalCapital = resultFormat.format(totalCapital)
         val assetCapitals = assetCapitals.toList().joinToString(", ") {
@@ -58,6 +58,17 @@ data class TradeResult(val assetCapitals: Map<Asset, Double>, val totalCapital: 
             "$asset=$capital"
         }
         return "$totalCapital ($assetCapitals)"
+    }
+}
+
+fun List<TradeResult>.divideByFirstCapital() = let {
+    val firstCapital = it[0].totalCapital
+    it.map {
+        TradeResult(
+                it.assetCapitals.mapValues { it.value / firstCapital },
+                it.totalCapital / firstCapital,
+                it.mainAsset
+        )
     }
 }
 

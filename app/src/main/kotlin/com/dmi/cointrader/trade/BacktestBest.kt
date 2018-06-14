@@ -23,7 +23,7 @@ import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 
-suspend fun backtestBest(daysList: List<Double>) = resourceContext {
+suspend fun backtestBest(maxDays: Double) {
     val path = Paths.get("data/resultsBest")
     val firstNetPath = path.toFile().listFiles().first { it.name.startsWith("net") }.toPath()
     val config: TradeConfig = load(firstNetPath.resolve("tradeConfig").readBytes())
@@ -42,32 +42,33 @@ suspend fun backtestBest(daysList: List<Double>) = resourceContext {
     backtestPath.deleteRecursively()
     createDirectories(backtestPath)
 
-    for (days in daysList) {
-        val firstPeriod = lastPeriod - (days * config.periodSpace.periodsPerDay()).toInt()
+    val firstPeriod = lastPeriod - (maxDays * config.periodSpace.periodsPerDay()).toInt()
 
-        val periods = (firstPeriod..lastPeriod)
-                .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
-                .tradePeriods(config.tradePeriods.size)
+    val periods = (firstPeriod..lastPeriod)
+            .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
+            .tradePeriods(config.tradePeriods.size)
 
-
-        val f = object {
-            suspend fun backtest(num: String, netDir: Path) = resourceContext {
-                val network = NeuralNetwork.load(jep, netDir, gpuMemoryFraction = 0.2).use()
-                val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
-                val results = performTestTrades(periods, config, network, archive, testExchange)
-                val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
-
-                val file = backtestPath.resolve("$days $num.png")
-                PlatformImpl.startup({})
-                saveLogChart(summary.chartData, file)
-                logPath.appendLine("$days $num $summary")
-            }
-        }
-
-        Files.newDirectoryStream(path.resolve("charts1")).use { chartDir ->
-            chartDir.forEach {
+    Files.newDirectoryStream(path.resolve("charts1")).use { chartDir ->
+        chartDir.forEach {
+            resourceContext {
                 val num = it.toFile().nameWithoutExtension
-                f.backtest(num, path.resolve("net$num"))
+
+                val network = NeuralNetwork.load(jep, path.resolve("net$num"), gpuMemoryFraction = 0.2).use()
+                val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
+                var results = performTestTrades(periods, config, network, archive, testExchange)
+
+                var days = maxDays
+                while (days >= 2) {
+                    val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
+
+                    val file = backtestPath.resolve("$days $num.png")
+                    PlatformImpl.startup({})
+                    saveLogChart(summary.chartData, file)
+                    logPath.appendLine("$days $num $summary")
+
+                    days /= 2
+                    results = results.drop(results.size / 2).divideByFirstCapital()
+                }
             }
         }
     }

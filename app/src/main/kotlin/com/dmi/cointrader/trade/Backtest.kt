@@ -16,7 +16,7 @@ import com.sun.javafx.application.PlatformImpl
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
-suspend fun backtest(daysList: List<Double>) = resourceContext {
+suspend fun backtest(maxDays: Double) = resourceContext {
     val config = savedTradeConfig()
     val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
@@ -35,20 +35,25 @@ suspend fun backtest(daysList: List<Double>) = resourceContext {
 
     PlatformImpl.startup({})
 
-    for (days in daysList) {
-        val firstPeriod = lastPeriod - (days * config.periodSpace.periodsPerDay()).toInt()
+    val firstPeriod = lastPeriod - (maxDays * config.periodSpace.periodsPerDay()).toInt()
 
-        val periods = (firstPeriod..lastPeriod)
-                .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
-                .tradePeriods(config.tradePeriods.size)
+    val periods = (firstPeriod..lastPeriod)
+            .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
+            .tradePeriods(config.tradePeriods.size)
 
-        val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
-        val results = performTestTrades(periods, config, network, archive, testExchange)
+    val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
+    var results = performTestTrades(periods, config, network, archive, testExchange)
+
+    var days = maxDays
+    while (days >= 2) {
         val summary = tradeSummary(config.periodSpace, config.tradePeriods.size, results.map { it.totalCapital }, emptyList())
 
         val file = path.resolve("$days.png")
         saveLogChart(summary.chartData, file)
         logPath.appendLine("$days $summary")
         println("$days $summary")
+
+        days /= 2
+        results = results.drop(results.size / 2).divideByFirstCapital()
     }
 }
