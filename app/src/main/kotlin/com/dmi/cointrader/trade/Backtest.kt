@@ -16,9 +16,8 @@ import com.sun.javafx.application.PlatformImpl
 import java.nio.file.Files.createDirectories
 import java.nio.file.Paths
 
-suspend fun backtest(maxDays: Double) = resourceContext {
+suspend fun backtest(maxDays: Double, fee: Double) = resourceContext {
     val config = savedTradeConfig()
-    val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
     val network = trainedNetwork()
     val lastPeriod = config.periodSpace.floor(binanceExchange.currentTime())
@@ -41,7 +40,7 @@ suspend fun backtest(maxDays: Double) = resourceContext {
             .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
             .tradePeriods(config.tradePeriods.size)
 
-    val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
+    val testExchange = TestExchange(config.assets, fee.toBigDecimal())
     var results = performTestTrades(periods, config, network, archive, testExchange)
 
     var days = maxDays

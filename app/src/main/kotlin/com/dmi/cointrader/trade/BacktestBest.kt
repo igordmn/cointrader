@@ -23,11 +23,10 @@ import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 
-suspend fun backtestBest(maxDays: Double) {
+suspend fun backtestBest(maxDays: Double, fee: Double) {
     val path = Paths.get("data/resultsBest")
     val firstNetPath = path.toFile().listFiles().first { it.name.startsWith("net") }.toPath()
     val config: TradeConfig = load(firstNetPath.resolve("tradeConfig").readBytes())
-    val trainConfig = TrainConfig()
     val binanceExchange = binanceExchangeForInfo()
     val jep = jep()
     val lastPeriod = config.periodSpace.floor(binanceExchange.currentTime())
@@ -54,7 +53,7 @@ suspend fun backtestBest(maxDays: Double) {
                 val num = it.toFile().nameWithoutExtension
 
                 val network = NeuralNetwork.load(jep, path.resolve("net$num"), gpuMemoryFraction = 0.2).use()
-                val testExchange = TestExchange(config.assets, trainConfig.fee.toBigDecimal())
+                val testExchange = TestExchange(config.assets, fee.toBigDecimal())
                 var results = performTestTrades(periods, config, network, archive, testExchange)
 
                 var days = maxDays
