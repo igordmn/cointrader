@@ -11,12 +11,13 @@ import kotlinx.coroutines.experimental.runBlocking
 fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val dailyVolumes: List<Double>)
 
-    val days = 50
-    val minDayVolume = 90   // in BTC
-    val maxByDays = 3
+    val days = 42
+    val minDayVolume = 88   // in BTC
+    val maxByDays = 4
     val excludedPairs = setOf(
             "BNBBTC", // BNB for fees
-            "CTRBTC"  // scam ICO
+            "CTRBTC", // scam ICO
+            "TUSDBTC" // BTCUSDT is better, because of higher volume
     )
 
     val api = binanceAPI()
