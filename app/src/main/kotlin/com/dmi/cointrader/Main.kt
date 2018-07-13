@@ -8,6 +8,7 @@ import com.dmi.cointrader.trade.performRealTrades
 import com.dmi.cointrader.train.showBestNets
 import com.dmi.cointrader.train.train
 import com.dmi.cointrader.train.trainMulti
+import com.dmi.util.lang.unsupported
 import kotlinx.coroutines.experimental.runBlocking
 
 fun main(args: Array<String>) {
@@ -21,6 +22,7 @@ fun main(args: Array<String>) {
             "realtrades" -> performRealTrades()
             "topcoins" -> printTopCoins()
             "bestnets" -> showBestNets(count = args[1].toInt())
+            else -> unsupported()
         }
     }
 }

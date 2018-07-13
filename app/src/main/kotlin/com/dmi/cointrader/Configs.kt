@@ -39,7 +39,11 @@ data class TradeConfig(
                         "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "XRP", "VEN", "RCN", "NULS", "XMR", "BCPT", "ARN", "GVT",
                         "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "AION", "EDO", "WINGS", "LUN", "INS", "IOST",
                         "NANO", "BLZ", "AE", "NCASH", "ZIL", "ONT", "STORM", "XEM", "WAN", "QLC", "LOOM", "BCN"
-                )
+
+//                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "MTL", "SUB", "EOS", "SNT",
+//                        "ETC", "ENG", "DASH", "VIB", "TRX", "XRP", "VEN", "RCN", "XMR", "BCPT", "ARN", "GVT", "ADA", "CMT", "XLM", "GTO",
+//                        "ICX", "ELF", "AION", "BRD", "EDO", "NAV", "LUN", "IOST", "NANO", "NCASH", "ZIL", "ONT", "WAN", "QLC", "LOOM", "BCN"
+)
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
@@ -52,20 +56,21 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2018-01-01T00:00:00", "2018-07-02T18:16:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-07-02T18:16:00", zoneOffset("+3")),
         val testDays: Double = 50.0,
         val validationDays: Double = 0.0,
 
-        val steps: Int = 30000,
-        val repeats: Int = 1000,
-        val repeatsBreak: Int = 1000,
-        val repeatsBreakScore: Double = 1.03,
+        val steps: Int = 50000,
+        val minBestStep: Int = 15000,
+        val repeats: Int = 300,
+        val repeatsBreak: Int = 100,
+        val repeatsBreakScore: Double = 1.00,
         val logSteps: Int = 500,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 10000,
-        val breakProfit: Double = 1.01,
+        val breakProfit: Double = 1.010,
 
-        val fee: Double = 0.0010,
-        val batchSize: Int = 30,
-        val tradePeriodGeometricBias: Double = 5e-7
+        val fee: Double = 0.0015,
+        val batchSize: Int = 90,
+        val tradePeriodGeometricBias: Double = 2e-4
 )
