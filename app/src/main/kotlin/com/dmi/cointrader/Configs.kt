@@ -35,14 +35,9 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "MTL", "SUB", "EOS",
-                        "SNT", "ETC", "ENG", "ZEC", "DASH", "BTG", "VIB", "TRX", "XRP", "VEN", "RCN", "NULS", "XMR", "BCPT", "ARN", "GVT",
-                        "LSK", "ADA", "PPT", "CMT", "XLM", "WAVES", "GTO", "ICX", "ELF", "AION", "EDO", "WINGS", "LUN", "INS", "IOST",
-                        "NANO", "BLZ", "AE", "NCASH", "ZIL", "ONT", "STORM", "XEM", "WAN", "QLC", "LOOM", "BCN"
-
-//                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "MTL", "SUB", "EOS", "SNT",
-//                        "ETC", "ENG", "DASH", "VIB", "TRX", "XRP", "VEN", "RCN", "XMR", "BCPT", "ARN", "GVT", "ADA", "CMT", "XLM", "GTO",
-//                        "ICX", "ELF", "AION", "BRD", "EDO", "NAV", "LUN", "IOST", "NANO", "NCASH", "ZIL", "ONT", "WAN", "QLC", "LOOM", "BCN"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "SUB", "EOS", "SNT", "ETC",
+                        "ENG", "DASH", "VIB", "TRX", "XRP", "VEN", "RCN", "XMR", "BCPT", "ARN", "GVT", "ADA", "CMT", "XLM", "GTO", "ICX",
+                        "ELF", "BRD", "EDO", "NAV", "LUN", "IOST", "NANO", "NCASH", "ZIL", "ONT", "WAN", "QLC", "LOOM", "BCN"
 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
