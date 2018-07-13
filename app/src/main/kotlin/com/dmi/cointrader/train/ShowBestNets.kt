@@ -1,5 +1,7 @@
 package com.dmi.cointrader.train
 
+import com.dmi.cointrader.TrainConfig
+import com.dmi.cointrader.trade.backtestBest
 import com.dmi.util.io.appendLine
 import com.dmi.util.io.deleteRecursively
 import kotlinx.serialization.cbor.CBOR.Companion.load
@@ -11,7 +13,7 @@ import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 
-fun showBestNets(count: Int) {
+suspend fun showBestNets(count: Int) {
     data class Info(val result: TrainResult, val dir: Path) {
         override fun toString(): String {
             return "$result ($dir)"
@@ -51,6 +53,11 @@ fun showBestNets(count: Int) {
         bestResultsDir.resolve("results.log").appendLine("$num    $result ($resultDir)")
     }
 
+    val backtestDays = 50.0
+    val backtestResults = backtestBest(backtestDays, TrainConfig().fee)
+    val bestNum = backtestResults.filter { it.days == backtestDays }.sortedByDescending { it.summary.score1 }.first().num
+    val best = bestInfo[bestNum]
+
     Paths.get("network").deleteRecursively()
-    copyDirectory(bestInfo.first().netDir().toFile(), Paths.get("network").toFile())
+    copyDirectory(best.netDir().toFile(), Paths.get("network").toFile())
 }

@@ -23,7 +23,7 @@ import java.nio.file.Files.createDirectories
 import java.nio.file.Path
 import java.nio.file.Paths
 
-suspend fun backtestBest(maxDays: Double, fee: Double?) {
+suspend fun backtestBest(maxDays: Double, fee: Double?): List<BacktestBestResult> {
     val path = Paths.get("data/resultsBest")
     val firstNetPath = path.toFile().listFiles().first { it.name.startsWith("net") }.toPath()
     val config: TradeConfig = load(firstNetPath.resolve("tradeConfig").readBytes())
@@ -48,6 +48,8 @@ suspend fun backtestBest(maxDays: Double, fee: Double?) {
             .clampForTradedHistory(config.historyPeriods, config.tradePeriods.delay)
             .tradePeriods(config.tradePeriods.size)
 
+    val allResults = ArrayList<BacktestBestResult>()
+
     Files.newDirectoryStream(path.resolve("charts1")).use { chartDir ->
         chartDir.forEach {
             resourceContext {
@@ -65,6 +67,7 @@ suspend fun backtestBest(maxDays: Double, fee: Double?) {
                     PlatformImpl.startup({})
                     saveLogChart(summary.chartData, file)
                     logPath.appendLine("$days $num $summary")
+                    allResults.add(BacktestBestResult(days, num.toInt(), summary))
 
                     days /= 2
                     results = results.drop(results.size / 2).divideByFirstCapital()
@@ -72,4 +75,8 @@ suspend fun backtestBest(maxDays: Double, fee: Double?) {
             }
         }
     }
+
+    return allResults
 }
+
+data class BacktestBestResult(val days: Double, val num: Int, val summary: TradeSummary)

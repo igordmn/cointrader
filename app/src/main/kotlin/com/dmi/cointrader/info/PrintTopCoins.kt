@@ -12,8 +12,8 @@ fun printTopCoins() = runBlocking {
     data class CoinVolumes(val coin: String, val dailyVolumes: List<Double>)
 
     val days = 52
-    val minDayVolume = 88   // in BTC
-    val maxByDays = 4
+    val minDayVolume = 109   // in BTC
+    val maxByDays = 3
     val excludedPairs = setOf(
             "BNBBTC", // BNB for fees
             "CTRBTC", // scam ICO
