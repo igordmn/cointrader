@@ -53,8 +53,9 @@ suspend fun showBestNets(count: Int) {
         bestResultsDir.resolve("results.log").appendLine("$num    $result ($resultDir)")
     }
 
-    val backtestDays = 50.0
-    val backtestResults = backtestBest(backtestDays, TrainConfig().fee)
+    val trainConfig = TrainConfig()
+    val backtestDays = trainConfig.testDays
+    val backtestResults = backtestBest(backtestDays, trainConfig.fee)
     val bestNum = backtestResults.filter { it.days == backtestDays }.sortedByDescending { it.summary.score1 }.first().num
     val best = bestInfo[bestNum]
 
