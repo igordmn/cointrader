@@ -14,6 +14,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 suspend fun showBestNets(count: Int) {
+    val trainConfig = TrainConfig()
+
     data class Info(val result: TrainResult, val dir: Path) {
         override fun toString(): String {
             return "$result ($dir)"
@@ -43,7 +45,7 @@ suspend fun showBestNets(count: Int) {
     createDirectories(charts1Dir)
     createDirectories(charts2Dir)
 
-    val bestInfo = info.sortedByDescending { it.result.tests[0].score2 }.take(count)
+    val bestInfo = info.filter { it.result.step >= trainConfig.minBestStep }.sortedByDescending { it.result.tests[0].score2 }.take(count)
     bestInfo.forEachIndexed { num, it ->
         copyDirectory(it.netDir().toFile(), bestResultsDir.resolve("net$num").toFile())
         copy(it.chart1File(), charts1Dir.resolve("$num.png"))
@@ -53,7 +55,6 @@ suspend fun showBestNets(count: Int) {
         bestResultsDir.resolve("results.log").appendLine("$num    $result ($resultDir)")
     }
 
-    val trainConfig = TrainConfig()
     val backtestDays = trainConfig.testDays
     val backtestResults = backtestBest(backtestDays, trainConfig.fee)
     val bestNum = backtestResults.filter { it.days == backtestDays }.sortedByDescending { it.summary.score1 }.first().num
