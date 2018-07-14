@@ -139,6 +139,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
                     if (i >= trainConfig.breakSteps && !results.any { it.tests.last().dayProfit >= trainConfig.breakProfit }) {
                         channel.cancel()
                     }
+                    System.gc()
                 }
             }
 
