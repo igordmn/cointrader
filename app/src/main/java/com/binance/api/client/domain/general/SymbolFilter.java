@@ -65,6 +65,8 @@ public class SymbolFilter {
    */
   private String limit;
 
+  private String maxNumAlgoOrders;
+
   public FilterType getFilterType() {
     return filterType;
   }
@@ -135,5 +137,13 @@ public class SymbolFilter {
 
   public void setLimit(String limit) {
     this.limit = limit;
+  }
+
+  public String getMaxNumAlgoOrders() {
+    return maxNumAlgoOrders;
+  }
+
+  public void setMaxNumAlgoOrders(String maxNumAlgoOrders) {
+    this.maxNumAlgoOrders = maxNumAlgoOrders;
   }
 }

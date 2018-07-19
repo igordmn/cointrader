@@ -15,9 +15,9 @@ import java.net.URI
 
 buildscript {
     var kotlinVersion: String by extra
-    kotlinVersion = "1.2.31"
+    kotlinVersion = "1.2.51"
     var serializationVersion: String by extra
-    serializationVersion = "0.4.2"
+    serializationVersion = "0.6.0"
 
     repositories {
         mavenCentral()
@@ -34,7 +34,7 @@ buildscript {
 plugins {
     application
     java
-    kotlin("jvm") version "1.2.31"
+    kotlin("jvm") version "1.2.51"
 }
 
 apply {

@@ -36,7 +36,7 @@ suspend fun archive(
         currentPeriod: Period,
         fileSystem: FileSystem = FileSystems.getDefault(),
         reloadCount: Int,
-        tradeLoadChunk: Int = 500
+        tradeLoadChunk: Int = 1000
 ): Archive {
     fun logTradeAppended(asset: String) = object : SyncFileList.Log<Trade> {
         override fun itemsAppended(items: List<Trade>, indices: LongRange) {
