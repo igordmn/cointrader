@@ -11,6 +11,7 @@ import com.dmi.util.math.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.lang.Math.pow
+import java.math.BigDecimal
 import java.time.Clock
 import kotlin.math.ln
 
@@ -24,12 +25,16 @@ suspend fun realTradeResult(assets: TradeAssets, exchange: BinanceExchange, cloc
     val btcPrices = exchange.btcPrices()
     val assetCapitals = (assets.all + additionalAssets)
             .associate {
-                val capital = if (it == resultAsset) {
-                    portfolio[it]!!
+                it to portfolio[it]!!
+            }
+            .filter { it.value > BigDecimal.ZERO }
+            .mapValues {
+                val capital = if (it.key == resultAsset) {
+                    it.value
                 } else {
-                    portfolio[it]!! * btcPrices[it]!!
+                    it.value * btcPrices[it.key]!!
                 }
-                it to capital.toDouble()
+                capital.toDouble()
             }
             .filter { it.value > resultMin }
     val totalCapital = assetCapitals.values.sum()
