@@ -17,24 +17,23 @@ import org.apache.commons.math3.distribution.GeometricDistribution
 fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConfig) = this
         .clampForTradedHistory(tradeConfig.historyPeriods, tradeConfig.tradePeriods.delay)
         .tradePeriods(tradeConfig.tradePeriods.size)
-        .splitForTrain(tradeConfig.periodSpace.periodsPerDay(), trainConfig.testDays, trainConfig.validationDays)
+        .splitForTrain(tradeConfig.periodSpace.periodsPerDay(), trainConfig.trainDaysExclude, trainConfig.testDays)
 
 fun PeriodProgression.splitForTrain(
         periodsPerDay: Double,
-        testDays: Double,
-        validationDays: Double
+        trainDaysExclude: Double,
+        testDays: Double
 ): TrainPeriods {
+    val trainDaysExcludeSize = (trainDaysExclude * periodsPerDay / step).toInt()
     val testSize = (testDays * periodsPerDay / step).toInt()
-    val validationSize = (validationDays * periodsPerDay / step).toInt()
     val size = size()
     return TrainPeriods(
-            train = slice(0 until size - validationSize),
-            test = slice(size - testSize - validationSize until size - validationSize),
-            validation = slice(size - validationSize  until size)
+            train = slice(0 until size - trainDaysExcludeSize),
+            test = slice(size - testSize until size)
     )
 }
 
-data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression, val validation: PeriodProgression)
+data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression)
 
 fun trainBatches(
         archive: SuspendList<Spreads>,
