@@ -35,10 +35,10 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "QTUM", "OMG", "ZRX", "STRAT", "BQX", "IOTA", "XVG", "MTL", "SUB", "EOS", "SNT",
-                        "ETC", "ENG", "DASH", "TRX", "XRP", "VEN", "RCN", "XMR", "BCPT", "ARN", "GVT", "ADA", "XLM", "GTO", "ICX", "ELF",
-                        "BRD", "EDO", "LUN", "INS", "IOST", "NANO", "ZIL", "ONT", "WAN", "LOOM", "BCN"
-)
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "OMG", "ZRX", "BQX", "IOTA", "XVG", "EOS", "SNT", "ETC", "ENG", "DASH", "TRX",
+                        "XRP", "VEN", "RCN", "XMR", "BAT", "BCPT", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "IOST", "NANO", "ZIL", "ONT",
+                        "WAN", "CVC", "QKC"
+                )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
