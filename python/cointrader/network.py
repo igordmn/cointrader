@@ -63,7 +63,7 @@ def build_best_portfolio(
 
     net = eiie_dense(
         net,
-        filter_number=14,
+        filter_number=16,
         activation_function='relu6',
         regularizer="L2",
         weight_decay=5e-9,
