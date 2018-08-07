@@ -67,5 +67,5 @@ data class TrainConfig(
 
         val fee: Double = 0.0016,
         val batchSize: Int = 90,
-        val tradePeriodGeometricBias: Double = 2e-4
+        val tradePeriodGeometricBias: Double = 1e-4
 )
