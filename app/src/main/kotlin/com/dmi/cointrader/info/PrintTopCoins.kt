@@ -16,11 +16,9 @@ fun printTopCoins() = runBlocking {
     val maxByDays = 3
     val main ="BTC"
     val excludedPairs = setOf(
-            "BNBETH", // BNB for fees
-            "BNBBTC", // BNB for fees
-            "CTRBTC", // scam ICO
-            "TUSDBTC", // BTCUSDT is better, because of higher volume
-            "TUSDETH" // ETHUSDT is better, because of higher volume
+            "BNBBTC", "BNBETH", // BNB for fees
+            "CTRBTC", "CTRETH", // scam ICO
+            "TUSDBTC", "TUSDETH", "TUSDUSDT" // BTCUSDT is better, because of higher volume
     )
 
     val api = binanceAPI()
