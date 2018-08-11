@@ -19,7 +19,8 @@ fun printTopCoins() = runBlocking {
             "BNBETH", // BNB for fees
             "BNBBTC", // BNB for fees
             "CTRBTC", // scam ICO
-            "TUSDBTC" // BTCUSDT is better, because of higher volume
+            "TUSDBTC", // BTCUSDT is better, because of higher volume
+            "TUSDETH" // ETHUSDT is better, because of higher volume
     )
 
     val api = binanceAPI()
