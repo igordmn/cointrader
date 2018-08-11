@@ -14,7 +14,9 @@ fun printTopCoins() = runBlocking {
     val days = 52
     val minDayVolume = 109   // in BTC
     val maxByDays = 3
+    val main ="BTC"
     val excludedPairs = setOf(
+            "BNBETH", // BNB for fees
             "BNBBTC", // BNB for fees
             "CTRBTC", // scam ICO
             "TUSDBTC" // BTCUSDT is better, because of higher volume
@@ -23,14 +25,14 @@ fun printTopCoins() = runBlocking {
     val api = binanceAPI()
     val exchangeInfo = api.exchangeInfo()
     val time = api.serverTime().serverTime
-    val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith("BTC") }.associate { it.symbol to it }
+    val info: Map<String, SymbolInfo> = exchangeInfo.symbols.filter { it.symbol.endsWith(main) }.associate { it.symbol to it }
 
     val allPairs = info.keys
     val coinVolumes = allPairs
             .filter { !excludedPairs.contains(it) }
             .map {
                 CoinVolumes(
-                        coin = it.removeSuffix("BTC"),
+                        coin = it.removeSuffix(main),
                         dailyVolumes = daylyVolumes(api, it, time).take(days).toList()
                 )
             }
