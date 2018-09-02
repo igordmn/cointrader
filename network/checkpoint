@@ -1,2 +1,2 @@
-model_checkpoint_path: "D:/Development/Projects/cointrader/src/data/results/146/networks/37500/net"
-all_model_checkpoint_paths: "D:/Development/Projects/cointrader/src/data/results/146/networks/37500/net"
+model_checkpoint_path: "D:/Development/Projects/cointrader/src/data/results/0/networks/50000/net"
+all_model_checkpoint_paths: "D:/Development/Projects/cointrader/src/data/results/0/networks/50000/net"

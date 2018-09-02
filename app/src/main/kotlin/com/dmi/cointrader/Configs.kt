@@ -35,9 +35,9 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "ZRX", "BQX", "IOTA", "XVG", "EOS", "SNT", "ETC", "ENG", "DASH",
-                        "TRX", "XRP", "VEN", "RCN", "XMR", "BAT", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "IOST", "NANO", "ZIL",
-                        "ONT", "WAN", "CVC", "QKC", "NPXS"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "ZRX", "BQX", "IOTA", "XVG", "EOS", "ETC", "ENG", "ZEC", "DASH", "TRX",
+                        "XRP", "VEN", "XMR", "BAT", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "IOST", "NANO", "ZIL", "ONT", "WAN",
+                        "CVC", "QKC", "NPXS", "KEY", "NAS", "MFT"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -51,7 +51,7 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-08-13T00:04:02", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-09-01T03:35:00", zoneOffset("+3")),
         val testDays: Double = 40.0,
         val trainDaysExclude: Double = 8.0,
 
@@ -65,7 +65,7 @@ data class TrainConfig(
         val breakSteps: Int = 20000,
         val breakProfit: Double = 1.000,
 
-        val fee: Double = 0.0016,
+        val fee: Double = 0.0015,
         val batchSize: Int = 90,
         val tradePeriodGeometricBias: Double = 1e-4
 )
