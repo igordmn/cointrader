@@ -36,8 +36,8 @@ data class TradeConfig(
                 main = "BTC",
                 alts = listOf(
                         "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "ZRX", "BQX", "IOTA", "XVG", "EOS", "ETC", "ENG", "ZEC", "DASH", "TRX",
-                        "XRP", "VEN", "XMR", "BAT", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "IOST", "NANO", "ZIL", "ONT", "WAN",
-                        "CVC", "QKC", "NPXS", "KEY", "NAS", "MFT"
+                        "XRP", "VEN", "NULS", "XMR", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "NANO", "ZIL", "ONT", "WAN", "CVC", "QKC",
+                        "NPXS", "KEY", "MFT", "VET"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -51,8 +51,8 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-07-01T00:00:00", "2018-09-01T03:35:00", zoneOffset("+3")),
-        val testDays: Double = 40.0,
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-09-21T16:17:00", zoneOffset("+3")),
+        val testDays: Double = 50.0,
         val trainDaysExclude: Double = 8.0,
 
         val steps: Int = 50000,
@@ -67,5 +67,5 @@ data class TrainConfig(
 
         val fee: Double = 0.0015,
         val batchSize: Int = 90,
-        val tradePeriodGeometricBias: Double = 1e-4
+        val tradePeriodGeometricBias: Double = 9e-5
 )
