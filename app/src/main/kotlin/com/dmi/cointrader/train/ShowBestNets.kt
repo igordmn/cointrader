@@ -45,7 +45,7 @@ suspend fun showBestNets(count: Int) {
     createDirectories(charts1Dir)
     createDirectories(charts2Dir)
 
-    val bestInfo = info.filter { it.result.step >= trainConfig.minBestStep }.sortedByDescending { it.result.tests[0].score1 }.take(count)
+    val bestInfo = info.filter { it.result.step >= trainConfig.minBestStep }.sortedByDescending { it.result.tests[0].score2 }.take(count)
     bestInfo.forEachIndexed { num, it ->
         copyDirectory(it.netDir().toFile(), bestResultsDir.resolve("net$num").toFile())
         copy(it.chart1File(), charts1Dir.resolve("$num.png"))
@@ -57,7 +57,7 @@ suspend fun showBestNets(count: Int) {
 
     val backtestDays = trainConfig.testDays
     val backtestResults = backtestBest(backtestDays, trainConfig.fee)
-    val bestNum = backtestResults.filter { it.days == backtestDays }.sortedByDescending { it.summary.score1 }.first().num
+    val bestNum = backtestResults.filter { it.days == backtestDays }.sortedByDescending { it.summary.score2 }.first().num
     val best = bestInfo[bestNum]
 
     Paths.get("network").deleteRecursively()
