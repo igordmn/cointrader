@@ -21,28 +21,32 @@ fun PeriodRange.prepareForTrain(tradeConfig: TradeConfig, trainConfig: TrainConf
 
 fun PeriodProgression.splitForTrain(
         periodsPerDay: Double,
-        trainDaysExclude: Double,
+        trainDaysExclude: ClosedRange<Double>,
         testDays: Double
 ): TrainPeriods {
-    val trainDaysExcludeSize = (trainDaysExclude * periodsPerDay / step).toInt()
+    val trainDaysExcludeStart = (trainDaysExclude.start * periodsPerDay / step).toInt()
+    val trainDaysExcludeEnd = (trainDaysExclude.endInclusive * periodsPerDay / step).toInt()
     val testSize = (testDays * periodsPerDay / step).toInt()
     val size = size()
     return TrainPeriods(
-            train = slice(0 until size - trainDaysExcludeSize),
+            train = slice(0 until size),
+            trainExclude = size + trainDaysExcludeStart..size + trainDaysExcludeEnd,
             test = slice(size - testSize until size)
     )
 }
 
-data class TrainPeriods(val train: PeriodProgression, val test: PeriodProgression)
+data class TrainPeriods(val train: PeriodProgression, val trainExclude: PeriodRange, val test: PeriodProgression)
 
 fun trainBatches(
         archive: SuspendList<Spreads>,
         trainPeriods: PeriodProgression,
+        trainPeriodsExclude: PeriodRange,
         tradeConfig: TradeConfig,
         trainConfig: TrainConfig
 ) = TrainBatches(
         archive,
         trainPeriods,
+        trainPeriodsExclude,
         trainConfig.batchSize,
         tradeConfig.assets.all.size,
         tradeConfig.historyPeriods,
@@ -53,6 +57,7 @@ fun trainBatches(
 class TrainBatches(
         private val archive: SuspendList<Spreads>,
         private val periods: PeriodProgression,
+        private val periodsExclude: PeriodRange,
         private val batchSize: Int,
         private val assetsSize: Int,
         private val historyPeriods: HistoryPeriods,
@@ -83,8 +88,13 @@ class TrainBatches(
 
     fun channel() = infiniteChannel {
         val lastIndex = size - 1
-        val randomPeriod = lastIndex - random.limitSample(lastIndex.toInt())
-        get(randomPeriod)
+
+        var period: Period
+        do {
+            period = lastIndex - random.limitSample(lastIndex.toInt())
+        } while (period in periodsExclude)
+
+        get(period)
     }
 }
 

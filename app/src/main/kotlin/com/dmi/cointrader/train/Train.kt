@@ -42,7 +42,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
             tradeConfig.periodSpace, tradeConfig.assets, binanceExchange, periods.last,
             reloadCount = tradeConfig.archiveReloadPeriods
     )
-    val (trainPeriods, testPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
+    val (trainPeriods, trainPeriodsExclude, testPeriods) = periods.prepareForTrain(tradeConfig, trainConfig)
 
     PlatformImpl.startup({})
 
@@ -103,7 +103,7 @@ suspend fun train(jep: Jep, path: Path, tradeConfig: TradeConfig, trainConfig: T
 
             var trainProfits = ArrayList<Double>(trainConfig.logSteps)
             val results = ArrayList<TrainResult>()
-            val batches = trainBatches(archive, trainPeriods, tradeConfig, trainConfig)
+            val batches = trainBatches(archive, trainPeriods, trainPeriodsExclude, tradeConfig, trainConfig)
             val net = trainingNetwork(jep, tradeConfig, additionalParams)
             val trainer = networkTrainer(jep, net, trainConfig.fee, additionalParams)
 
