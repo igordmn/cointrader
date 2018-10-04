@@ -44,16 +44,16 @@ data class TradeConfig(
                 start = ISO_LOCAL_DATE_TIME.parseInstant("2017-07-01T00:00:00", zoneOffset("+3")),
                 duration = seconds(10)
         ),
-        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 80, size = 15 * periodSpace.periodsPerMinute().toInt()),
-        val tradePeriods: TradePeriods = TradePeriods(size = 15 * periodSpace.periodsPerMinute().toInt(), delay = 1),
+        val historyPeriods: HistoryPeriods = HistoryPeriods(count = 40, size = 30 * periodSpace.periodsPerMinute().toInt()),
+        val tradePeriods: TradePeriods = TradePeriods(size = 30 * periodSpace.periodsPerMinute().toInt(), delay = 1),
         val preloadPeriods: Int = (1.5 * periodSpace.periodsPerMinute()).toInt(),
         val archiveReloadPeriods: Int = 6 * 10
 )
 
 data class TrainConfig(
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-10-04T16:32:00", zoneOffset("+3")),
-        val testDays: Double = 80.0,
-        val trainDaysExclude: ClosedRange<Double> = -80.0..-40.0,
+        val testDays: Double = 90.0,
+        val trainDaysExclude: ClosedRange<Double> = -90.0..-40.0,
 
         val steps: Int = 60000,
         val minBestStep: Int = 15000,
@@ -67,5 +67,5 @@ data class TrainConfig(
 
         val fee: Double = 0.0015,
         val batchSize: Int = 90,
-        val tradePeriodGeometricBias: Double = 9e-5
+        val tradePeriodGeometricBias: Double = 1e-4
 )
