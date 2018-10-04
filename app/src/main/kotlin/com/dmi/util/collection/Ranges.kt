@@ -29,6 +29,8 @@ fun LongProgression.slice(indices: LongRange): LongProgression {
 
 fun LongProgression.indices() = 0 until size()
 
+fun LongProgression.edges(): LongRange = first..last
+
 operator fun <T : Comparable<T>> ClosedRange<T>.contains(another: ClosedRange<T>): Boolean {
     return start <= another.start && another.endInclusive <= endInclusive
 }
