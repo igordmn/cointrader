@@ -52,8 +52,8 @@ data class TradeConfig(
 
 data class TrainConfig(
         val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-10-04T16:32:00", zoneOffset("+3")),
-        val testDays: Double = 90.0,
-        val trainDaysExclude: ClosedRange<Double> = -90.0..-40.0,
+        val testDays: Double = 80.0,
+        val trainDaysExclude: ClosedRange<Double> = -80.0..-30.0,
 
         val steps: Int = 60000,
         val minBestStep: Int = 15000,
