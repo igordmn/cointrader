@@ -46,7 +46,7 @@ data class TradeConfig(
         ),
         val historyPeriods: HistoryPeriods = HistoryPeriods(count = 40, size = 30 * periodSpace.periodsPerMinute().toInt()),
         val tradePeriods: TradePeriods = TradePeriods(size = 30 * periodSpace.periodsPerMinute().toInt(), delay = 1),
-        val preloadPeriods: Int = (1.5 * periodSpace.periodsPerMinute()).toInt(),
+        val preloadPeriods: Int = (2 * periodSpace.periodsPerMinute()).toInt(),
         val archiveReloadPeriods: Int = 6 * 10
 )
 
@@ -60,7 +60,7 @@ data class TrainConfig(
         val repeats: Int = 300,
         val repeatsBreak: Int = 100,
         val repeatsBreakScore: Double = 1.00,
-        val logSteps: Int = 1000,
+        val logSteps: Int = 2000,
         val scoresSkipSteps: Int = 10000,
         val breakSteps: Int = 14000,
         val breakProfit: Double = 1.004,
