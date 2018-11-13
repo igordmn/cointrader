@@ -35,9 +35,9 @@ data class TradeConfig(
         val assets: TradeAssets = TradeAssets(
                 main = "BTC",
                 alts = listOf(
-                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "QTUM", "OMG", "ZRX", "BQX", "IOTA", "XVG", "EOS", "ETC", "ENG", "ZEC",
-                        "DASH", "TRX", "XRP", "VEN", "XMR", "BAT", "ARN", "ADA", "XLM", "GTO", "ICX", "ELF", "NANO", "NCASH", "ZIL",
-                        "ONT", "WAN", "CVC", "QKC", "NPXS", "KEY", "MFT"
+                        "USDT", "ETH", "LTC", "NEO", "BCC", "WTC", "QTUM", "OMG", "ZRX", "IOTA", "XVG", "EOS", "ETC", "ZEC", "DASH", "VIB",
+                        "TRX", "XRP", "VEN", "XMR", "BAT", "ARN", "GVT", "ADA", "XLM", "ICX", "ELF", "NANO", "NCASH", "ZIL", "ONT", "XEM",
+                        "WAN", "QKC", "SC", "NPXS", "KEY", "MFT", "VET", "DOCK"
                 )
         ),
         val periodSpace: PeriodSpace = PeriodSpace(
@@ -51,9 +51,9 @@ data class TradeConfig(
 )
 
 data class TrainConfig(
-        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-10-04T16:32:00", zoneOffset("+3")),
+        val range: InstantRange = ISO_LOCAL_DATE_TIME.parseInstantRange("2017-09-01T00:00:00", "2018-11-13T16:01:00", zoneOffset("+3")),
         val testDays: Double = 80.0,
-        val trainDaysExclude: ClosedRange<Double> = -80.0..-30.0,
+        val trainDaysExclude: ClosedRange<Double> = -80.0..-20.0,
 
         val steps: Int = 60000,
         val minBestStep: Int = 15000,
