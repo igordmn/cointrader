@@ -89,12 +89,13 @@ class TrainBatches(
     fun channel() = infiniteChannel {
         val lastIndex = size - 1
 
-        var period: Period
+        var index: Long
         do {
-            period = lastIndex - random.limitSample(lastIndex.toInt())
+            index = lastIndex - random.limitSample(lastIndex.toInt())
+            val period = periods.slice(index..index).first
         } while (period in periodsExclude)
 
-        get(period)
+        get(index)
     }
 }
 
