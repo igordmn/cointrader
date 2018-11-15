@@ -19,6 +19,10 @@ public class SymbolFilter {
 
   private FilterType filterType;
 
+  private String applyToMarket;
+
+  private String avgPriceMins;
+
   /**
    * Defines the minimum price/stopPrice allowed.
    */
@@ -145,5 +149,21 @@ public class SymbolFilter {
 
   public void setMaxNumAlgoOrders(String maxNumAlgoOrders) {
     this.maxNumAlgoOrders = maxNumAlgoOrders;
+  }
+
+  public String getApplyToMarket() {
+    return applyToMarket;
+  }
+
+  public void setApplyToMarket(String applyToMarket) {
+    this.applyToMarket = applyToMarket;
+  }
+
+  public String getAvgPriceMins() {
+    return avgPriceMins;
+  }
+
+  public void setAvgPriceMins(String avgPriceMins) {
+    this.avgPriceMins = avgPriceMins;
   }
 }
