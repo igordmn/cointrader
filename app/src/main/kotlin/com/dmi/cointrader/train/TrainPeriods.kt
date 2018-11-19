@@ -30,7 +30,7 @@ fun PeriodProgression.splitForTrain(
     val size = size()
     return TrainPeriods(
             train = slice(0 until size),
-            trainExclude = slice(size + trainDaysExcludeStart..size + trainDaysExcludeEnd).edges(),
+            trainExclude = slice(size - 1 + trainDaysExcludeStart..size - 1 + trainDaysExcludeEnd).edges(),
             test = slice(size - testSize until size)
     )
 }

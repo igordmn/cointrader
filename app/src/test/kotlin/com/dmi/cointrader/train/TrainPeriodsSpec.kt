@@ -11,10 +11,10 @@ import io.kotlintest.matchers.shouldBe
 class TrainPeriodsSpec : Spec({
     "splitForTrain" {
         // 2L..30L step 5L == 2 7 12 17 22 27
-        (2L..30L step 5L).splitForTrain(periodsPerDay = 1.5, testDays = 7.4, validationDays = 3.4) shouldBe TrainPeriods(
-                train = 2L..22L step 5L,
-                test = 17L..22L step 5L,
-                validation = 27L..27L step 5L
+        (2L..30L step 5L).splitForTrain(periodsPerDay = 1.5, trainDaysExclude = -12.1..-6.2, testDays = 10.4) shouldBe TrainPeriods(
+                train = 2L..27L step 5L,
+                trainExclude = 12L..22L,
+                test = 17L..27L step 5L
         )
     }
 
@@ -47,7 +47,7 @@ class TrainPeriodsSpec : Spec({
         // 5L..18L step 3L == 5 8 11 14 17
         val batches = TrainBatches(
                 archive,
-                periods = 5L..18L step 3L, batchSize = 3, assetsSize = 2,
+                periods = 5L..18L step 3L, periodsExclude = 0L..1L, batchSize = 3, assetsSize = 2,
                 historyPeriods = HistoryPeriods(count = 3, size = 2), tradeDelayPeriods = 1
         )
 
